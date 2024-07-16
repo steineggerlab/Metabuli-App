@@ -16,8 +16,20 @@
         Click
       </v-btn>
     </v-card>
+
+    
   
   </v-container>
+
+  <v-container>
+    <v-card>
+    <v-toolbar title="Status"></v-toolbar>
+    <v-file-input clearable density="compact" label="q1" variant="underlined"></v-file-input>
+  
+  </v-card>
+
+  </v-container>
+
 
   </div>
 </template>
@@ -25,14 +37,13 @@
 <script>
 
 export default {
-  name: 'HelloWorld',
+  name: 'SearchSetting',
 
   data: () => ({
 	waiting: false
 }),
   methods: {
 	clickButton () {
-    
 		this.waiting = true
 		// do what you want
 		this.waiting = false

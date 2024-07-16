@@ -1,13 +1,18 @@
 <template>
     <div>
-      <h1>Search Page</h1>
-      <!-- Add your search page content here -->
+      <SearchSetting></SearchSetting>
     </div>
   </template>
   
-  <script>
+<script>
+import SearchSetting from '@/components/SearchSetting.vue';
+
   export default {
-    name: 'SearchPage'
+    name: 'SearchPage',
+
+    components: {
+    SearchSetting: SearchSetting
+  },
   };
-  </script>
+</script>
   
