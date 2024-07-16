@@ -1,13 +1,55 @@
 <template>
-    <div>
-      <h1>Results Page</h1>
-      <!-- Add your results page content here -->
-    </div>
-  </template>
+  <v-card>
+    <v-toolbar>
+
+      <!-- <v-toolbar-title>Your Dashboard</v-toolbar-title> -->
+
+      <!-- <v-spacer></v-spacer> -->
+<!-- 
+      <v-btn icon="mdi-magnify"></v-btn>
+
+      <v-btn icon="mdi-dots-vertical"></v-btn> -->
+
+      <!-- <template v-slot:extension> -->
+        <v-tabs
+          v-model="tab"
+          align-tabs="title"
+        >
+          <v-tab
+            v-for="item in items"
+            :key="item"
+            :text="item"
+            :value="item"
+          ></v-tab>
+        </v-tabs>
+      <!-- </template> -->
+    </v-toolbar>
+
+    <v-tabs-window v-model="tab">
+      <v-tabs-window-item
+        v-for="item in items"
+        :key="item"
+        :value="item"
+      >
+        <v-card flat>
+          <v-card-text v-text="text"></v-card-text>
+        </v-card>
+      </v-tabs-window-item>
+    </v-tabs-window>
+  </v-card>
+</template>
   
-  <script>
+<script>
   export default {
-    name: 'ResultsPage'
+    name: 'ResultsPage',
+    data () {
+      return {
+        tab: null,
+        items: [
+          'TABLE', 'SANKEY', 
+        ],
+        text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      }
+    },
   };
-  </script>
-  
+</script>
