@@ -12,17 +12,23 @@
       <v-text-field label="Job ID" variant="underlined"></v-text-field>
       <v-text-field label="Max RAM" variant="underlined"></v-text-field>
 
-      <v-btn :loading="waiting" @click="sendRequest">
-        Click
-      </v-btn>
+      <v-btn @click="sendRequest">Run Metabuli</v-btn>
     </v-card>
 
   </v-container>
 
   <v-container>
     <v-card>
-    <v-toolbar title="Status"></v-toolbar>
-    <v-file-input clearable density="compact" label="q1" variant="underlined"></v-file-input>
+      <v-toolbar>
+        <v-toolbar-title>Status: {{ status }}</v-toolbar-title>
+      </v-toolbar>
+
+      <div class="status-container">
+        <v-img :src="statusImage" alt="Status Image" height="200"></v-img>
+        <div>{{ statusMessage }}</div>
+        <v-spacer></v-spacer>
+      </div>
+
     </v-card>
   </v-container>
 
@@ -47,9 +53,37 @@ export default {
       outdir: "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example",
       maxram: 128
     },
-    status: '',
-    waiting: false
+    status: 'INITIAL'
   }),
+
+  computed: {
+    statusMessage() {
+      switch (this.status) {
+        case 'INITIAL':
+          return 'Input search settings and run.';
+        case 'PENDING':
+          return "JOB PENDING";
+        case 'RUNNING':
+          return "JOB IS RUNNING";
+        case 'COMPLETE':
+          return 'Job is complete. Check results in comparison results table.';
+        default:
+          return 'An error occurred, please try again.';
+      }
+    },
+    statusImage() {
+      switch (this.status) {
+        case 'INITIAL':
+          return '/assets/marv_metabuli_small.png';
+        case 'PENDING', 'RUNNING':
+          return "/assets/marv_metabuli_small.png";
+        case 'COMPLETE':
+          return "/assets/simple_marv_love.png";
+        default:
+          return "/assets/simple_marv_sad.png";
+      }
+    },
+  },
 
   methods: {
     // Function to populate formData
@@ -107,3 +141,10 @@ export default {
 }
 
 </script>
+
+<style scoped>
+.status-container {
+  display: flex;
+  align-items: center;
+}
+</style>
