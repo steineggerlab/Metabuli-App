@@ -15,12 +15,18 @@
     </v-app-bar>
 
     <v-navigation-drawer>
-        <v-list>
-          <v-list-item title="Navigation drawer"></v-list-item>
-        </v-list>
+      <v-list>
+        <v-list-item>
+          <router-link to="/search" class="v-list-item--link">Search</router-link>
+        </v-list-item>
+        <v-list-item>
+          <router-link to="/results" class="v-list-item--link">Results</router-link>
+        </v-list-item>
+      </v-list>
     </v-navigation-drawer>
     
     <v-main>
+      <router-view></router-view>
       <HelloWorld/>
     </v-main>
   </v-app>
@@ -38,33 +44,8 @@ export default {
   },
 
   data: () => ({
-    drawer: false,
-    group: null,
-    items: [
-    {
-          title: 'Foo',
-          value: 'foo',
-        },
-        {
-          title: 'Bar',
-          value: 'bar',
-        },
-        {
-          title: 'Fizz',
-          value: 'fizz',
-        },
-        {
-          title: 'Buzz',
-          value: 'buzz',
-        },
-      ],
+    //
   }),
-
-  watch: {
-      group () {
-        this.drawer = false
-      },
-    },
     
 }
 </script>
