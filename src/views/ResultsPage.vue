@@ -12,7 +12,7 @@
           <v-data-table-virtual
             :headers="headers"
             :items="virtualBoats"
-            height="400"
+            height="500"
             item-value="name"
           ></v-data-table-virtual>
         </v-tabs-window-item>
@@ -33,29 +33,29 @@ export default {
     return {
       tab: 'TABLE',
       headers: [
-          { title: 'Proportion', align: 'start', key: 'proportion' },
-          { title: 'Clade Reads', align: 'start', key: 'clade_reads' },
-          { title: 'Taxon Reads', align: 'start', key: 'taxon_reads' },
-          { title: 'Rank', align: 'start', key: 'rank' },
-          { title: 'Taxon ID', align: 'start', key: 'taxon_id' },
-          { title: 'Name', align: 'start', key: 'name' },
-        ],
-        results: [
-          {
-            proportion: 'Speedster',
-            clade_reads: 35,
-            taxon_reads: 22,
-            rank: 300000,
-            taxon_id: 2021,
-          },
-          {
-            proportion: 'OceanMaster',
-            clade_reads: 25,
-            taxon_reads: 35,
-            rank: 500000,
-            taxon_id: 2020,
-          },
-        ],
+        { title: 'Proportion', align: 'start', key: 'proportion' },
+        { title: 'Clade Reads', align: 'start', key: 'clade_reads' },
+        { title: 'Taxon Reads', align: 'start', key: 'taxon_reads' },
+        { title: 'Rank', align: 'start', key: 'rank' },
+        { title: 'Taxon ID', align: 'start', key: 'taxon_id' },
+        { title: 'Name', align: 'start', key: 'name' },
+      ],
+      results: [
+        {
+          proportion: 'Speedster',
+          clade_reads: 35,
+          taxon_reads: 22,
+          rank: 300000,
+          taxon_id: 2021,
+        },
+        {
+          proportion: 'OceanMaster',
+          clade_reads: 25,
+          taxon_reads: 35,
+          rank: 500000,
+          taxon_id: 2020,
+        },
+      ],
     };
   },
   computed: {
@@ -67,5 +67,48 @@ export default {
       })
     },
   },
+
+  methods: {
+    async readTSVFile(filePath) {
+      try {
+        const tsvContent = await window.electron.readTSVFile(filePath);
+
+        const json = this.tsvToJSON(tsvContent);
+        // this.results = json.results;
+        return json.results;
+        // this.saveResults();
+        // console.log(JSON.stringify(this.results, null, 2)); //FIXME:
+      } catch (error) {
+        console.error('Error reading TSV file:', error);
+      }
+    },
+    tsvToJSON(tsv) {
+      const headers = ['proportion', 'clade_reads', 'taxon_reads', 'rank', 'taxon_id', 'name'];
+      const records = tsv.split('\n').map(line => {
+        const data = line.split('\t').map(item => item.trim());  // Strip leading and trailing whitespace
+        return Object.fromEntries(headers.map((header, index) => [header, data[index]]));
+      });
+      return { results: records };
+    },
+    saveResults() {
+      sessionStorage.setItem('results', JSON.stringify(this.results)); // Save to session storage
+    },
+
+  },
+
+  async mounted() {
+    try {
+      const reportFilePath = `${this.$route.query.outdir}/${this.$route.query.jobid}_report.tsv`
+      console.log(reportFilePath);
+      const resultsJSON = this.readTSVFile(`${reportFilePath}`);
+      // this.results = this.virtualBoats;
+      this.results = resultsJSON;
+      console.log(JSON.stringify(this.results, null, 2)); //FIXME:
+      this.saveResults();
+      console.log('DONE')
+    } catch (error) {
+      console.error('Error loading results:', error);
+    }
+  }
 };
 </script>

@@ -98,15 +98,16 @@ export default {
     async sendRequest () {
       this.populateFormData();
 
-      axios.post('/api/ticket', this.formData) //FIXME: JSONPlaceholder API -> replace with Metabuli endpoint
+      // Send the POST API request
+      axios.post('/api/ticket', this.formData)
         .then(async response => {
           console.log('success', response.data);
 
           try {
             await this.pollJobStatus(response.data.id); // Wait until job completes
             console.log("COMPLETE") //DELETE
-            // const reportFilePath = `${this.jobDetails.jobid}_report.tsv`;
-            // this.readTSVFile(`${this.jobDetails.outdir}/${reportFilePath}`);
+            // const reportFilePath = `${this.jobDetails.outdir}/${this.jobDetails.jobid}_report.tsv`
+            // this.readTSVFile(`${reportFilePath}`);
           } catch (error) {
             console.error('Error waiting for job completion:', error);
           }
@@ -121,12 +122,18 @@ export default {
       while (Date.now() - start < timeout) {
         try {
           const response = await axios.get(`/api/ticket/${ticketid}`); // Get job status
-          console.log(response.data.status) //DELETE
-          if (response.data.status === 'RUNNING') {
-            this.status = "RUNNING"
+          const status = response.data.status;
+          console.log(status) //DELETE
+          if (status !== 'COMPLETE') {
+            this.status = status
           }
-          else if (response.data.status === 'COMPLETE') {
+          else if (status === 'COMPLETE') {
             this.status = "COMPLETE"
+            this.$emit('job-complete', { 
+              outdir: this.jobDetails.outdir, 
+              jobid: this.jobDetails.jobid 
+            });
+
             return true;
           }
         } catch (error) {
@@ -135,9 +142,6 @@ export default {
         await new Promise(resolve => setTimeout(resolve, interval));
       }
       throw new Error('Polling timed out');
-    },
-    saveResults() {
-      sessionStorage.setItem('results', JSON.stringify(this.results)); // Save to session storage
     },
 
   } 
