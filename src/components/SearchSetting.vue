@@ -2,11 +2,11 @@
   <div>
     <v-container> 
       <!-- SEARCH SETTINGS PANEL -->
-      <v-card class="mb-3">
+      <v-card class="mb-3 search-settings-panel">
         <v-toolbar class="custom-toolbar" density="compact">
           Search Settings
           <v-spacer></v-spacer>
-          <v-btn icon @click="showDialog = true">
+          <v-btn icon>
             <v-icon>mdi-api</v-icon>
           </v-btn>
 
@@ -14,7 +14,7 @@
 
 
         <v-card-text>
-          <v-text-field label="Job ID" variant="underlined" v-model="jobDetails.jobid"></v-text-field>
+          <v-text-field label="Job ID" variant="underlined" v-model="jobDetails.jobid" width="500"></v-text-field>
 
           <v-sheet class="d-flex align-center mb-2">
             <v-btn @click="selectFile('q1', 'file')">Select File</v-btn>
@@ -36,7 +36,7 @@
             <div class="ml-3">Selected Directory: {{ jobDetails.outdir }}</div>
           </v-sheet>
 
-          <v-text-field label="Max RAM" variant="underlined" v-model="jobDetails.maxram"></v-text-field>
+          <v-text-field label="Max RAM" variant="underlined" v-model="jobDetails.maxram" width="500"></v-text-field>
 
           <v-sheet class="d-flex align-center mb-2">
             <v-btn @click="sendRequest">Run Metabuli</v-btn>
@@ -233,5 +233,20 @@ export default {
 .status-container {
   display: flex;
   align-items: center;
+}
+.search-settings-panel {
+  position: relative;
+  padding: 20px;
+}
+.search-settings-panel::after {
+  content: '';
+  background: url('../../public/assets/marv_metabuli_small.png') no-repeat;
+  background-size: 300px 300px; /* Adjust the size as needed */
+  opacity: 0.5;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 300px;
+  height: 300px;
 }
 </style>
