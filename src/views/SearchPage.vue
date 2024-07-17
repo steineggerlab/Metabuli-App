@@ -2,6 +2,7 @@
     <div>
       <SearchSetting @job-complete="handleJobComplete" />
 
+      <!-- Footer: Refernce to Paper -->
       <v-container>
         <v-card>
           <v-card-title>Reference</v-card-title>

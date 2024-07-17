@@ -15,12 +15,23 @@
 
     <v-navigation-drawer permanent>
       <v-list>
-        <v-list-item>
-          <router-link to="/search" class="v-list-item--link">Search</router-link>
-        </v-list-item>
-        <v-list-item>
-          <router-link to="/results" class="v-list-item--link">Results</router-link>
-        </v-list-item>
+        <router-link
+          v-for="item in items"
+          :key="item.title"
+          :to="item.path"
+          class="v-list-item--link no-underline"
+        >
+          <v-list-item
+            class="nav-item"
+            :class="{ active: $route.path === item.path }"
+            @mouseover="hover = item.path"
+            @mouseleave="hover = ''"
+            :style="{ backgroundColor: hover === item.path ? '#f0f0f0' : ($route.path === item.path ? '#d3d3d3' : 'transparent') }"
+          >
+            <v-icon left>{{ item.icon }}</v-icon>
+            <span>{{ item.title }}</span>
+          </v-list-item>
+        </router-link>
       </v-list>
     </v-navigation-drawer>
     
@@ -31,7 +42,6 @@
 </template>
 
 <script>
-
 export default {
   name: 'App',
 
@@ -40,8 +50,38 @@ export default {
   },
 
   data: () => ({
-    //
+    hover: '',
+    items: [
+      { title: 'Search', path: '/search', icon: 'mdi-magnify' },
+      { title: 'Results', path: '/results', icon: 'mdi-view-list' }
+    ]
   }),
     
 }
 </script>
+
+<style scoped>
+.no-underline {
+  text-decoration: none;
+  color: inherit;
+}
+
+.v-list-item--link {
+  display: block;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.v-icon {
+  margin-right: 10px;
+}
+
+.nav-item.active {
+  background-color: #d3d3d3;
+}
+
+</style>
