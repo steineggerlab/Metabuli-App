@@ -19,8 +19,7 @@
 
         <!-- SANKEY -->
         <v-tabs-window-item value="sankey">
-
-          
+          <SankeyDiagram :data="sankeyData" />
         </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>
@@ -28,9 +27,13 @@
 </template>
   
 <script>
+import SankeyDiagram from '../components/SankeyDiagram.vue'
 
 export default {
   name: 'ResultsPage',
+  components: {
+    SankeyDiagram
+  },
   data() {
     return {
       tab: 'TABLE',
@@ -42,7 +45,40 @@ export default {
         { title: 'Taxon ID', align: 'start', key: 'taxon_id' },
         { title: 'Name', align: 'start', key: 'name' },
       ],
-      results: []
+      results: [],
+      sankeyData: {
+        nodes: [
+          { id: 'n0', name: 'root' },
+          { id: 'n1', name: 'Viruses' },
+          { id: 'n2', name: 'Riboviria' },
+          { id: 'n3', name: 'Orthornavirae' },
+          { id: 'n4', name: 'Pisuviricota' },
+          { id: 'n5', name: 'Pisoniviricetes' },
+          { id: 'n6', name: 'Nidovirales' },
+          { id: 'n7', name: 'Cornidovirineae' },
+          { id: 'n8', name: 'Coronaviridae' },
+          { id: 'n9', name: 'Orthocoronavirinae' },
+          { id: 'n10', name: 'Betacoronavirus' },
+          { id: 'n11', name: 'Sarbecovirus' },
+          { id: 'n12', name: 'Severe acute respiratory syndrome-related coronavirus' },
+          { id: 'n13', name: 'SARS-CoV-2' }
+        ],
+        links: [
+          { source: 'n0', target: 'n1', value: 95.8757 },
+          { source: 'n1', target: 'n2', value: 2.3831 },
+          { source: 'n0', target: 'n3', value: 5.3231 },
+          { source: 'n1', target: 'n4', value: 10.3231 },
+          { source: 'n2', target: 'n3', value: 30.2642 },
+          { source: 'n4', target: 'n6', value: 50.2642 },
+          { source: 'n6', target: 'n7', value: 3.2642 },
+          { source: 'n7', target: 'n8', value: 82.2642 },
+          { source: 'n6', target: 'n9', value: 12.2642 },
+          { source: 'n9', target: 'n10', value: 22.2642 },
+          { source: 'n1', target: 'n11', value: 32.2642 },
+          { source: 'n4', target: 'n12', value: 2.2642 },
+          { source: 'n2', target: 'n13', value: 22.2642 }
+        ]
+      }
     };
   },
   computed: {
@@ -78,7 +114,7 @@ export default {
       const reportFilePath = `${this.$route.query.outdir}/${this.$route.query.jobid}_report.tsv`
       const resultsJSON = await this.readTSVFile(`${reportFilePath}`);
       this.results = resultsJSON;
-      console.log(JSON.stringify(this.results, null, 2)); //FIXME:
+      // console.log(JSON.stringify(this.results, null, 2)); //FIXME:
       this.saveResults();
       console.log('DONE')
     } catch (error) {

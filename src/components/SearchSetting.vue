@@ -31,7 +31,7 @@
 
         <v-sheet class="d-flex align-center mb-2">
           <v-btn @click="sendRequest">Run Metabuli</v-btn>
-          <v-btn class="ml-3" @click="sendRequest(true)">Run Sample</v-btn>
+          <v-btn class="ml-3" @click="sendRequest(true)">Load Sample Data</v-btn>
         </v-sheet>
       </v-card-text>
     </v-card>
