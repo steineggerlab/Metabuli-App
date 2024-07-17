@@ -9,20 +9,18 @@
           <v-btn icon>
             <v-icon>mdi-api</v-icon>
           </v-btn>
-
         </v-toolbar>
-
 
         <v-card-text>
           <v-text-field label="Job ID" variant="underlined" v-model="jobDetails.jobid" width="500"></v-text-field>
 
           <v-sheet class="d-flex align-center mb-2">
-            <v-btn @click="selectFile('q1', 'file')">Select File</v-btn>
+            <v-btn @click="selectFile('q1', 'file')">Select q1 File</v-btn>
             <div class="ml-3">Selected File: {{ jobDetails.q1 }}</div>
           </v-sheet>
 
           <v-sheet class="d-flex align-center mb-2">
-            <v-btn @click="selectFile('q2', 'file')">Select File</v-btn>
+            <v-btn @click="selectFile('q2', 'file')">Select q2 File</v-btn>
             <div class="ml-3">Selected File: {{ jobDetails.q2 }}</div>
           </v-sheet>
 
@@ -42,6 +40,7 @@
             <v-btn 
             :loading="loading"
             @click="sendRequest"
+            color="indigo"
             >
               Run Metabuli
               <template v-slot:loader>
@@ -52,6 +51,7 @@
             <v-btn class="ml-3"
             :loading="loading"
             @click="sendRequest(true)"
+            color="indigo"
             >
               Load Sample Data
               <template v-slot:loader>
@@ -83,8 +83,6 @@ import axios from '../plugins/axios';
 
 export default {
   name: 'SearchSetting',
-
-
   data: () => ({
     formData: new FormData(), // Initialize FormData object
     jobDetails: { // Store job details including file paths
@@ -221,7 +219,6 @@ export default {
 
   },
 }
-
 </script>
 
 <style scoped>
