@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, ipcMain } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
 import fs from 'fs' // Import the filesystem module
@@ -15,8 +15,8 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow() {
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1080,
+    height: 720,
     webPreferences: {
       
       // Use pluginOptions.nodeIntegration, leave this alone
@@ -92,4 +92,10 @@ ipcMain.handle('read-file', async (event, filePath) => {
   } catch (error) {
     throw new Error('Failed to read file');
   }
+});
+
+// IPC handler to open file dialog
+ipcMain.handle('open-file-dialog', async (event, options) => {
+  const result = await dialog.showOpenDialog(options);
+  return result.filePaths;
 });

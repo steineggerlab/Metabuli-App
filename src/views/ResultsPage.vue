@@ -19,7 +19,8 @@
 
         <!-- SANKEY -->
         <v-tabs-window-item value="sankey">
-          Two
+
+          
         </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>
@@ -41,7 +42,7 @@ export default {
         { title: 'Taxon ID', align: 'start', key: 'taxon_id' },
         { title: 'Name', align: 'start', key: 'name' },
       ],
-      results: [],
+      results: []
     };
   },
   computed: {
@@ -73,8 +74,8 @@ export default {
 
   async mounted() {
     try {
+      // Render report.tsv 
       const reportFilePath = `${this.$route.query.outdir}/${this.$route.query.jobid}_report.tsv`
-      console.log(reportFilePath);
       const resultsJSON = await this.readTSVFile(`${reportFilePath}`);
       this.results = resultsJSON;
       console.log(JSON.stringify(this.results, null, 2)); //FIXME:

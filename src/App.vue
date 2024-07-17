@@ -13,7 +13,7 @@
       </v-btn>
     </v-app-bar>
 
-    <v-navigation-drawer>
+    <v-navigation-drawer permanent>
       <v-list>
         <v-list-item>
           <router-link to="/search" class="v-list-item--link">Search</router-link>

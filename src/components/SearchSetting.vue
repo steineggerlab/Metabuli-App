@@ -2,17 +2,38 @@
   <div>
   <v-container> 
     <v-card>
-
-
       <v-toolbar title="Search Settings"></v-toolbar>
-      <v-file-input clearable density="compact" label="q1" variant="underlined"></v-file-input>
-      <v-file-input clearable density="compact" label="q2" variant="underlined"></v-file-input>
-      <v-file-input clearable density="compact" label="db" variant="underlined"></v-file-input>
-      <v-file-input clearable density="compact" label="outdir" variant="underlined"></v-file-input>
-      <v-text-field label="Job ID" variant="underlined"></v-text-field>
-      <v-text-field label="Max RAM" variant="underlined"></v-text-field>
 
-      <v-btn @click="sendRequest">Run Metabuli</v-btn>
+      <v-card-text>
+        <v-text-field label="Job ID" variant="underlined" v-model="jobDetails.jobid"></v-text-field>
+
+        <v-sheet class="d-flex align-center mb-2">
+          <v-btn @click="selectFile('q1', 'file')">Select File</v-btn>
+          <div class="ml-3">Selected File: {{ jobDetails.q1 }}</div>
+        </v-sheet>
+
+        <v-sheet class="d-flex align-center mb-2">
+          <v-btn @click="selectFile('q2', 'file')">Select File</v-btn>
+          <div class="ml-3">Selected File: {{ jobDetails.q2 }}</div>
+        </v-sheet>
+
+        <v-sheet class="d-flex align-center mb-2">
+          <v-btn @click="selectFile('database', 'directory')">Select Database</v-btn>
+          <div class="ml-3">Selected Directory: {{ jobDetails.database }}</div>
+        </v-sheet>
+
+        <v-sheet class="d-flex align-center mb-2">
+          <v-btn @click="selectFile('outdir', 'directory')">Select Output Directory</v-btn>
+          <div class="ml-3">Selected Directory: {{ jobDetails.outdir }}</div>
+        </v-sheet>
+
+        <v-text-field label="Max RAM" variant="underlined" v-model="jobDetails.maxram"></v-text-field>
+
+        <v-sheet class="d-flex align-center mb-2">
+          <v-btn @click="sendRequest">Run Metabuli</v-btn>
+          <v-btn @click="sendRequest(true)">Run Sample</v-btn>
+        </v-sheet>
+      </v-card-text>
     </v-card>
 
   </v-container>
@@ -46,6 +67,14 @@ export default {
     results: '',
     formData: new FormData(), // Initialize FormData object
     jobDetails: { // Store job details including file paths
+      q1: '',
+      q2: '',
+      database: "",
+      jobid: "",
+      outdir: "",
+      maxram: 0
+    },
+    jobDetailsSample: { // Sample job details
       q1: '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq',
       q2: '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_2.fq',
       database: "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/refseq_virus",
@@ -53,7 +82,7 @@ export default {
       outdir: "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example",
       maxram: 128
     },
-    status: 'INITIAL'
+    status: 'INITIAL',
   }),
 
   computed: {
@@ -86,17 +115,40 @@ export default {
   },
 
   methods: {
+    async selectFile(field, type) {
+      if ((window.electron)) {
+        try {
+          const options = {
+                properties: type === 'file' ? ['openFile'] : ['openDirectory']
+            };
+          const filePaths = await window.electron.openFileDialog(options);
+          if (filePaths && filePaths.length > 0) {
+            this.jobDetails[field] = filePaths[0];
+          }
+          console.log(this.jobDetails);
+        } catch (error) {
+          console.error('Error selecting file:', error);
+        }
+      } else {
+        console.error('File dialog is not supported in the web environment.');
+      }
+    },
     // Function to populate formData
-    populateFormData() {
+    populateFormData(sample = false) {
+      if (sample) {
+        this.jobDetails = { ...this.jobDetailsSample };
+      }
       this.formData.append('q1', this.jobDetails.q1);
       this.formData.append('q2', this.jobDetails.q2);
       this.formData.append('database[]', this.jobDetails.database);
       this.formData.append('jobid', this.jobDetails.jobid);
       this.formData.append('outdir', this.jobDetails.outdir);
       this.formData.append('maxram', this.jobDetails.maxram);
+
+      console.log(this.jobDetails);
     },
-    async sendRequest () {
-      this.populateFormData();
+    async sendRequest (sample = false) {
+      this.populateFormData(sample);
 
       // Send the POST API request
       axios.post('/api/ticket', this.formData)
