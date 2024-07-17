@@ -52,8 +52,8 @@ export default {
     drawer: true,
     hover: '',
     items: [
-      { title: 'Data Input', path: '/search', icon: 'mdi-magnify' },
-      { title: 'Results', path: '/results', icon: 'mdi-view-list' }
+      { title: 'Data Input', path: '/search', icon: 'mdi-cloud-upload' },
+      { title: 'Results', path: '/results', icon: 'mdi-chart-bar' }
     ]
   }),
 
