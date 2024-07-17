@@ -5,7 +5,8 @@
       <!-- <v-img src="/assets/marv_metabuli_small.png"></v-img> -->
       <v-app-bar-title >Metabuli</v-app-bar-title>
       <v-spacer></v-spacer>
-      <v-btn>GitHub</v-btn>
+      <v-btn href="https://github.com/steineggerlab/Metabuli" target="_blank">GitHub</v-btn>
+
 
       <v-btn icon>
         <v-icon>mdi-dots-vertical</v-icon>
