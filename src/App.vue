@@ -1,8 +1,7 @@
 <template>
   <v-app>
     <v-app-bar>
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
-      <!-- <v-img src="/assets/marv_metabuli_small.png"></v-img> -->
+      <v-app-bar-nav-icon @click="toggleDrawer"></v-app-bar-nav-icon>
       <v-app-bar-title >Metabuli</v-app-bar-title>
       <v-spacer></v-spacer>
       <v-btn href="https://github.com/steineggerlab/Metabuli" target="_blank">GitHub</v-btn>
@@ -13,7 +12,7 @@
       </v-btn>
     </v-app-bar>
 
-    <v-navigation-drawer permanent>
+    <v-navigation-drawer v-model="drawer">
       <v-list>
         <router-link
           v-for="item in items"
@@ -50,12 +49,19 @@ export default {
   },
 
   data: () => ({
+    drawer: true,
     hover: '',
     items: [
-      { title: 'Search', path: '/search', icon: 'mdi-magnify' },
+      { title: 'Data Input', path: '/search', icon: 'mdi-magnify' },
       { title: 'Results', path: '/results', icon: 'mdi-view-list' }
     ]
   }),
+
+  methods: {
+    toggleDrawer() {
+      this.drawer = !this.drawer;
+    }
+  }
     
 }
 </script>
@@ -83,5 +89,6 @@ export default {
 .nav-item.active {
   background-color: #d3d3d3;
 }
+
 
 </style>
