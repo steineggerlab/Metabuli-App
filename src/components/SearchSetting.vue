@@ -1,58 +1,54 @@
 <template>
   <div>
-  <v-container> 
-    <v-card>
-      <v-toolbar title="Search Settings"></v-toolbar>
+    <v-container> 
+      <!-- SEARCH SETTINGS PANEL -->
+      <v-card class="mb-3">
+        <v-toolbar class="custom-toolbar" density="compact">Search Settings</v-toolbar>
 
-      <v-card-text>
-        <v-text-field label="Job ID" variant="underlined" v-model="jobDetails.jobid"></v-text-field>
+        <v-card-text>
+          <v-text-field label="Job ID" variant="underlined" v-model="jobDetails.jobid"></v-text-field>
 
-        <v-sheet class="d-flex align-center mb-2">
-          <v-btn @click="selectFile('q1', 'file')">Select File</v-btn>
-          <div class="ml-3">Selected File: {{ jobDetails.q1 }}</div>
-        </v-sheet>
+          <v-sheet class="d-flex align-center mb-2">
+            <v-btn @click="selectFile('q1', 'file')">Select File</v-btn>
+            <div class="ml-3">Selected File: {{ jobDetails.q1 }}</div>
+          </v-sheet>
 
-        <v-sheet class="d-flex align-center mb-2">
-          <v-btn @click="selectFile('q2', 'file')">Select File</v-btn>
-          <div class="ml-3">Selected File: {{ jobDetails.q2 }}</div>
-        </v-sheet>
+          <v-sheet class="d-flex align-center mb-2">
+            <v-btn @click="selectFile('q2', 'file')">Select File</v-btn>
+            <div class="ml-3">Selected File: {{ jobDetails.q2 }}</div>
+          </v-sheet>
 
-        <v-sheet class="d-flex align-center mb-2">
-          <v-btn @click="selectFile('database', 'directory')">Select Database</v-btn>
-          <div class="ml-3">Selected Directory: {{ jobDetails.database }}</div>
-        </v-sheet>
+          <v-sheet class="d-flex align-center mb-2">
+            <v-btn @click="selectFile('database', 'directory')">Select Database</v-btn>
+            <div class="ml-3">Selected Directory: {{ jobDetails.database }}</div>
+          </v-sheet>
 
-        <v-sheet class="d-flex align-center mb-2">
-          <v-btn @click="selectFile('outdir', 'directory')">Select Output Directory</v-btn>
-          <div class="ml-3">Selected Directory: {{ jobDetails.outdir }}</div>
-        </v-sheet>
+          <v-sheet class="d-flex align-center mb-2">
+            <v-btn @click="selectFile('outdir', 'directory')">Select Output Directory</v-btn>
+            <div class="ml-3">Selected Directory: {{ jobDetails.outdir }}</div>
+          </v-sheet>
 
-        <v-text-field label="Max RAM" variant="underlined" v-model="jobDetails.maxram"></v-text-field>
+          <v-text-field label="Max RAM" variant="underlined" v-model="jobDetails.maxram"></v-text-field>
 
-        <v-sheet class="d-flex align-center mb-2">
-          <v-btn @click="sendRequest">Run Metabuli</v-btn>
-          <v-btn class="ml-3" @click="sendRequest(true)">Load Sample Data</v-btn>
-        </v-sheet>
-      </v-card-text>
-    </v-card>
+          <v-sheet class="d-flex align-center mb-2">
+            <v-btn @click="sendRequest">Run Metabuli</v-btn>
+            <v-btn class="ml-3" @click="sendRequest(true)">Load Sample Data</v-btn>
+          </v-sheet>
+        </v-card-text>
+      </v-card>
 
-  </v-container>
+      <!-- STATUS PANEL -->
+      <v-card>
+        <v-toolbar class="custom-toolbar" density="compact">Status: {{ status }}</v-toolbar>
 
-  <v-container>
-    <v-card>
-      <v-toolbar>
-        <v-toolbar-title>Status: {{ status }}</v-toolbar-title>
-      </v-toolbar>
+        <div class="status-container">
+          <v-img :src="statusImage" alt="Status Image" height="200"></v-img>
+          <div>{{ statusMessage }}</div>
+          <v-spacer></v-spacer>
+        </div>
 
-      <div class="status-container">
-        <v-img :src="statusImage" alt="Status Image" height="200"></v-img>
-        <div>{{ statusMessage }}</div>
-        <v-spacer></v-spacer>
-      </div>
-
-    </v-card>
-  </v-container>
-
+      </v-card>
+    </v-container>
 
   </div>
 </template>
@@ -198,6 +194,12 @@ export default {
 </script>
 
 <style scoped>
+.custom-toolbar {
+  color: white;
+  font-size: 20px;
+  background-image: url('https://search.foldseek.com/e5408e4113ed61a79c6f.png');
+  padding-left: 20px;
+}
 .status-container {
   display: flex;
   align-items: center;
