@@ -39,20 +39,27 @@
           <v-text-field label="Max RAM" variant="underlined" v-model="jobDetails.maxram" width="500"></v-text-field>
 
           <v-sheet class="d-flex align-center mb-2">
-            <v-btn @click="sendRequest">Run Metabuli</v-btn>
-            <v-btn class="ml-3" @click="sendRequest(true)">Load Sample Data</v-btn>
-
-            <v-btn
-              :loading="loading"
-              @click="loading = !loading"
+            <v-btn 
+            :loading="loading"
+            @click="sendRequest"
             >
-              Custom loader
+              Run Metabuli
+              <template v-slot:loader>
+                <v-progress-linear indeterminate></v-progress-linear>
+              </template>
+            </v-btn>
 
+            <v-btn class="ml-3"
+            :loading="loading"
+            @click="sendRequest(true)"
+            >
+              Load Sample Data
               <template v-slot:loader>
                 <v-progress-linear indeterminate></v-progress-linear>
               </template>
             </v-btn>
           </v-sheet>
+
         </v-card-text>
       </v-card>
 
@@ -61,9 +68,8 @@
         <v-toolbar class="custom-toolbar" density="compact">Status: {{ status }}</v-toolbar>
 
         <div class="status-container">
-          <v-img :src="statusImage" alt="Status Image" height="200"></v-img>
-          <div>{{ statusMessage }}</div>
-          <v-spacer></v-spacer>
+          <!-- <v-img :src="statusImage" alt="Status Image" height="200"></v-img> -->
+            <v-card-text>{{ statusMessage }}</v-card-text>
         </div>
 
       </v-card>
@@ -166,6 +172,7 @@ export default {
       console.log(this.jobDetails);
     },
     async sendRequest (sample = false) {
+      this.loading = true; // Start loading
       this.populateFormData(sample);
 
       // Send the POST API request
@@ -176,6 +183,8 @@ export default {
             console.log("COMPLETE") //DELETE
           } catch (error) {
             console.error('Error waiting for job completion:', error);
+          } finally {
+            this.loading = false; // Stop loading
           }
         })
         .catch(error => {
@@ -191,7 +200,7 @@ export default {
           const status = response.data.status;
           console.log(status) //DELETE
           if (status !== 'COMPLETE') {
-            this.status = status
+            this.status = status;
           }
           else if (status === 'COMPLETE') {
             this.status = "COMPLETE"
@@ -211,14 +220,6 @@ export default {
     },
 
   },
-
-  watch: {
-      loading (val) {
-        if (!val) return
-
-        setTimeout(() => (this.loading = false), 2000)
-      },
-    },
 }
 
 </script>
@@ -236,7 +237,6 @@ export default {
 }
 .search-settings-panel {
   position: relative;
-  padding: 20px;
 }
 .search-settings-panel::after {
   content: '';
