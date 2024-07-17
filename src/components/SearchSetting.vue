@@ -3,7 +3,15 @@
     <v-container> 
       <!-- SEARCH SETTINGS PANEL -->
       <v-card class="mb-3">
-        <v-toolbar class="custom-toolbar" density="compact">Search Settings</v-toolbar>
+        <v-toolbar class="custom-toolbar" density="compact">
+          Search Settings
+          <v-spacer></v-spacer>
+          <v-btn icon @click="showDialog = true">
+            <v-icon>mdi-api</v-icon>
+          </v-btn>
+
+        </v-toolbar>
+
 
         <v-card-text>
           <v-text-field label="Job ID" variant="underlined" v-model="jobDetails.jobid"></v-text-field>
@@ -33,6 +41,17 @@
           <v-sheet class="d-flex align-center mb-2">
             <v-btn @click="sendRequest">Run Metabuli</v-btn>
             <v-btn class="ml-3" @click="sendRequest(true)">Load Sample Data</v-btn>
+
+            <v-btn
+              :loading="loading"
+              @click="loading = !loading"
+            >
+              Custom loader
+
+              <template v-slot:loader>
+                <v-progress-linear indeterminate></v-progress-linear>
+              </template>
+            </v-btn>
           </v-sheet>
         </v-card-text>
       </v-card>
@@ -59,6 +78,7 @@ import axios from '../plugins/axios';
 export default {
   name: 'SearchSetting',
 
+
   data: () => ({
     formData: new FormData(), // Initialize FormData object
     jobDetails: { // Store job details including file paths
@@ -79,6 +99,8 @@ export default {
     },
     status: 'INITIAL',
     results: '',
+    loading: false,
+
   }),
 
   computed: {
@@ -188,7 +210,15 @@ export default {
       throw new Error('Polling timed out');
     },
 
-  } 
+  },
+
+  watch: {
+      loading (val) {
+        if (!val) return
+
+        setTimeout(() => (this.loading = false), 2000)
+      },
+    },
 }
 
 </script>
