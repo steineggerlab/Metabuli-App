@@ -1,6 +1,20 @@
 <template>
     <div>
       <SearchSetting @job-complete="handleJobComplete" />
+
+      <v-container>
+        <v-card>
+          <v-card-title>Reference</v-card-title>
+          <v-card-text>
+            Kim J, Steinegger M. 
+            <a href="https://www.nature.com/articles/s41592-024-02273-y" target="_blank">
+              Metabuli: sensitive and specific metagenomic classification via joint analysis of amino acid and DNA.
+            </a> 
+            Nature Methods (2024).
+          </v-card-text>
+        </v-card>
+
+      </v-container> 
     </div>
   </template>
   
