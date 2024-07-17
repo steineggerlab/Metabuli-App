@@ -14,11 +14,8 @@ import SearchSetting from '@/components/SearchSetting.vue';
     },
     methods: {
       handleJobComplete(payload) {
-        console.log(payload.outdir); //DELETE
         this.$router.push( {
-          
           name: 'ResultsPage',
-          
           query: { 
             outdir: payload.outdir, 
             jobid: payload.jobid 

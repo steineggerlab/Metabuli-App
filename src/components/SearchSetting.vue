@@ -106,8 +106,6 @@ export default {
           try {
             await this.pollJobStatus(response.data.id); // Wait until job completes
             console.log("COMPLETE") //DELETE
-            // const reportFilePath = `${this.jobDetails.outdir}/${this.jobDetails.jobid}_report.tsv`
-            // this.readTSVFile(`${reportFilePath}`);
           } catch (error) {
             console.error('Error waiting for job completion:', error);
           }

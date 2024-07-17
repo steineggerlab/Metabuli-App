@@ -11,7 +11,7 @@
         <v-tabs-window-item value="table">
           <v-data-table-virtual
             :headers="headers"
-            :items="virtualBoats"
+            :items="results"
             height="500"
             item-value="name"
           ></v-data-table-virtual>
@@ -27,6 +27,7 @@
 </template>
   
 <script>
+
 export default {
   name: 'ResultsPage',
   data() {
@@ -40,44 +41,19 @@ export default {
         { title: 'Taxon ID', align: 'start', key: 'taxon_id' },
         { title: 'Name', align: 'start', key: 'name' },
       ],
-      results: [
-        {
-          proportion: 'Speedster',
-          clade_reads: 35,
-          taxon_reads: 22,
-          rank: 300000,
-          taxon_id: 2021,
-        },
-        {
-          proportion: 'OceanMaster',
-          clade_reads: 25,
-          taxon_reads: 35,
-          rank: 500000,
-          taxon_id: 2020,
-        },
-      ],
+      results: [],
     };
   },
   computed: {
-    virtualBoats () {
-      return [...Array(10000).keys()].map(i => {
-        const entry = { ...this.results[i % this.results.length] }
-        entry.proportion = `${entry.proportion} #${i}`
-        return entry
-      })
-    },
+    //
   },
 
   methods: {
     async readTSVFile(filePath) {
       try {
-        const tsvContent = await window.electron.readTSVFile(filePath);
-
+        const tsvContent = await window.electron.readFile(filePath);
         const json = this.tsvToJSON(tsvContent);
-        // this.results = json.results;
         return json.results;
-        // this.saveResults();
-        // console.log(JSON.stringify(this.results, null, 2)); //FIXME:
       } catch (error) {
         console.error('Error reading TSV file:', error);
       }
@@ -93,15 +69,13 @@ export default {
     saveResults() {
       sessionStorage.setItem('results', JSON.stringify(this.results)); // Save to session storage
     },
-
   },
 
   async mounted() {
     try {
       const reportFilePath = `${this.$route.query.outdir}/${this.$route.query.jobid}_report.tsv`
       console.log(reportFilePath);
-      const resultsJSON = this.readTSVFile(`${reportFilePath}`);
-      // this.results = this.virtualBoats;
+      const resultsJSON = await this.readTSVFile(`${reportFilePath}`);
       this.results = resultsJSON;
       console.log(JSON.stringify(this.results, null, 2)); //FIXME:
       this.saveResults();
