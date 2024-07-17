@@ -10,7 +10,7 @@ import SearchSetting from '@/components/SearchSetting.vue';
   export default {
     name: 'SearchPage',
     components: {
-    SearchSetting: SearchSetting
+      SearchSetting: SearchSetting
     },
     methods: {
       handleJobComplete(payload) {
@@ -22,12 +22,6 @@ import SearchSetting from '@/components/SearchSetting.vue';
           }
         })
       },
-      // handleJobComplete() {
-      //   this.$router.push( {
-      //     name: 'ResultsPage',
-
-      //   });
-      // }
     }
   };
 </script>

@@ -6,7 +6,7 @@
       <v-app-bar-title >Metabuli</v-app-bar-title>
       <v-spacer></v-spacer>
       <v-btn href="https://github.com/steineggerlab/Metabuli" target="_blank">GitHub</v-btn>
-
+      <v-btn href="https://steineggerlab.com/en/" target="_blank">Steinegger Lab</v-btn>
 
       <v-btn icon>
         <v-icon>mdi-dots-vertical</v-icon>

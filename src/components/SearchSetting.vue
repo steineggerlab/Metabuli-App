@@ -31,7 +31,7 @@
 
         <v-sheet class="d-flex align-center mb-2">
           <v-btn @click="sendRequest">Run Metabuli</v-btn>
-          <v-btn @click="sendRequest(true)">Run Sample</v-btn>
+          <v-btn class="ml-3" @click="sendRequest(true)">Run Sample</v-btn>
         </v-sheet>
       </v-card-text>
     </v-card>
@@ -64,7 +64,6 @@ export default {
   name: 'SearchSetting',
 
   data: () => ({
-    results: '',
     formData: new FormData(), // Initialize FormData object
     jobDetails: { // Store job details including file paths
       q1: '',
@@ -78,11 +77,12 @@ export default {
       q1: '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq',
       q2: '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_2.fq',
       database: "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/refseq_virus",
-      jobid: "TEST99",
+      jobid: "sample_data",
       outdir: "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example",
       maxram: 128
     },
     status: 'INITIAL',
+    results: '',
   }),
 
   computed: {
@@ -119,8 +119,8 @@ export default {
       if ((window.electron)) {
         try {
           const options = {
-                properties: type === 'file' ? ['openFile'] : ['openDirectory']
-            };
+            properties: type === 'file' ? ['openFile'] : ['openDirectory']
+          };
           const filePaths = await window.electron.openFileDialog(options);
           if (filePaths && filePaths.length > 0) {
             this.jobDetails[field] = filePaths[0];
@@ -153,8 +153,6 @@ export default {
       // Send the POST API request
       axios.post('/api/ticket', this.formData)
         .then(async response => {
-          console.log('success', response.data);
-
           try {
             await this.pollJobStatus(response.data.id); // Wait until job completes
             console.log("COMPLETE") //DELETE
