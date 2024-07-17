@@ -136,6 +136,9 @@ export default {
       }
       throw new Error('Polling timed out');
     },
+    saveResults() {
+      sessionStorage.setItem('results', JSON.stringify(this.results)); // Save to session storage
+    },
 
   } 
 }
