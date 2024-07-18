@@ -7,7 +7,7 @@
           Search Settings
           <v-spacer></v-spacer>
           <v-btn icon>
-            <v-icon>mdi-api</v-icon>
+            <v-icon size="28">mdi-api</v-icon>
           </v-btn>
         </v-toolbar>
 

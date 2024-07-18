@@ -12,7 +12,7 @@
           <v-data-table-virtual
             :headers="headers"
             :items="results"
-            height="500"
+            height="600"
             item-value="name"
           ></v-data-table-virtual>
         </v-tabs-window-item>
@@ -64,9 +64,9 @@ export default {
           { id: 'n13', name: 'SARS-CoV-2' }
         ],
         links: [
-          { source: 'n0', target: 'n1', value: 95.8757 },
+          { source: 'n0', target: 'n1', value: 90.8757 },
+          { source: 'n0', target: 'n2', value: 5.3231 },
           { source: 'n1', target: 'n2', value: 2.3831 },
-          { source: 'n0', target: 'n3', value: 5.3231 },
           { source: 'n1', target: 'n4', value: 10.3231 },
           { source: 'n2', target: 'n3', value: 30.2642 },
           { source: 'n4', target: 'n6', value: 50.2642 },

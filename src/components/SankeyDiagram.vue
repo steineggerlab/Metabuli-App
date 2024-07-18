@@ -19,8 +19,8 @@
     methods: {
       createSankey() {
         const container = this.$refs.sankeyContainer
-        const width = 600
-        const height = 500
+        const width = 900
+        const height = 550
   
         const svg = d3.select(container)
           .append('svg')
@@ -42,7 +42,7 @@
           .attr('y', d => d.y0)
           .attr('height', d => d.y1 - d.y0)
           .attr('width', d => d.x1 - d.x0)
-          .attr('fill', 'steelblue')
+          .attr("fill", d => d.color = d3.color(d3.interpolateRainbow(Math.random())))
           .append('title')
           .text(d => `${d.name}\n${d.value}`)
   
@@ -58,6 +58,20 @@
   
         link.append('title')
           .text(d => `${d.source.name} → ${d.target.name}\n${d.value}`)
+      
+        // Add node labels
+        svg.append('g')
+          .selectAll('text')
+          .data(nodes)
+          .enter().append('text')
+          .attr('x', d => d.x0 - 6)
+          .attr('y', d => (d.y1 + d.y0) / 2)
+          .attr('dy', '0.35em')
+          .attr('text-anchor', 'end')
+          .text(d => d.name)
+          .filter(d => d.x0 < width / 2)
+          .attr('x', d => d.x1 + 6)
+          .attr('text-anchor', 'start');
       }
     }
   }
