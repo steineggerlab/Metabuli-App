@@ -34,6 +34,7 @@
           .nodePadding(10)
           .extent([[1, 1], [width - 1, height - 6]])(this.data)
   
+        // Add nodes
         svg.append('g')
           .selectAll('rect')
           .data(nodes)
@@ -43,9 +44,18 @@
           .attr('height', d => d.y1 - d.y0)
           .attr('width', d => d.x1 - d.x0)
           .attr("fill", d => d.color = d3.color(d3.interpolateRainbow(Math.random())))
+          .attr('rx', 2) // Set the radius for rounded corners
+          .attr('ry', 2) // Set the radius for rounded corners
+          .on('mouseover', function() {
+            d3.select(this).attr('fill', 'grey');
+          })
+          .on('mouseout', function() {
+            d3.select(this).attr('fill', d3.color(d3.interpolateRainbow(Math.random())));
+          })
           .append('title')
           .text(d => `${d.name}\n${d.value}`)
   
+        // Add links
         const link = svg.append('g')
           .attr('fill', 'none')
           .attr('stroke', '#000')
@@ -55,6 +65,12 @@
           .enter().append('path')
           .attr('d', sankeyLinkHorizontal())
           .attr('stroke-width', d => Math.max(1, d.width))
+          .on('mouseover', function() {
+            d3.select(this).attr('stroke-opacity', 0.5);
+          })
+          .on('mouseout', function() {
+            d3.select(this).attr('stroke-opacity', 0.2);
+          });
   
         link.append('title')
           .text(d => `${d.source.name} → ${d.target.name}\n${d.value}`)
