@@ -6,7 +6,7 @@
         <v-toolbar class="custom-toolbar" density="compact">
           Search Settings
           <v-spacer></v-spacer>
-          <v-btn icon>
+          <v-btn icon @click="toggleApiDialog">
             <v-icon size="28">mdi-api</v-icon>
           </v-btn>
         </v-toolbar>
@@ -71,8 +71,26 @@
           <!-- <v-img :src="statusImage" alt="Status Image" height="200"></v-img> -->
             <v-card-text>{{ statusMessage }}</v-card-text>
         </div>
-
       </v-card>
+
+      <!-- API Dialog -->
+      <v-dialog v-model="apiDialog" max-width="800">
+        <v-card>
+          <v-card-title>
+            cURL Command
+          </v-card-title>
+          <v-card-text>
+            Use this command to get a submit a file in PDB or mmCIF format to the Foldseek search server. Replace the ‘PATH_TO_FILE’ string with the path to the file.
+          </v-card-text>
+          <v-card-text>
+            <code>curl -X POST -F q1=/Users/jaebeom/metabuli_example/SRR14484345_1.fq -F q2=/Users/jaebeom/metabuli_example/SRR14484345_2.fq -F 'database[]=/Users/jaebeom/metabuli_example/refseq_virus/' -F 'mode=3diaa' -F outdir=/Users/jaebeom/metabuli_example/ -F jobid=test "http://localhost:8081/api/ticket"</code>
+          </v-card-text> 
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn color="blue darken-1" text @click="closeApiDialog">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-container>
 
   </div>
@@ -104,7 +122,7 @@ export default {
     status: 'INITIAL',
     results: '',
     loading: false,
-
+    apiDialog: false, // Control the visibility of the API dialog
   }),
 
   computed: {
@@ -137,6 +155,12 @@ export default {
   },
 
   methods: {
+    toggleApiDialog() {
+      this.apiDialog = !this.apiDialog;
+    },
+    closeApiDialog() {
+      this.apiDialog = false;
+    },
     async selectFile(field, type) {
       if ((window.electron)) {
         try {
@@ -245,5 +269,12 @@ export default {
   right: 10px;
   width: 300px;
   height: 300px;
+}
+code {
+  font-family: Roboto;
+  color: grey;
+  background-color: #f1f1f1;
+  padding: 2px;
+  font-size: 12px;
 }
 </style>
