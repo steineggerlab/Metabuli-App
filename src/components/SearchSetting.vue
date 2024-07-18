@@ -50,19 +50,15 @@
             >
               Run Metabuli
               <template v-slot:loader>
-                <v-progress-linear indeterminate></v-progress-linear>
+                <v-progress-circular indeterminate></v-progress-circular>
               </template>
             </v-btn>
 
             <v-btn class="ml-3"
-            :loading="loading"
-            @click="sendRequest(true)"
+            @click="loadSampleData"
             color="indigo"
             >
               Load Sample Data
-              <template v-slot:loader>
-                <v-progress-linear indeterminate></v-progress-linear>
-              </template>
             </v-btn>
           </v-sheet>
 
@@ -186,11 +182,11 @@ export default {
         console.error('File dialog is not supported in the web environment.');
       }
     },
+    loadSampleData() {
+      this.jobDetails = { ...this.jobDetailsSample };
+    },
     // Function to populate formData
-    populateFormData(sample = false) {
-      if (sample) {
-        this.jobDetails = { ...this.jobDetailsSample };
-      }
+    populateFormData() {
       this.formData.append('q1', this.jobDetails.q1);
       this.formData.append('q2', this.jobDetails.q2);
       this.formData.append('database[]', this.jobDetails.database);
@@ -200,9 +196,9 @@ export default {
 
       console.log(this.jobDetails);
     },
-    async sendRequest (sample = false) {
+    async sendRequest () {
       this.loading = true; // Start loading
-      this.populateFormData(sample);
+      this.populateFormData();
 
       // Send the POST API request
       axios.post('/api/ticket', this.formData)
