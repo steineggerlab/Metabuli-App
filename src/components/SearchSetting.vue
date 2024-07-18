@@ -208,6 +208,7 @@ export default {
             console.log("COMPLETE") //DELETE
           } catch (error) {
             console.error('Error waiting for job completion:', error);
+            this.loading = false; // Stop loading
           } finally {
             this.loading = false; // Stop loading
           }
@@ -217,7 +218,7 @@ export default {
         });
     },
     // Function to track job status
-    async pollJobStatus(ticketid, interval = 500, timeout = 300000) { // Check job status every 0.5 seconds, timeout after 30 seconds
+    async pollJobStatus(ticketid, interval = 500, timeout = 30000) { // Check job status every 0.5 seconds, timeout after 30 seconds
       const start = Date.now();
       while (Date.now() - start < timeout) {
         try {
@@ -241,7 +242,9 @@ export default {
         }
         await new Promise(resolve => setTimeout(resolve, interval));
       }
+      this.loading = false; // Stop loading
       throw new Error('Polling timed out');
+      
     },
 
   },
