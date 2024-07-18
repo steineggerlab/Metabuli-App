@@ -14,29 +14,51 @@
 
     <v-navigation-drawer v-model="drawer">
       <v-list>
+        <!-- DATA INPUT NAVIGATION ITEM -->
         <router-link
-          v-for="item in items"
-          :key="item.title"
-          :to="item.path"
+          :to="items[0].path"
           class="v-list-item--link no-underline"
         >
           <v-list-item
             class="nav-item"
-            :class="{ active: $route.path === item.path }"
-            @mouseover="hover = item.path"
+            :class="{ active: $route.path === items[0].path }"
+            @mouseover="hover = items[0].path"
             @mouseleave="hover = ''"
-            :style="{ backgroundColor: hover === item.path ? '#f0f0f0' : ($route.path === item.path ? '#d3d3d3' : 'transparent') }"
+            :style="{ backgroundColor: hover === items[0].path ? '#f0f0f0' : ($route.path === items[0].path ? '#d3d3d3' : 'transparent') }"
           >
-            <v-icon left>{{ item.icon }}</v-icon>
-            <span>{{ item.title }}</span>
+            <v-icon left>{{ items[0].icon }}</v-icon>
+            <span>{{ items[0].title }}</span>
           </v-list-item>
         </router-link>
+
+        <!-- RESULTS NAVIGATION ITEM -->
+        <v-slide-y-transition>
+          <router-link
+            v-if="jobCompleted"
+            :to="items[1].path"
+            class="v-list-item--link no-underline"
+          >
+            <v-list-item
+              class="nav-item"
+              :class="{ active: $route.path === items[1].path }"
+              @click="handleResultsClick"
+              @mouseover="hover = items[1].path"
+              @mouseleave="hover = ''"
+              :style="{ backgroundColor: hover === items[1].path ? '#f0f0f0' : ($route.path === items[1].path ? '#d3d3d3' : 'transparent') }"
+            >
+              <v-icon left>{{ items[1].icon }}</v-icon>
+              <span>{{ items[1].title }}</span>
+            </v-list-item>
+          </router-link> 
+        </v-slide-y-transition>
+
       </v-list>
     </v-navigation-drawer>
     
     <v-main>
-      <router-view></router-view>
+      <router-view @job-complete="handleJobComplete"></router-view>
     </v-main>
+
   </v-app>
 </template>
 
@@ -54,15 +76,39 @@ export default {
     items: [
       { title: 'Data Input', path: '/search', icon: 'mdi-cloud-upload' },
       { title: 'Results', path: '/results', icon: 'mdi-chart-bar' }
-    ]
+    ],
+    jobCompleted: false,
+    completedJob: {}
   }),
+
+  computed: {
+    filteredItems() {
+      if (this.jobCompleted) {
+        return this.items;
+      }
+      return this.items.filter(item => item.title !== 'Results');
+    }
+  },
 
   methods: {
     toggleDrawer() {
       this.drawer = !this.drawer;
-    }
-  }
-    
+    },
+    handleJobComplete(payload) {
+      this.jobCompleted = true;
+      this.completedJob = { 
+        outdir: payload.outdir, 
+        jobid: payload.jobid 
+      }
+    },
+    handleResultsClick(event) {
+      event.preventDefault();
+      this.$router.push({
+        name: 'ResultsPage',
+        query: this.completedJob
+      });
+    },
+  },
 }
 </script>
 

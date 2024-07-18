@@ -2,7 +2,7 @@
     <div>
       <SearchSetting @job-complete="handleJobComplete" />
 
-      <!-- Footer: Refernce to Paper -->
+      <!-- Footer: Reference to Paper -->
       <v-container>
         <v-card>
           <v-card-title>Reference</v-card-title>
@@ -29,13 +29,10 @@ import SearchSetting from '@/components/SearchSetting.vue';
     },
     methods: {
       handleJobComplete(payload) {
-        this.$router.push( {
-          name: 'ResultsPage',
-          query: { 
-            outdir: payload.outdir, 
-            jobid: payload.jobid 
-          }
-        })
+        this.$emit('job-complete', { 
+          outdir: payload.outdir, 
+          jobid: payload.jobid 
+        });
       },
     }
   };
