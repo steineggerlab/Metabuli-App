@@ -11,7 +11,13 @@
           </v-btn>
         </v-toolbar>
 
+        
         <v-card-text>
+          <v-radio-group v-model="endType" inline class="d-flex align-center mb-0">
+            <v-radio label="Single-end" value="single-end"></v-radio>
+            <v-radio label="Paired-end" value="paired-end"></v-radio>
+          </v-radio-group>
+
           <v-text-field label="Job ID" variant="underlined" v-model="jobDetails.jobid" width="500"></v-text-field>
 
           <v-sheet class="d-flex align-center mb-2">
@@ -19,7 +25,7 @@
             <div class="ml-3">Selected File: {{ jobDetails.q1 }}</div>
           </v-sheet>
 
-          <v-sheet class="d-flex align-center mb-2">
+          <v-sheet class="d-flex align-center mb-2" v-if="endType==='paired-end'">
             <v-btn @click="selectFile('q2', 'file')">Select q2 File</v-btn>
             <div class="ml-3">Selected File: {{ jobDetails.q2 }}</div>
           </v-sheet>
@@ -123,6 +129,7 @@ export default {
     results: '',
     loading: false,
     apiDialog: false, // Control the visibility of the API dialog
+    endType: 'single-end'
   }),
 
   computed: {
