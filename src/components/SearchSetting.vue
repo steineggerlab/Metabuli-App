@@ -44,9 +44,9 @@
 
           <v-sheet class="d-flex align-center mb-2">
             <v-btn 
-            :loading="loading"
-            @click="sendRequest"
-            color="indigo"
+              :loading="loading"
+              @click="sendRequest"
+              color="indigo"
             >
               Run Metabuli
               <template v-slot:loader>
@@ -55,8 +55,8 @@
             </v-btn>
 
             <v-btn class="ml-3"
-            @click="loadSampleData"
-            color="indigo"
+              @click="loadSampleData"
+              color="indigo"
             >
               Load Sample Data
             </v-btn>
@@ -82,7 +82,7 @@
             cURL Command
           </v-card-title>
           <v-card-text>
-            Use this command to get a submit a file in PDB or mmCIF format to the Foldseek search server. Replace the ‘PATH_TO_FILE’ string with the path to the file.
+            Use this command to get a submit a file in FASTA or FASTQ format to the Metabuli search server. Replace the ‘PATH_TO_FILE’ string with the path to the file.
           </v-card-text>
           <v-card-text>
             <code>curl -X POST -F q1=/Users/jaebeom/metabuli_example/SRR14484345_1.fq -F q2=/Users/jaebeom/metabuli_example/SRR14484345_2.fq -F 'database[]=/Users/jaebeom/metabuli_example/refseq_virus/' -F 'mode=3diaa' -F outdir=/Users/jaebeom/metabuli_example/ -F jobid=test "http://localhost:8081/api/ticket"</code>
