@@ -17,6 +17,81 @@
       this.createSankey()
     },
     methods: {
+      parseData(data) {
+        const nodes = [];
+        const links = [];
+        const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
+        const rankHierarchy = {'superkingdom': 0, 'kingdom': 1, "phylum": 2, "class": 3, "order": 4, "family": 5, "genus": 6, "species": 7}
+        const rankMap = {};
+        let lastNode = null;
+
+        console.log(data);
+
+        data.forEach( d => {
+          // const id = index;
+          // console.log(d); //DELETE
+          const node = {
+            id: d.taxon_id,
+            name: d.name,
+            rank: d.rank,
+            proportion: parseFloat(d.proportion),
+            clade_reads: d.clade_reads,
+            taxon_reads: d.taxon_reads
+          };
+
+          if (rankOrder.includes(d.rank)) {
+            nodes.push(node);
+            // console.log(node.name, node.rank) //DELETE
+            rankMap[d.rank] = node;
+
+            if (lastNode) {
+              console.log('lastNode: ', lastNode.name, lastNode.rank);
+              console.log('currentNode: ', node.name, node.rank)
+              console.log('rank compare: ', rankHierarchy[node.rank], rankHierarchy[lastNode.rank]);
+              console.log('rank compare: ', rankHierarchy[node.rank] - rankHierarchy[lastNode.rank]);
+              // const rankCompare = rankHierarchy[node.rank] - rankHierarchy[lastNode.rank]
+
+              if (node.rank === lastNode.rank) { // current node is of same rank
+                console.log('same rank: ',lastNode.rank, node.rank);
+                const rankNumber = rankHierarchy[node.rank];
+                const rankAbove = rankOrder[rankNumber - 1];
+                const nodeToLeft = rankMap[rankAbove];
+                
+                links.push({
+                source: nodeToLeft.id,
+                target: node.id,
+                value: node.proportion
+                });
+              } else if (rankHierarchy[node.rank] < rankHierarchy[lastNode.rank]) { // current node is higher rank
+                console.log('higher rank: ', node.rank, lastNode.rank);
+                const rankNumber = rankHierarchy[node.rank];
+                const rankAbove = rankOrder[rankNumber - 1];
+                console.log('rankAbove: ', rankAbove);
+                const nodeToLeft = rankMap[rankAbove];
+                console.log('nodeToLeft: ', nodeToLeft)
+
+                links.push({
+                source: nodeToLeft.id,
+                target: node.id,
+                value: node.proportion
+                });
+              } else if (rankHierarchy[node.rank] > rankHierarchy[lastNode.rank]) {
+                console.log('lower rank: ', lastNode.rank, node.rank);
+                links.push({
+                  source: lastNode.id,
+                  target: node.id,
+                  value: node.proportion
+                });
+              }
+            }
+            lastNode = node;
+          } else if (d.rank === "clade") {
+            lastNode = null; // little buggy, might need to find way set lastnode to the last highest hierarchy or something 
+          }
+        });
+
+        return { nodes, links };
+      },
       createSankey() {
         const container = this.$refs.sankeyContainer
         const width = 900
@@ -26,13 +101,15 @@
           .append('svg')
           .attr('width', width)
           .attr('height', height)
+
+        // const { nodes, links } = parseData(data);
   
         const { nodes, links } = sankey()
           .nodeId(d => d.id)
           .nodeAlign(sankeyJustify)
           .nodeWidth(30)
           .nodePadding(10)
-          .extent([[1, 1], [width - 1, height - 6]])(this.data)
+          .extent([[1, 1], [width, height]])(this.parseData(this.data))
   
         // Add nodes
         svg.append('g')

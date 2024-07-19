@@ -9,9 +9,29 @@
       <v-tabs-window v-model="tab">
         <!-- TABLE -->
         <v-tabs-window-item value="table">
+          
+          <!-- SEARCH BAR -->
+          <v-card
+            class="mx-auto"
+            color="surface-light"
+            max-width="400"
+          >
+            <v-card-text>
+              <v-text-field
+                v-model="search"
+                append-inner-icon="mdi-magnify"
+                density="compact"
+                label="Filter"
+                variant="solo"
+                hide-details
+                single-line
+              ></v-text-field>
+            </v-card-text>
+          </v-card>
+
           <v-data-table-virtual
             :headers="headers"
-            :items="results"
+            :items="filteredTableResults"
             height="600"
             item-value="name"
           ></v-data-table-virtual>
@@ -19,7 +39,8 @@
 
         <!-- SANKEY -->
         <v-tabs-window-item value="sankey">
-          <SankeyDiagram :data="sankeyData" />
+          <!-- <SankeyDiagram :data="sankeyData" /> -->
+          <SankeyDiagram :data="results" />
         </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>
@@ -36,6 +57,7 @@ export default {
   },
   data() {
     return {
+      results: [],
       tab: 'TABLE',
       headers: [
         { title: 'Proportion', align: 'start', key: 'proportion' },
@@ -45,7 +67,7 @@ export default {
         { title: 'Taxon ID', align: 'start', key: 'taxon_id' },
         { title: 'Name', align: 'start', key: 'name' },
       ],
-      results: [],
+      search: '',
       sankeyData: {
         nodes: [
           { id: 'n0', name: 'root' },
@@ -64,9 +86,9 @@ export default {
           { id: 'n13', name: 'SARS-CoV-2' }
         ],
         links: [
-          { source: 'n0', target: 'n1', value: 90.8757 },
-          { source: 'n0', target: 'n2', value: 5.3231 },
-          { source: 'n1', target: 'n2', value: 2.3831 },
+          { source: 'n0', target: 'n1', value: 90.8757 }, // root -> virus
+          { source: 'n0', target: 'n2', value: 5.3231 }, // root -> riboviria
+          { source: 'n1', target: 'n2', value: 2.3831 }, // 
           { source: 'n1', target: 'n4', value: 10.3231 },
           { source: 'n2', target: 'n3', value: 30.2642 },
           { source: 'n4', target: 'n6', value: 50.2642 },
@@ -77,12 +99,24 @@ export default {
           { source: 'n1', target: 'n11', value: 32.2642 },
           { source: 'n4', target: 'n12', value: 2.2642 },
           { source: 'n2', target: 'n13', value: 22.2642 }
+          // nodes in same rank should be in same column (refer to pavian)
+          // thickness of link (value) should be percentage
+          // percentage of links going out from a node should add up to 100
+          // ignore no rank, subgenus, subfamilies, etc for now
+          // add description below the table saying this graph excludes nodes in ranks besides those displayed in the graph. Refer to the report.tsv file for the entire data.
         ]
       }
     };
   },
+
   computed: {
-    //
+    filteredTableResults() {
+      return this.results.filter(item => {
+        return Object.values(item).some(value =>
+          value.toString().toLowerCase().includes(this.search.toLowerCase())
+        );
+      });
+    }
   },
 
   methods: {
@@ -118,7 +152,6 @@ export default {
       this.results = resultsJSON;
       // console.log(JSON.stringify(this.results, null, 2)); //FIXME:
       this.saveResults();
-      console.log('DONE')
     } catch (error) {
       console.error('Error loading results:', error);
     }
