@@ -100,7 +100,9 @@ export default {
       const records = tsv.split('\n').map(line => {
         const data = line.split('\t').map(item => item.trim());  // Strip leading and trailing whitespace
         return Object.fromEntries(headers.map((header, index) => [header, data[index]]));
-      });
+      })
+      .filter(record => !Object.values(record).every(field => field === '' || field === undefined || field === null)); // Filter out empty rows
+      
       return { results: records };
     },
     saveResults() {

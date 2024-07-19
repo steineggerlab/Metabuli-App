@@ -67,7 +67,7 @@
 
       <!-- STATUS PANEL -->
       <v-card>
-        <v-toolbar class="custom-toolbar" density="compact">Status: {{ status }}</v-toolbar>
+        <v-toolbar class="custom-toolbar" density="compact">Job Status: {{ status }}</v-toolbar>
 
         <div class="status-container">
           <!-- <v-img :src="statusImage" alt="Status Image" height="200"></v-img> -->
@@ -138,7 +138,7 @@ export default {
         case 'RUNNING':
           return "JOB IS RUNNING";
         case 'COMPLETE':
-          return 'Job is complete. Check results in comparison results table.';
+          return 'Job is complete. Check results in the results table.';
         default:
           return 'An error occurred, please try again.';
       }
@@ -224,7 +224,6 @@ export default {
         try {
           const response = await axios.get(`/api/ticket/${ticketid}`); // Get job status
           const status = response.data.status;
-          console.log(status) //DELETE
           if (status !== 'COMPLETE') {
             this.status = status;
           }
