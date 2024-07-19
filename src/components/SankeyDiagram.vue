@@ -47,33 +47,41 @@
               console.log('lastNode: ', lastNode.name, lastNode.rank);
               console.log('currentNode: ', node.name, node.rank)
               console.log('rank compare: ', rankHierarchy[node.rank], rankHierarchy[lastNode.rank]);
-              console.log('rank compare: ', rankHierarchy[node.rank] - rankHierarchy[lastNode.rank]);
 
-              if (node.rank === lastNode.rank) { // current node is of same rank
-                console.log('same rank: ',lastNode.rank, node.rank);
-                const rankNumber = rankHierarchy[node.rank];
-                const rankAbove = rankOrder[rankNumber - 1];
-                const nodeToLeft = rankMap[rankAbove];
+
+              if (rankHierarchy[node.rank] <= rankHierarchy[lastNode.rank]) { // current node is of same rank
+                let rankNumber = rankHierarchy[node.rank] - 1;
+                let nodeToLeft = null;
                 
-                links.push({
-                source: nodeToLeft.id,
-                target: node.id,
-                value: node.proportion
-                });
-              } else if (rankHierarchy[node.rank] < rankHierarchy[lastNode.rank]) { // current node is higher rank
-                console.log('higher rank: ', node.rank, lastNode.rank);
-                const rankNumber = rankHierarchy[node.rank];
-                const rankAbove = rankOrder[rankNumber - 1];
-                console.log('rankAbove: ', rankAbove);
-                const nodeToLeft = rankMap[rankAbove];
-                console.log('nodeToLeft: ', nodeToLeft)
+                while (rankNumber >= 0 && !nodeToLeft) {
+                  const rankAbove = rankOrder[rankNumber];
+                  nodeToLeft = rankMap[rankAbove];
+                  rankNumber--;
+                }
 
-                links.push({
-                source: nodeToLeft.id,
-                target: node.id,
-                value: node.proportion
-                });
-              } else if (rankHierarchy[node.rank] > rankHierarchy[lastNode.rank]) {
+                if (nodeToLeft) {
+                  links.push({
+                  source: nodeToLeft.id,
+                  target: node.id,
+                  value: node.proportion
+                  });
+                }
+              
+              } 
+              // else if (rankHierarchy[node.rank] < rankHierarchy[lastNode.rank]) { // current node is higher rank
+              //   const rankNumber = rankHierarchy[node.rank];
+              //   const rankAbove = rankOrder[rankNumber - 1];
+              //   console.log('rankAbove: ', rankAbove);
+              //   const nodeToLeft = rankMap[rankAbove];
+              //   console.log('nodeToLeft: ', nodeToLeft)
+
+              //   links.push({
+              //   source: nodeToLeft.id,
+              //   target: node.id,
+              //   value: node.proportion
+              //   });
+              // } 
+              else if (rankHierarchy[node.rank] > rankHierarchy[lastNode.rank]) {
                 console.log('lower rank: ', lastNode.rank, node.rank);
                 links.push({
                   source: lastNode.id,
@@ -95,8 +103,8 @@
         const { nodes, links } = this.parseData(this.data);
 
         const container = this.$refs.sankeyContainer;
-        const width = 800;
-        const height = 500;
+        const width = 900;
+        const height = 700;
 
         const svg = d3.select(container)
           .append('svg')
@@ -134,10 +142,11 @@
           .attr('x', d => d.x0)
           .attr('y', d => d.y0)
           .attr('height', d => d.y1 - d.y0)
+          // .attr('height', 30)
           .attr('width', d => d.x1 - d.x0)
-          .attr('fill', d => d.color = d3.color(d3.interpolateRainbow(Math.random())))
+          .attr('fill', 'steelblue')
           .append('title')
-          .text(d => `${d.name}\n${d.proportion}`);
+          .text(d => `${d.name}\n${d.proportion}\n${d.rank}`);
 
         const link = svg.append('g')
           .attr('fill', 'none')
