@@ -17,11 +17,6 @@
       this.createSankey()
     },
     methods: {
-      normalizeValue(value) {
-        if (value > 90) {
-          return 50;
-        }
-      }, 
       parseData(data) {
         const nodes = [];
         const links = [];
@@ -72,9 +67,7 @@
                   links.push({
                   source: nodeToLeft.id,
                   target: node.id,
-                  // value: node.proportion
                   value: Math.log1p(node.proportion) / Math.log1p(maxProportion) // Normalized value
-                  // value: this.normalizeValue(node.proportion)
                   });
                 }
               
@@ -83,9 +76,7 @@
                 links.push({
                   source: lastNode.id,
                   target: node.id,
-                  // value: node.proportion
                   value: Math.log1p(node.proportion) / Math.log1p(maxProportion) // Normalized value
-                  // value: this.normalizeValue(node.proportion)
                 });
               }
             }
@@ -96,6 +87,15 @@
         });
 
         return { nodes, links };
+      },
+
+      nodeHeight(d) { // FIXME
+        console.log(d.y1-d.y0);
+        if (d.value < 0.05) {
+          return 2;
+        } else {
+          return d.y1 - d.y0;
+        }
       },
 
       createSankey() {
@@ -164,6 +164,7 @@
           .attr('x', d => d.x0)
           .attr('y', d => d.y0)
           .attr('height', d => d.y1 - d.y0)
+          .attr('height', d => this.nodeHeight(d))
           .attr('width', d => d.x1 - d.x0)
           .attr('fill', '#696969')
           .append('title')
@@ -207,8 +208,9 @@
           .attr('x', d =>  d.x1)
           .attr('y', d => (d.y0 + d.y1) / 2)
           .attr('dy', '0.35em')
-          .attr('text-anchor', 'middle')
+          .style('font-size', '10px') // Adjust the font size here
           .text(d => d.name);
+          
       }
     }
   }
