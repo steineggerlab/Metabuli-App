@@ -21,15 +21,14 @@
         const nodes = [];
         const links = [];
         const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
-        const rankHierarchy = {'superkingdom': 0, 'kingdom': 1, "phylum": 2, "class": 3, "order": 4, "family": 5, "genus": 6, "species": 7}
+        const rankHierarchy = rankOrder.reduce((acc, rank, index) => {
+          acc[rank] = index;
+          return acc;
+        }, {});
         const rankMap = {};
         let lastNode = null;
 
-        console.log(data);
-
         data.forEach( d => {
-          // const id = index;
-          // console.log(d); //DELETE
           const node = {
             id: d.taxon_id,
             name: d.name,
@@ -49,7 +48,6 @@
               console.log('currentNode: ', node.name, node.rank)
               console.log('rank compare: ', rankHierarchy[node.rank], rankHierarchy[lastNode.rank]);
               console.log('rank compare: ', rankHierarchy[node.rank] - rankHierarchy[lastNode.rank]);
-              // const rankCompare = rankHierarchy[node.rank] - rankHierarchy[lastNode.rank]
 
               if (node.rank === lastNode.rank) { // current node is of same rank
                 console.log('same rank: ',lastNode.rank, node.rank);
@@ -92,81 +90,100 @@
 
         return { nodes, links };
       },
+
       createSankey() {
-        const container = this.$refs.sankeyContainer
-        const width = 900
-        const height = 550
-  
+        const { nodes, links } = this.parseData(this.data);
+
+        const container = this.$refs.sankeyContainer;
+        const width = 800;
+        const height = 500;
+
         const svg = d3.select(container)
           .append('svg')
           .attr('width', width)
-          .attr('height', height)
+          .attr('height', height);
 
-        // const { nodes, links } = parseData(data);
-  
-        const { nodes, links } = sankey()
+        const sankeyGenerator = sankey()
           .nodeId(d => d.id)
           .nodeAlign(sankeyJustify)
           .nodeWidth(30)
           .nodePadding(10)
-          .extent([[1, 1], [width, height]])(this.parseData(this.data))
-  
-        // Add nodes
+          .extent([[1, 1], [width - 1, height - 6]]);
+
+        const graph = sankeyGenerator({
+          nodes: nodes.map(d => Object.assign({}, d)),
+          links: links.map(d => Object.assign({}, d))
+        });
+
+        // Manually adjust nodes position to align by rank
+        const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
+        const columnMap = rankOrder.reduce((acc, rank, index) => {
+          acc[rank] = index * (width / rankOrder.length);
+          return acc;
+        }, {});
+
+        graph.nodes.forEach(node => {
+          node.x0 = columnMap[node.rank];
+          node.x1 = node.x0 + sankeyGenerator.nodeWidth();
+        });
+
         svg.append('g')
           .selectAll('rect')
-          .data(nodes)
+          .data(graph.nodes)
           .enter().append('rect')
           .attr('x', d => d.x0)
           .attr('y', d => d.y0)
           .attr('height', d => d.y1 - d.y0)
           .attr('width', d => d.x1 - d.x0)
-          .attr("fill", d => d.color = d3.color(d3.interpolateRainbow(Math.random())))
-          .attr('rx', 2) // Set the radius for rounded corners
-          .attr('ry', 2) // Set the radius for rounded corners
-          .on('mouseover', function() {
-            d3.select(this).attr('fill', 'grey');
-          })
-          .on('mouseout', function() {
-            d3.select(this).attr('fill', d3.color(d3.interpolateRainbow(Math.random())));
-          })
+          .attr('fill', d => d.color = d3.color(d3.interpolateRainbow(Math.random())))
           .append('title')
-          .text(d => `${d.name}\n${d.value}`)
-  
-        // Add links
+          .text(d => `${d.name}\n${d.proportion}`);
+
         const link = svg.append('g')
           .attr('fill', 'none')
           .attr('stroke', '#000')
           .attr('stroke-opacity', 0.2)
           .selectAll('path')
-          .data(links)
+          .data(graph.links)
           .enter().append('path')
           .attr('d', sankeyLinkHorizontal())
-          .attr('stroke-width', d => Math.max(1, d.width))
+          .attr('stroke-width', d => Math.max(1, d.width));
+
+        link.append('title')
+          .text(d => `${d.source.name} → ${d.target.name}\n${d.value}`);
+
+        // Add hover effect on nodes and links
+        svg.selectAll('rect')
           .on('mouseover', function() {
-            d3.select(this).attr('stroke-opacity', 0.5);
+            d3.select(this).attr('fill', 'orange');
           })
           .on('mouseout', function() {
-            d3.select(this).attr('stroke-opacity', 0.2);
+            d3.select(this).attr('fill', 'steelblue');
           });
-  
-        link.append('title')
-          .text(d => `${d.source.name} → ${d.target.name}\n${d.value}`)
-      
+
+        link.on('mouseover', function() {
+          d3.select(this).attr('stroke-opacity', 0.5);
+        })
+        .on('mouseout', function() {
+          d3.select(this).attr('stroke-opacity', 0.2);
+        });
+
+        // Add rounded edges to nodes
+        svg.selectAll('rect')
+          .attr('rx', 5)
+          .attr('ry', 5);
+
         // Add node labels
         svg.append('g')
           .selectAll('text')
-          .data(nodes)
+          .data(graph.nodes)
           .enter().append('text')
-          .attr('x', d => d.x0 - 6)
-          .attr('y', d => (d.y1 + d.y0) / 2)
+          .attr('x', d => (d.x0 + d.x1) /2)
+          .attr('y', d => (d.y0 + d.y1) / 2)
           .attr('dy', '0.35em')
-          .attr('text-anchor', 'end')
-          .text(d => d.name)
-          .filter(d => d.x0 < width / 2)
-          .attr('x', d => d.x1 + 6)
-          .attr('text-anchor', 'start');
+          .attr('text-anchor', 'middle')
+          .text(d => d.name);
       }
     }
   }
   </script>
-  
