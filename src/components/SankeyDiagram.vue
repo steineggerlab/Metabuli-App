@@ -17,6 +17,11 @@
       this.createSankey()
     },
     methods: {
+      normalizeValue(value) {
+        if (value > 90) {
+          return 50;
+        }
+      }, 
       parseData(data) {
         const nodes = [];
         const links = [];
@@ -27,6 +32,10 @@
         }, {});
         const rankMap = {};
         let lastNode = null;
+
+        // Find the maximum proportion to use for normalization
+        const maxProportion = Math.max(...data.map(d => parseFloat(d.proportion)));
+
 
         data.forEach( d => {
           const node = {
@@ -40,7 +49,7 @@
 
           if (rankOrder.includes(d.rank)) {
             nodes.push(node);
-            // console.log(node.name, node.rank) //DELETE
+            console.log(node.rank, node.name);
             rankMap[d.rank] = node;
 
             if (lastNode) {
@@ -63,36 +72,26 @@
                   links.push({
                   source: nodeToLeft.id,
                   target: node.id,
-                  value: node.proportion
+                  // value: node.proportion
+                  value: Math.log1p(node.proportion) / Math.log1p(maxProportion) // Normalized value
+                  // value: this.normalizeValue(node.proportion)
                   });
                 }
               
-              } 
-              // else if (rankHierarchy[node.rank] < rankHierarchy[lastNode.rank]) { // current node is higher rank
-              //   const rankNumber = rankHierarchy[node.rank];
-              //   const rankAbove = rankOrder[rankNumber - 1];
-              //   console.log('rankAbove: ', rankAbove);
-              //   const nodeToLeft = rankMap[rankAbove];
-              //   console.log('nodeToLeft: ', nodeToLeft)
-
-              //   links.push({
-              //   source: nodeToLeft.id,
-              //   target: node.id,
-              //   value: node.proportion
-              //   });
-              // } 
-              else if (rankHierarchy[node.rank] > rankHierarchy[lastNode.rank]) {
+              } else if (rankHierarchy[node.rank] > rankHierarchy[lastNode.rank]) {
                 console.log('lower rank: ', lastNode.rank, node.rank);
                 links.push({
                   source: lastNode.id,
                   target: node.id,
-                  value: node.proportion
+                  // value: node.proportion
+                  value: Math.log1p(node.proportion) / Math.log1p(maxProportion) // Normalized value
+                  // value: this.normalizeValue(node.proportion)
                 });
               }
             }
             lastNode = node;
           } else if (d.rank === "clade") {
-            lastNode = null; // little buggy, might need to find way set lastnode to the last highest hierarchy or something 
+            // lastNode = null; // little buggy, might need to find way set lastnode to the last highest hierarchy or something 
           }
         });
 
@@ -103,8 +102,8 @@
         const { nodes, links } = this.parseData(this.data);
 
         const container = this.$refs.sankeyContainer;
-        const width = 900;
-        const height = 700;
+        const width = 1100;
+        const height = 650;
 
         const svg = d3.select(container)
           .append('svg')
@@ -142,9 +141,8 @@
           .attr('x', d => d.x0)
           .attr('y', d => d.y0)
           .attr('height', d => d.y1 - d.y0)
-          // .attr('height', 30)
           .attr('width', d => d.x1 - d.x0)
-          .attr('fill', 'steelblue')
+          .attr('fill', '#696969')
           .append('title')
           .text(d => `${d.name}\n${d.proportion}\n${d.rank}`);
 
@@ -164,30 +162,26 @@
         // Add hover effect on nodes and links
         svg.selectAll('rect')
           .on('mouseover', function() {
-            d3.select(this).attr('fill', 'orange');
+            d3.select(this).attr('fill', 'steelblue');
           })
           .on('mouseout', function() {
-            d3.select(this).attr('fill', 'steelblue');
+            d3.select(this).attr('fill', '#696969');
           });
 
         link.on('mouseover', function() {
-          d3.select(this).attr('stroke-opacity', 0.5);
+          d3.select(this).attr('stroke-opacity', 0.3);
         })
         .on('mouseout', function() {
           d3.select(this).attr('stroke-opacity', 0.2);
         });
-
-        // Add rounded edges to nodes
-        svg.selectAll('rect')
-          .attr('rx', 5)
-          .attr('ry', 5);
 
         // Add node labels
         svg.append('g')
           .selectAll('text')
           .data(graph.nodes)
           .enter().append('text')
-          .attr('x', d => (d.x0 + d.x1) /2)
+          // .attr('x', d => (d.x0 + d.x1) / 2)
+          .attr('x', d =>  d.x1)
           .attr('y', d => (d.y0 + d.y1) / 2)
           .attr('dy', '0.35em')
           .attr('text-anchor', 'middle')
