@@ -104,18 +104,20 @@
         const container = this.$refs.sankeyContainer;
         const width = 1100;
         const height = 650;
+        const marginBottom = 50; // Margin for rank labels
 
         const svg = d3.select(container)
           .append('svg')
           .attr('width', width)
-          .attr('height', height);
+          .attr('height', height)
+          .attr('height', height + marginBottom); // Increase height for labels
 
         const sankeyGenerator = sankey()
           .nodeId(d => d.id)
           .nodeAlign(sankeyJustify)
           .nodeWidth(30)
           .nodePadding(10)
-          .extent([[1, 1], [width - 1, height - 6]]);
+          .extent([[1, 1], [width, height - 6]]); // Adjust for margin
 
         const graph = sankeyGenerator({
           nodes: nodes.map(d => Object.assign({}, d)),
@@ -134,6 +136,27 @@
           node.x1 = node.x0 + sankeyGenerator.nodeWidth();
         });
 
+        // Add column labels
+        svg.append('g')
+          .selectAll('text')
+          .data(rankOrder)
+          .enter().append('text')
+          .attr('x', rank => columnMap[rank] + sankeyGenerator.nodeWidth() / 2)
+          .attr('y', height + marginBottom / 2)
+          .attr('dy', '0.35em')
+          .attr('text-anchor', 'middle')
+          .text(rank => rank[0].toUpperCase());
+
+        // Draw the line above the nodes
+        svg.append('line')
+          .attr('x1', 0)
+          .attr('y1', height+10)
+          .attr('x2', width)
+          .attr('y2', height+10)
+          .attr('stroke', '#000')
+          .attr('stroke-width', 1);
+
+        // Add nodes
         svg.append('g')
           .selectAll('rect')
           .data(graph.nodes)
@@ -146,6 +169,7 @@
           .append('title')
           .text(d => `${d.name}\n${d.proportion}\n${d.rank}`);
 
+        // Add links
         const link = svg.append('g')
           .attr('fill', 'none')
           .attr('stroke', '#000')
@@ -180,7 +204,6 @@
           .selectAll('text')
           .data(graph.nodes)
           .enter().append('text')
-          // .attr('x', d => (d.x0 + d.x1) / 2)
           .attr('x', d =>  d.x1)
           .attr('y', d => (d.y0 + d.y1) / 2)
           .attr('dy', '0.35em')
