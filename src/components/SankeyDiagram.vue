@@ -96,29 +96,29 @@
           };
 
           // Include all ranks for lineage tracking
-          currentLineage.push(node);
+          if (node.rank !== "no rank") {
+            currentLineage.push(node);
+          }
 
+          // Add node to sankey diagram
           if (rankOrder.includes(d.rank)) {
             nodes.push(node);
-            console.log(node.rank, node.name);
-            rankMap[d.rank] = node;
+            console.log(node.rank, node.name); //DELETE
+            rankMap[d.rank] = node; // Store the most recent node in the current hierarchy
 
             if (lastNode) {
-              console.log('lastNode: ', lastNode.name, lastNode.rank);
-              console.log('currentNode: ', node.name, node.rank)
-              console.log('rank compare: ', rankHierarchy[node.rank], rankHierarchy[lastNode.rank]);
-
-
-              if (rankHierarchy[node.rank] <= rankHierarchy[lastNode.rank]) { // current node is of same rank
+              if (rankHierarchy[node.rank] <= rankHierarchy[lastNode.rank]) { // Current node is of EQUAL OR HIGHER RANK than the last added node
                 let rankNumber = rankHierarchy[node.rank] - 1;
                 let nodeToLeft = null;
+
+                // Adjust lineage by removing the lastNode
                 
+                // Find most recent non-null node to the left to create link with
                 while (rankNumber >= 0 && !nodeToLeft) {
                   const rankAbove = rankOrder[rankNumber];
                   nodeToLeft = rankMap[rankAbove];
                   rankNumber--;
                 }
-
                 if (nodeToLeft) {
                   links.push({
                   source: nodeToLeft.id,
@@ -127,7 +127,7 @@
                   });
                 }
               
-              } else if (rankHierarchy[node.rank] > rankHierarchy[lastNode.rank]) {
+              } else if (rankHierarchy[node.rank] > rankHierarchy[lastNode.rank]) { // Current node is of LOWER RANK than the last added node
                 console.log('lower rank: ', lastNode.rank, node.rank);
                 links.push({
                   source: lastNode.id,
@@ -137,9 +137,10 @@
               }
             }
             lastNode = node;
-          } else if (d.rank === "clade") {
-            currentLineage = [];  // Reset lineage for new clade
-          }
+          } 
+          // else if (d.rank === "clade") {
+          //   // currentLineage = [];  // Reset lineage for new clade
+          // }
         });
 
         return { nodes, links };
