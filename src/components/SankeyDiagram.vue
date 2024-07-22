@@ -177,7 +177,7 @@
 
         const container = this.$refs.sankeyContainer;
         const width = 900;
-        const height = 650;
+        const height = 680;
         const marginBottom = 50; // Margin for rank labels
 
         const svg = d3.select(container)
@@ -190,8 +190,8 @@
           .nodeId(d => d.id)
           .nodeAlign(sankeyJustify)
           .nodeWidth(20)
-          .nodePadding(11)
-          .extent([[1, 1], [width, height - 6]]); 
+          .nodePadding(12)
+          .extent([[10, 10], [width - 200, height - 6]]); 
 
         const graph = sankeyGenerator({
           nodes: nodes.map(d => Object.assign({}, d)),
@@ -210,7 +210,7 @@
           node.x1 = node.x0 + sankeyGenerator.nodeWidth();
         });
 
-        // Add column labels
+        // // Add column labels
         svg.append('g')
           .selectAll('text')
           .data(rankOrder)
@@ -229,6 +229,27 @@
           .attr('y2', height+10)
           .attr('stroke', '#000')
           .attr('stroke-width', 1);
+
+        // Define the drag behavior
+        const drag = d3.drag()
+          .subject(function(d) { return d; })
+          .on('start', function() {
+            d3.select(this).raise().attr('stroke', 'black');
+          })
+          .on('drag', function(event, d) {
+            d.y0 = d.y0 + event.dy;
+            d.y1 = d.y1 + event.dy;
+            d3.select(this).attr('y', d.y0);
+            sankeyGenerator.update(graph);
+            svg.selectAll('path').attr('d', sankeyLinkHorizontal());
+
+            // Update the positions of the labels
+            d3.select(`#cladeReads-${d.id}`).attr('y', d.y0 - 5);
+            d3.select(`#nodeName-${d.id}`).attr('y', (d.y0 + d.y1) / 2);
+          })
+          .on('end', function() {
+            d3.select(this).attr('stroke', null);
+          });
 
         // Add nodes
         svg.append('g')
@@ -260,6 +281,7 @@
 
         // Add hover effect on nodes and links
         svg.selectAll('rect')
+          .call(drag) // Apply drag behavior
           .on('mouseover', (event) => {
             d3.select(event.currentTarget).attr('fill', 'steelblue');
           })
@@ -286,12 +308,26 @@
           .selectAll('text')
           .data(graph.nodes)
           .enter().append('text')
+          .attr('id', d => `nodeName-${d.id}`)
           .attr('x', d =>  d.x1 + 3)
           .attr('y', d => (d.y0 + d.y1) / 2)
           .attr('dy', '0.35em')
           .attr('text-anchor', 'start')
           .style('font-size', '10px') // Adjust the font size here
           .text(d => d.name);
+
+        // Add text for clade reads above each node
+        svg.append('g')
+          .selectAll('text')
+          .data(graph.nodes)
+          .enter().append('text')
+          .attr('id', d => `cladeReads-${d.id}`)
+          .attr('x', d => (d.x0 + d.x1) / 2)
+          .attr('y', d => d.y0 - 5)
+          .attr('dy', '0.35em')
+          .attr('text-anchor', 'middle')
+          .style('font-size', '10px')
+          .text(d => this.formatCladeReads(d.clade_reads));
       },
       showNodeDetails(event, d) {
         this.hoverDetails = {
@@ -308,6 +344,12 @@
       },
       clearDetails() {
         this.hoverDetails = null;
+      },
+      formatCladeReads(value) {
+        if (value >= 1000) {
+          return `${(value / 1000).toFixed(1)}k`;
+        }
+        return value.toString();
       }
     },
     mounted() {
