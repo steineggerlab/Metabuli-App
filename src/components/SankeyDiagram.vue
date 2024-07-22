@@ -1,5 +1,30 @@
 <template>
-    <div ref="sankeyContainer"></div>
+  <div class="sankey-container">
+    <div ref="sankeyContainer" class="sankey-diagram"></div>
+
+    <!-- NODE OR LINK DETAILS PANEL -->
+    <v-sheet class="details-sheet" elevation="2">
+      <v-card-text v-if="hoverDetails">
+        <div v-if="hoverDetails.type === 'node'">
+          <h3>Node Details</h3>
+          <p><strong>Name:</strong> {{ hoverDetails.data.name }}</p>
+          <p><strong>Rank:</strong> {{ hoverDetails.data.rank }}</p>
+          <p><strong>Proportion:</strong> {{ hoverDetails.data.proportion }}</p>
+          <p><strong>Clade Reads:</strong> {{ hoverDetails.data.clade_reads }}</p>
+          <p><strong>Taxon Reads:</strong> {{ hoverDetails.data.taxon_reads }}</p>
+        </div>
+        <div v-else-if="hoverDetails.type === 'link'">
+          <h3>Link Details</h3>
+          <p><strong>Source:</strong> {{ hoverDetails.data.source.name }}</p>
+          <p><strong>Target:</strong> {{ hoverDetails.data.target.name }}</p>
+          <p><strong>Value:</strong> {{ hoverDetails.data.value }}</p>
+        </div>
+      </v-card-text>
+      <v-card-text v-else>
+        <p>Hover over a node or link to see details.</p>
+      </v-card-text>
+    </v-sheet>
+  </div>
   </template>
   
   <script>
@@ -13,8 +38,10 @@
         required: true
       }
     },
-    mounted() {
-      this.createSankey()
+    data() {
+      return {
+        hoverDetails: null
+        };
     },
     methods: {
       parseData(data) {
@@ -67,6 +94,7 @@
                   links.push({
                   source: nodeToLeft.id,
                   target: node.id,
+                  // value: node.proportion
                   value: Math.log1p(node.proportion) / Math.log1p(maxProportion) // Normalized value
                   });
                 }
@@ -76,6 +104,7 @@
                 links.push({
                   source: lastNode.id,
                   target: node.id,
+                  // value: node.proportion
                   value: Math.log1p(node.proportion) / Math.log1p(maxProportion) // Normalized value
                 });
               }
@@ -90,10 +119,14 @@
       },
 
       nodeHeight(d) { // FIXME
-        console.log(d.y1-d.y0);
+        console.log(d.proportion);
         if (d.value < 0.05) {
           return 2;
-        } else {
+        } 
+        // else if (d.value > 92 ) {
+        //   return 50;
+        // } 
+        else {
           return d.y1 - d.y0;
         }
       },
@@ -102,7 +135,7 @@
         const { nodes, links } = this.parseData(this.data);
 
         const container = this.$refs.sankeyContainer;
-        const width = 1100;
+        const width = 900;
         const height = 650;
         const marginBottom = 50; // Margin for rank labels
 
@@ -115,9 +148,9 @@
         const sankeyGenerator = sankey()
           .nodeId(d => d.id)
           .nodeAlign(sankeyJustify)
-          .nodeWidth(30)
-          .nodePadding(10)
-          .extent([[1, 1], [width, height - 6]]); // Adjust for margin
+          .nodeWidth(20)
+          .nodePadding(11)
+          .extent([[1, 1], [width, height - 6]]); 
 
         const graph = sankeyGenerator({
           nodes: nodes.map(d => Object.assign({}, d)),
@@ -186,32 +219,71 @@
 
         // Add hover effect on nodes and links
         svg.selectAll('rect')
-          .on('mouseover', function() {
-            d3.select(this).attr('fill', 'steelblue');
+          .on('mouseover', (event, d) => {
+            this.showNodeDetails(event, d);
+            d3.select(event.currentTarget).attr('fill', 'steelblue');
           })
-          .on('mouseout', function() {
-            d3.select(this).attr('fill', '#696969');
+          .on('mouseout', (event) => {
+            this.clearDetails();
+            d3.select(event.currentTarget).attr('fill', '#696969');
           });
 
-        link.on('mouseover', function() {
-          d3.select(this).attr('stroke-opacity', 0.3);
-        })
-        .on('mouseout', function() {
-          d3.select(this).attr('stroke-opacity', 0.2);
-        });
+        link
+          .on('mouseover', (event, d) => {
+            this.showLinkDetails(event, d);
+            d3.select(event.currentTarget).attr('stroke-opacity', 0.3);
+          })
+          .on('mouseout', (event) => {
+            this.clearDetails();
+            d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
+          });
 
         // Add node labels
         svg.append('g')
           .selectAll('text')
           .data(graph.nodes)
           .enter().append('text')
-          .attr('x', d =>  d.x1)
+          .attr('x', d =>  d.x1 + 3)
           .attr('y', d => (d.y0 + d.y1) / 2)
           .attr('dy', '0.35em')
+          .attr('text-anchor', 'start')
           .style('font-size', '10px') // Adjust the font size here
           .text(d => d.name);
-          
+      },
+      showNodeDetails(event, d) {
+        this.hoverDetails = {
+          type: 'node',
+          data: d
+        };
+        console.log(this.hoverDetails);
+      },
+      showLinkDetails(event, d) {
+        this.hoverDetails = {
+          type: 'link',
+          data: d
+        };
+      },
+      clearDetails() {
+        this.hoverDetails = null;
       }
-    }
+    },
+    mounted() {
+      this.createSankey()
+    },
   }
   </script>
+
+<style scoped>
+.sankey-container {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}  
+.sankey-diagram {
+  flex: 1;
+}  
+.details-sheet {
+  width: 200px;
+  height: 200px;
+}
+</style>

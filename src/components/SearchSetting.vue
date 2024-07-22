@@ -82,10 +82,10 @@
             cURL Command
           </v-card-title>
           <v-card-text>
-            Use this command to get a submit a file in FASTA or FASTQ format to the Metabuli search server. Replace the ‘PATH_TO_FILE’ string with the path to the file.
+            Use this command to get a submit a file in FASTA or FASTQ format to the Metabuli search server. Replace the ‘PATH_TO_FILE’ and '@PATH_TO_DIRECTORY' string with the path to the file or directory.
           </v-card-text>
           <v-card-text>
-            <code>curl -X POST -F q1=/Users/jaebeom/metabuli_example/SRR14484345_1.fq -F q2=/Users/jaebeom/metabuli_example/SRR14484345_2.fq -F 'database[]=/Users/jaebeom/metabuli_example/refseq_virus/' -F 'mode=3diaa' -F outdir=/Users/jaebeom/metabuli_example/ -F jobid=test "http://localhost:8081/api/ticket"</code>
+            <code>curl -X POST -F q1=@PATH_TO_FILE -F q2=@PATH_TO_FILE -F 'database[]=@PATH_TO_DIRECTORY' -F 'mode=3diaa' -F outdir=@PATH_TO_DIRECTORY -F jobid='test' "http://localhost:8081/api/ticket"</code>
           </v-card-text> 
           <v-card-actions>
             <v-spacer></v-spacer>
