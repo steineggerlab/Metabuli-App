@@ -30,13 +30,17 @@
             </p>
           </div>
 
-          <p><strong>Lineage:</strong> {{ hoverDetails.data.lineage.map(n => n.name).join(' > ') }}</p>
-         
           <br>
 
-          <p><strong>Proportion:</strong> {{ hoverDetails.data.proportion }}</p>
+          <p><strong>Proportion:</strong> {{ hoverDetails.data.proportion }}%</p>
           <p><strong>Clade Reads:</strong> {{ hoverDetails.data.clade_reads }}</p>
           <p><strong>Taxon Reads:</strong> {{ hoverDetails.data.taxon_reads }}</p>
+
+          <br>
+          <!-- <p><strong>Lineage:</strong> {{ hoverDetails.data.lineage.map(n => n.name).join(' > ') }}</p> -->
+          <pre>{{ formattedLineage }}</pre>
+         
+
         </div>
         <div v-else-if="hoverDetails.type === 'link'">
           <h3>Link Details</h3>
@@ -67,6 +71,15 @@
       return {
         hoverDetails: null
         };
+    },
+    computed: {
+      formattedLineage() {
+        if (!this.hoverDetails || !this.hoverDetails.data.lineage) return '';
+        return this.hoverDetails.data.lineage.map((node, index) => {
+          const prefix = ' '.repeat(index * 2) + (index === 0 ? '' : '└ ');
+          return `${prefix}${node.name}`;
+        }).join('\n');
+      }
     },
     methods: {
       parseData(data) {
@@ -247,23 +260,25 @@
 
         // Add hover effect on nodes and links
         svg.selectAll('rect')
-          .on('mouseover', (event, d) => {
-            this.showNodeDetails(event, d);
+          .on('mouseover', (event) => {
             d3.select(event.currentTarget).attr('fill', 'steelblue');
           })
           .on('mouseout', (event) => {
-            // this.clearDetails();
             d3.select(event.currentTarget).attr('fill', '#696969');
+          })
+          .on('click', (event, d) => {
+            this.showNodeDetails(event, d);
           });
 
         link
-          .on('mouseover', (event, d) => {
-            this.showLinkDetails(event, d);
+          .on('mouseover', (event) => {
             d3.select(event.currentTarget).attr('stroke-opacity', 0.3);
           })
           .on('mouseout', (event) => {
-            // this.clearDetails();
             d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
+          })
+          .on('click', (event, d) => {
+            this.showLinkDetails(event, d);
           });
 
         // Add node labels
@@ -304,15 +319,15 @@
 <style scoped>
 .sankey-container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 10px;
 }  
 .sankey-diagram {
   flex: 1;
 }  
 .details-sheet {
-  width: 300px;
-  height: 500px;
+  /* width: 300px; */
+  /* height: 500px; */
 }
 .tab {
   margin-left: 15px;

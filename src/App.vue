@@ -12,7 +12,7 @@
       </v-btn>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer">
+    <v-navigation-drawer v-model="drawer" :width="'180'">
       <v-list>
         <!-- DATA INPUT NAVIGATION ITEM -->
         <router-link
