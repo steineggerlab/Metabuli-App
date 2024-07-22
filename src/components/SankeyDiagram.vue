@@ -262,6 +262,7 @@
           .attr('height', d => this.nodeHeight(d))
           .attr('width', d => d.x1 - d.x0)
           .attr('fill', '#696969')
+          .attr('class', 'node') // Apply the CSS class for cursor
           .append('title')
           .text(d => `${d.name}\n${d.proportion}\n${d.rank}`);
 
@@ -279,7 +280,7 @@
         link.append('title')
           .text(d => `${d.source.name} → ${d.target.name}\n${d.value}`);
 
-        // Add hover effect on nodes and links
+        // Add mouse event on nodes and links
         svg.selectAll('rect')
           .call(drag) // Apply drag behavior
           .on('mouseover', (event) => {
@@ -313,7 +314,7 @@
           .attr('y', d => (d.y0 + d.y1) / 2)
           .attr('dy', '0.35em')
           .attr('text-anchor', 'start')
-          .style('font-size', '10px') // Adjust the font size here
+          .style('font-size', '10px') 
           .text(d => d.name);
 
         // Add text for clade reads above each node
@@ -358,7 +359,7 @@
   }
   </script>
 
-<style scoped>
+<style>
 .sankey-container {
   display: flex;
   flex-direction: column;
@@ -374,4 +375,14 @@
 .tab {
   margin-left: 15px;
 }
+
+
+.node {
+  cursor: grab;
+}
+
+.node:active {
+  cursor: grabbing;
+}
+
 </style>
