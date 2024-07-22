@@ -176,7 +176,7 @@
         const { nodes, links } = this.parseData(this.data);
 
         const container = this.$refs.sankeyContainer;
-        const width = 900;
+        const width = window.innerWidth;
         const height = 680;
         const marginBottom = 50; // Margin for rank labels
 
@@ -200,8 +200,10 @@
 
         // Manually adjust nodes position to align by rank
         const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
+        const columnWidth = (width - 150) / rankOrder.length;
         const columnMap = rankOrder.reduce((acc, rank, index) => {
-          acc[rank] = index * (width / rankOrder.length);
+          const leftMargin = 10;
+          acc[rank] = index * columnWidth + leftMargin;
           return acc;
         }, {});
 
