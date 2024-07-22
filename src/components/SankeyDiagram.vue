@@ -6,9 +6,34 @@
     <v-sheet class="details-sheet" elevation="2">
       <v-card-text v-if="hoverDetails">
         <div v-if="hoverDetails.type === 'node'">
-          <h3>Node Details</h3>
-          <p><strong>Name:</strong> {{ hoverDetails.data.name }}</p>
-          <p><strong>Rank:</strong> {{ hoverDetails.data.rank }}</p>
+
+          <h3>{{ hoverDetails.data.name }}</h3>
+
+          <p>Rank <strong>{{ hoverDetails.data.rank }}</strong></p>
+          
+          <p>TaxID {{ hoverDetails.data.id }}</p>
+          <div class="tab">
+            <p>
+              <a :href="`https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=${hoverDetails.data.id}`" target="_blank">
+                NCBI Taxonomy
+              </a> 
+            </p>
+            <p>
+              <a :href="`https://www.ncbi.nlm.nih.gov/assembly/?term=txid${hoverDetails.data.id}[Organism:exp]`" target="_blank">
+                Assemblies
+              </a>
+            </p>
+            <p>
+              <a :href="`https://pubmed.ncbi.nlm.nih.gov/?term=${hoverDetails.data.name}`" target="_blank">
+                PubMed
+              </a>
+            </p>
+          </div>
+
+          <p>Selected taxon lineage: </p>
+         
+          <br>
+
           <p><strong>Proportion:</strong> {{ hoverDetails.data.proportion }}</p>
           <p><strong>Clade Reads:</strong> {{ hoverDetails.data.clade_reads }}</p>
           <p><strong>Taxon Reads:</strong> {{ hoverDetails.data.taxon_reads }}</p>
@@ -94,7 +119,6 @@
                   links.push({
                   source: nodeToLeft.id,
                   target: node.id,
-                  // value: node.proportion
                   value: Math.log1p(node.proportion) / Math.log1p(maxProportion) // Normalized value
                   });
                 }
@@ -104,7 +128,6 @@
                 links.push({
                   source: lastNode.id,
                   target: node.id,
-                  // value: node.proportion
                   value: Math.log1p(node.proportion) / Math.log1p(maxProportion) // Normalized value
                 });
               }
@@ -224,7 +247,7 @@
             d3.select(event.currentTarget).attr('fill', 'steelblue');
           })
           .on('mouseout', (event) => {
-            this.clearDetails();
+            // this.clearDetails();
             d3.select(event.currentTarget).attr('fill', '#696969');
           });
 
@@ -234,7 +257,7 @@
             d3.select(event.currentTarget).attr('stroke-opacity', 0.3);
           })
           .on('mouseout', (event) => {
-            this.clearDetails();
+            // this.clearDetails();
             d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
           });
 
@@ -283,7 +306,10 @@
   flex: 1;
 }  
 .details-sheet {
-  width: 200px;
-  height: 200px;
+  width: 300px;
+  height: 500px;
+}
+.tab {
+  margin-left: 15px;
 }
 </style>
