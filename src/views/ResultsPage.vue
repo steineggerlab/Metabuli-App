@@ -21,7 +21,7 @@
                 v-model="search"
                 append-inner-icon="mdi-magnify"
                 density="compact"
-                label="Filter"
+                label="Filter rows"
                 variant="solo"
                 hide-details
                 single-line
@@ -39,7 +39,6 @@
 
         <!-- SANKEY -->
         <v-tabs-window-item value="sankey">
-          <!-- <SankeyDiagram :data="sankeyData" /> -->
           <SankeyDiagram :data="results" />
         </v-tabs-window-item>
       </v-tabs-window>
@@ -150,7 +149,6 @@ export default {
       const reportFilePath = `${this.$route.query.outdir}/${this.$route.query.jobid}_report.tsv`
       const resultsJSON = await this.readTSVFile(`${reportFilePath}`);
       this.results = resultsJSON;
-      // console.log(JSON.stringify(this.results, null, 2)); //FIXME:
       this.saveResults();
     } catch (error) {
       console.error('Error loading results:', error);

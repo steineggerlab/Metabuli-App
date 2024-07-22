@@ -50,7 +50,7 @@
         </div>
       </v-card-text>
       <v-card-text v-else>
-        <p>Hover over a node or link to see details.</p>
+        <p>Click on a node or link to see details.</p>
       </v-card-text>
     </v-sheet>
   </div>
@@ -95,7 +95,8 @@
         let currentLineage = [];
 
         // Find the maximum proportion to use for normalization
-        const maxProportion = Math.max(...data.map(d => parseFloat(d.proportion)));
+        const maxProportion = Math.max(...data.map(d => parseFloat(d.clade_reads)));
+        console.log(maxProportion); //DELETE
 
         data.forEach( d => {
           const node = {
@@ -103,7 +104,7 @@
             name: d.name,
             rank: d.rank,
             proportion: parseFloat(d.proportion),
-            clade_reads: d.clade_reads,
+            clade_reads: parseFloat(d.clade_reads),
             taxon_reads: d.taxon_reads,
             lineage: [...currentLineage, {id: d.taxon_id, name: d.name, rank: d.rank}]  // Copy current lineage
           };
@@ -136,7 +137,8 @@
                   links.push({
                   source: nodeToLeft.id,
                   target: node.id,
-                  value: Math.log1p(node.proportion) / Math.log1p(maxProportion) // Normalized value
+                  value: node.clade_reads
+                  // value: Math.log1p(node.clade_reads) / Math.log1p(maxProportion) // Normalized value
                   });
                 }
               
@@ -145,7 +147,8 @@
                 links.push({
                   source: lastNode.id,
                   target: node.id,
-                  value: Math.log1p(node.proportion) / Math.log1p(maxProportion) // Normalized value
+                  value: node.clade_reads
+                  // value: Math.log1p(node.clade_reads) / Math.log1p(maxProportion) // Normalized value
                 });
               }
             }
@@ -160,13 +163,14 @@
       },
 
       nodeHeight(d) { // FIXME
-        console.log(d.proportion);
-        if (d.value < 0.05) {
-          return 2;
+        let nodeHeight = d.y1 - d.y0;
+        if (nodeHeight < 1) {
+          return 1.5;
         } 
-        // else if (d.value > 92 ) {
-        //   return 50;
-        // } 
+        // if (d.clade_reads < 10){
+        //   d.clade_reads *= 2;
+        //   return d.y1 - d.y0;
+        // }
         else {
           return d.y1 - d.y0;
         }
@@ -260,13 +264,13 @@
           .enter().append('rect')
           .attr('x', d => d.x0)
           .attr('y', d => d.y0)
-          .attr('height', d => d.y1 - d.y0)
+          // .attr('height', d => d.y1 - d.y0)
           .attr('height', d => this.nodeHeight(d))
           .attr('width', d => d.x1 - d.x0)
           .attr('fill', '#696969')
           .attr('class', 'node') // Apply the CSS class for cursor
           .append('title')
-          .text(d => `${d.name}\n${d.proportion}\n${d.rank}`);
+          .text(d => `${d.name}\n${d.clade_reads} clade reads (${d.proportion}%)`);
 
         // Add links
         const link = svg.append('g')
@@ -280,7 +284,7 @@
           .attr('stroke-width', d => Math.max(1, d.width));
 
         link.append('title')
-          .text(d => `${d.source.name} → ${d.target.name}\n${d.value}`);
+          .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
 
         // Add mouse event on nodes and links
         svg.selectAll('rect')
@@ -350,7 +354,7 @@
       },
       formatCladeReads(value) {
         if (value >= 1000) {
-          return `${(value / 1000).toFixed(1)}k`;
+          return `${(value / 1000).toFixed(2)}k`;
         }
         return value.toString();
       }
