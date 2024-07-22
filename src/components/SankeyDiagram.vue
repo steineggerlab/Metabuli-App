@@ -257,6 +257,26 @@
             d3.select(this).attr('stroke', null);
           });
 
+        // Function to highlight lineage
+        const highlightLineage = (node) => {
+          const lineageIds = new Set(node.lineage.map(n => n.id));
+          lineageIds.add(node.id);
+
+          svg.selectAll('rect').style('opacity', d => lineageIds.has(d.id) ? 1 : 0.2);
+          svg.selectAll('path').style('opacity', d => lineageIds.has(d.source.id) && lineageIds.has(d.target.id) ? 1 : 0.2);
+          svg.selectAll('.node-name').style('opacity', d => lineageIds.has(d.id) ? 1 : 0.1);
+          svg.selectAll('.clade-reads').style('opacity', d => lineageIds.has(d.id) ? 1 : 0.1);
+    
+        };
+
+        // Function to reset highlight
+        const resetHighlight = () => {
+          svg.selectAll('rect').style('opacity', 1);
+          svg.selectAll('path').style('opacity', 1);
+          svg.selectAll('.node-name').style('opacity', 1);
+          svg.selectAll('.clade-reads').style('opacity', 1);
+        };
+
         // Add nodes
         svg.append('g')
           .selectAll('rect')
@@ -289,11 +309,13 @@
         // Add mouse event on nodes and links
         svg.selectAll('rect')
           .call(drag) // Apply drag behavior
-          .on('mouseover', (event) => {
+          .on('mouseover', (event, d) => {
             d3.select(event.currentTarget).attr('fill', 'steelblue');
+            highlightLineage(d);
           })
           .on('mouseout', (event) => {
             d3.select(event.currentTarget).attr('fill', '#696969');
+            resetHighlight();
           })
           .on('click', (event, d) => {
             this.showNodeDetails(event, d);
@@ -310,12 +332,13 @@
             this.showLinkDetails(event, d);
           });
 
-        // Add node labels
+        // Add node name labels next to node
         svg.append('g')
           .selectAll('text')
           .data(graph.nodes)
           .enter().append('text')
           .attr('id', d => `nodeName-${d.id}`)
+          .attr('class', 'node-name') // Needed for greying out on node hover
           .attr('x', d =>  d.x1 + 3)
           .attr('y', d => (d.y0 + d.y1) / 2)
           .attr('dy', '0.35em')
@@ -323,12 +346,13 @@
           .style('font-size', '10px') 
           .text(d => d.name);
 
-        // Add text for clade reads above each node
+        // Add clade reads label above node
         svg.append('g')
           .selectAll('text')
           .data(graph.nodes)
           .enter().append('text')
           .attr('id', d => `cladeReads-${d.id}`)
+          .attr('class', 'clade-reads') // Needed for greying out on node hover
           .attr('x', d => (d.x0 + d.x1) / 2)
           .attr('y', d => d.y0 - 5)
           .attr('dy', '0.35em')
