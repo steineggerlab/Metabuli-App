@@ -30,7 +30,7 @@
             </p>
           </div>
 
-          <p>Selected taxon lineage: </p>
+          <p><strong>Lineage:</strong> {{ hoverDetails.data.lineage.map(n => n.name).join(' > ') }}</p>
          
           <br>
 
@@ -79,10 +79,10 @@
         }, {});
         const rankMap = {};
         let lastNode = null;
+        let currentLineage = [];
 
         // Find the maximum proportion to use for normalization
         const maxProportion = Math.max(...data.map(d => parseFloat(d.proportion)));
-
 
         data.forEach( d => {
           const node = {
@@ -91,8 +91,12 @@
             rank: d.rank,
             proportion: parseFloat(d.proportion),
             clade_reads: d.clade_reads,
-            taxon_reads: d.taxon_reads
+            taxon_reads: d.taxon_reads,
+            lineage: [...currentLineage, {id: d.taxon_id, name: d.name, rank: d.rank}]  // Copy current lineage
           };
+
+          // Include all ranks for lineage tracking
+          currentLineage.push(node);
 
           if (rankOrder.includes(d.rank)) {
             nodes.push(node);
@@ -134,7 +138,7 @@
             }
             lastNode = node;
           } else if (d.rank === "clade") {
-            // lastNode = null; // little buggy, might need to find way set lastnode to the last highest hierarchy or something 
+            currentLineage = [];  // Reset lineage for new clade
           }
         });
 
