@@ -39,7 +39,20 @@
 
         <!-- SANKEY -->
         <v-tabs-window-item value="sankey">
-          <SankeyDiagram :data="results" />
+
+          <!-- SLIDER for selecting # of taxa to show per level -->
+          <v-slider
+            v-model="sankeySliderValue"
+            thumb-label="always"
+            width="500"
+            show-ticks="always"
+            step="1"
+            :min="1"
+            :max="25"
+            tick-size="1"
+          ></v-slider>
+
+          <SankeyDiagram :data="results" :taxaLimit="sankeySliderValue" />
         </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>
@@ -67,6 +80,7 @@ export default {
         { title: 'Name', align: 'start', key: 'name' },
       ],
       search: '',
+      sankeySliderValue: 100,
       sankeyData: {
         nodes: [
           { id: 'n0', name: 'root' },

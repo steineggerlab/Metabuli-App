@@ -65,6 +65,10 @@
       data: {
         type: Object,
         required: true
+      },
+      taxaLimit: {
+        type: Number,
+        default: 100
       }
     },
     data() {
@@ -79,6 +83,11 @@
           const prefix = ' '.repeat(index * 2) + (index === 0 ? '' : '└ ');
           return `${prefix}${node.name}`;
         }).join('\n');
+      }
+    },
+    watch: {
+      taxaLimit() {
+        this.updateSankey();
       }
     },
     methods: {
@@ -132,7 +141,7 @@
         // Step 2: Filter top 10 nodes by clade_reads for each rank in rankOrder + add nodes to sankey diagram
         rankOrder.forEach(rank => {
           if (nodesByRank[rank]) {
-            const topNodes = nodesByRank[rank].sort((a, b) => b.clade_reads - a.clade_reads).slice(0, 100);
+            const topNodes = nodesByRank[rank].sort((a, b) => b.clade_reads - a.clade_reads).slice(0, this.taxaLimit);
             nodes.push(...topNodes);
           }
         });
@@ -179,6 +188,7 @@
         const { nodes, links } = this.parseData(this.data);
 
         const container = this.$refs.sankeyContainer;
+        d3.select(container).selectAll('*').remove(); // Clear the previous diagram
         const width = window.innerWidth-300;
         const height = 680;
         const marginBottom = 50; // Margin for rank labels
@@ -358,6 +368,9 @@
           .attr('text-anchor', 'middle')
           .style('font-size', '10px')
           .text(d => this.formatCladeReads(d.clade_reads));
+      },
+      updateSankey() {
+        this.createSankey();
       },
       showNodeDetails(event, d) {
         this.hoverDetails = {
