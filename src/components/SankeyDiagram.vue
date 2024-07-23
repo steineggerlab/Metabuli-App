@@ -92,6 +92,7 @@
           return acc;
         }, {});
         let currentLineage = [];
+        const nodesByRank = {}; // Store nodes by rank for filtering top 10
 
         // Step 1: Create nodes and save lineage data
         data.forEach( d => {
@@ -105,10 +106,11 @@
             lineage: [...currentLineage, {id: d.taxon_id, name: d.name, rank: d.rank}]  // Copy current lineage
           };
 
-          // Add node to sankey diagram if its rank in rankOrder
-          if (rankOrder.includes(d.rank)) {
-            nodes.push(node);
-          } 
+          // Add node to rank-specific collection
+          if (!nodesByRank[d.rank]) {
+            nodesByRank[d.rank] = [];
+          }
+          nodesByRank[d.rank].push(node);
           
           // Include all ranks for lineage tracking
           if (node.rank !== "no rank" && node.rank !== "clade") {
@@ -127,13 +129,21 @@
           }
         });
 
-        // Step 2: Create links based on lineage
+        // Step 2: Filter top 10 nodes by clade_reads for each rank in rankOrder + add nodes to sankey diagram
+        rankOrder.forEach(rank => {
+          if (nodesByRank[rank]) {
+            const topNodes = nodesByRank[rank].sort((a, b) => b.clade_reads - a.clade_reads).slice(0, 100);
+            nodes.push(...topNodes);
+          }
+        });
+
+        // Step 3: Create links based on filtered nodes' lineage
         nodes.forEach(node => {
           // Find the previous node in the lineage that is in rankOrder
           const lineage = node.lineage;
           let previousNode = null;
           for (let i = lineage.length - 2; i >= 0; i--) { // Start from the second last item
-            if (rankOrder.includes(lineage[i].rank)) {
+              if (rankOrder.includes(lineage[i].rank) && nodes.includes(lineage[i])) {
               previousNode = lineage[i];
               break;
             }
