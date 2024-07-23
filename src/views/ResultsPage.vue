@@ -81,44 +81,11 @@ export default {
       ],
       search: '',
       sankeySliderValue: 100,
-      sankeyData: {
-        nodes: [
-          { id: 'n0', name: 'root' },
-          { id: 'n1', name: 'Viruses' },
-          { id: 'n2', name: 'Riboviria' },
-          { id: 'n3', name: 'Orthornavirae' },
-          { id: 'n4', name: 'Pisuviricota' },
-          { id: 'n5', name: 'Pisoniviricetes' },
-          { id: 'n6', name: 'Nidovirales' },
-          { id: 'n7', name: 'Cornidovirineae' },
-          { id: 'n8', name: 'Coronaviridae' },
-          { id: 'n9', name: 'Orthocoronavirinae' },
-          { id: 'n10', name: 'Betacoronavirus' },
-          { id: 'n11', name: 'Sarbecovirus' },
-          { id: 'n12', name: 'Severe acute respiratory syndrome-related coronavirus' },
-          { id: 'n13', name: 'SARS-CoV-2' }
-        ],
-        links: [
-          { source: 'n0', target: 'n1', value: 90.8757 }, // root -> virus
-          { source: 'n0', target: 'n2', value: 5.3231 }, // root -> riboviria
-          { source: 'n1', target: 'n2', value: 2.3831 }, // 
-          { source: 'n1', target: 'n4', value: 10.3231 },
-          { source: 'n2', target: 'n3', value: 30.2642 },
-          { source: 'n4', target: 'n6', value: 50.2642 },
-          { source: 'n6', target: 'n7', value: 3.2642 },
-          { source: 'n7', target: 'n8', value: 82.2642 },
-          { source: 'n6', target: 'n9', value: 12.2642 },
-          { source: 'n9', target: 'n10', value: 22.2642 },
-          { source: 'n1', target: 'n11', value: 32.2642 },
-          { source: 'n4', target: 'n12', value: 2.2642 },
-          { source: 'n2', target: 'n13', value: 22.2642 }
-          // nodes in same rank should be in same column (refer to pavian)
-          // thickness of link (value) should be percentage
-          // percentage of links going out from a node should add up to 100
-          // ignore no rank, subgenus, subfamilies, etc for now
-          // add description below the table saying this graph excludes nodes in ranks besides those displayed in the graph. Refer to the report.tsv file for the entire data.
-        ]
-      }
+      // nodes in same rank should be in same column (refer to pavian)
+      // thickness of link (value) should be percentage
+      // percentage of links going out from a node should add up to 100
+      // ignore no rank, subgenus, subfamilies, etc for now
+      // add description below the table saying this graph excludes nodes in ranks besides those displayed in the graph. Refer to the report.tsv file for the entire data.
     };
   },
 
