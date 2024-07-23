@@ -87,19 +87,13 @@
         const links = [];
         const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
         const rankOrderFull = ["superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum", "superclass", "class", "subclass", "superorder", "order", "suborder", "superfamily", "family", "subfamily", "supergenus", "genus", "subgenus", "superspecies", "species", "subspecies"];
-        
-        const rankHierarchy = rankOrder.reduce((acc, rank, index) => {
-          acc[rank] = index;
-          return acc;
-        }, {});
         const rankHierarchyFull = rankOrderFull.reduce((acc, rank, index) => {
           acc[rank] = index;
           return acc;
         }, {});
-        const rankMap = {};
-        let lastNode = null;
         let currentLineage = [];
 
+        // Step 1: Create nodes and save lineage data
         data.forEach( d => {
           const node = {
             id: d.taxon_id,
@@ -111,45 +105,9 @@
             lineage: [...currentLineage, {id: d.taxon_id, name: d.name, rank: d.rank}]  // Copy current lineage
           };
 
-          // const currNodeDataSimple = {id: d.taxon_id, name: d.name, rank: d.rank};
-
-
-
-          // Add node to sankey diagram
+          // Add node to sankey diagram if its rank in rankOrder
           if (rankOrder.includes(d.rank)) {
             nodes.push(node);
-            // console.log(node.rank, node.name); //DELETE
-            rankMap[d.rank] = node; // Store the most recent node in the current hierarchy
-
-            if (lastNode) {
-              if (rankHierarchy[node.rank] <= rankHierarchy[lastNode.rank]) { // Current node is of EQUAL OR HIGHER RANK than the last added node
-                // let rankNumber = rankHierarchy[node.rank] - 1;
-                // let nodeToLeft = null;
-
-                // Find most recent non-null node to the left to create link with
-                // while (rankNumber >= 0 && !nodeToLeft) {
-                //   const rankAbove = rankOrder[rankNumber];
-                //   nodeToLeft = rankMap[rankAbove];
-                //   rankNumber--;
-                // }
-                
-                // if (nodeToLeft) {
-                //   links.push({
-                //   source: nodeToLeft.id,
-                //   target: node.id,
-                //   value: node.clade_reads
-                //   });
-                // }
-              
-              } else if (rankHierarchy[node.rank] > rankHierarchy[lastNode.rank]) { // Current node is of LOWER RANK than the last added node
-                links.push({
-                  source: lastNode.id,
-                  target: node.id,
-                  value: node.clade_reads
-                });
-              }
-            }
-            lastNode = node;
           } 
           
           // Include all ranks for lineage tracking
@@ -157,40 +115,39 @@
             let lastLineageNode = currentLineage[currentLineage.length-1];
 
             if (lastLineageNode) {
-              console.log(rankHierarchyFull[node.rank], rankHierarchyFull[lastLineageNode.rank]);
               while (lastLineageNode && rankHierarchyFull[node.rank] <= rankHierarchyFull[lastLineageNode.rank]) {
                 currentLineage.pop(); 
                 lastLineageNode = currentLineage[currentLineage.length-1];
               }
-
-            
-              // Find most recent non-null node to the left to create link with
-              // let lineageIndex = currentLineage.length - 1;
-              let nodeToLeft = lastLineageNode;
-              // while (!rankOrder.includes(nodeToLeft.rank)) {
-              //     nodeToLeft = currentLineage[lineageIndex];
-              //     lineageIndex--;
-              //   }
-          
-              if (nodeToLeft && rankOrder.includes(nodeToLeft.rank) && rankOrder.includes(node.rank)) {
-                links.push({
-                  source: nodeToLeft.id,
-                  target: node.id,
-                  value: node.clade_reads
-                });
-
-              }
-              
             }
+
+            // Append current node to currentLineage array + store lineage data 
             currentLineage.push(node);
             node.lineage = [...currentLineage];
-
-
           }
-
-
         });
 
+        // Step 2: Create links based on lineage
+        nodes.forEach(node => {
+          // Find the previous node in the lineage that is in rankOrder
+          const lineage = node.lineage;
+          let previousNode = null;
+          for (let i = lineage.length - 2; i >= 0; i--) { // Start from the second last item
+            if (rankOrder.includes(lineage[i].rank)) {
+              previousNode = lineage[i];
+              break;
+            }
+          }
+
+          if (previousNode) {
+            links.push({
+              source: previousNode.id,
+              target: node.id,
+              value: node.proportion
+            });
+          }
+        });
+        
         return { nodes, links };
       },
 
