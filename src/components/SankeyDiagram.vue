@@ -37,8 +37,8 @@
           <p><strong>Taxon Reads:</strong> {{ hoverDetails.data.taxon_reads }}</p>
 
           <br>
-          <!-- <p><strong>Lineage:</strong> {{ hoverDetails.data.lineage.map(n => n.name).join(' > ') }}</p> -->
-          <pre>{{ formattedLineage }}</pre>
+          <p><strong>Lineage:</strong> {{ hoverDetails.data.lineage.map(n => `${n.name} (${n.rank})`).join(' > ') }}</p>
+          <!-- <pre>{{ formattedLineage }}</pre> -->
          
 
         </div>
@@ -86,17 +86,19 @@
         const nodes = [];
         const links = [];
         const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
+        const rankOrderFull = ["superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum", "superclass", "class", "subclass", "superorder", "order", "suborder", "superfamily", "family", "subfamily", "supergenus", "genus", "subgenus", "superspecies", "species", "subspecies"];
+        
         const rankHierarchy = rankOrder.reduce((acc, rank, index) => {
+          acc[rank] = index;
+          return acc;
+        }, {});
+        const rankHierarchyFull = rankOrderFull.reduce((acc, rank, index) => {
           acc[rank] = index;
           return acc;
         }, {});
         const rankMap = {};
         let lastNode = null;
         let currentLineage = [];
-
-        // Find the maximum proportion to use for normalization
-        const maxProportion = Math.max(...data.map(d => parseFloat(d.clade_reads)));
-        console.log(maxProportion); //DELETE
 
         data.forEach( d => {
           const node = {
@@ -109,54 +111,84 @@
             lineage: [...currentLineage, {id: d.taxon_id, name: d.name, rank: d.rank}]  // Copy current lineage
           };
 
-          // Include all ranks for lineage tracking
-          if (node.rank !== "no rank") {
-            currentLineage.push(node);
-          }
+          // const currNodeDataSimple = {id: d.taxon_id, name: d.name, rank: d.rank};
+
+
 
           // Add node to sankey diagram
           if (rankOrder.includes(d.rank)) {
             nodes.push(node);
-            console.log(node.rank, node.name); //DELETE
+            // console.log(node.rank, node.name); //DELETE
             rankMap[d.rank] = node; // Store the most recent node in the current hierarchy
 
             if (lastNode) {
               if (rankHierarchy[node.rank] <= rankHierarchy[lastNode.rank]) { // Current node is of EQUAL OR HIGHER RANK than the last added node
-                let rankNumber = rankHierarchy[node.rank] - 1;
-                let nodeToLeft = null;
+                // let rankNumber = rankHierarchy[node.rank] - 1;
+                // let nodeToLeft = null;
 
-                // Adjust lineage by removing the lastNode
-                
                 // Find most recent non-null node to the left to create link with
-                while (rankNumber >= 0 && !nodeToLeft) {
-                  const rankAbove = rankOrder[rankNumber];
-                  nodeToLeft = rankMap[rankAbove];
-                  rankNumber--;
-                }
-                if (nodeToLeft) {
-                  links.push({
-                  source: nodeToLeft.id,
-                  target: node.id,
-                  value: node.clade_reads
-                  // value: Math.log1p(node.clade_reads) / Math.log1p(maxProportion) // Normalized value
-                  });
-                }
+                // while (rankNumber >= 0 && !nodeToLeft) {
+                //   const rankAbove = rankOrder[rankNumber];
+                //   nodeToLeft = rankMap[rankAbove];
+                //   rankNumber--;
+                // }
+                
+                // if (nodeToLeft) {
+                //   links.push({
+                //   source: nodeToLeft.id,
+                //   target: node.id,
+                //   value: node.clade_reads
+                //   });
+                // }
               
               } else if (rankHierarchy[node.rank] > rankHierarchy[lastNode.rank]) { // Current node is of LOWER RANK than the last added node
-                console.log('lower rank: ', lastNode.rank, node.rank);
                 links.push({
                   source: lastNode.id,
                   target: node.id,
                   value: node.clade_reads
-                  // value: Math.log1p(node.clade_reads) / Math.log1p(maxProportion) // Normalized value
                 });
               }
             }
             lastNode = node;
           } 
-          // else if (d.rank === "clade") {
-          //   // currentLineage = [];  // Reset lineage for new clade
-          // }
+          
+          // Include all ranks for lineage tracking
+          if (node.rank !== "no rank" && node.rank !== "clade") {
+            let lastLineageNode = currentLineage[currentLineage.length-1];
+
+            if (lastLineageNode) {
+              console.log(rankHierarchyFull[node.rank], rankHierarchyFull[lastLineageNode.rank]);
+              while (lastLineageNode && rankHierarchyFull[node.rank] <= rankHierarchyFull[lastLineageNode.rank]) {
+                currentLineage.pop(); 
+                lastLineageNode = currentLineage[currentLineage.length-1];
+              }
+
+            
+              // Find most recent non-null node to the left to create link with
+              // let lineageIndex = currentLineage.length - 1;
+              let nodeToLeft = lastLineageNode;
+              // while (!rankOrder.includes(nodeToLeft.rank)) {
+              //     nodeToLeft = currentLineage[lineageIndex];
+              //     lineageIndex--;
+              //   }
+          
+              if (nodeToLeft && rankOrder.includes(nodeToLeft.rank) && rankOrder.includes(node.rank)) {
+                links.push({
+                  source: nodeToLeft.id,
+                  target: node.id,
+                  value: node.clade_reads
+                });
+
+              }
+              
+            }
+            currentLineage.push(node);
+            node.lineage = [...currentLineage];
+
+
+          }
+
+
         });
 
         return { nodes, links };
@@ -180,7 +212,7 @@
         const { nodes, links } = this.parseData(this.data);
 
         const container = this.$refs.sankeyContainer;
-        const width = window.innerWidth;
+        const width = window.innerWidth-300;
         const height = 680;
         const marginBottom = 50; // Margin for rank labels
 
@@ -392,7 +424,7 @@
 <style>
 .sankey-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 10px;
 }  
 .sankey-diagram {
