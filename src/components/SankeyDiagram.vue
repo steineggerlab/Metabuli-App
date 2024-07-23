@@ -404,7 +404,7 @@
 <style>
 .sankey-container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 10px;
 }  
 .sankey-diagram {

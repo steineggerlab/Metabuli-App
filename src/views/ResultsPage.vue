@@ -48,7 +48,7 @@
             show-ticks="always"
             step="1"
             :min="1"
-            :max="25"
+            :max="100"
             tick-size="1"
           ></v-slider>
 
