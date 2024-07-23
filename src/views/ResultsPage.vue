@@ -41,16 +41,20 @@
         <v-tabs-window-item value="sankey">
 
           <!-- SLIDER for selecting # of taxa to show per level -->
-          <v-slider
-            v-model="sankeySliderValue"
-            thumb-label="always"
-            width="500"
-            show-ticks="always"
-            step="1"
-            :min="1"
-            :max="100"
-            tick-size="1"
-          ></v-slider>
+          <div class="sankey-slider">
+
+            <div class="text-caption">Taxa per level</div>
+            <v-slider
+              v-model="sankeySliderValue"
+              thumb-label="always"
+              width="500"
+              show-ticks="always"
+              step="5"
+              :min="1"
+              :max="100"
+              tick-size="1"
+            ></v-slider>
+          </div>
 
           <SankeyDiagram :data="results" :taxaLimit="sankeySliderValue" />
         </v-tabs-window-item>
@@ -137,3 +141,9 @@ export default {
   }
 };
 </script>
+
+<style>
+.sankey-slider {
+  padding-top: 20px;
+}
+</style>
