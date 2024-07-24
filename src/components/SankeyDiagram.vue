@@ -120,26 +120,61 @@
             lineage: [...currentLineage, {id: d.taxon_id, name: d.name, rank: d.rank}]  // Copy current lineage
           };
 
-          // Add node to rank-specific collection
-          if (!nodesByRank[d.rank]) {
-            nodesByRank[d.rank] = [];
-          }
-          nodesByRank[d.rank].push(node);
-          
-          // Include all ranks for lineage tracking
-          if (node.rank !== "no rank" && node.rank !== "clade") {
-            let lastLineageNode = currentLineage[currentLineage.length-1];
+          // Add node to rank-specific collection if it's not 'no rank'
+          if (d.rank !== "no rank") {
+            if (!nodesByRank[d.rank]) {
+              nodesByRank[d.rank] = [];
+            }
+            nodesByRank[d.rank].push(node);
+            
+            // Include all ranks for lineage tracking
+            if (node.rank !== "clade") {
+              let lastLineageNode = currentLineage[currentLineage.length-1];
+  
+              if (lastLineageNode) {
+                while (lastLineageNode && rankHierarchyFull[node.rank] <= rankHierarchyFull[lastLineageNode.rank]) {
+                  currentLineage.pop(); 
+                  lastLineageNode = currentLineage[currentLineage.length-1];
+                }
+              }
+  
+              // Append current node to currentLineage array + store lineage data 
+              currentLineage.push(node);
+              node.lineage = [...currentLineage];
+            }
+          } else if (this.isUnclassifiedTaxa(d)) {
+            // Create a dummy node for unclassified taxa
+            const dummyNode = {
+              id: `dummy-${d.taxon_id}`,
+              name: d.name,
+              rank: 'no rank',
+              proportion: parseFloat(d.proportion),
+              clade_reads: parseFloat(d.clade_reads),
+              taxon_reads: d.taxon_reads,
+              // lineage: [...currentLineage, { id: `dummy-${d.taxon_id}`, name: d.name, rank: 'no rank' }]
+              lineage: []
+            };
+            // nodes.push(dummyNode);
 
+            // lineage tracking for unclassified taxa
+            let currentLineageCopy = [...currentLineage];
+            const parentName = dummyNode.name.replace('unclassified ', '');
+            let lastLineageNode = currentLineageCopy[currentLineageCopy.length-1];
+  
             if (lastLineageNode) {
-              while (lastLineageNode && rankHierarchyFull[node.rank] <= rankHierarchyFull[lastLineageNode.rank]) {
-                currentLineage.pop(); 
-                lastLineageNode = currentLineage[currentLineage.length-1];
+              while (lastLineageNode && lastLineageNode.name !== parentName) {
+                currentLineageCopy.pop(); 
+                lastLineageNode = currentLineageCopy[currentLineageCopy.length-1];
               }
             }
 
             // Append current node to currentLineage array + store lineage data 
-            currentLineage.push(node);
-            node.lineage = [...currentLineage];
+            currentLineageCopy.push(dummyNode);
+            dummyNode.lineage = [...currentLineageCopy];
+
+            nodes.push(dummyNode);
+
+
           }
         });
 
@@ -155,6 +190,24 @@
         nodes.forEach(node => {
           // Find the previous node in the lineage that is in rankOrder
           const lineage = node.lineage;
+          
+          // Find parent node for unclassified taxa nodes
+          if (this.isUnclassifiedTaxa(node)) {
+            console.log("dummy: ", node.name)
+            const parentName = node.name.replace('unclassified ', '');
+            const parentNode = lineage.find(n => n.name === parentName);
+            console.log("parent: ", parentName, parentNode.rank)
+            if (parentNode && rankOrder.includes(parentNode.rank)) {
+              console.log("parentLink created")
+              links.push({
+                  source: parentNode.id,
+                  target: node.id,
+                  value: node.clade_reads
+                });
+
+            }
+          }
+          
           let previousNode = null;
           for (let i = lineage.length - 2; i >= 0; i--) { // Start from the second last item
               if (rankOrder.includes(lineage[i].rank) && nodes.includes(lineage[i])) {
@@ -167,7 +220,7 @@
             links.push({
               source: previousNode.id,
               target: node.id,
-              value: node.proportion
+              value: node.clade_reads
             });
           }
         });
@@ -175,11 +228,35 @@
         return { nodes, links };
       },
 
+      isUnclassifiedTaxa(d) {
+        const name = d.name
+        const rank = d.rank
+        
+        // Check if the name starts with "unclassified"
+        if (!name.startsWith("unclassified") || rank !== "no rank") {
+          return false;
+        }
+        
+        // Split the name into words
+        const words = name.trim().split(/\s+/);
+        
+        // Check if there are at least two words
+        if (words.length < 2) {
+          return false;
+        }
+        
+        return true;
+      },
+
       nodeHeight(d) { // FIXME
         let nodeHeight = d.y1 - d.y0;
+        console.log(nodeHeight)
         if (nodeHeight < 1) {
           return 1.5;
         } 
+        // else if (nodeHeight > 300) {
+        //   return 150;
+        // }
         // if (d.clade_reads < 10){
         //   d.clade_reads *= 2;
         //   return d.y1 - d.y0;
@@ -194,7 +271,7 @@
 
         const container = this.$refs.sankeyContainer;
         d3.select(container).selectAll('*').remove(); // Clear the previous diagram
-        const width = window.innerWidth-300; // Set width to full window width minus margin for labels on the right
+        const width = window.innerWidth; // Set width to full window width minus margin for labels on the right
         const height = 680;
         const marginBottom = 50; // Margin for rank labels 
 
@@ -219,7 +296,7 @@
         const color = d3.scaleOrdinal(d3.schemeCategory10);
 
         // Manually adjust nodes position to align by rank
-        const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
+        const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"];
         const columnWidth = (width - 150) / rankOrder.length;
         const columnMap = rankOrder.reduce((acc, rank, index) => {
           const leftMargin = 10;
@@ -318,7 +395,8 @@
         .enter().append('path')
         .attr('d', sankeyLinkHorizontal())
         .attr('stroke', d => d3.color(d.source.color)) // Set link color to source node color with reduced opacity
-          .attr('stroke-width', d => Math.max(1, d.width));
+        .attr('stroke-width', d => Math.max(1, d.width));
+          // .attr('stroke-width', d => Math.max(1, d.height));
 
         link.append('title')
           .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
