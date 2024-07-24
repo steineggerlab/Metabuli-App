@@ -143,35 +143,54 @@
               node.lineage = [...currentLineage];
             }
           } else if (this.isUnclassifiedTaxa(d)) {
-            // Create a dummy node for unclassified taxa
-            const dummyNode = {
-              id: `dummy-${d.taxon_id}`,
-              name: d.name,
-              rank: 'no rank',
-              proportion: parseFloat(d.proportion),
-              clade_reads: parseFloat(d.clade_reads),
-              taxon_reads: d.taxon_reads,
-              lineage: [],
-              type: 'unclassified'
-            };
-
             // lineage tracking for unclassified taxa
             let currentLineageCopy = [...currentLineage];
-            const parentName = dummyNode.name.replace('unclassified ', '');
+            const parentName = d.name.replace('unclassified ', '');
             let lastLineageNode = currentLineageCopy[currentLineageCopy.length-1];
-
+            
             if (lastLineageNode) {
               while (lastLineageNode && lastLineageNode.name !== parentName) {
                 currentLineageCopy.pop(); 
                 lastLineageNode = currentLineageCopy[currentLineageCopy.length-1];
               }
             }
+            
+            // Find the previous node in the lineage that is in rankOrder
+            const parentNode = currentLineageCopy.find(n => n.name === parentName);
+            if (parentNode && parentNode === lastLineageNode) {
+              const lineage = currentLineageCopy;
+              
+              let previousNode = null;
+              for (let i = lineage.length - 1; i >= 0; i--) { // Start from the last item
+                if (rankOrder.includes(lineage[i].rank)) {
+                  previousNode = lineage[i];
+                  break;
+                }
+              }
+              
+              // Determine the rank immediately to the right of this node
+              const parentRankIndex = rankOrder.indexOf(previousNode.rank);
+              
+              // Create a dummy node for unclassified taxa
+              const nextRank = rankOrder[parentRankIndex + 1];
+              const dummyNode = {
+                id: `dummy-${d.taxon_id}`,
+                name: d.name,
+                rank: nextRank,
+                proportion: parseFloat(d.proportion),
+                clade_reads: parseFloat(d.clade_reads),
+                taxon_reads: d.taxon_reads,
+                lineage: [],
+                type: 'unclassified'
+              };
+           
+              // Add dummyNode to currentLineage and save lineage data
+              currentLineageCopy.push(dummyNode);
+              dummyNode.lineage = [...currentLineageCopy];
 
-            currentLineageCopy.push(dummyNode);
-            dummyNode.lineage = [...currentLineageCopy];
-
-            // Add dummyNode to sankey
-            nodes.push(dummyNode);
+              // Add dummyNode to sankey
+              nodes.push(dummyNode);
+            }
           }
         });
 
@@ -188,23 +207,8 @@
         nodes.forEach(node => {
           // Find the previous node in the lineage that is in rankOrder
           const lineage = node.lineage;
-          
-          // Find parent node for unclassified taxa nodes
-          if (this.isUnclassifiedTaxa(node)) {
-            const parentName = node.name.replace('unclassified ', '');
-            const parentNode = lineage.find(n => n.name === parentName);
-            if (parentNode && rankOrder.includes(parentNode.rank)) {
-              console.log("parentLink created")
-              links.push({
-                  source: parentNode.id,
-                  target: node.id,
-                  value: node.clade_reads
-                });
-
-            }
-          }
-          
           let previousNode = null;
+
           for (let i = lineage.length - 2; i >= 0; i--) { // Start from the second last item
               if (rankOrder.includes(lineage[i].rank) && nodes.includes(lineage[i])) {
               previousNode = lineage[i];
@@ -220,7 +224,7 @@
             });
           }
         });
-        
+          
         return { nodes, links };
       },
 
@@ -245,7 +249,6 @@
 
       nodeHeight(d) { // FIXME
         let nodeHeight = d.y1 - d.y0;
-        console.log(nodeHeight)
         if (nodeHeight < 1) {
           return 1.5;
         } 
