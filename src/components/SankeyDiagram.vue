@@ -3,7 +3,7 @@
     <div ref="sankeyContainer" class="sankey-diagram"></div>
 
     <!-- NODE OR LINK DETAILS PANEL -->
-    <v-sheet class="d-flex align-center justify-center flex-wrap text-center mx-auto my-4 px-4"
+    <v-sheet id="detailSheet" class="d-flex align-center justify-center flex-wrap text-center mx-auto my-4 px-4"
      elevation="4"
       max-width="800"
       width="100%"
@@ -11,9 +11,9 @@
     >
       <v-card-text v-if="hoverDetails">
         <div v-if="hoverDetails.type === 'node'">
-
+          
           <h3>{{ hoverDetails.data.name }}</h3>
-
+          
           <p>Rank <strong>{{ hoverDetails.data.rank }}</strong></p>
           
           <p>TaxID {{ hoverDetails.data.id }}</p>
@@ -32,17 +32,17 @@
               </a>
             </p>
           </div>
-
+          
           <br>
-
+          
           <p><strong>Proportion:</strong> {{ hoverDetails.data.proportion }}%</p>
           <p><strong>Clade Reads:</strong> {{ hoverDetails.data.clade_reads }}</p>
           <p><strong>Taxon Reads:</strong> {{ hoverDetails.data.taxon_reads }}</p>
-
+          
           <br>
-          <p><strong>Lineage:</strong> {{ hoverDetails.data.lineage.map(n => `${n.name} (${n.rank})`).join(' > ') }}</p>
-         
 
+          <p><strong>Lineage:</strong> {{ hoverDetails.data.lineage.map(n => `${n.name} (${n.rank})`).join(' > ') }}</p>
+            
         </div>
         <div v-else-if="hoverDetails.type === 'link'">
           <h3>Link Details</h3>
@@ -52,7 +52,7 @@
         </div>
       </v-card-text>
       <v-card-text v-else>
-        <p>Click on a node or link to see details.</p>
+        <p>Double click on a node or link to see details.</p>
       </v-card-text>
     </v-sheet>
   </div>
@@ -78,7 +78,7 @@
         };
     },
     computed: {
-      formattedLineage() {
+      formattedLineage() { // FIXME
         if (!this.hoverDetails || !this.hoverDetails.data.lineage) return '';
         return this.hoverDetails.data.lineage.map((node, index) => {
           const prefix = ' '.repeat(index * 2) + (index === 0 ? '' : '└ ');
@@ -398,7 +398,6 @@
               this.showNodeDetails(event, d);
             }
           });
-
           
           // Add node name labels next to node
           svg.append('g')
@@ -472,12 +471,20 @@
           type: 'node',
           data: d
         };
+        this.scrollToDetails();
       },
       showLinkDetails(event, d) {
         this.hoverDetails = {
           type: 'link',
           data: d
         };
+        this.scrollToDetails();
+      },
+      scrollToDetails() {
+        const element = document.getElementById('detailSheet');
+        if (element) {
+          element.scrollIntoView({ behavior: 'auto' });
+        }
       },
       clearDetails() {
         this.hoverDetails = null;
