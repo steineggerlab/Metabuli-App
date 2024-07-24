@@ -384,7 +384,6 @@
           type: 'node',
           data: d
         };
-        console.log(this.hoverDetails);
       },
       showLinkDetails(event, d) {
         this.hoverDetails = {
