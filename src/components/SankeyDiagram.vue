@@ -194,15 +194,14 @@
 
         const container = this.$refs.sankeyContainer;
         d3.select(container).selectAll('*').remove(); // Clear the previous diagram
-        const width = window.innerWidth-300;
+        const width = window.innerWidth-300; // Set width to full window width minus margin for labels on the right
         const height = 680;
-        const marginBottom = 50; // Margin for rank labels
+        const marginBottom = 50; // Margin for rank labels 
 
         const svg = d3.select(container)
           .append('svg')
           .attr('width', width)
-          .attr('height', height)
-          .attr('height', height + marginBottom); // Increase height for labels
+          .attr('height', height + marginBottom); 
 
         const sankeyGenerator = sankey()
           .nodeId(d => d.id)
@@ -216,6 +215,9 @@
           links: links.map(d => Object.assign({}, d))
         });
 
+        // Define color scale
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
+
         // Manually adjust nodes position to align by rank
         const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
         const columnWidth = (width - 150) / rankOrder.length;
@@ -228,9 +230,10 @@
         graph.nodes.forEach(node => {
           node.x0 = columnMap[node.rank];
           node.x1 = node.x0 + sankeyGenerator.nodeWidth();
+          node.color = color(node.id); // Assign color to node
         });
 
-        // // Add column labels
+        // Add rank column labels
         svg.append('g')
           .selectAll('text')
           .data(rankOrder)
@@ -241,7 +244,7 @@
           .attr('text-anchor', 'middle')
           .text(rank => rank[0].toUpperCase());
 
-        // Draw the line above the nodes
+        // Draw rank label divider link 
         svg.append('line')
           .attr('x1', 0)
           .attr('y1', height+10)
@@ -280,7 +283,6 @@
           svg.selectAll('path').style('opacity', d => lineageIds.has(d.source.id) && lineageIds.has(d.target.id) ? 1 : 0.2);
           svg.selectAll('.node-name').style('opacity', d => lineageIds.has(d.id) ? 1 : 0.1);
           svg.selectAll('.clade-reads').style('opacity', d => lineageIds.has(d.id) ? 1 : 0.1);
-    
         };
 
         // Function to reset highlight
@@ -301,20 +303,21 @@
           // .attr('height', d => d.y1 - d.y0)
           .attr('height', d => this.nodeHeight(d))
           .attr('width', d => d.x1 - d.x0)
-          .attr('fill', '#696969')
+          .attr('fill', d => d.color)
           .attr('class', 'node') // Apply the CSS class for cursor
           .append('title')
           .text(d => `${d.name}\n${d.clade_reads} clade reads (${d.proportion}%)`);
 
         // Add links
         const link = svg.append('g')
-          .attr('fill', 'none')
-          .attr('stroke', '#000')
-          .attr('stroke-opacity', 0.2)
-          .selectAll('path')
-          .data(graph.links)
-          .enter().append('path')
-          .attr('d', sankeyLinkHorizontal())
+        .attr('fill', 'none')
+        
+        .attr('stroke-opacity', 0.3)
+        .selectAll('path')
+        .data(graph.links)
+        .enter().append('path')
+        .attr('d', sankeyLinkHorizontal())
+        .attr('stroke', d => d3.color(d.source.color)) // Set link color to source node color with reduced opacity
           .attr('stroke-width', d => Math.max(1, d.width));
 
         link.append('title')
@@ -324,11 +327,10 @@
         svg.selectAll('rect')
           .call(drag) // Apply drag behavior
           .on('mouseover', (event, d) => {
-            d3.select(event.currentTarget).attr('fill', 'steelblue');
             highlightLineage(d);
           })
-          .on('mouseout', (event) => {
-            d3.select(event.currentTarget).attr('fill', '#696969');
+          .on('mouseout', (event, d) => {
+            d3.select(event.currentTarget).attr('fill', d.color);
             resetHighlight();
           })
           .on('click', (event, d) => {
@@ -337,7 +339,7 @@
 
         link
           .on('mouseover', (event) => {
-            d3.select(event.currentTarget).attr('stroke-opacity', 0.3);
+            d3.select(event.currentTarget).attr('stroke-opacity', 0.5);
           })
           .on('mouseout', (event) => {
             d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
