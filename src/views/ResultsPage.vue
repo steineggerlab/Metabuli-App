@@ -46,12 +46,12 @@
             <div class="text-caption">Taxa per level</div>
             <v-slider
               v-model="sankeySliderValue"
-              thumb-label="always"
+              thumb-label
               width="500"
               show-ticks="always"
               step="5"
-              :min="1"
-              :max="100"
+              :min="25"
+              :max="50"
               tick-size="1"
             ></v-slider>
           </div>
@@ -84,7 +84,7 @@ export default {
         { title: 'Name', align: 'start', key: 'name' },
       ],
       search: '',
-      sankeySliderValue: 100,
+      sankeySliderValue: 25,
       // nodes in same rank should be in same column (refer to pavian)
       // thickness of link (value) should be percentage
       // percentage of links going out from a node should add up to 100

@@ -17,18 +17,16 @@
           <p>Rank <strong>{{ hoverDetails.data.rank }}</strong></p>
           
           <p>TaxID {{ hoverDetails.data.id }}</p>
-          <div class="tab">
+          <div class="taxid-breadcrumbs">
             <p>
               <a :href="`https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=${hoverDetails.data.id}`" target="_blank">
                 NCBI Taxonomy
               </a> 
-            </p>
-            <p>
+              /
               <a :href="`https://www.ncbi.nlm.nih.gov/assembly/?term=txid${hoverDetails.data.id}[Organism:exp]`" target="_blank">
                 Assemblies
               </a>
-            </p>
-            <p>
+              /
               <a :href="`https://pubmed.ncbi.nlm.nih.gov/?term=${hoverDetails.data.name}`" target="_blank">
                 PubMed
               </a>
@@ -43,7 +41,6 @@
 
           <br>
           <p><strong>Lineage:</strong> {{ hoverDetails.data.lineage.map(n => `${n.name} (${n.rank})`).join(' > ') }}</p>
-          <!-- <pre>{{ formattedLineage }}</pre> -->
          
 
         </div>
@@ -72,8 +69,7 @@
         required: true
       },
       taxaLimit: {
-        type: Number,
-        default: 100
+        type: Number
       }
     },
     data() {
@@ -269,7 +265,7 @@
         const container = this.$refs.sankeyContainer;
         d3.select(container).selectAll('*').remove(); // Clear the previous diagram
         const width = window.innerWidth; // Set width to full window width
-        const height = 680;
+        const height = 600;
         const marginBottom = 50; // Margin for rank labels 
 
         const svg = d3.select(container)
@@ -508,10 +504,9 @@
 .sankey-diagram {
   flex: 1;
 }  
-.tab {
-  margin-left: 15px;
+.taxid-breadcrumbs a {
+  text-decoration: none;
 }
-
 
 .node {
   cursor: grab;
