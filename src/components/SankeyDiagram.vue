@@ -121,7 +121,7 @@
           };
 
           // Add node to rank-specific collection if it's not 'no rank'
-          if (d.rank !== "no rank") {
+          if (d.rank !== "no rank" && !this.isUnclassifiedTaxa(d)) { 
             if (!nodesByRank[d.rank]) {
               nodesByRank[d.rank] = [];
             }
@@ -151,16 +151,15 @@
               proportion: parseFloat(d.proportion),
               clade_reads: parseFloat(d.clade_reads),
               taxon_reads: d.taxon_reads,
-              // lineage: [...currentLineage, { id: `dummy-${d.taxon_id}`, name: d.name, rank: 'no rank' }]
-              lineage: []
+              lineage: [],
+              type: 'unclassified'
             };
-            // nodes.push(dummyNode);
 
             // lineage tracking for unclassified taxa
             let currentLineageCopy = [...currentLineage];
             const parentName = dummyNode.name.replace('unclassified ', '');
             let lastLineageNode = currentLineageCopy[currentLineageCopy.length-1];
-  
+
             if (lastLineageNode) {
               while (lastLineageNode && lastLineageNode.name !== parentName) {
                 currentLineageCopy.pop(); 
@@ -168,19 +167,18 @@
               }
             }
 
-            // Append current node to currentLineage array + store lineage data 
             currentLineageCopy.push(dummyNode);
             dummyNode.lineage = [...currentLineageCopy];
 
+            // Add dummyNode to sankey
             nodes.push(dummyNode);
-
-
           }
         });
 
         // Step 2: Filter top 10 nodes by clade_reads for each rank in rankOrder + add nodes to sankey diagram
         rankOrder.forEach(rank => {
           if (nodesByRank[rank]) {
+            // Sort nodes by clade_reads in descending order and select the top nodes based on slider value
             const topNodes = nodesByRank[rank].sort((a, b) => b.clade_reads - a.clade_reads).slice(0, this.taxaLimit);
             nodes.push(...topNodes);
           }
@@ -193,10 +191,8 @@
           
           // Find parent node for unclassified taxa nodes
           if (this.isUnclassifiedTaxa(node)) {
-            console.log("dummy: ", node.name)
             const parentName = node.name.replace('unclassified ', '');
             const parentNode = lineage.find(n => n.name === parentName);
-            console.log("parent: ", parentName, parentNode.rank)
             if (parentNode && rankOrder.includes(parentNode.rank)) {
               console.log("parentLink created")
               links.push({
@@ -230,10 +226,9 @@
 
       isUnclassifiedTaxa(d) {
         const name = d.name
-        const rank = d.rank
         
         // Check if the name starts with "unclassified"
-        if (!name.startsWith("unclassified") || rank !== "no rank") {
+        if (!name.startsWith("unclassified")) {
           return false;
         }
         
@@ -268,10 +263,9 @@
 
       createSankey() {
         const { nodes, links } = this.parseData(this.data);
-
         const container = this.$refs.sankeyContainer;
         d3.select(container).selectAll('*').remove(); // Clear the previous diagram
-        const width = window.innerWidth; // Set width to full window width minus margin for labels on the right
+        const width = window.innerWidth; // Set width to full window width
         const height = 680;
         const marginBottom = 50; // Margin for rank labels 
 
@@ -380,54 +374,35 @@
           // .attr('height', d => d.y1 - d.y0)
           .attr('height', d => this.nodeHeight(d))
           .attr('width', d => d.x1 - d.x0)
-          .attr('fill', d => d.color)
+          .attr('fill', d => d.type === "unclassified" ? 'transparent' : d.color) // Transparent for unclassified nodes
           .attr('class', 'node') // Apply the CSS class for cursor
+          .style('cursor', d => d.type === 'unclassified' ? 'default' : 'grab') //FIXME: Default cursor for unclassified nodes
           .append('title')
           .text(d => `${d.name}\n${d.clade_reads} clade reads (${d.proportion}%)`);
-
-        // Add links
-        const link = svg.append('g')
-        .attr('fill', 'none')
-        
-        .attr('stroke-opacity', 0.3)
-        .selectAll('path')
-        .data(graph.links)
-        .enter().append('path')
-        .attr('d', sankeyLinkHorizontal())
-        .attr('stroke', d => d3.color(d.source.color)) // Set link color to source node color with reduced opacity
-        .attr('stroke-width', d => Math.max(1, d.width));
-          // .attr('stroke-width', d => Math.max(1, d.height));
-
-        link.append('title')
-          .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
 
         // Add mouse event on nodes and links
         svg.selectAll('rect')
           .call(drag) // Apply drag behavior
           .on('mouseover', (event, d) => {
-            highlightLineage(d);
+            if (d.type !== 'unclassified') {
+              highlightLineage(d);
+            }
           })
           .on('mouseout', (event, d) => {
-            d3.select(event.currentTarget).attr('fill', d.color);
-            resetHighlight();
+            if (d.type !== 'unclassified') {
+              d3.select(event.currentTarget).attr('fill', d.color);
+              resetHighlight();
+            }
           })
           .on('click', (event, d) => {
-            this.showNodeDetails(event, d);
+            if (d.type !== 'unclassified') {
+              this.showNodeDetails(event, d);
+            }
           });
 
-        link
-          .on('mouseover', (event) => {
-            d3.select(event.currentTarget).attr('stroke-opacity', 0.5);
-          })
-          .on('mouseout', (event) => {
-            d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
-          })
-          .on('click', (event, d) => {
-            this.showLinkDetails(event, d);
-          });
-
-        // Add node name labels next to node
-        svg.append('g')
+          
+          // Add node name labels next to node
+          svg.append('g')
           .selectAll('text')
           .data(graph.nodes)
           .enter().append('text')
@@ -437,11 +412,13 @@
           .attr('y', d => (d.y0 + d.y1) / 2)
           .attr('dy', '0.35em')
           .attr('text-anchor', 'start')
+          .text(d => d.name)
           .style('font-size', '10px') 
-          .text(d => d.name);
-
-        // Add clade reads label above node
-        svg.append('g')
+          .style('fill', d => d.type === 'unclassified' ? 'transparent' : 'black')
+          .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
+          
+          // Add clade reads label above node
+          svg.append('g')
           .selectAll('text')
           .data(graph.nodes)
           .enter().append('text')
@@ -452,8 +429,42 @@
           .attr('dy', '0.35em')
           .attr('text-anchor', 'middle')
           .style('font-size', '10px')
-          .text(d => this.formatCladeReads(d.clade_reads));
-      },
+          .style('fill', d => d.type === 'unclassified' ? 'transparent' : 'black')
+          .text(d => this.formatCladeReads(d.clade_reads))
+          .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
+          
+          // Add links
+          const link = svg.append('g')
+          .attr('fill', 'none')
+          .attr('stroke-opacity', 0.3)
+          .selectAll('path')
+          .data(graph.links)
+          .enter().append('path')
+          .attr('d', sankeyLinkHorizontal())
+          .attr('stroke', d => d.target.type === 'unclassified' ? 'transparent' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
+          .attr('stroke-width', d => Math.max(1, d.width))
+            // .attr('stroke-width', d => Math.max(1, d.height));
+          .append('title')
+          .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
+  
+          // Add mouse event on links
+          link
+            .on('mouseover', (event, d) => {
+              if (d.target.type !== 'unclassified') {
+                d3.select(event.currentTarget).attr('stroke-opacity', 0.5);
+              }
+            })
+            .on('mouseout', (event, d) => {
+              if (d.target.type !== 'unclassified') {
+                d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
+              }
+            })
+            .on('click', (event, d) => {
+              if (d.target.type !== 'unclassified') {
+                this.showLinkDetails(event, d);
+              }
+            });
+        },
       updateSankey() {
         this.createSankey();
       },
