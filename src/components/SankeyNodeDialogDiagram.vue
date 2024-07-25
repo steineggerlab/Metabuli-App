@@ -7,64 +7,61 @@ import * as d3 from 'd3'
 import { sankey, sankeyLinkHorizontal, sankeyJustify } from 'd3-sankey'
   
 export default {
-    name: 'SankeyNodeDialogDiagram',
-    props: {
-        data: Object
-    },
-    mounted() {
-        this.createSankey();
-    },
-    methods: {
-        createSankey() {
-            const { nodes, links } = this.data;
-    
-            const container = this.$refs.dialogSankeyContainer;
-            d3.select(container).selectAll('*').remove(); // Clear the previous diagram
-            const width = 1100; // Set width to 90% of the window width
-            const height = 600;
-            const marginBottom = 50; // Margin for rank labels
-            const marginRight = 10;
-    
-            const svg = d3.select(container)
-            .append('svg')
-            .attr('width', width)
-            .attr('height', height + marginBottom);
-    
-            const sankeyGenerator = sankey()
-            .nodeId(d => d.id)
-            .nodeAlign(sankeyJustify)
-            .nodeWidth(20)
-            .nodePadding(12)
-            .extent([[10, 30], [width - marginRight, height - 6]]);
-    
-            const graph = sankeyGenerator({
-                nodes: nodes.map(d => Object.assign({}, d)),
-                links: links.map(d => Object.assign({}, d))
-            });
+  name: 'SankeyNodeDialogDiagram',
+  props: {
+    data: Object
+  },
+  mounted() {
+      this.createSankey();
+  },
+  methods: {
+    createSankey() {
+      const { nodes, links } = this.data;
 
-            // const graph = this.data;
-    
-            // Define color scale
-            const color = d3.scaleOrdinal(d3.schemeCategory10);
-    
-            // Manually adjust nodes position to align by rank
-            const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"];
-            const columnWidth = (width - marginRight) / rankOrder.length;
-            const columnMap = rankOrder.reduce((acc, rank, index) => {
-                const leftMargin = 10;
-                acc[rank] = index * columnWidth + leftMargin;
-                return acc;
-            }, {});
+      const container = this.$refs.dialogSankeyContainer;
+      d3.select(container).selectAll('*').remove(); // Clear the previous diagram
+      const width = 1100; // Set width to 90% of the window width
+      const height = 600;
+      const marginBottom = 50; // Margin for rank labels
+      const marginRight = 10;
 
-            graph.nodes.forEach(node => {
-                node.x0 = columnMap[node.rank];
-                node.x1 = node.x0 + sankeyGenerator.nodeWidth();
-                node.color = color(node.id); // Assign color to node
+      const svg = d3.select(container)
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height + marginBottom);
+  
+      const sankeyGenerator = sankey()
+      .nodeId(d => d.id)
+      .nodeAlign(sankeyJustify)
+      .nodeWidth(20)
+      .nodePadding(12)
+      .extent([[10, 30], [width - marginRight, height - 6]]);
 
-            });
-            
-            console.log("sankey nodes data:", graph.nodes);
-           // Add rank column labels
+      const graph = sankeyGenerator({
+          nodes: nodes.map(d => Object.assign({}, d)),
+          links: links.map(d => Object.assign({}, d))
+      });
+  
+      // Define color scale
+      const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+      // Manually adjust nodes position to align by rank
+      const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"];
+      const columnWidth = (width - marginRight) / rankOrder.length;
+      const columnMap = rankOrder.reduce((acc, rank, index) => {
+          const leftMargin = 10;
+          acc[rank] = index * columnWidth + leftMargin;
+          return acc;
+      }, {});
+
+      graph.nodes.forEach(node => {
+          node.x0 = columnMap[node.rank];
+          node.x1 = node.x0 + sankeyGenerator.nodeWidth();
+          node.color = color(node.id); // Assign color to node
+
+      });
+          
+      // Add rank column labels
       svg.append('g')
         .selectAll('text')
         .data(rankOrder)
@@ -137,11 +134,7 @@ export default {
             resetHighlight();
           }
         })
-        // .on('click', (event, d) => {
-        //   if (d.type !== 'unclassified') {
-        //   }
-        // });
-      
+
       // Create node rectangles
       nodeGroup.append('rect')
         .attr('width', d => d.x1 - d.x0)
@@ -151,7 +144,7 @@ export default {
         .style('cursor', d => d.type === 'unclassified' ? 'default' : 'grab')
         .append('title')
         .text(d => `${d.name}\n${d.clade_reads} clade reads (${d.proportion}%)`);
-      
+    
       // Add node name labels next to node
       nodeGroup.append('text')
         .attr('id', d => `nodeName-${d.id}`)
@@ -164,7 +157,7 @@ export default {
         .style('font-size', '10px')
         .style('fill', d => d.type === 'unclassified' ? 'transparent' : 'black')
         .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
-        
+      
       // Add clade reads label above node
       nodeGroup.append('text')
         .attr('id', d => `cladeReads-${d.id}`)
@@ -178,8 +171,8 @@ export default {
         .text(d => this.formatCladeReads(d.clade_reads))
         .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
 
-        // Add links
-        const link = svg.append('g')
+      // Add links
+      const link = svg.append('g')
         .attr('fill', 'none')
         .attr('stroke-opacity', 0.3)
         .selectAll('path')
@@ -192,46 +185,45 @@ export default {
         .append('title')
         .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
 
-        // Add mouse event on links
-        link
-          .on('mouseover', (event, d) => {
-            if (d.target.type !== 'unclassified') {
-              d3.select(event.currentTarget).attr('stroke-opacity', 0.5);
-            }
-          })
-          .on('mouseout', (event, d) => {
-            if (d.target.type !== 'unclassified') {
-              d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
-            }
-          })
-          .on('click', (event, d) => {
-            if (d.target.type !== 'unclassified') {
-            //   this.showLinkDetails(event, d);
-            }
-          });
-      },
-      nodeHeight(d) { // FIXME
-        let nodeHeight = d.y1 - d.y0;
-        if (nodeHeight < 1) {
-            return 1.5;
-        } 
-        // else if (nodeHeight > 300) {
-        //   return 150;
-        // }
-        // if (d.clade_reads < 10){
-        //   d.clade_reads *= 2;
-        //   return d.y1 - d.y0;
-        // }
-        else {
-            return d.y1 - d.y0;
-        }
-        },
-        formatCladeReads(value) {
-            if (value >= 1000) {
-                return `${(value / 1000).toFixed(2)}k`;
-            }
-            return value.toString();
-        }
+      // Add mouse event on links
+      link
+        .on('mouseover', (event, d) => {
+          if (d.target.type !== 'unclassified') {
+            d3.select(event.currentTarget).attr('stroke-opacity', 0.5);
+          }
+        })
+        .on('mouseout', (event, d) => {
+          if (d.target.type !== 'unclassified') {
+            d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
+          }
+        })
+        .on('click', (event, d) => {
+          if (d.target.type !== 'unclassified') {
+          }
+      });
+    },
+    nodeHeight(d) { // FIXME
+      let nodeHeight = d.y1 - d.y0;
+      if (nodeHeight < 1) {
+        return 1.5;
+      } 
+      // else if (nodeHeight > 300) {
+      //   return 150;
+      // }
+      // if (d.clade_reads < 10){
+      //   d.clade_reads *= 2;
+      //   return d.y1 - d.y0;
+      // }
+      else {
+        return d.y1 - d.y0;
+      }
+    },
+    formatCladeReads(value) {
+      if (value >= 1000) {
+        return `${(value / 1000).toFixed(2)}k`;
+      }
+      return value.toString();
     }
   }
+}
 </script>
