@@ -232,7 +232,7 @@
 
       createSankey() {
         const { nodes, links } = this.graphData;
-        
+
         const container = this.$refs.sankeyContainer;
         d3.select(container).selectAll('*').remove(); // Clear the previous diagram
         const width = window.innerWidth; // Set width to full window width
@@ -300,18 +300,13 @@
         const drag = d3.drag()
           .subject(function(d) { return d; })
           .on('start', function() {
-            d3.select(this).raise().attr('stroke', 'black');
           })
           .on('drag', function(event, d) {
             d.y0 = d.y0 + event.dy;
             d.y1 = d.y1 + event.dy;
-            d3.select(this).attr('y', d.y0);
+            d3.select(this).attr('transform', `translate(${d.x0}, ${d.y0})`);
             sankeyGenerator.update(graph);
             svg.selectAll('path').attr('d', sankeyLinkHorizontal());
-
-            // Update the positions of the labels
-            d3.select(`#cladeReads-${d.id}`).attr('y', d.y0 - 5);
-            d3.select(`#nodeName-${d.id}`).attr('y', (d.y0 + d.y1) / 2);
           })
           .on('end', function() {
             d3.select(this).attr('stroke', null);
@@ -336,25 +331,14 @@
           svg.selectAll('.clade-reads').style('opacity', 1);
         };
 
-        // Add nodes
-        svg.append('g')
-          .selectAll('rect')
+        // Create node group (node + labels) and add mouse events
+        const nodeGroup = svg.append('g')
+          .selectAll('.node-group')
           .data(graph.nodes)
-          .enter().append('rect')
-          .attr('x', d => d.x0)
-          .attr('y', d => d.y0)
-          // .attr('height', d => d.y1 - d.y0)
-          .attr('height', d => this.nodeHeight(d))
-          .attr('width', d => d.x1 - d.x0)
-          .attr('fill', d => d.type === "unclassified" ? 'transparent' : d.color) // Transparent for unclassified nodes
-          .attr('class', 'node') // Apply the CSS class for cursor
-          .style('cursor', d => d.type === 'unclassified' ? 'default' : 'grab') //FIXME: Default cursor for unclassified nodes
-          .append('title')
-          .text(d => `${d.name}\n${d.clade_reads} clade reads (${d.proportion}%)`);
-
-        // Add mouse event on nodes and links
-        svg.selectAll('rect')
-          .call(drag) // Apply drag behavior
+          .enter().append('g')
+          .attr('class', 'node-group')
+          .attr('transform', d => `translate(${d.x0}, ${d.y0})`)
+          .call(drag)
           .on('mouseover', (event, d) => {
             if (d.type !== 'unclassified') {
               highlightLineage(d);
@@ -362,7 +346,6 @@
           })
           .on('mouseout', (event, d) => {
             if (d.type !== 'unclassified') {
-              d3.select(event.currentTarget).attr('fill', d.color);
               resetHighlight();
             }
           })
@@ -371,39 +354,43 @@
               this.showNodeDetails(event, d);
             }
           });
-          
-          // Add node name labels next to node
-          svg.append('g')
-          .selectAll('text')
-          .data(graph.nodes)
-          .enter().append('text')
+        
+        // Create node rectangles
+        nodeGroup.append('rect')
+          .attr('width', d => d.x1 - d.x0)
+          .attr('height', d => this.nodeHeight(d))
+          .attr('fill', d => d.type === "unclassified" ? 'transparent' : d.color) // Transparent for unclassified nodes
+          .attr('class', 'node') // Apply the CSS class for cursor
+          .style('cursor', d => d.type === 'unclassified' ? 'default' : 'grab')
+          .append('title')
+          .text(d => `${d.name}\n${d.clade_reads} clade reads (${d.proportion}%)`);
+        
+        // Add node name labels next to node
+        nodeGroup.append('text')
           .attr('id', d => `nodeName-${d.id}`)
-          .attr('class', 'node-name') // Needed for greying out on node hover
-          .attr('x', d =>  d.x1 + 3)
-          .attr('y', d => (d.y0 + d.y1) / 2)
+          .attr('class', 'node-name')
+          .attr('x', d => d.x1 - d.x0 + 3)
+          .attr('y', d => this.nodeHeight(d) / 2)
           .attr('dy', '0.35em')
           .attr('text-anchor', 'start')
           .text(d => d.name)
-          .style('font-size', '10px') 
+          .style('font-size', '10px')
           .style('fill', d => d.type === 'unclassified' ? 'transparent' : 'black')
           .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
           
-          // Add clade reads label above node
-          svg.append('g')
-          .selectAll('text')
-          .data(graph.nodes)
-          .enter().append('text')
+        // Add clade reads label above node
+        nodeGroup.append('text')
           .attr('id', d => `cladeReads-${d.id}`)
-          .attr('class', 'clade-reads') // Needed for greying out on node hover
-          .attr('x', d => (d.x0 + d.x1) / 2)
-          .attr('y', d => d.y0 - 5)
+          .attr('class', 'clade-reads')
+          .attr('x', d => (d.x1 - d.x0) / 2)
+          .attr('y', -5)
           .attr('dy', '0.35em')
           .attr('text-anchor', 'middle')
           .style('font-size', '10px')
           .style('fill', d => d.type === 'unclassified' ? 'transparent' : 'black')
           .text(d => this.formatCladeReads(d.clade_reads))
           .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
-          
+
           // Add links
           const link = svg.append('g')
           .attr('fill', 'none')
