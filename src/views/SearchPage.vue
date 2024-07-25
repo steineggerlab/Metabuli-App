@@ -5,7 +5,7 @@
       <!-- Footer: Reference to Paper -->
       <v-container>
         <v-card>
-          <v-card-title>Reference</v-card-title>
+          <v-toolbar class="custom-toolbar" density="compact">Reference</v-toolbar>
           <v-card-text>
             Kim J, Steinegger M. 
             <a href="https://www.nature.com/articles/s41592-024-02273-y" target="_blank">

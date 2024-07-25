@@ -48,6 +48,15 @@
             >
               <v-icon left>{{ items[1].icon }}</v-icon>
               <span>{{ items[1].title }}</span>
+
+              <template v-slot:append>
+                <v-badge 
+                  v-if="!checkedResults"
+                  color="error"
+                  content="1"
+                  inline
+                ></v-badge>
+              </template>
             </v-list-item>
           </router-link> 
         </v-slide-y-transition>
@@ -78,7 +87,8 @@ export default {
       { title: 'Results', path: '/results', icon: 'mdi-chart-bar' }
     ],
     jobCompleted: false,
-    completedJob: {}
+    completedJob: {},
+    checkedResults: false
   }),
 
   computed: {
@@ -102,6 +112,7 @@ export default {
       }
     },
     handleResultsClick(event) {
+      this.checkedResults = true;
       event.preventDefault();
       this.$router.push({
         name: 'ResultsPage',
@@ -112,7 +123,14 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+.custom-toolbar {
+  color: white;
+  font-size: 20px;
+  background-image: url('https://search.foldseek.com/e5408e4113ed61a79c6f.png');
+  padding-left: 20px;
+}
+
 .no-underline {
   text-decoration: none;
   color: inherit;
@@ -135,6 +153,4 @@ export default {
 .nav-item.active {
   background-color: #d3d3d3;
 }
-
-
 </style>

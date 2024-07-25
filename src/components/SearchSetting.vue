@@ -3,6 +3,7 @@
     <v-container> 
       <!-- SEARCH SETTINGS PANEL -->
       <v-card class="mb-3 search-settings-panel">
+        <!-- HEADER TOOLBAR -->
         <v-toolbar class="custom-toolbar" density="compact">
           Search Settings
           <v-spacer></v-spacer>
@@ -10,8 +11,8 @@
             <v-icon size="28">mdi-api</v-icon>
           </v-btn>
         </v-toolbar>
-
         
+        <!-- SEARCH SETTINGS -->
         <v-card-text>
           <v-radio-group v-model="endType" inline class="d-flex align-center mb-0">
             <v-radio label="Single-end" value="single-end"></v-radio>
@@ -42,6 +43,7 @@
 
           <v-text-field label="Max RAM" variant="underlined" v-model="jobDetails.maxram" width="500"></v-text-field>
 
+          <!-- BUTTONS -->
           <v-sheet class="d-flex align-center mb-2">
             <v-btn 
               :loading="loading"
@@ -63,15 +65,6 @@
           </v-sheet>
 
         </v-card-text>
-      </v-card>
-
-      <!-- STATUS PANEL -->
-      <v-card>
-        <v-toolbar class="custom-toolbar" density="compact">Job Status: {{ status }}</v-toolbar>
-
-        <div class="status-container">
-            <v-card-text>{{ statusMessage }}</v-card-text>
-        </div>
       </v-card>
 
       <!-- API Dialog -->
@@ -113,9 +106,9 @@ export default {
       maxram: 0
     },
     jobDetailsSample: { // Sample job details
-      q1: '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq',
-      q2: '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_2.fq',
-      database: "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/refseq_virus",
+      q1: 'SRR14484345_1.fq',
+      q2: 'SRR14484345_2.fq',
+      database: "refseq_virus",
       jobid: "sample_data",
       outdir: "sample_data/",
       maxram: 128
@@ -253,13 +246,9 @@ export default {
 }
 </script>
 
+
+
 <style scoped>
-.custom-toolbar {
-  color: white;
-  font-size: 20px;
-  background-image: url('https://search.foldseek.com/e5408e4113ed61a79c6f.png');
-  padding-left: 20px;
-}
 .status-container {
   display: flex;
   align-items: center;
