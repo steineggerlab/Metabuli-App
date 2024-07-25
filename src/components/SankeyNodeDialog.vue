@@ -1,5 +1,10 @@
 <template>
-    <v-dialog class="d-flex align-center justify-center flex-wrap text-center mx-auto my-4 px-4" v-model="localDialog" max-width="window.innerWidth">
+    <v-dialog 
+    class="d-flex align-center justify-center flex-wrap text-center mx-auto my-4 px-4" 
+    v-model="localDialog" 
+    max-width="window.innerWidth"
+    scrollable
+    >
         <!-- NODE DETAILS -->
         <v-card>
             <v-card-title>{{ hoverDetails.data.name }}</v-card-title>
@@ -33,10 +38,10 @@
                 
                 <p><strong>Lineage:</strong> {{ hoverDetails.data.lineage.map(n => `${n.name} (${n.rank})`).join(' > ') }}</p>
                 
+                <!-- NODE SUBTREE SANKEY DIAGRAM -->
+                <SankeyNodeDialogDiagram :data="subtreeData"/>
             </v-card-text>
             
-            <!-- NODE SUBTREE SANKEY DIAGRAM -->
-            <SankeyNodeDialogDiagram :data="subtreeData"/>
             
             <v-card-actions>
                 <v-btn color="primary" @click="closeDialog">Close</v-btn>

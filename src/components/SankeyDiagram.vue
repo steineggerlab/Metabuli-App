@@ -475,14 +475,22 @@ export default {
     getDescendants(node);
     getAncestors(node);
 
-      // Filter nodes and links based on the subtree sets
+    // Filter nodes and links based on the subtree sets
+    // const subtreeData = {
+    //   nodes: graph.nodes.filter(n => subtreeNodes.has(n.id)),
+    //   links: Array.from(subtreeLinks)
+    // };
+
     const subtreeData = {
-      nodes: graph.nodes.filter(n => subtreeNodes.has(n.id)),
-      links: Array.from(subtreeLinks)
+      nodes: this.graphData.nodes.filter(n => subtreeNodes.has(n.id)),
+      links: Array.from(subtreeLinks).map(link => ({
+        source: link.source.id,
+        target: link.target.id,
+        value: link.value
+      }))
     };
 
     this.subtreeData = subtreeData;
-    console.log(this.subtreeData);
     },
     formatCladeReads(value) {
       if (value >= 1000) {
