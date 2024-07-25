@@ -6,6 +6,7 @@
     <SankeyNodeDialog
       :hoverDetails="hoverDetails"
       :dialog="dialog"
+      :subtreeData="subtreeData"
       @close-dialog="dialog = false"
     />
 
@@ -45,16 +46,14 @@
     data() {
       return {
         hoverDetails: null,
-        dialog: false
+        dialog: false,
+        subtreeData: { nodes: [], links: [] }, // Store subtree data of clicked node
+        graph: { nodes: [], links: [] } // Add a new data property to store the graph
         };
     },
     computed: {
-      formattedLineage() { // FIXME
-        if (!this.hoverDetails || !this.hoverDetails.data.lineage) return '';
-        return this.hoverDetails.data.lineage.map((node, index) => {
-          const prefix = ' '.repeat(index * 2) + (index === 0 ? '' : '└ ');
-          return `${prefix}${node.name}`;
-        }).join('\n');
+      graphData() {
+        return this.parseData(this.data)
       }
     },
     watch: {
@@ -232,7 +231,8 @@
       },
 
       createSankey() {
-        const { nodes, links } = this.parseData(this.data);
+        const { nodes, links } = this.graphData;
+        
         const container = this.$refs.sankeyContainer;
         d3.select(container).selectAll('*').remove(); // Clear the previous diagram
         const width = window.innerWidth; // Set width to full window width
@@ -255,6 +255,8 @@
           nodes: nodes.map(d => Object.assign({}, d)),
           links: links.map(d => Object.assign({}, d))
         });
+
+        this.graph = graph; // Store the graph object in the component-level data property
 
         // Define color scale
         const color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -443,6 +445,7 @@
           type: 'node',
           data: d
         };
+        this.extractSubtreeData(d); // Extract subtree data for the clicked node
       },
       showLinkDetails(event, d) {
         this.hoverDetails = {
@@ -453,6 +456,46 @@
       clearDetails() {
         this.hoverDetails = null;
       },
+      extractSubtreeData(node) {
+        const graph = this.graph;
+        const subtreeNodes = new Set();
+        const subtreeLinks = new Set();
+
+
+      // Recursive function to get all descendant nodes and links
+      const getDescendants = (currentNode) => {
+        subtreeNodes.add(currentNode.id);
+        graph.links.forEach(link => {
+          if (link.source.id === currentNode.id) {
+            subtreeLinks.add(link);
+            getDescendants(link.target);
+          }
+        });
+      };
+
+      // Recursive function to get all ancestor nodes and links
+      const getAncestors = (currentNode) => {
+        subtreeNodes.add(currentNode.id);
+        graph.links.forEach(link => {
+          if (link.target.id === currentNode.id) {
+            subtreeLinks.add(link);
+            getAncestors(link.source);
+          }
+        });
+      };
+
+      // Get all descendants and ancestors of the clicked node
+      getDescendants(node);
+      getAncestors(node);
+
+       // Filter nodes and links based on the subtree sets
+      const subtreeData = {
+        nodes: graph.nodes.filter(n => subtreeNodes.has(n.id)),
+        links: Array.from(subtreeLinks)
+      };
+
+      this.subtreeData = subtreeData;
+      },
       formatCladeReads(value) {
         if (value >= 1000) {
           return `${(value / 1000).toFixed(2)}k`;
@@ -461,7 +504,7 @@
       }
     },
     mounted() {
-      this.createSankey()
+      this.createSankey();
     },
   }
   </script>

@@ -36,21 +36,28 @@
                 
             </v-card-text>
             
+            <!-- NODE SUBTREE SANKEY DIAGRAM -->
+             <!-- <SankeyDiagram :data="subtreeData" :isParsed="true"/> -->
+            
             <v-card-actions>
                 <v-btn color="primary" @click="closeDialog">Close</v-btn>
             </v-card-actions>
         </v-card>
-
-        <!-- NODE SUBTREE SANKEY DIAGRAM -->
     </v-dialog>
-  </template>
+</template>
   
-  <script>
+<script>
+// import SankeyDiagram from './SankeyDiagram.vue';
+
   export default {
     name: 'SankeyNodeDialog',
+    // components: {
+    //     SankeyDiagram
+    // },
     props: {
       hoverDetails: Object,
-      dialog: Boolean
+      dialog: Boolean,
+      subtreeData: Object
     },
     data() {
       return {
@@ -64,7 +71,7 @@
       localDialog(newVal) {
         if (!newVal) {
           this.$emit('close-dialog');
-        }
+        } 
       }
     },
     methods: {
