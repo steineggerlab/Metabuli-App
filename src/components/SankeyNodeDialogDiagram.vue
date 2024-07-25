@@ -1,7 +1,5 @@
 <template>
-
-    <div ref="dialogSankeyContainer" class="sankey-diagram"></div>
-
+  <div ref="dialogSankeyContainer"></div>
 </template>
   
 <script>
@@ -237,11 +235,3 @@ export default {
     }
   }
 </script>
-  
-<style scoped>
-.sankey-diagram {
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 400px;
-}
-</style>
