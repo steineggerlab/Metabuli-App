@@ -10,7 +10,7 @@
     />
 
     <!-- NODE OR LINK DETAILS PANEL -->
-    <v-sheet id="detailSheet" class="d-flex align-center justify-center flex-wrap text-center mx-auto my-4 px-4"
+    <v-sheet class="d-flex align-center justify-center flex-wrap text-center mx-auto my-4 px-4"
      elevation="4"
       max-width="800"
       width="100%"
@@ -443,20 +443,12 @@
           type: 'node',
           data: d
         };
-        // this.scrollToDetails();
       },
       showLinkDetails(event, d) {
         this.hoverDetails = {
           type: 'link',
           data: d
         };
-        this.scrollToDetails();
-      },
-      scrollToDetails() {
-        const element = document.getElementById('detailSheet');
-        if (element) {
-          element.scrollIntoView({ behavior: 'auto' });
-        }
       },
       clearDetails() {
         this.hoverDetails = null;
