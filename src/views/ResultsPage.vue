@@ -56,7 +56,7 @@
             ></v-slider>
           </div>
 
-          <SankeyDiagram :data="results" :taxaLimit="sankeySliderValue" :isParsed="false" />
+          <SankeyDiagram :data="results" :taxaLimit="sankeySliderValue" />
         </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>

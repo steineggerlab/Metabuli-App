@@ -6,7 +6,6 @@
     <SankeyNodeDialog
       :hoverDetails="hoverDetails"
       :dialog="dialog"
-      :subtreeData="subtreeData"
       @close-dialog="dialog = false"
     />
 
@@ -40,17 +39,13 @@
         required: true
       },
       taxaLimit: {
-        type: Number,
-        default: 25
-      },
-      isParsed: Boolean // Prop to indicate if the data is already parsed
+        type: Number
+      }
     },
     data() {
       return {
         hoverDetails: null,
-        dialog: false,
-        subtreeData: { nodes: [], links: [] }, // Store subtree data of clicked node
-        graph: { nodes: [], links: [] } // Add a new data property to store the graph
+        dialog: false
         };
     },
     computed: {
@@ -236,9 +231,8 @@
         }
       },
 
-      createSankey(graphData) {
-        const { nodes, links } = graphData;
-        
+      createSankey() {
+        const { nodes, links } = this.parseData(this.data);
         const container = this.$refs.sankeyContainer;
         d3.select(container).selectAll('*').remove(); // Clear the previous diagram
         const width = window.innerWidth; // Set width to full window width
@@ -261,8 +255,6 @@
           nodes: nodes.map(d => Object.assign({}, d)),
           links: links.map(d => Object.assign({}, d))
         });
-
-        this.graph = graph; // Store the graph object in the component-level data property
 
         // Define color scale
         const color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -451,7 +443,6 @@
           type: 'node',
           data: d
         };
-        this.extractSubtreeData(d); // Extract subtree data for the clicked node
       },
       showLinkDetails(event, d) {
         this.hoverDetails = {
@@ -462,46 +453,6 @@
       clearDetails() {
         this.hoverDetails = null;
       },
-      extractSubtreeData(node) {
-        const graph = this.graph;
-        const subtreeNodes = new Set();
-        const subtreeLinks = new Set();
-
-
-      // Recursive function to get all descendant nodes and links
-      const getDescendants = (currentNode) => {
-        subtreeNodes.add(currentNode.id);
-        graph.links.forEach(link => {
-          if (link.source.id === currentNode.id) {
-            subtreeLinks.add(link);
-            getDescendants(link.target);
-          }
-        });
-      };
-
-      // Recursive function to get all ancestor nodes and links
-      const getAncestors = (currentNode) => {
-        subtreeNodes.add(currentNode.id);
-        graph.links.forEach(link => {
-          if (link.target.id === currentNode.id) {
-            subtreeLinks.add(link);
-            getAncestors(link.source);
-          }
-        });
-      };
-
-      // Get all descendants and ancestors of the clicked node
-      getDescendants(node);
-      getAncestors(node);
-
-       // Filter nodes and links based on the subtree sets
-      const subtreeData = {
-        nodes: graph.nodes.filter(n => subtreeNodes.has(n.id)),
-        links: Array.from(subtreeLinks)
-      };
-
-      this.subtreeData = subtreeData;
-      },
       formatCladeReads(value) {
         if (value >= 1000) {
           return `${(value / 1000).toFixed(2)}k`;
@@ -510,12 +461,7 @@
       }
     },
     mounted() {
-      if (this.isParsed) {
-        this.createSankey(this.data);
-      } else {
-        const graphData = this.parseData(this.data);
-        this.createSankey(graphData);
-      }
+      this.createSankey()
     },
   }
   </script>
