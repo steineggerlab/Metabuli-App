@@ -2,6 +2,13 @@
   <div class="sankey-container">
     <div ref="sankeyContainer" class="sankey-diagram"></div>
 
+    <!-- NODE DETAILS DIALOG -->
+    <SankeyNodeDialog
+      :hoverDetails="hoverDetails"
+      :dialog="dialog"
+      @close-dialog="dialog = false"
+    />
+
     <!-- NODE OR LINK DETAILS PANEL -->
     <v-sheet id="detailSheet" class="d-flex align-center justify-center flex-wrap text-center mx-auto my-4 px-4"
      elevation="4"
@@ -9,49 +16,7 @@
       width="100%"
       rounded
     >
-      <v-card-text v-if="hoverDetails">
-        <div v-if="hoverDetails.type === 'node'">
-          
-          <h3>{{ hoverDetails.data.name }}</h3>
-          
-          <p>Rank <strong>{{ hoverDetails.data.rank }}</strong></p>
-          
-          <p>TaxID {{ hoverDetails.data.id }}</p>
-          <div class="taxid-breadcrumbs">
-            <p>
-              <a :href="`https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=${hoverDetails.data.id}`" target="_blank">
-                NCBI Taxonomy
-              </a> 
-              /
-              <a :href="`https://www.ncbi.nlm.nih.gov/assembly/?term=txid${hoverDetails.data.id}[Organism:exp]`" target="_blank">
-                Assemblies
-              </a>
-              /
-              <a :href="`https://pubmed.ncbi.nlm.nih.gov/?term=${hoverDetails.data.name}`" target="_blank">
-                PubMed
-              </a>
-            </p>
-          </div>
-          
-          <br>
-          
-          <p><strong>Proportion:</strong> {{ hoverDetails.data.proportion }}%</p>
-          <p><strong>Clade Reads:</strong> {{ hoverDetails.data.clade_reads }}</p>
-          <p><strong>Taxon Reads:</strong> {{ hoverDetails.data.taxon_reads }}</p>
-          
-          <br>
-
-          <p><strong>Lineage:</strong> {{ hoverDetails.data.lineage.map(n => `${n.name} (${n.rank})`).join(' > ') }}</p>
-            
-        </div>
-        <div v-else-if="hoverDetails.type === 'link'">
-          <h3>Link Details</h3>
-          <p><strong>Source:</strong> {{ hoverDetails.data.source.name }}</p>
-          <p><strong>Target:</strong> {{ hoverDetails.data.target.name }}</p>
-          <p><strong>Value:</strong> {{ hoverDetails.data.value }}</p>
-        </div>
-      </v-card-text>
-      <v-card-text v-else>
+      <v-card-text>
         <p>Double click on a node or link to see details.</p>
       </v-card-text>
     </v-sheet>
@@ -61,8 +26,13 @@
   <script>
   import * as d3 from 'd3'
   import { sankey, sankeyLinkHorizontal, sankeyJustify } from 'd3-sankey'
+  import SankeyNodeDialog from './SankeyNodeDialog.vue';
   
   export default {
+    name: 'SankeyDiagram',
+    components: {
+      SankeyNodeDialog
+    },
     props: {
       data: {
         type: Object,
@@ -74,7 +44,8 @@
     },
     data() {
       return {
-        hoverDetails: null
+        hoverDetails: null,
+        dialog: false
         };
     },
     computed: {
@@ -467,11 +438,12 @@
         this.createSankey();
       },
       showNodeDetails(event, d) {
+        this.dialog = true;
         this.hoverDetails = {
           type: 'node',
           data: d
         };
-        this.scrollToDetails();
+        // this.scrollToDetails();
       },
       showLinkDetails(event, d) {
         this.hoverDetails = {
