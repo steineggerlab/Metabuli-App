@@ -196,11 +196,7 @@ export default {
           if (d.target.type !== 'unclassified') {
             d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
           }
-        })
-        .on('click', (event, d) => {
-          if (d.target.type !== 'unclassified') {
-          }
-      });
+        });
     },
     nodeHeight(d) { // FIXME
       let nodeHeight = d.y1 - d.y0;
