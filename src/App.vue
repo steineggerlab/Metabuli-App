@@ -98,7 +98,7 @@ export default {
       this.jobCompleted = true;
       this.completedJob = { 
         outdir: payload.outdir, 
-        jobid: payload.jobid 
+        jobid: payload.jobid
       }
     },
     handleResultsClick(event) {

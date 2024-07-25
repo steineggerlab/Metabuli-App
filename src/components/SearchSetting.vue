@@ -70,7 +70,6 @@
         <v-toolbar class="custom-toolbar" density="compact">Job Status: {{ status }}</v-toolbar>
 
         <div class="status-container">
-          <!-- <v-img :src="statusImage" alt="Status Image" height="200"></v-img> -->
             <v-card-text>{{ statusMessage }}</v-card-text>
         </div>
       </v-card>
@@ -118,7 +117,7 @@ export default {
       q2: '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_2.fq',
       database: "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/refseq_virus",
       jobid: "sample_data",
-      outdir: "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example",
+      outdir: "sample_data/",
       maxram: 128
     },
     status: 'INITIAL',
@@ -184,6 +183,10 @@ export default {
     },
     loadSampleData() {
       this.jobDetails = { ...this.jobDetailsSample };
+      this.$emit('job-complete', { 
+        outdir: this.jobDetailsSample.outdir, 
+        jobid: this.jobDetailsSample.jobid
+      });
     },
     // Function to populate formData
     populateFormData() {

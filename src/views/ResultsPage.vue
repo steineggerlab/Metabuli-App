@@ -106,7 +106,11 @@ export default {
   methods: {
     async readTSVFile(filePath) {
       try {
-        const tsvContent = await window.electron.readFile(filePath);
+        console.log(filePath); // DELETE
+        const resolvedPath = window.electron.resolvePath(filePath); // Resolve filePath
+        console.log("resolvedPath: ", resolvedPath)
+      
+        const tsvContent = await window.electron.readFile(resolvedPath);
         const json = this.tsvToJSON(tsvContent);
         return json.results;
       } catch (error) {
