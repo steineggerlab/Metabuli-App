@@ -4,7 +4,6 @@
         <v-card>
             <v-card-title>{{ hoverDetails.data.name }}</v-card-title>
             <v-card-text>
-                <!-- <p v-if="hoverDetails.type === 'link'"><strong>Link:</strong> {{ hoverDetails.data.source.name }} → {{ hoverDetails.data.target.name }}</p> -->
                 <p>Rank <strong>{{ hoverDetails.data.rank }}</strong></p>
 
                 <p>TaxID {{ hoverDetails.data.id }}</p>
@@ -37,7 +36,7 @@
             </v-card-text>
             
             <!-- NODE SUBTREE SANKEY DIAGRAM -->
-             <!-- <SankeyDiagram :data="subtreeData" :isParsed="true"/> -->
+            <SankeyNodeDialogDiagram :data="subtreeData"/>
             
             <v-card-actions>
                 <v-btn color="primary" @click="closeDialog">Close</v-btn>
@@ -47,13 +46,13 @@
 </template>
   
 <script>
-// import SankeyDiagram from './SankeyDiagram.vue';
+import SankeyNodeDialogDiagram from './SankeyNodeDialogDiagram.vue';
 
   export default {
     name: 'SankeyNodeDialog',
-    // components: {
-    //     SankeyDiagram
-    // },
+    components: {
+      SankeyNodeDialogDiagram
+    },
     props: {
       hoverDetails: Object,
       dialog: Boolean,
