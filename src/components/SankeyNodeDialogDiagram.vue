@@ -20,7 +20,7 @@ export default {
 
       const container = this.$refs.dialogSankeyContainer;
       d3.select(container).selectAll('*').remove(); // Clear the previous diagram
-      const width = 1100; // Set width to 90% of the window width
+      const width = window.innerWidth*0.9; // Set width to 90% of the window width
       const height = 600;
       const marginBottom = 50; // Margin for rank labels
       const marginRight = 10;
