@@ -238,6 +238,7 @@ export default {
       const width = window.innerWidth; // Set width to full window width
       const height = 600;
       const marginBottom = 50; // Margin for rank labels 
+      const marginRight = 150;
 
       const svg = d3.select(container)
         .append('svg')
@@ -249,7 +250,7 @@ export default {
         .nodeAlign(sankeyJustify)
         .nodeWidth(20)
         .nodePadding(12)
-        .extent([[10, 10], [width - 200, height - 6]]); 
+        .extent([[10, 10], [width - marginRight, height - 6]]); 
 
       const graph = sankeyGenerator({
         nodes: nodes.map(d => Object.assign({}, d)),
@@ -263,7 +264,7 @@ export default {
 
       // Manually adjust nodes position to align by rank
       const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"];
-      const columnWidth = (width - 150) / rankOrder.length;
+      const columnWidth = (width - marginRight) / rankOrder.length;
       const columnMap = rankOrder.reduce((acc, rank, index) => {
         const leftMargin = 10;
         acc[rank] = index * columnWidth + leftMargin;
