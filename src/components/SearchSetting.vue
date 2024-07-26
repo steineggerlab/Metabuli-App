@@ -86,15 +86,15 @@
         </v-card>
       </v-dialog>
 
-      <!-- Snackbar triggered on invalid query -->
+      <!-- Snackbar -->
       <v-snackbar
-        v-model="snackbar"
-        :timeout="2000"
+        v-model="snackbar.show"
+        :timeout="snackbar.timeout"
       >
-        <v-icon color="red">mdi-alert-circle</v-icon>
-        Invalid request. Check query and try again.
+        <v-icon :color="snackbar.color">{{ snackbar.icon }}</v-icon>
+        {{ snackbar.message }}
         <template v-slot:actions>
-          <v-btn color="red" variant="text" @click="snackbar = false">Close</v-btn>
+          <v-btn :color="snackbar.color" variant="text" @click="snackbar.show = false">Close</v-btn>
         </template>
       </v-snackbar>
     </v-container>
@@ -130,7 +130,13 @@ export default {
     loading: false,
     apiDialog: false, // Control the visibility of the API dialog
     endType: 'single-end',
-    snackbar: false, // Control the visibility of the Snackbar
+    snackbar: {
+        show: false,
+        message: '',
+        color: '',
+        icon: '',
+        timeout: 3000,
+      },
   }),
 
   methods: {
@@ -163,6 +169,7 @@ export default {
         outdir: this.jobDetailsSample.outdir, 
         jobid: this.jobDetailsSample.jobid
       });
+      this.triggerSnackbar('success');
     },
     // Function to populate formData
     populateFormData() {
@@ -182,7 +189,7 @@ export default {
         .then(async response => {
           try {
             await this.pollJobStatus(response.data.id); // Wait until job completes
-            console.log("COMPLETE") //DELETE
+
           } catch (error) {
             console.error('Error waiting for job completion:', error);
             this.loading = false; // Stop loading
@@ -192,7 +199,8 @@ export default {
         })
         .catch(() => {
           // Invalid query error
-          this.snackbar = true;
+          this.triggerSnackbar('error');
+
           this.loading = false;
         });
     },
@@ -208,6 +216,7 @@ export default {
           }
           else if (status === 'COMPLETE') {
             this.status = "COMPLETE"
+            this.triggerSnackbar('success');
             this.$emit('job-complete', { 
               outdir: this.jobDetails.outdir, 
               jobid: this.jobDetails.jobid 
@@ -222,9 +231,20 @@ export default {
       }
       this.loading = false; // Stop loading
       throw new Error('Polling timed out');
-      
     },
-
+    triggerSnackbar(type) {
+      this.snackbar.show = false; // Reset snackbar to ensure reactivity
+      if (type === 'success') {
+        this.snackbar.message = "Job complete. Check the results tab!";
+        this.snackbar.color = 'green';
+        this.snackbar.icon = 'mdi-check-circle';
+      } else if (type === 'error') {
+        this.snackbar.message = "An error occurred. Please check query and try again.";
+        this.snackbar.color = 'red';
+        this.snackbar.icon = 'mdi-alert-circle';
+      }
+      this.snackbar.show = true;
+    },
   },
 }
 </script>
