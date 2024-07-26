@@ -60,7 +60,7 @@ export default {
           node.color = color(node.id); // Assign color to node
 
       });
-          
+
       // Add rank column labels
       svg.append('g')
         .selectAll('text')
@@ -80,22 +80,6 @@ export default {
         .attr('y2', height+10)
         .attr('stroke', '#000')
         .attr('stroke-width', 1);
-
-      // Define the drag behavior
-      const drag = d3.drag()
-        .subject(function(d) { return d; })
-        .on('start', function() {
-        })
-        .on('drag', function(event, d) {
-          d.y0 = d.y0 + event.dy;
-          d.y1 = d.y1 + event.dy;
-          d3.select(this).attr('transform', `translate(${d.x0}, ${d.y0})`);
-          sankeyGenerator.update(graph);
-          svg.selectAll('path').attr('d', sankeyLinkHorizontal());
-        })
-        .on('end', function() {
-          d3.select(this).attr('stroke', null);
-        });
 
       // Function to highlight lineage
       const highlightLineage = (node) => {
@@ -123,7 +107,7 @@ export default {
         .enter().append('g')
         .attr('class', 'node-group')
         .attr('transform', d => `translate(${d.x0}, ${d.y0})`)
-        .call(drag)
+        // .call(this.dragBehavior(graph, sankeyGenerator, svg))
         .on('mouseover', (event, d) => {
           if (d.type !== 'unclassified') {
             highlightLineage(d);
@@ -171,6 +155,18 @@ export default {
         .text(d => this.formatCladeReads(d.clade_reads))
         .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
 
+      // Define a clipping path for each link (crops out curve when links are too thick)
+      svg.append('defs')
+        .selectAll('clipPath')
+        .data(graph.links)
+        .enter().append('clipPath')
+        .attr('id', (d, i) => `clip-path-${i}`)
+        .append('rect')
+        .attr('x', d => d.source.x1)
+        .attr('y', 0)
+        .attr('width', d => d.target.x0 - d.source.x1)
+        .attr('height', height);
+
       // Add links
       const link = svg.append('g')
         .attr('fill', 'none')
@@ -182,6 +178,7 @@ export default {
         .attr('stroke', d => d.target.type === 'unclassified' ? 'transparent' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
         .attr('stroke-width', d => Math.max(1, d.width))
           // .attr('stroke-width', d => Math.max(1, d.height));
+        .attr('clip-path', (d, i) => `url(#clip-path-${i})`)
         .append('title')
         .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
 
@@ -202,17 +199,25 @@ export default {
       let nodeHeight = d.y1 - d.y0;
       if (nodeHeight < 1) {
         return 1.5;
-      } 
-      // else if (nodeHeight > 300) {
-      //   return 150;
-      // }
-      // if (d.clade_reads < 10){
-      //   d.clade_reads *= 2;
-      //   return d.y1 - d.y0;
-      // }
-      else {
+      } else {
         return d.y1 - d.y0;
       }
+    },
+    dragBehavior(graph, sankeyGenerator, svg) {
+      // Function for defining drag behavior
+      return d3.drag()
+        .on('start', function () {
+        })
+        .on('drag', function (event, d) {
+          d.y0 += event.dy;
+          d.y1 += event.dy;
+          d3.select(this).attr('transform', `translate(${d.x0}, ${d.y0})`);
+          sankeyGenerator.update(graph);
+          svg.selectAll('path').attr('d', sankeyLinkHorizontal());
+        })
+        .on('end', function () {
+          d3.select(this).attr('stroke', null);
+        });
     },
     formatCladeReads(value) {
       if (value >= 1000) {
