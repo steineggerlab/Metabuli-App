@@ -4,7 +4,28 @@
     :items="filteredTableResults"
     height="550px"
     item-value="name"
-  ></v-data-table>
+  >
+    <template v-slot:top>
+      <div class="d-flex align-center">
+        <!-- NUMBER OF DATA ITEMS -->
+        <div>
+          Showing {{ totalItems }} entries
+        </div>
+        
+        <v-spacer></v-spacer>
+
+        <!-- SEARCH BAR -->
+        <v-text-field
+          v-model="searchQuery"
+          prepend-inner-icon="mdi-magnify"
+          density="compact"
+          label="Filter results"
+          variant="outlined"
+          single-line
+        ></v-text-field>
+      </div>
+    </template>
+  </v-data-table>
 </template>
 
 <script>
@@ -19,10 +40,23 @@ export default {
         { title: 'Taxon ID', align: 'start', key: 'taxon_id' },
         { title: 'Name', align: 'start', key: 'name' },
       ],
+      searchQuery: '',
     }
   },
   props: {
-    filteredTableResults: Array
+    data: Array
+  },
+  computed: {
+    filteredTableResults() {
+      return this.data.filter(item => {
+        return Object.values(item).some(value =>
+          value.toString().toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      });
+    },
+    totalItems () {
+      return this.filteredTableResults.length;
+    }
   },
   methods: {
     rankSort(a, b) {

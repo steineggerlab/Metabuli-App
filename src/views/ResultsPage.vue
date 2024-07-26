@@ -10,27 +10,7 @@
       <v-tabs-window v-model="tab">
         <!-- TABLE -->
         <v-tabs-window-item value="table">
-          
-          <!-- SEARCH BAR -->
-          <v-sheet
-            class="d-flex justify-content-between align-center"
-            width="100%"
-          >
-            <div>
-              Showing {{ totalItems }} entries
-            </div>
-            <v-spacer></v-spacer>
-            <v-text-field
-              v-model="search"
-              prepend-inner-icon="mdi-magnify"
-              density="compact"
-              label="Filter results"
-              variant="outlined"
-              single-line
-            ></v-text-field>
-          </v-sheet>
-
-          <ResultsTable :filteredTableResults="filteredTableResults" />
+          <ResultsTable :data="results" />
         </v-tabs-window-item>
 
         <!-- SANKEY -->
@@ -81,25 +61,10 @@ export default {
     return {
       results: [],
       tab: 'TABLE',
-      search: '',
       sankeySliderValue: 25,
       kronaContent: '', 
     };
   },
-
-  computed: {
-    filteredTableResults() {
-      return this.results.filter(item => {
-        return Object.values(item).some(value =>
-          value.toString().toLowerCase().includes(this.search.toLowerCase())
-        );
-      });
-    },
-    totalItems () {
-      return this.filteredTableResults.length;
-    }
-  },
-
   methods: {
     async renderKronaViewer() {
       try {
