@@ -1,10 +1,10 @@
 <template>
-  <v-data-table-virtual
+  <v-data-table
     :headers="headers"
     :items="filteredTableResults"
-    height="560px"
+    height="550px"
     item-value="name"
-  ></v-data-table-virtual>
+  ></v-data-table>
 </template>
 
 <script>
