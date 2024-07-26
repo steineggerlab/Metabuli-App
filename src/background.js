@@ -98,3 +98,23 @@ ipcMain.handle('open-file-dialog', async (event, options) => {
   const result = await dialog.showOpenDialog(options);
   return result.filePaths;
 });
+
+// IPC handler to open krona html file in browser
+ipcMain.handle('open-krona', async (event, filePath) => {
+  try {
+    const htmlContent = fs.readFileSync(filePath, 'utf-8');
+
+    const kronaWindow = new BrowserWindow({
+      width: 800,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+      },
+    });
+
+    kronaWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent));
+  } catch (error) {
+    throw new Error(`Failed to read file: ${error.message}`);
+  }
+});

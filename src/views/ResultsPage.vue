@@ -3,6 +3,7 @@
     <v-tabs v-model="tab">
       <v-tab value="table">Table</v-tab>
       <v-tab value="sankey">Sankey</v-tab>
+      <v-tab value="krona">Krona</v-tab>
     </v-tabs>
 
     <v-card-text>
@@ -16,29 +17,27 @@
             color="surface-light"
             max-width="400"
           >
-            <v-card-text>
-              <v-text-field
-                v-model="search"
-                append-inner-icon="mdi-magnify"
-                density="compact"
-                label="Filter rows"
-                variant="solo"
-                hide-details
-                single-line
-              ></v-text-field>
-            </v-card-text>
+            <v-text-field
+              v-model="search"
+              append-inner-icon="mdi-magnify"
+              density="compact"
+              label="Filter rows"
+              variant="solo"
+              hide-details
+              single-line
+            ></v-text-field>
           </v-card>
 
           <v-data-table-virtual
             :headers="headers"
             :items="filteredTableResults"
-            height="600"
+            height="560px"
             item-value="name"
           ></v-data-table-virtual>
         </v-tabs-window-item>
 
         <!-- SANKEY -->
-        <v-tabs-window-item value="sankey">
+        <v-tabs-window-item value="sankey" class="tab-fill-height">
 
           <!-- SLIDER for selecting # of taxa to show per level -->
           <div class="sankey-slider">
@@ -57,6 +56,15 @@
           </div>
 
           <SankeyDiagram :data="results" :taxaLimit="sankeySliderValue" />
+        </v-tabs-window-item>
+
+        <!-- KRONA VIEWER -->
+        <v-tabs-window-item value="krona" class="tab-fill-height">
+          <iframe
+            v-if="kronaContent"
+            :srcdoc="kronaContent"
+            style="width: 100%; height: 100%; border: none;"
+          ></iframe>
         </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>
@@ -85,6 +93,7 @@ export default {
       ],
       search: '',
       sankeySliderValue: 25,
+      kronaContent: '', 
       // nodes in same rank should be in same column (refer to pavian)
       // thickness of link (value) should be percentage
       // percentage of links going out from a node should add up to 100
@@ -104,6 +113,16 @@ export default {
   },
 
   methods: {
+    async renderKronaViewer() {
+      try {
+        const filePath = window.electron.resolvePath('sample_data/sample_data_krona.html');
+        const kronaHtml = await window.electron.readFile(filePath);
+        this.kronaContent = kronaHtml;
+        // await window.electron.openKrona(filePath);
+      } catch (error) {
+        console.error('Error opening Krona viewer:', error);
+      }
+    },
     async readTSVFile(filePath) {
       try {
         console.log(filePath); // DELETE
@@ -139,6 +158,9 @@ export default {
       const resultsJSON = await this.readTSVFile(`${reportFilePath}`);
       this.results = resultsJSON;
       this.saveResults();
+
+      // Render Krona
+      this.renderKronaViewer();
     } catch (error) {
       console.error('Error loading results:', error);
     }
@@ -149,5 +171,9 @@ export default {
 <style>
 .sankey-slider {
   padding-top: 20px;
+}
+.tab-fill-height { /* FIXME */
+  height: 600px; /* Adjust according to your header/footer height */
+  overflow: auto;
 }
 </style>
