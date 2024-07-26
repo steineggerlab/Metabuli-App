@@ -33,6 +33,14 @@
         <span class="proportion-text">{{ value }}%</span>
       </div>
     </template>
+
+    <!-- Scoped Slot for Clade-Reads Column -->
+    <template v-slot:[`item.clade_reads`]="{ value }">
+      <div class="clade-reads-cell">
+        <div class="clade-reads-fill" :style="{ width: `${(value / maxCladeReads) * 100}%` }"></div>
+        <span class="clade-reads-text">{{ value }}</span>
+      </div>
+    </template>
   </v-data-table>
 </template>
 
@@ -64,6 +72,9 @@ export default {
     },
     totalItems () {
       return this.filteredTableResults.length;
+    },
+    maxCladeReads() {
+      return Math.max(...this.data.map(item => item.clade_reads));
     }
   },
   methods: {
@@ -86,8 +97,7 @@ export default {
 </script>
 
 <style scoped>
-/* Proportion column style */
-.proportion-cell {
+.proportion-cell, .clade-reads-cell {
   position: relative;
   width: 100%;
   height: 100%;
@@ -96,12 +106,12 @@ export default {
   justify-content: flex-end;
   align-items: center;
 }
-.proportion-fill {
+.proportion-fill, .clade-reads-fill {
   position: absolute;
   height: 100%;
   background-color: #c9ebf2;
 }
-.proportion-text {
+.proportion-text, .clade-reads-text {
   position: relative;
   padding: 8px;
   z-index: 1;
