@@ -3,7 +3,7 @@
     :headers="headers"
     :items="filteredTableResults"
     height="550px"
-    item-value="name"
+
   >
     <template v-slot:top>
       <div class="d-flex align-center">
@@ -23,6 +23,14 @@
           variant="outlined"
           single-line
         ></v-text-field>
+      </div>
+    </template>
+
+    <!-- Proportion background color fill -->
+    <template v-slot:[`item.proportion`]="{ value }">
+      <div class="proportion-cell">
+        <div class="proportion-fill" :style="{ width: `${value}%` }"></div>
+        <span class="proportion-text">{{ value }}%</span>
       </div>
     </template>
   </v-data-table>
@@ -72,6 +80,30 @@ export default {
         return 0;
       }
     },
+
   }
 }
 </script>
+
+<style scoped>
+/* Proportion column style */
+.proportion-cell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.proportion-fill {
+  position: absolute;
+  height: 100%;
+  background-color: #c9ebf2;
+}
+.proportion-text {
+  position: relative;
+  padding: 8px;
+  z-index: 1;
+}
+</style>
