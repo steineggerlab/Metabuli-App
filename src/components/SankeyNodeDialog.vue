@@ -11,21 +11,15 @@
             <v-card-text>
                 <p>Rank <strong>{{ nodeDetails.data.rank }}</strong></p>
 
-                <p>TaxID {{ nodeDetails.data.id }}</p>
                 <div class="taxid-breadcrumbs">
-                    <p>
-                    <a :href="`https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=${nodeDetails.data.id}`" target="_blank">
-                        NCBI Taxonomy
-                    </a> 
+                  <p>TaxID {{ nodeDetails.data.id }}</p>
+                  <p>
+                    <a :href="`https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=${nodeDetails.data.id}`" target="_blank">NCBI Taxonomy</a> 
                     /
-                    <a :href="`https://www.ncbi.nlm.nih.gov/assembly/?term=txid${nodeDetails.data.id}[Organism:exp]`" target="_blank">
-                        Assemblies
-                    </a>
+                    <a :href="`https://www.ncbi.nlm.nih.gov/assembly/?term=txid${nodeDetails.data.id}[Organism:exp]`" target="_blank">Assemblies</a>
                     /
-                    <a :href="`https://pubmed.ncbi.nlm.nih.gov/?term=${nodeDetails.data.name}`" target="_blank">
-                        PubMed
-                    </a>
-                    </p>
+                    <a :href="`https://pubmed.ncbi.nlm.nih.gov/?term=${nodeDetails.data.name}`" target="_blank">PubMed</a>
+                  </p>
                 </div>
                 
                 <br>
