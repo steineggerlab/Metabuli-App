@@ -41,6 +41,14 @@
         <span class="clade-reads-text">{{ value }}</span>
       </div>
     </template>
+
+    <!-- Scoped Slot for Taxon-Reads Column -->
+    <template v-slot:[`item.taxon_reads`]="{ value }">
+      <div class="taxon-reads-cell">
+        <div class="taxon-reads-fill" :style="{ width: `${(value / maxCladeReads) * 100}%` }"></div>
+        <span class="taxon-reads-text">{{ value }}</span>
+      </div>
+    </template>
   </v-data-table>
 </template>
 
@@ -91,13 +99,12 @@ export default {
         return 0;
       }
     },
-
   }
 }
 </script>
 
 <style scoped>
-.proportion-cell, .clade-reads-cell {
+.proportion-cell, .clade-reads-cell, .taxon-reads-cell {
   position: relative;
   width: 100%;
   height: 100%;
@@ -106,12 +113,12 @@ export default {
   justify-content: flex-end;
   align-items: center;
 }
-.proportion-fill, .clade-reads-fill {
+.proportion-fill, .clade-reads-fill, .taxon-reads-fill {
   position: absolute;
   height: 100%;
   background-color: #c9ebf2;
 }
-.proportion-text, .clade-reads-text {
+.proportion-text, .clade-reads-text, .taxon-reads-text {
   position: relative;
   padding: 8px;
   z-index: 1;
