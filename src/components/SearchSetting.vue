@@ -85,6 +85,18 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+
+      <!-- Snackbar triggered on invalid query -->
+      <v-snackbar
+        v-model="snackbar"
+        :timeout="2000"
+      >
+        <v-icon color="red">mdi-alert-circle</v-icon>
+        Invalid request. Check query and try again.
+        <template v-slot:actions>
+          <v-btn color="red" variant="text" @click="snackbar = false">Close</v-btn>
+        </template>
+      </v-snackbar>
     </v-container>
 
   </div>
@@ -117,37 +129,9 @@ export default {
     results: '',
     loading: false,
     apiDialog: false, // Control the visibility of the API dialog
-    endType: 'single-end'
+    endType: 'single-end',
+    snackbar: false, // Control the visibility of the Snackbar
   }),
-
-  computed: {
-    statusMessage() {
-      switch (this.status) {
-        case 'INITIAL':
-          return 'Input search settings and run.';
-        case 'PENDING':
-          return "JOB PENDING";
-        case 'RUNNING':
-          return "JOB IS RUNNING";
-        case 'COMPLETE':
-          return 'Job is complete. Check results in the results table.';
-        default:
-          return 'An error occurred, please try again.';
-      }
-    },
-    statusImage() {
-      switch (this.status) {
-        case 'INITIAL':
-          return '/assets/marv_metabuli_small.png';
-        case 'PENDING', 'RUNNING':
-          return "/assets/marv_metabuli_small.png";
-        case 'COMPLETE':
-          return "/assets/simple_marv_love.png";
-        default:
-          return "/assets/simple_marv_sad.png";
-      }
-    },
-  },
 
   methods: {
     toggleApiDialog() {
@@ -166,7 +150,6 @@ export default {
           if (filePaths && filePaths.length > 0) {
             this.jobDetails[field] = filePaths[0];
           }
-          console.log(this.jobDetails);
         } catch (error) {
           console.error('Error selecting file:', error);
         }
@@ -189,8 +172,6 @@ export default {
       this.formData.append('jobid', this.jobDetails.jobid);
       this.formData.append('outdir', this.jobDetails.outdir);
       this.formData.append('maxram', this.jobDetails.maxram);
-
-      console.log(this.jobDetails);
     },
     async sendRequest () {
       this.loading = true; // Start loading
@@ -209,12 +190,14 @@ export default {
             this.loading = false; // Stop loading
           }
         })
-        .catch(error => {
-          console.error('error', error);
+        .catch(() => {
+          // Invalid query error
+          this.snackbar = true;
+          this.loading = false;
         });
     },
     // Function to track job status
-    async pollJobStatus(ticketid, interval = 500, timeout = 30000) { // Check job status every 0.5 seconds, timeout after 30 seconds
+    async pollJobStatus(ticketid, interval = 500, timeout = 60000) { // Check job status every 0.5 seconds, timeout after 30 seconds
       const start = Date.now();
       while (Date.now() - start < timeout) {
         try {
