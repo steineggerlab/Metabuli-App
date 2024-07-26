@@ -12,28 +12,27 @@
         <v-tabs-window-item value="table">
           
           <!-- SEARCH BAR -->
-          <v-card
-            class="mx-auto"
-            color="surface-light"
-            max-width="400"
+          <v-sheet
+            class="d-flex justify-content-between align-center"
+            width="100%"
           >
+          <div>
+            Showing {{ totalItems }} entries
+          </div>
+          <v-spacer></v-spacer>
             <v-text-field
               v-model="search"
               append-inner-icon="mdi-magnify"
               density="compact"
-              label="Filter rows"
-              variant="solo"
-              hide-details
+              label="Filter results"
+              variant="outlined"
+            
               single-line
-            ></v-text-field>
-          </v-card>
 
-          <v-data-table-virtual
-            :headers="headers"
-            :items="filteredTableResults"
-            height="560px"
-            item-value="name"
-          ></v-data-table-virtual>
+            ></v-text-field>
+          </v-sheet>
+
+          <ResultsTable :headers="headers" :filteredTableResults="filteredTableResults" />
         </v-tabs-window-item>
 
         <!-- SANKEY -->
@@ -41,7 +40,6 @@
 
           <!-- SLIDER for selecting # of taxa to show per level -->
           <div class="sankey-slider">
-
             <div class="text-caption">Taxa per level</div>
             <v-slider
               v-model="sankeySliderValue"
@@ -73,10 +71,12 @@
   
 <script>
 import SankeyDiagram from '../components/SankeyDiagram.vue'
+import ResultsTable  from '@/components/ResultsTable.vue';
 
 export default {
   name: 'ResultsPage',
   components: {
+    ResultsTable,
     SankeyDiagram
   },
   data() {
@@ -109,6 +109,9 @@ export default {
           value.toString().toLowerCase().includes(this.search.toLowerCase())
         );
       });
+    },
+    totalItems () {
+      return this.filteredTableResults.length;
     }
   },
 
