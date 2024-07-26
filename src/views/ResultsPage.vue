@@ -16,23 +16,21 @@
             class="d-flex justify-content-between align-center"
             width="100%"
           >
-          <div>
-            Showing {{ totalItems }} entries
-          </div>
-          <v-spacer></v-spacer>
+            <div>
+              Showing {{ totalItems }} entries
+            </div>
+            <v-spacer></v-spacer>
             <v-text-field
               v-model="search"
-              append-inner-icon="mdi-magnify"
+              prepend-inner-icon="mdi-magnify"
               density="compact"
               label="Filter results"
               variant="outlined"
-            
               single-line
-
             ></v-text-field>
           </v-sheet>
 
-          <ResultsTable :headers="headers" :filteredTableResults="filteredTableResults" />
+          <ResultsTable :filteredTableResults="filteredTableResults" />
         </v-tabs-window-item>
 
         <!-- SANKEY -->
@@ -83,22 +81,9 @@ export default {
     return {
       results: [],
       tab: 'TABLE',
-      headers: [
-        { title: 'Proportion', align: 'start', key: 'proportion' },
-        { title: 'Clade Reads', align: 'start', key: 'clade_reads' },
-        { title: 'Taxon Reads', align: 'start', key: 'taxon_reads' },
-        { title: 'Rank', align: 'start', key: 'rank' },
-        { title: 'Taxon ID', align: 'start', key: 'taxon_id' },
-        { title: 'Name', align: 'start', key: 'name' },
-      ],
       search: '',
       sankeySliderValue: 25,
       kronaContent: '', 
-      // nodes in same rank should be in same column (refer to pavian)
-      // thickness of link (value) should be percentage
-      // percentage of links going out from a node should add up to 100
-      // ignore no rank, subgenus, subfamilies, etc for now
-      // add description below the table saying this graph excludes nodes in ranks besides those displayed in the graph. Refer to the report.tsv file for the entire data.
     };
   },
 
