@@ -26,28 +26,30 @@
       </div>
     </template>
 
-    <!-- Proportion background color fill -->
-    <template v-slot:[`item.proportion`]="{ value }">
-      <div class="proportion-cell">
-        <div class="proportion-fill" :style="{ width: `${value}%` }"></div>
-        <span class="proportion-text">{{ value }}%</span>
-      </div>
-    </template>
-
-    <!-- Scoped Slot for Clade-Reads Column -->
-    <template v-slot:[`item.clade_reads`]="{ value }">
-      <div class="clade-reads-cell">
-        <div class="clade-reads-fill" :style="{ width: `${(value / maxCladeReads) * 100}%` }"></div>
-        <span class="clade-reads-text">{{ value }}</span>
-      </div>
-    </template>
-
-    <!-- Scoped Slot for Taxon-Reads Column -->
-    <template v-slot:[`item.taxon_reads`]="{ value }">
-      <div class="taxon-reads-cell">
-        <div class="taxon-reads-fill" :style="{ width: `${(value / maxCladeReads) * 100}%` }"></div>
-        <span class="taxon-reads-text">{{ value }}</span>
-      </div>
+    <template v-slot:item="{ item, index }">
+      <tr :class="index % 2 === 0 ? 'grey-background' : 'white-background'">
+        <td>
+          <div class="proportion-cell">
+            <div class="proportion-fill" :style="{ width: `${item.proportion}%` }"></div>
+            <span class="proportion-text">{{ item.proportion }}%</span>
+          </div>
+        </td>
+        <td>
+          <div class="clade-reads-cell">
+            <div class="clade-reads-fill" :style="{ width: `${(item.clade_reads / maxCladeReads) * 100}%` }"></div>
+            <span class="clade-reads-text">{{ item.clade_reads }}</span>
+          </div>
+        </td>
+        <td>
+          <div class="taxon-reads-cell">
+            <div class="taxon-reads-fill" :style="{ width: `${(item.taxon_reads / maxCladeReads) * 100}%` }"></div>
+            <span class="taxon-reads-text">{{ item.taxon_reads }}</span>
+          </div>
+        </td>
+        <td>{{ item.rank }}</td>
+        <td>{{ item.taxon_id }}</td>
+        <td>{{ item.name }}</td>
+      </tr>
     </template>
   </v-data-table>
 </template>
@@ -104,6 +106,7 @@ export default {
 </script>
 
 <style scoped>
+/* Proportional cell background fill */
 .proportion-cell, .clade-reads-cell, .taxon-reads-cell {
   position: relative;
   width: 100%;
@@ -116,11 +119,19 @@ export default {
 .proportion-fill, .clade-reads-fill, .taxon-reads-fill {
   position: absolute;
   height: 100%;
-  background-color: #c9ebf2;
+  background-color: #b9d4ed;
 }
 .proportion-text, .clade-reads-text, .taxon-reads-text {
   position: relative;
   padding: 8px;
   z-index: 1;
+}
+
+/* Alternating row background */
+.grey-background {
+  background-color: #fafafa;
+}
+.white-background {
+  background-color: #ffffff;
 }
 </style>
