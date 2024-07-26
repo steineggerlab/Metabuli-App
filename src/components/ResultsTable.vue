@@ -57,11 +57,11 @@ export default {
   data() {
     return {
       headers: [
-        { title: 'Proportion', align: 'start', key: 'proportion' },
-        { title: 'Clade Reads', align: 'start', key: 'clade_reads' },
-        { title: 'Taxon Reads', align: 'start', key: 'taxon_reads' },
-        { title: 'Rank', align: 'start', key: 'rank', sortRaw: (a, b) => this.rankSort(a.rank, b.rank) },
-        { title: 'Taxon ID', align: 'start', key: 'taxon_id' },
+        { title: 'Proportion (%)', align: 'center', key: 'proportion',  width: '160px' },
+        { title: 'Clade Reads', align: 'center', key: 'clade_reads',  width: '160px' },
+        { title: 'Taxon Reads', align: 'center', key: 'taxon_reads', width: '160px' },
+        { title: 'Rank', align: 'start', key: 'rank', width: '140px', sortRaw: (a, b) => this.rankSort(a.rank, b.rank) },
+        { title: 'Taxon ID', align: 'start', key: 'taxon_id', width: '140px' },
         { title: 'Name', align: 'start', key: 'name' },
       ],
       searchQuery: '',
