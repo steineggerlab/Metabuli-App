@@ -227,7 +227,7 @@ export default {
       const container = this.$refs.sankeyContainer;
       d3.select(container).selectAll('*').remove(); // Clear the previous diagram
       const width = window.innerWidth; // Set width to full window width
-      const height = 600;
+      const height = 500;
       const marginBottom = 50; // Margin for rank labels 
       const marginRight = 150;
 

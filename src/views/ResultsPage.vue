@@ -126,7 +126,7 @@ export default {
   padding-top: 20px;
 }
 .tab-fill-height { /* FIXME */
-  height: 600px; /* Adjust according to your header/footer height */
+  height: 650px; /* Adjust according to your header/footer height */
   overflow: auto;
 }
 </style>
