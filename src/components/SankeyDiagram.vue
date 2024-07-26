@@ -4,9 +4,9 @@
 
     <!-- NODE DETAILS DIALOG -->
     <SankeyNodeDialog
-      :hoverDetails="hoverDetails"
+      :nodeDetails="nodeDetails"
       :dialog="dialog"
-      :subtreeData="subtreeData"
+
       @close-dialog="dialog = false"
     />
 
@@ -25,8 +25,8 @@
 </template>
   
 <script>
-import * as d3 from 'd3'
-import { sankey, sankeyLinkHorizontal, sankeyJustify } from 'd3-sankey'
+import * as d3 from 'd3';
+import { sankey, sankeyLinkHorizontal, sankeyJustify } from 'd3-sankey';
 import SankeyNodeDialog from './SankeyNodeDialog.vue';
   
 export default {
@@ -45,9 +45,9 @@ export default {
   },
   data() {
     return {
-      hoverDetails: null,
+      nodeDetails: null,
       dialog: false,
-      subtreeData: { nodes: [], links: [] }, // Store subtree data of clicked node
+      // subtreeData: { nodes: [], links: [] }, // Store subtree data of clicked node
       graph: { nodes: [], links: [] } // Add a new data property to store the graph
     };
   },
@@ -376,6 +376,18 @@ export default {
         .text(d => this.formatCladeReads(d.clade_reads))
         .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
 
+        // Define a clipping path for each link (crops out curve when links are too thick)
+        svg.append('defs')
+          .selectAll('clipPath')
+          .data(graph.links)
+          .enter().append('clipPath')
+          .attr('id', (d, i) => `clip-path-${i}`)
+          .append('rect')
+          .attr('x', d => d.source.x1)
+          .attr('y', 0)
+          .attr('width', d => d.target.x0 - d.source.x1)
+          .attr('height', height);
+
         // Add links
         const link = svg.append('g')
         .attr('fill', 'none')
@@ -387,6 +399,7 @@ export default {
         .attr('stroke', d => d.target.type === 'unclassified' ? 'transparent' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
         .attr('stroke-width', d => Math.max(1, d.width))
           // .attr('stroke-width', d => Math.max(1, d.height));
+        .attr('clip-path', (d, i) => `url(#clip-path-${i})`)
         .append('title')
         .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
 
@@ -401,81 +414,62 @@ export default {
             if (d.target.type !== 'unclassified') {
               d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
             }
-          })
-          .on('click', (event, d) => {
-            if (d.target.type !== 'unclassified') {
-              this.showLinkDetails(event, d);
-            }
           });
       },
     updateSankey() {
       this.createSankey();
     },
     showNodeDetails(event, d) {
+      const subtreeData = this.extractSubtreeData(d) // Extract subtree data for the clicked node
       this.dialog = true;
-      this.hoverDetails = {
+      this.nodeDetails = {
         type: 'node',
-        data: d
+        data: d,
+        subtreeData: subtreeData
       };
-      this.extractSubtreeData(d); // Extract subtree data for the clicked node
-    },
-    showLinkDetails(event, d) {
-      this.hoverDetails = {
-        type: 'link',
-        data: d
-      };
-    },
-    clearDetails() {
-      this.hoverDetails = null;
     },
     extractSubtreeData(node) {
       const graph = this.graph;
       const subtreeNodes = new Set();
       const subtreeLinks = new Set();
 
+      // Recursive function to get all descendant nodes and links
+      const getDescendants = (currentNode) => {
+        subtreeNodes.add(currentNode.id);
+        graph.links.forEach(link => {
+          if (link.source.id === currentNode.id) {
+            subtreeLinks.add(link);
+            getDescendants(link.target);
+          }
+        });
+      };
 
-    // Recursive function to get all descendant nodes and links
-    const getDescendants = (currentNode) => {
-      subtreeNodes.add(currentNode.id);
-      graph.links.forEach(link => {
-        if (link.source.id === currentNode.id) {
-          subtreeLinks.add(link);
-          getDescendants(link.target);
-        }
-      });
-    };
+      // Recursive function to get all ancestor nodes and links
+      const getAncestors = (currentNode) => {
+        subtreeNodes.add(currentNode.id);
+        graph.links.forEach(link => {
+          if (link.target.id === currentNode.id) {
+            subtreeLinks.add(link);
+            getAncestors(link.source);
+          }
+        });
+      };
 
-    // Recursive function to get all ancestor nodes and links
-    const getAncestors = (currentNode) => {
-      subtreeNodes.add(currentNode.id);
-      graph.links.forEach(link => {
-        if (link.target.id === currentNode.id) {
-          subtreeLinks.add(link);
-          getAncestors(link.source);
-        }
-      });
-    };
+      // Get all descendants and ancestors of the clicked node
+      getDescendants(node);
+      getAncestors(node);
 
-    // Get all descendants and ancestors of the clicked node
-    getDescendants(node);
-    getAncestors(node);
+      // Filter nodes and links based on the subtree sets
+      const subtreeData = {
+        nodes: this.graphData.nodes.filter(n => subtreeNodes.has(n.id)),
+        links: Array.from(subtreeLinks).map(link => ({
+          source: link.source.id,
+          target: link.target.id,
+          value: link.value
+        }))
+      };
 
-    // Filter nodes and links based on the subtree sets
-    // const subtreeData = {
-    //   nodes: graph.nodes.filter(n => subtreeNodes.has(n.id)),
-    //   links: Array.from(subtreeLinks)
-    // };
-
-    const subtreeData = {
-      nodes: this.graphData.nodes.filter(n => subtreeNodes.has(n.id)),
-      links: Array.from(subtreeLinks).map(link => ({
-        source: link.source.id,
-        target: link.target.id,
-        value: link.value
-      }))
-    };
-
-    this.subtreeData = subtreeData;
+      return subtreeData;
     },
     formatCladeReads(value) {
       if (value >= 1000) {

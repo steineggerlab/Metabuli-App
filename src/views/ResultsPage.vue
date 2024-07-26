@@ -50,7 +50,7 @@
               width="500"
               show-ticks="always"
               step="5"
-              :min="25"
+              :min="5"
               :max="50"
               tick-size="1"
             ></v-slider>

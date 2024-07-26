@@ -19,6 +19,7 @@
     "d3": "^7.9.0",
     "d3-sankey": "^0.12.3",
     "roboto-fontface": "*",
+    "uuid": "^10.0.0",
     "vue": "^3.2.13",
     "vue-router": "^4.4.0",
     "vuetify": "^3.0.0-beta.0",

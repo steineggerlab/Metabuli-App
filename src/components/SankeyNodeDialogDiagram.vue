@@ -3,13 +3,14 @@
 </template>
   
 <script>
-import * as d3 from 'd3'
-import { sankey, sankeyLinkHorizontal, sankeyJustify } from 'd3-sankey'
+import * as d3 from 'd3';
+import { sankey, sankeyLinkHorizontal, sankeyJustify } from 'd3-sankey';
   
 export default {
   name: 'SankeyNodeDialogDiagram',
   props: {
-    data: Object
+    data: Object,
+    instanceId: String // Add an instanceId prop to ensure unique IDs
   },
   mounted() {
       this.createSankey();
@@ -160,7 +161,7 @@ export default {
         .selectAll('clipPath')
         .data(graph.links)
         .enter().append('clipPath')
-        .attr('id', (d, i) => `clip-path-${i}`)
+        .attr('id', (d, i) => `clip-path-${this.instanceId}-${i}`)
         .append('rect')
         .attr('x', d => d.source.x1)
         .attr('y', 0)
@@ -178,7 +179,7 @@ export default {
         .attr('stroke', d => d.target.type === 'unclassified' ? 'transparent' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
         .attr('stroke-width', d => Math.max(1, d.width))
           // .attr('stroke-width', d => Math.max(1, d.height));
-        .attr('clip-path', (d, i) => `url(#clip-path-${i})`)
+        .attr('clip-path', (d, i) => `url(#clip-path-${this.instanceId}-${i})`)
         .append('title')
         .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
 
