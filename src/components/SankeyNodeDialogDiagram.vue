@@ -36,6 +36,7 @@ export default {
       .nodeAlign(sankeyJustify)
       .nodeWidth(20)
       .nodePadding(12)
+      .iterations(64)
       .extent([[10, 30], [width - marginRight, height - 6]]);
 
       const graph = sankeyGenerator({
@@ -58,8 +59,7 @@ export default {
       graph.nodes.forEach(node => {
           node.x0 = columnMap[node.rank];
           node.x1 = node.x0 + sankeyGenerator.nodeWidth();
-          node.color = color(node.id); // Assign color to node
-
+          node.color = color(node.id);
       });
 
       // Add rank column labels
@@ -156,18 +156,6 @@ export default {
         .text(d => this.formatCladeReads(d.clade_reads))
         .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
 
-      // Define a clipping path for each link (crops out curve when links are too thick)
-      svg.append('defs')
-        .selectAll('clipPath')
-        .data(graph.links)
-        .enter().append('clipPath')
-        .attr('id', (d, i) => `clip-path-${this.instanceId}-${i}`)
-        .append('rect')
-        .attr('x', d => d.source.x1)
-        .attr('y', 0)
-        .attr('width', d => d.target.x0 - d.source.x1)
-        .attr('height', height);
-
       // Add links
       const link = svg.append('g')
         .attr('fill', 'none')
@@ -178,8 +166,6 @@ export default {
         .attr('d', sankeyLinkHorizontal())
         .attr('stroke', d => d.target.type === 'unclassified' ? 'transparent' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
         .attr('stroke-width', d => Math.max(1, d.width))
-          // .attr('stroke-width', d => Math.max(1, d.height));
-        .attr('clip-path', (d, i) => `url(#clip-path-${this.instanceId}-${i})`)
         .append('title')
         .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
 
