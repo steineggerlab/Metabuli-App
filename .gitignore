@@ -5,8 +5,9 @@
 node_modules
 
 # Build directories
-/dist
 /dist_electron
+/dist
+
 
 
 # local env files
