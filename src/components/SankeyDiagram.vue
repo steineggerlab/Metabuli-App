@@ -297,22 +297,6 @@ export default {
         .attr('stroke', '#000')
         .attr('stroke-width', 1);
 
-      // Define the drag behavior
-      const drag = d3.drag()
-        .subject(function(d) { return d; })
-        .on('start', function() {
-        })
-        .on('drag', function(event, d) {
-          d.y0 = d.y0 + event.dy;
-          d.y1 = d.y1 + event.dy;
-          d3.select(this).attr('transform', `translate(${d.x0}, ${d.y0})`);
-          sankeyGenerator.update(graph);
-          svg.selectAll('path').attr('d', sankeyLinkHorizontal());
-        })
-        .on('end', function() {
-          d3.select(this).attr('stroke', null);
-        });
-
       // Function to highlight lineage
       const highlightLineage = (node) => {
         const lineageIds = new Set(node.lineage.map(n => n.id));
@@ -339,7 +323,7 @@ export default {
         .enter().append('g')
         .attr('class', 'node-group')
         .attr('transform', d => `translate(${d.x0}, ${d.y0})`)
-        .call(drag)
+        // .call(drag)
         .on('mouseover', (event, d) => {
           if (d.type !== 'unclassified') {
             highlightLineage(d);
