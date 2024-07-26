@@ -1,9 +1,29 @@
 <template>
   <v-app>
     <v-app-bar>
-      <v-app-bar-nav-icon @click="toggleDrawer"></v-app-bar-nav-icon>
-      <v-app-bar-title >Metabuli</v-app-bar-title>
+      <!-- NAVIGATION DRAWER TOGGLE -->
+      <div class="nav-icon-wrapper">
+        <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+        <v-badge
+          v-show="!drawer && jobCompleted && !checkedResults"
+          dot
+          color="red"
+          overlap
+          class="nav-icon-badge"
+        ></v-badge>
+      </div>
+
+      <!-- METABULI TITLE + LOGO -->
+      <div class="d-flex ga-1" style="align-items: center;">
+        <div class="flex-grow-1">
+          <v-app-bar-title>Metabuli</v-app-bar-title>
+        </div>
+        <v-img src="/assets/marv_metabuli_small.png" width="40px"></v-img>
+      </div>
+
       <v-spacer></v-spacer>
+
+      <!-- GITHUB LINK BUTTONS -->
       <v-btn href="https://github.com/steineggerlab/Metabuli" target="_blank">GitHub</v-btn>
       <v-btn href="https://steineggerlab.com/en/" target="_blank">Steinegger Lab</v-btn>
 
@@ -52,8 +72,8 @@
               <template v-slot:append>
                 <v-badge 
                   v-if="!checkedResults"
-                  color="error"
-                  content="1"
+                  dot
+                  color="red"
                   inline
                 ></v-badge>
               </template>
@@ -101,9 +121,6 @@ export default {
   },
 
   methods: {
-    toggleDrawer() {
-      this.drawer = !this.drawer;
-    },
     handleJobComplete(payload) {
       this.jobCompleted = true;
       this.checkedResults = false;
@@ -125,6 +142,9 @@ export default {
 </script>
 
 <style>
+.v-app-bar.v-toolbar {
+  padding-inline-start: 4px;
+}
 .custom-toolbar {
   color: white;
   font-size: 20px;
@@ -141,17 +161,29 @@ export default {
   display: block;
 }
 
+.v-list-item .v-icon {
+  margin-right: 10px;
+}
+
 .nav-item {
   display: flex;
   align-items: center;
   padding: 10px;
 }
 
-.v-icon {
-  margin-right: 10px;
-}
-
 .nav-item.active {
   background-color: #d3d3d3;
+}
+
+.nav-icon-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-icon-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 </style>
