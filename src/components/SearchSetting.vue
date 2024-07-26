@@ -110,7 +110,7 @@ export default {
       q2: 'SRR14484345_2.fq',
       database: "refseq_virus",
       jobid: "sample_data",
-      outdir: "sample_data/",
+      outdir: "sample_data",
       maxram: 128
     },
     status: 'INITIAL',

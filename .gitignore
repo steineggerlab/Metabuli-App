@@ -1,6 +1,12 @@
+# OS generated files
 .DS_Store
+
+# Node modules
 node_modules
+
+# Build directories
 /dist
+/dist_electron
 
 
 # local env files

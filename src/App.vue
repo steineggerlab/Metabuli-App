@@ -106,6 +106,7 @@ export default {
     },
     handleJobComplete(payload) {
       this.jobCompleted = true;
+      this.checkedResults = false;
       this.completedJob = { 
         outdir: payload.outdir, 
         jobid: payload.jobid
