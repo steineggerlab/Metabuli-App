@@ -66,9 +66,8 @@ export default {
     };
   },
   methods: {
-    async renderKronaViewer() {
+    async renderKronaViewer(filePath) {
       try {
-        const filePath = window.electron.resolvePath('sample_data/sample_data_krona.html');
         const kronaHtml = await window.electron.readFile(filePath);
         this.kronaContent = kronaHtml;
         // await window.electron.openKrona(filePath);
@@ -78,11 +77,7 @@ export default {
     },
     async readTSVFile(filePath) {
       try {
-        console.log(filePath); // DELETE
-        const resolvedPath = window.electron.resolvePath(filePath); // Resolve filePath
-        console.log("resolvedPath: ", resolvedPath)
-      
-        const tsvContent = await window.electron.readFile(resolvedPath);
+        const tsvContent = await window.electron.readFile(filePath);
         const json = this.tsvToJSON(tsvContent);
         return json.results;
       } catch (error) {
@@ -106,14 +101,18 @@ export default {
 
   async mounted() {
     try {
+      // Resolve outdir path
+      const resolvedOutdirPath = window.electron.resolvePath(this.$route.query.outdir);
+      
       // Render report.tsv 
-      const reportFilePath = `${this.$route.query.outdir}/${this.$route.query.jobid}_report.tsv`
+      const reportFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_report.tsv`
+      const kronaFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_krona.html`
       const resultsJSON = await this.readTSVFile(`${reportFilePath}`);
       this.results = resultsJSON;
       this.saveResults();
 
       // Render Krona
-      this.renderKronaViewer();
+      this.renderKronaViewer(kronaFilePath);
     } catch (error) {
       console.error('Error loading results:', error);
     }
