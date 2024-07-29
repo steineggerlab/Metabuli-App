@@ -46,6 +46,7 @@ export default {
   
       // Define color scale
       const color = d3.scaleOrdinal(d3.schemeCategory10);
+      const unclassifiedLabelColor = 'gray';
 
       // Manually adjust nodes position to align by rank
       const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"];
@@ -124,7 +125,7 @@ export default {
       nodeGroup.append('rect')
         .attr('width', d => d.x1 - d.x0)
         .attr('height', d => this.nodeHeight(d))
-        .attr('fill', d => d.type === "unclassified" ? 'transparent' : d.color) // Transparent for unclassified nodes
+        .attr('fill', d => d.type === 'unclassified' ? 'gray' : d.color) 
         .attr('class', 'node') // Apply the CSS class for cursor
         .style('cursor', d => d.type === 'unclassified' ? 'default' : 'grab')
         .append('title')
@@ -140,7 +141,7 @@ export default {
         .attr('text-anchor', 'start')
         .text(d => d.name)
         .style('font-size', '10px')
-        .style('fill', d => d.type === 'unclassified' ? 'transparent' : 'black')
+        .style('fill',  d => d.type === 'unclassified' ? unclassifiedLabelColor : 'black')
         .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
       
       // Add clade reads label above node
@@ -152,7 +153,7 @@ export default {
         .attr('dy', '0.35em')
         .attr('text-anchor', 'middle')
         .style('font-size', '10px')
-        .style('fill', d => d.type === 'unclassified' ? 'transparent' : 'black')
+        .style('fill',  d => d.type === 'unclassified' ? unclassifiedLabelColor : 'black')
         .text(d => this.formatCladeReads(d.clade_reads))
         .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
 
@@ -164,7 +165,7 @@ export default {
         .data(graph.links)
         .enter().append('path')
         .attr('d', sankeyLinkHorizontal())
-        .attr('stroke', d => d.target.type === 'unclassified' ? 'transparent' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
+        .attr('stroke', d => d.target.type === 'unclassified' ? 'grey' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
         .attr('stroke-width', d => Math.max(1, d.width))
         .append('title')
         .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
