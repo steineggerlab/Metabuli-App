@@ -63,6 +63,8 @@ export default {
   methods: {
     parseData(data) {
       const nodes = [];
+      const unclassifiedNodes = [];
+      const allNodes = [];
       const links = [];
       const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
       const rankOrderFull = ["superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum", "superclass", "class", "subclass", "superorder", "order", "suborder", "superfamily", "family", "subfamily", "supergenus", "genus", "subgenus", "superspecies", "species", "subspecies"];
@@ -73,20 +75,24 @@ export default {
       let currentLineage = [];
       const nodesByRank = {}; // Store nodes by rank for filtering top 10
 
-      // Step 1: Create nodes and save lineage data
-      data.forEach( d => {
-        const node = {
+      // Step 1: Create nodes and save lineage data for ALL NODES (excluding clade ranks)
+      data.filter(d => d.rank !== 'clade').forEach( d => {
+        let node = {
           id: d.taxon_id,
           name: d.name,
           rank: d.rank,
           proportion: parseFloat(d.proportion),
           clade_reads: parseFloat(d.clade_reads),
           taxon_reads: d.taxon_reads,
-          lineage: [...currentLineage, {id: d.taxon_id, name: d.name, rank: d.rank}]  // Copy current lineage
+          lineage: [...currentLineage, {id: d.taxon_id, name: d.name, rank: d.rank}], // Copy current lineage
+          type: ''
         };
 
-        // Add node to rank-specific collection if it's not 'no rank'
         if (d.rank !== "no rank" && !this.isUnclassifiedTaxa(d)) { 
+          // Declare type as 'classified'
+          node.type = 'classified';
+          
+          // Add classified node to its corresponding rank collection 
           if (!nodesByRank[d.rank]) {
             nodesByRank[d.rank] = [];
           }
@@ -136,30 +142,28 @@ export default {
             // Determine the rank immediately to the right of this node
             const parentRankIndex = rankOrder.indexOf(previousNode.rank);
             
-            // Create a dummy node for unclassified taxa
+            // Edit properties for unclassified taxa
             const nextRank = rankOrder[parentRankIndex + 1];
-            const dummyNode = {
-              id: `dummy-${d.taxon_id}`,
-              name: d.name,
-              rank: nextRank,
-              proportion: parseFloat(d.proportion),
-              clade_reads: parseFloat(d.clade_reads),
-              taxon_reads: d.taxon_reads,
-              lineage: [],
-              type: 'unclassified'
-            };
-          
-            // Add dummyNode to currentLineage and save lineage data
-            currentLineageCopy.push(dummyNode);
-            dummyNode.lineage = [...currentLineageCopy];
 
-            // Add dummyNode to sankey
-            nodes.push(dummyNode);
+            node.id = `dummy-${d.taxon_id}`;
+            node.rank = nextRank;
+            node.type = 'unclassified';
+
+            // Add unclassified node to currentLineage and save lineage data
+            currentLineageCopy.push(node);
+            node.lineage = [...currentLineageCopy];
+
+            unclassifiedNodes.push(node);
           }
         }
+        
+        // Store all nodes (excluding clade ranks)
+        allNodes.push(node);
+        
       });
-
-      // Step 2: Filter top 10 nodes by clade_reads for each rank in rankOrder + add nodes to sankey diagram
+      
+      // Step 2: Filter top 10 nodes by clade_reads for each rank in rankOrder
+      // + Add filtered rank nodes & unclassified nodes to sankey diagram
       rankOrder.forEach(rank => {
         if (nodesByRank[rank]) {
           // Sort nodes by clade_reads in descending order and select the top nodes based on slider value
@@ -167,6 +171,11 @@ export default {
           nodes.push(...topNodes);
         }
       });
+      
+      unclassifiedNodes.forEach(node => {
+        // Add unclassified nodes to sankey
+        nodes.push(node);
+      })
 
       // Step 3: Create links based on filtered nodes' lineage
       nodes.forEach(node => {
