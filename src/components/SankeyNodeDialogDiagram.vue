@@ -102,6 +102,18 @@ export default {
         svg.selectAll('.clade-reads').style('opacity', 1);
       };
 
+      // Define a clipping path for each link (crops out curve when links are too thick)
+      svg.append('defs')
+        .selectAll('clipPath')
+        .data(graph.links)
+        .enter().append('clipPath')
+        .attr('id', (d, i) => `clip-path-${this.instanceId}-${i}`)
+        .append('rect')
+        .attr('x', d => d.source.x1)
+        .attr('y', 0)
+        .attr('width', d => d.target.x0 - d.source.x1)
+        .attr('height', height);
+
       // Add links
       const link = svg.append('g')
         .attr('fill', 'none')
@@ -112,6 +124,7 @@ export default {
         .attr('d', sankeyLinkHorizontal())
         .attr('stroke', d => d.target.type === 'unclassified' ? 'grey' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
         .attr('stroke-width', d => Math.max(1, d.width))
+        .attr('clip-path', (d, i) => `url(#clip-path-${this.instanceId}-${i})`)
         .append('title')
         .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
 
