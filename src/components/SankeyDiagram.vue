@@ -47,7 +47,7 @@ export default {
     return {
       nodeDetails: null,
       dialog: false,
-      graph: { nodes: [], links: [] } // Add a new data property to store the graph
+      fullGraphData: {nodes: [], links: [] },
     };
   },
   computed: {
@@ -66,6 +66,8 @@ export default {
       const unclassifiedNodes = [];
       const allNodes = [];
       const links = [];
+      const allLinks = [];
+
       const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
       const rankOrderFull = ["superkingdom", "kingdom", "subkingdom", "superphylum", "phylum", "subphylum", "superclass", "class", "subclass", "superorder", "order", "suborder", "superfamily", "family", "subfamily", "supergenus", "genus", "subgenus", "superspecies", "species", "subspecies"];
       const rankHierarchyFull = rankOrderFull.reduce((acc, rank, index) => {
@@ -156,16 +158,15 @@ export default {
             unclassifiedNodes.push(node);
           }
         }
-        
-        // Store all nodes (excluding clade ranks)
-        allNodes.push(node);
-        
       });
       
       // Step 2: Filter top 10 nodes by clade_reads for each rank in rankOrder
       // + Add filtered rank nodes & unclassified nodes to sankey diagram
       rankOrder.forEach(rank => {
         if (nodesByRank[rank]) {
+          // Store all nodes
+          allNodes.push(...nodesByRank[rank])
+
           // Sort nodes by clade_reads in descending order and select the top nodes based on slider value
           const topNodes = nodesByRank[rank].sort((a, b) => b.clade_reads - a.clade_reads).slice(0, this.taxaLimit);
           nodes.push(...topNodes);
@@ -173,6 +174,9 @@ export default {
       });
       
       unclassifiedNodes.forEach(node => {
+        // Store in all nodes
+        allNodes.push(node);
+
         // Add unclassified nodes to sankey
         nodes.push(node);
       })
@@ -198,6 +202,35 @@ export default {
           });
         }
       });
+
+
+      // Store links for all nodes
+      allNodes.forEach(node => {
+        // Find the previous node in the lineage that is in rankOrder
+        const lineage = node.lineage;
+        let previousNode = null;
+
+        for (let i = lineage.length - 2; i >= 0; i--) { // Start from the second last item
+            if (rankOrder.includes(lineage[i].rank) && allNodes.includes(lineage[i])) {
+            previousNode = lineage[i];
+            break;
+          }
+        }
+
+        if (previousNode) {
+          allLinks.push({
+            source: previousNode.id,
+            target: node.id,
+            value: node.clade_reads
+          });
+        }
+      });
+
+      // Store full graph data
+      this.fullGraphData = {
+        nodes: [...allNodes],
+        links: [...allLinks]
+      }
         
       return { nodes, links };
     },
@@ -258,8 +291,6 @@ export default {
         links: links.map(d => Object.assign({}, d))
       });
 
-      this.graph = graph; // Store the graph object in the component-level data property
-
       // Define color scale
       const color = d3.scaleOrdinal(d3.schemeCategory10);
       const unclassifiedLabelColor = 'gray';
@@ -278,6 +309,20 @@ export default {
         node.x1 = node.x0 + sankeyGenerator.nodeWidth();
         node.color = color(node.id); // Assign color to node
       });
+
+
+      // Store full graph (used for drawing subtree upon node click)
+      const fullGraph = sankeyGenerator({
+          nodes: this.fullGraphData.nodes.map(d => Object.assign({}, d)),
+          links: this.fullGraphData.links.map(d => Object.assign({}, d))
+        });
+      fullGraph.nodes.forEach(node => {
+        node.x0 = columnMap[node.rank];
+        node.x1 = node.x0 + sankeyGenerator.nodeWidth();
+        node.color = color(node.id); // Assign color to node
+      });
+      this.fullGraph = fullGraph;
+
 
       // Add rank column labels
       svg.append('g')
@@ -417,7 +462,7 @@ export default {
       };
     },
     extractSubtreeData(node) {
-      const graph = this.graph;
+      const graph = this.fullGraph;
       const subtreeNodes = new Set();
       const subtreeLinks = new Set();
 
@@ -433,23 +478,23 @@ export default {
       };
 
       // Recursive function to get all ancestor nodes and links
-      const getAncestors = (currentNode) => {
-        subtreeNodes.add(currentNode.id);
-        graph.links.forEach(link => {
-          if (link.target.id === currentNode.id) {
-            subtreeLinks.add(link);
-            getAncestors(link.source);
-          }
-        });
-      };
+      // const getAncestors = (currentNode) => {
+      //   subtreeNodes.add(currentNode.id);
+      //   graph.links.forEach(link => {
+      //     if (link.target.id === currentNode.id) {
+      //       subtreeLinks.add(link);
+      //       getAncestors(link.source);
+      //     }
+      //   });
+      // };
 
       // Get all descendants and ancestors of the clicked node
       getDescendants(node);
-      getAncestors(node);
+      // getAncestors(node);
 
       // Filter nodes and links based on the subtree sets
       const subtreeData = {
-        nodes: this.graphData.nodes.filter(n => subtreeNodes.has(n.id)),
+        nodes: this.fullGraphData.nodes.filter(n => subtreeNodes.has(n.id)),
         links: Array.from(subtreeLinks).map(link => ({
           source: link.source.id,
           target: link.target.id,
