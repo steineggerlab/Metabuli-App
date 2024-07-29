@@ -283,7 +283,7 @@ export default {
         .nodeAlign(sankeyJustify)
         .nodeWidth(20)
         .nodePadding(13)
-        .iterations(64)
+        .iterations(100)
         .extent([[10, 10], [width - marginRight, height - 6]]); 
 
       const graph = sankeyGenerator({
