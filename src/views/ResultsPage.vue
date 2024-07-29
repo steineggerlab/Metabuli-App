@@ -29,9 +29,21 @@
               :max="50"
               tick-size="1"
             ></v-slider>
+
+            <div class="text-caption">Minimum number of reads</div>
+            <v-slider
+              v-model="minReadsSliderValue"
+              thumb-label
+              width="500"
+              show-ticks="always"
+              step="5"
+              :min="5"
+              :max="50"
+              tick-size="1"
+            ></v-slider>
           </div>
 
-          <SankeyDiagram :data="results" :taxaLimit="sankeySliderValue" />
+          <SankeyDiagram :data="results" :taxaLimit="sankeySliderValue" :minReads="minReadsSliderValue" />
         </v-tabs-window-item>
 
         <!-- KRONA VIEWER -->
@@ -62,6 +74,7 @@ export default {
       results: [],
       tab: 'TABLE',
       sankeySliderValue: 25,
+      minReadsSliderValue: 1,
       kronaContent: '', 
     };
   },

@@ -41,6 +41,9 @@ export default {
     },
     taxaLimit: {
       type: Number
+    },
+    minReads: {
+      type: Number
     }
   },
   data() {

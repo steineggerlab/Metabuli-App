@@ -32,21 +32,23 @@
       </v-btn>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer" :width="'190'">
-      <v-list>
+    <v-navigation-drawer v-model="drawer">
+      <v-list nav density="compact">
         <!-- DATA INPUT NAVIGATION ITEM -->
         <router-link
           :to="items[0].path"
           class="v-list-item--link no-underline"
         >
           <v-list-item
-            class="nav-item"
+            class="nav-item" 
             :class="{ active: $route.path === items[0].path }"
             @mouseover="hover = items[0].path"
             @mouseleave="hover = ''"
             :style="{ backgroundColor: hover === items[0].path ? '#f0f0f0' : ($route.path === items[0].path ? '#d3d3d3' : 'transparent') }"
           >
-            <v-icon left>{{ items[0].icon }}</v-icon>
+            <template v-slot:prepend>
+              <v-icon :icon="items[0].icon"></v-icon>
+            </template>
             <span>{{ items[0].title }}</span>
           </v-list-item>
         </router-link>
@@ -66,7 +68,9 @@
               @mouseleave="hover = ''"
               :style="{ backgroundColor: hover === items[1].path ? '#f0f0f0' : ($route.path === items[1].path ? '#d3d3d3' : 'transparent') }"
             >
-              <v-icon left>{{ items[1].icon }}</v-icon>
+              <template v-slot:prepend>
+                <v-icon :icon="items[1].icon"></v-icon>
+              </template>
               <span>{{ items[1].title }}</span>
 
               <template v-slot:append>
