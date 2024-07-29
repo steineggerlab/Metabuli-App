@@ -102,6 +102,32 @@ export default {
         svg.selectAll('.clade-reads').style('opacity', 1);
       };
 
+      // Add links
+      const link = svg.append('g')
+        .attr('fill', 'none')
+        .attr('stroke-opacity', 0.3)
+        .selectAll('path')
+        .data(graph.links)
+        .enter().append('path')
+        .attr('d', sankeyLinkHorizontal())
+        .attr('stroke', d => d.target.type === 'unclassified' ? 'grey' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
+        .attr('stroke-width', d => Math.max(1, d.width))
+        .append('title')
+        .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
+
+      // Add mouse event on links
+      link
+        .on('mouseover', (event, d) => {
+          if (d.target.type !== 'unclassified') {
+            d3.select(event.currentTarget).attr('stroke-opacity', 0.5);
+          }
+        })
+        .on('mouseout', (event, d) => {
+          if (d.target.type !== 'unclassified') {
+            d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
+          }
+        });
+
       // Create node group (node + labels) and add mouse events
       const nodeGroup = svg.append('g')
         .selectAll('.node-group')
@@ -111,14 +137,10 @@ export default {
         .attr('transform', d => `translate(${d.x0}, ${d.y0})`)
         // .call(this.dragBehavior(graph, sankeyGenerator, svg))
         .on('mouseover', (event, d) => {
-          if (d.type !== 'unclassified') {
-            highlightLineage(d);
-          }
+          highlightLineage(d);
         })
-        .on('mouseout', (event, d) => {
-          if (d.type !== 'unclassified') {
-            resetHighlight();
-          }
+        .on('mouseout', () => {
+          resetHighlight();
         })
 
       // Create node rectangles
@@ -156,32 +178,6 @@ export default {
         .style('fill',  d => d.type === 'unclassified' ? unclassifiedLabelColor : 'black')
         .text(d => this.formatCladeReads(d.clade_reads))
         .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
-
-      // Add links
-      const link = svg.append('g')
-        .attr('fill', 'none')
-        .attr('stroke-opacity', 0.3)
-        .selectAll('path')
-        .data(graph.links)
-        .enter().append('path')
-        .attr('d', sankeyLinkHorizontal())
-        .attr('stroke', d => d.target.type === 'unclassified' ? 'grey' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
-        .attr('stroke-width', d => Math.max(1, d.width))
-        .append('title')
-        .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
-
-      // Add mouse event on links
-      link
-        .on('mouseover', (event, d) => {
-          if (d.target.type !== 'unclassified') {
-            d3.select(event.currentTarget).attr('stroke-opacity', 0.5);
-          }
-        })
-        .on('mouseout', (event, d) => {
-          if (d.target.type !== 'unclassified') {
-            d3.select(event.currentTarget).attr('stroke-opacity', 0.2);
-          }
-        });
     },
     nodeHeight(d) { // FIXME
       let nodeHeight = d.y1 - d.y0;
