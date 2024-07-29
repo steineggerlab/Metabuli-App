@@ -35,7 +35,7 @@ export default {
       .nodeId(d => d.id)
       .nodeAlign(sankeyJustify)
       .nodeWidth(20)
-      .nodePadding(12)
+      .nodePadding(13)
       .iterations(64)
       .extent([[10, 30], [width - marginRight, height - 6]]);
 
@@ -62,6 +62,9 @@ export default {
           node.x1 = node.x0 + sankeyGenerator.nodeWidth();
           node.color = color(node.id);
       });
+
+      // Re-run the layout to ensure correct vertical positioning
+      sankeyGenerator.update(graph);
 
       // Add rank column labels
       svg.append('g')

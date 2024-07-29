@@ -282,7 +282,7 @@ export default {
         .nodeId(d => d.id)
         .nodeAlign(sankeyJustify)
         .nodeWidth(20)
-        .nodePadding(12)
+        .nodePadding(13)
         .iterations(64)
         .extent([[10, 10], [width - marginRight, height - 6]]); 
 
@@ -310,12 +310,14 @@ export default {
         node.color = color(node.id); // Assign color to node
       });
 
+      // Re-run the layout to ensure correct vertical positioning
+      sankeyGenerator.update(graph);
 
       // Store full graph (used for drawing subtree upon node click)
       const fullGraph = sankeyGenerator({
-          nodes: this.fullGraphData.nodes.map(d => Object.assign({}, d)),
-          links: this.fullGraphData.links.map(d => Object.assign({}, d))
-        });
+        nodes: this.fullGraphData.nodes.map(d => Object.assign({}, d)),
+        links: this.fullGraphData.links.map(d => Object.assign({}, d))
+      });
       fullGraph.nodes.forEach(node => {
         node.x0 = columnMap[node.rank];
         node.x1 = node.x0 + sankeyGenerator.nodeWidth();
