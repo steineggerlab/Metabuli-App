@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, protocol, BrowserWindow, screen, ipcMain, dialog } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
 import fs from 'fs' // Import the filesystem module
@@ -12,13 +12,22 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
+
+
 async function createWindow() {
+  // Wait for the app to be ready
+  await app.whenReady() 
+  
+  // Get the primary display
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize
+  
   // Create the browser window.
   const win = new BrowserWindow({
-    width: 1350,
-    height: 950,
+    x: 0,
+    y: 0,
+    width: width * 0.75,
+    height: height,
     webPreferences: {
-      
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
