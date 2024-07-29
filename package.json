@@ -1,7 +1,10 @@
 {
   "name": "metabuli-app",
+  "author": "SunJae Lee <snjlee58@gmail.com>",
+  "productName": "Metabuli App",
+  "description": "Metabuli is metagenomic classifier that jointly analyze both DNA and amino acid (AA) sequences.",
+  "repository": "https://github.com/snjlee58/Metabuli-App",
   "version": "0.1.0",
-  "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
