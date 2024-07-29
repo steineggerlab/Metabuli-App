@@ -40,8 +40,8 @@ export default {
       .extent([[10, 30], [width - marginRight, height - 6]]);
 
       const graph = sankeyGenerator({
-          nodes: nodes.map(d => Object.assign({}, d)),
-          links: links.map(d => Object.assign({}, d))
+        nodes: nodes.map(d => Object.assign({}, d)),
+        links: links.map(d => Object.assign({}, d))
       });
   
       // Define color scale
@@ -52,15 +52,15 @@ export default {
       const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"];
       const columnWidth = (width - marginRight) / rankOrder.length;
       const columnMap = rankOrder.reduce((acc, rank, index) => {
-          const leftMargin = 10;
-          acc[rank] = index * columnWidth + leftMargin;
-          return acc;
+        const leftMargin = 10;
+        acc[rank] = index * columnWidth + leftMargin;
+        return acc;
       }, {});
 
       graph.nodes.forEach(node => {
-          node.x0 = columnMap[node.rank];
-          node.x1 = node.x0 + sankeyGenerator.nodeWidth();
-          node.color = color(node.id);
+        node.x0 = columnMap[node.rank];
+        node.x1 = node.x0 + sankeyGenerator.nodeWidth();
+        node.color = color(node.id);
       });
 
       // Re-run the layout to ensure correct vertical positioning
@@ -68,14 +68,14 @@ export default {
 
       // Add rank column labels
       svg.append('g')
-        .selectAll('text')
-        .data(rankOrder)
-        .enter().append('text')
-        .attr('x', rank => columnMap[rank] + sankeyGenerator.nodeWidth() / 2)
-        .attr('y', height + marginBottom / 2)
-        .attr('dy', '0.35em')
-        .attr('text-anchor', 'middle')
-        .text(rank => rank[0].toUpperCase());
+      .selectAll('text')
+      .data(rankOrder)
+      .enter().append('text')
+      .attr('x', rank => columnMap[rank] + sankeyGenerator.nodeWidth() / 2)
+      .attr('y', height + marginBottom / 2)
+      .attr('dy', '0.35em')
+      .attr('text-anchor', 'middle')
+      .text(rank => rank[0].toUpperCase());
 
       // Draw rank label divider link 
       svg.append('line')
