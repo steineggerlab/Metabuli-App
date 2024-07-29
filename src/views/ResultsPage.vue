@@ -60,7 +60,7 @@
 </template>
   
 <script>
-import SankeyDiagram from '../components/SankeyDiagram.vue'
+import SankeyDiagram from '@/components/SankeyDiagram.vue'
 import ResultsTable  from '@/components/ResultsTable.vue';
 
 export default {
@@ -83,13 +83,13 @@ export default {
       try {
         const kronaHtml = await window.electron.readFile(filePath);
         this.kronaContent = kronaHtml;
-        // await window.electron.openKrona(filePath);
       } catch (error) {
         console.error('Error opening Krona viewer:', error);
       }
     },
     async readTSVFile(filePath) {
       try {
+        // console.log("tsv filepath: ", filePath)
         const tsvContent = await window.electron.readFile(filePath);
         const json = this.tsvToJSON(tsvContent);
         return json.results;
@@ -118,13 +118,13 @@ export default {
       const resolvedOutdirPath = window.electron.resolvePath(this.$route.query.outdir);
       
       // Render report.tsv 
-      const reportFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_report.tsv`
-      const kronaFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_krona.html`
+      const reportFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_report.tsv`;
       const resultsJSON = await this.readTSVFile(`${reportFilePath}`);
       this.results = resultsJSON;
       this.saveResults();
-
+      
       // Render Krona
+      const kronaFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_krona.html`;
       this.renderKronaViewer(kronaFilePath);
     } catch (error) {
       console.error('Error loading results:', error);

@@ -32,7 +32,7 @@ async function createWindow() {
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-      preload: path.join(__dirname, '..', 'src', 'preload.js')  // Ensure the preload script is specified
+      preload: path.join(__dirname, 'preload.js')  // Ensure the preload script is specified
     }
   })
 
@@ -43,7 +43,8 @@ async function createWindow() {
   } else {
     createProtocol('app')
     // Load the index.html when not in development
-    win.loadURL('app://./index.html')
+    // win.loadURL('app://./index.html')
+    win.loadURL(`file://${__dirname}/index.html`)
   }
 }
 
@@ -91,16 +92,6 @@ if (isDevelopment) {
     })
   }
 }
-
-// IPC handler to read a file
-ipcMain.handle('read-file', async (event, filePath) => {
-  try {
-    const data = fs.readFileSync(filePath, 'utf-8');
-    return data;
-  } catch (error) {
-    throw new Error('Failed to read file');
-  }
-});
 
 // IPC handler to open file dialog
 ipcMain.handle('open-file-dialog', async (event, options) => {
