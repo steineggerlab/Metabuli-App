@@ -2,13 +2,14 @@
 .DS_Store
 
 # Node modules
-node_modules
+node_modules/
 
 # Build directories
-/dist_electron
-/dist
+dist_electron/
+dist/
 
-
+# Makefile generated files
+resources/
 
 # local env files
 .env.local
