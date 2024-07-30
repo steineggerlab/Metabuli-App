@@ -23,6 +23,16 @@ module.exports = defineConfig({
             filter: ['**/*']
           }
         ],
+         // Add icon paths for different platforms
+         mac: {
+           icon: path.resolve(__dirname, 'src/assets/icons/icon.icns')
+         },
+        //  win: {
+        //   icon: path.resolve(__dirname, 'src/assets/icons/icon.ico')
+        // },
+        // linux: {
+        //   icon: path.resolve(__dirname, 'src/assets/icons/icon.png')
+        // }
       },
     },
   }

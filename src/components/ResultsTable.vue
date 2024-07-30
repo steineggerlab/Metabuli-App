@@ -17,7 +17,7 @@
         <!-- SEARCH BAR -->
         <v-text-field
           v-model="searchQuery"
-          prepend-inner-icon="mdi-magnify"
+          prepend-inner-icon="$magnify"
           density="compact"
           label="Filter results"
           variant="outlined"
