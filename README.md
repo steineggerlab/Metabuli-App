@@ -47,6 +47,7 @@ To run the application in development mode with hot reloading:
 
 ```sh
 npm run electron:serve
+```
 
 ### Building the Desktop Application
 
