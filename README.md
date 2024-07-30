@@ -41,7 +41,7 @@ To get a local copy up and running, follow these steps:
     npm install
     ```
 
-### Running the Desktop Application
+### Running the Desktop Application in Development Mode
 
 To run the application in development mode with hot reloading:
 
@@ -49,9 +49,9 @@ To run the application in development mode with hot reloading:
 npm run electron:serve
 ```
 
-### Building the Desktop Application
+### Building the Desktop Application 
 
-To build the application, run the following command:
+To build the application for distribution, run the following command:
 
 ```sh
 npm run electron:build
