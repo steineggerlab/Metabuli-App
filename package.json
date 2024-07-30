@@ -13,7 +13,8 @@
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "npm run electron:deps && vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
-    "postuninstall": "electron-builder install-app-deps"
+    "postuninstall": "electron-builder install-app-deps",
+    "clean": "rimraf dist dist_electron build node_modules"
   },
   "main": "background.js",
   "dependencies": {
