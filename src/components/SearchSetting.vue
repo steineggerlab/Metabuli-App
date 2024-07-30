@@ -103,7 +103,7 @@
 </template>
 
 <script>
-import axios from '../plugins/axios';
+import axios from '@/plugins/axios';
 
 export default {
   name: 'SearchSetting',
@@ -252,6 +252,7 @@ export default {
 
 
 <style scoped>
+
 .status-container {
   display: flex;
   align-items: center;
@@ -262,7 +263,7 @@ export default {
 .search-settings-panel::after {
   content: '';
   background: url('../../public/assets/marv_metabuli_small.png') no-repeat;
-  background-size: 300px 300px; /* Adjust the size as needed */
+  background-size: 300px 300px; 
   opacity: 0.5;
   position: absolute;
   bottom: 10px;
