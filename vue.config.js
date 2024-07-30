@@ -21,6 +21,11 @@ module.exports = defineConfig({
             from: 'public/sample_data',
             to: 'sample_data',
             filter: ['**/*']
+          },
+          {
+            from: 'public/assets',
+            to: 'assets',
+            filter: ['**/*']
           }
         ],
          // Add icon paths for different platforms
