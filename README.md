@@ -53,8 +53,8 @@ npm run electron:serve
 
 To build the application, run the following command:
 
-    ```sh
-    npm run electron:build
-    ```
+```sh
+npm run electron:build
+```
 
 The executable application (currently only for macOS) can be found in the `dist_electron/mac-arm64` folder.
