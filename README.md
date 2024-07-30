@@ -57,4 +57,4 @@ To build the application for distribution, run the following command:
 npm run electron:build
 ```
 
-The executable application (currently only for macOS) can be found in the `dist_electron/mac-arm64` folder.
+The executable application (currently only for macOS) can be found in the `build` folder.

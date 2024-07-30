@@ -4,6 +4,8 @@ const path = require('path');
 module.exports = defineConfig({
   transpileDependencies: true,
 
+  outputDir: path.resolve(__dirname, 'build'),
+
   pluginOptions: {
     vuetify: {
 			// https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vuetify-loader
@@ -11,6 +13,9 @@ module.exports = defineConfig({
     electronBuilder: {
       preload: path.resolve(__dirname, 'src/preload.js'), // Ensure this path is correct
       builderOptions: {
+        directories: {
+          output: 'build' // Set the output directory for the built app
+        },
         extraResources: [
           {
             from: path.resolve(__dirname, 'src/preload.js'), // Ensure this path is correct
@@ -30,14 +35,45 @@ module.exports = defineConfig({
         ],
          // Add icon paths for different platforms
          mac: {
-           icon: path.resolve(__dirname, 'src/assets/icons/icon.icns')
-         },
-        //  win: {
-        //   icon: path.resolve(__dirname, 'src/assets/icons/icon.ico')
-        // },
-        // linux: {
-        //   icon: path.resolve(__dirname, 'src/assets/icons/icon.png')
-        // }
+          icon: path.resolve(__dirname, 'src/assets/icons/icon.icns'),
+          target: [
+            {
+              target: 'dmg',
+              arch: [ 
+                'universal' 
+              ]
+            }
+          ]
+        },
+        win: {
+          icon: path.resolve(__dirname, 'src/assets/icons/icon.ico'),
+          target: [
+            {
+              "target": "nsis",
+              "arch": [
+                "x64"
+              ]
+            } 
+          ] 
+        },
+        linux: {
+          icon: path.resolve(__dirname, 'src/assets/icons/icon.png'),
+          "target": [
+            {
+              "target": "AppImage",
+              "arch": [
+                "x64",
+                "arm64"
+              ]
+            }
+          ]
+        },
+        // Define the targets for the build
+        target: [
+          'mac',
+          'win',
+          'linux'
+        ]
       },
     },
   }
