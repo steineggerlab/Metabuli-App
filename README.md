@@ -1,4 +1,4 @@
-# Metabuli Desktop + Web Application 
+# Metabuli Desktop Application 
 
 This project is a desktop application for Metabuli built with Vue.js and Electron, which enables development of cross-platform desktop apps using web technologies.
 
@@ -41,9 +41,19 @@ To get a local copy up and running, follow these steps:
     npm install
     ```
 
-### Running the Application
+### Running the Desktop Application
 
 To run the application in development mode with hot reloading:
 
 ```sh
 npm run electron:serve
+
+### Building the Desktop Application
+
+To build the application, run the following command:
+
+    ```sh
+    npm run electron:build
+    ```
+
+The executable application (currently only for macOS) can be found in the `dist_electron/mac-arm64` folder.
