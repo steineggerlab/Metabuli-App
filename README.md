@@ -51,10 +51,10 @@ npm run electron:serve
 
 ### Building the Desktop Application 
 
-To build the application for distribution, run the following command:
+To build the executable application (mac, win, linux), run the following command:
 
 ```sh
 npm run electron:build
 ```
 
-The executable application (currently only for macOS) can be found in the `build` folder.
+The executable application can be found in the `build` folder.
