@@ -8,7 +8,7 @@
           Search Settings
           <v-spacer></v-spacer>
           <v-btn icon @click="toggleApiDialog">
-            <v-icon size="28">mdi-api</v-icon>
+            <v-icon icon="$api" size="28"></v-icon>
           </v-btn>
         </v-toolbar>
         
@@ -91,7 +91,7 @@
         v-model="snackbar.show"
         :timeout="snackbar.timeout"
       >
-        <v-icon :color="snackbar.color">{{ snackbar.icon }}</v-icon>
+        <v-icon :color="snackbar.color" :icon="`$${snackbar.icon}`"></v-icon>
         {{ snackbar.message }}
         <template v-slot:actions>
           <v-btn :color="snackbar.color" variant="text" @click="snackbar.show = false">Close</v-btn>
@@ -237,11 +237,11 @@ export default {
       if (type === 'success') {
         this.snackbar.message = "Job complete. Check the results tab!";
         this.snackbar.color = 'green';
-        this.snackbar.icon = 'mdi-check-circle';
+        this.snackbar.icon = 'success';
       } else if (type === 'error') {
         this.snackbar.message = "An error occurred. Please check query and try again.";
         this.snackbar.color = 'red';
-        this.snackbar.icon = 'mdi-alert-circle';
+        this.snackbar.icon = 'warning';
       }
       this.snackbar.show = true;
     },

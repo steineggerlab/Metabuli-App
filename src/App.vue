@@ -27,9 +27,6 @@
       <v-btn href="https://github.com/steineggerlab/Metabuli" target="_blank">GitHub</v-btn>
       <v-btn href="https://steineggerlab.com/en/" target="_blank">Steinegger Lab</v-btn>
 
-      <v-btn icon>
-        <v-icon>mdi-dots-vertical</v-icon>
-      </v-btn>
     </v-app-bar>
 
     <v-navigation-drawer v-model="drawer">
@@ -47,7 +44,7 @@
             :style="{ backgroundColor: hover === items[0].path ? '#f0f0f0' : ($route.path === items[0].path ? '#d3d3d3' : 'transparent') }"
           >
             <template v-slot:prepend>
-              <v-icon :icon="items[0].icon"></v-icon>
+              <v-icon :icon="`$${items[0].icon}`"></v-icon>
             </template>
             <span>{{ items[0].title }}</span>
           </v-list-item>
@@ -69,7 +66,7 @@
               :style="{ backgroundColor: hover === items[1].path ? '#f0f0f0' : ($route.path === items[1].path ? '#d3d3d3' : 'transparent') }"
             >
               <template v-slot:prepend>
-                <v-icon :icon="items[1].icon"></v-icon>
+                <v-icon :icon="`$${items[1].icon}`"></v-icon>
               </template>
               <span>{{ items[1].title }}</span>
 
@@ -107,8 +104,8 @@ export default {
     drawer: true,
     hover: '',
     items: [
-      { title: 'Data Input', path: '/search', icon: 'mdi-cloud-upload' },
-      { title: 'Results', path: '/results', icon: 'mdi-chart-bar' }
+      { title: 'Data Input', path: '/search', icon: 'upload' },
+      { title: 'Results', path: '/results', icon: 'chartBar' }
     ],
     jobCompleted: false,
     completedJob: {},
