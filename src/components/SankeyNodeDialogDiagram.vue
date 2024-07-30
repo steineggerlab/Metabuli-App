@@ -13,7 +13,7 @@ export default {
     instanceId: String // Add an instanceId prop to ensure unique IDs
   },
   mounted() {
-      this.createSankey();
+    this.createSankey();
   },
   methods: {
     createSankey() {
@@ -44,8 +44,9 @@ export default {
         links: links.map(d => Object.assign({}, d))
       });
   
-      // Define color scale
-      const color = d3.scaleOrdinal(d3.schemeCategory10);
+      // Define color scale (https://wondernote.org/color-palettes-for-web-digital-blog-graphic-design-with-hexadecimal-codes/)
+      const autumnColors = ["#57291F", "#C0413B", "#D77B5F", "#FF9200", "#FFCD73", "#F7E5BF", "#C87505", "#F18E3F", "#E59579", "#C14C32", "#80003A", "#506432", "#FFC500", "#B30019", "#EC410B", "#E63400", "#8CB5B5", "#6C3400", "#FFA400", "#41222A", "#FFF7C2", "#FFB27B", "#FFCD87", "#BC7576", "#696B7E"];
+      const color = d3.scaleOrdinal(autumnColors);
       const unclassifiedLabelColor = 'gray';
 
       // Manually adjust nodes position to align by rank

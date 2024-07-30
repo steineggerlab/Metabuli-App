@@ -9,14 +9,14 @@
         <v-card>
             <v-card-title>{{ nodeDetails.data.name }}</v-card-title>
             <v-card-text>
-                <p>Rank <strong>{{ nodeDetails.data.rank }}</strong></p>
+                <p>Rank <strong>{{ nodeDetails.data.trueRank }}</strong></p>
 
                 <div class="taxid-breadcrumbs">
-                  <p>TaxID {{ nodeDetails.data.id }}</p>
+                  <p>TaxID {{ nodeDetails.data.taxon_id }}</p>
                   <p>
-                    <a :href="`https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=${nodeDetails.data.id}`" target="_blank">NCBI Taxonomy</a> 
+                    <a :href="`https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=${nodeDetails.data.taxon_id}`" target="_blank">NCBI Taxonomy</a> 
                     /
-                    <a :href="`https://www.ncbi.nlm.nih.gov/assembly/?term=txid${nodeDetails.data.id}[Organism:exp]`" target="_blank">Assemblies</a>
+                    <a :href="`https://www.ncbi.nlm.nih.gov/assembly/?term=txid${nodeDetails.data.taxon_id}[Organism:exp]`" target="_blank">Assemblies</a>
                     /
                     <a :href="`https://pubmed.ncbi.nlm.nih.gov/?term=${nodeDetails.data.name}`" target="_blank">PubMed</a>
                   </p>
@@ -36,7 +36,6 @@
                 <SankeyNodeDialogDiagram :data="nodeDetails.subtreeData" :instanceId="uniqueInstanceId"/>
             </v-card-text>
             
-            
             <v-card-actions>
                 <v-btn color="primary" @click="closeDialog">Close</v-btn>
             </v-card-actions>
@@ -55,8 +54,7 @@ export default {
   },
   props: {
     nodeDetails: Object,
-    dialog: Boolean,
-    // subtreeData: Object
+    dialog: Boolean
   },
   data() {
     return {

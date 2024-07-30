@@ -29,7 +29,7 @@
 
     </v-app-bar>
 
-    <v-navigation-drawer v-model="drawer">
+    <v-navigation-drawer v-model="drawer" ref="navigationDrawer">
       <v-list nav density="compact">
         <!-- DATA INPUT NAVIGATION ITEM -->
         <router-link

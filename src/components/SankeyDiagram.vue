@@ -2,6 +2,16 @@
   <div class="sankey-container">
     <div ref="sankeyContainer" class="sankey-diagram"></div>
 
+    <!-- TOOLTIP ON NODE HOVER -->
+    <div ref="tooltip" class="tooltip" v-if="hoverDetails.visible">
+      <div>{{ hoverDetails.data.name }}</div>
+      <div>Rank: <strong>{{ hoverDetails.data.trueRank }}</strong></div>
+      <div>TaxID: {{ hoverDetails.data.taxon_id }}</div>
+      <div>Proportion: {{ hoverDetails.data.proportion }}%</div>
+      <div>Clade Reads: {{ hoverDetails.data.clade_reads }}</div>
+      <div>Taxon Reads: {{ hoverDetails.data.taxon_reads }}</div>
+    </div>
+
     <!-- NODE DETAILS DIALOG -->
     <SankeyNodeDialog
       :nodeDetails="nodeDetails"
@@ -18,7 +28,7 @@
       rounded
     >
       <v-card-text>
-        <p>Double click on a node or link to see details.</p>
+        <p>Click on a node to see lineage and subtree.</p>
       </v-card-text>
     </v-sheet>
   </div>
@@ -51,6 +61,10 @@ export default {
       nodeDetails: null,
       dialog: false,
       fullGraphData: {nodes: [], links: [] },
+      hoverDetails: {
+        visible: false,
+        data: {}
+      }
     };
   },
   computed: {
@@ -84,8 +98,10 @@ export default {
       data.filter(d => d.rank !== 'clade').forEach( d => {
         let node = {
           id: d.taxon_id,
+          taxon_id: d.taxon_id,
           name: d.name,
           rank: d.rank,
+          trueRank: d.rank,
           proportion: parseFloat(d.proportion),
           clade_reads: parseFloat(d.clade_reads),
           taxon_reads: d.taxon_reads,
@@ -295,8 +311,13 @@ export default {
       });
 
       // Define color scale
-      const color = d3.scaleOrdinal(d3.schemeCategory10);
-      const unclassifiedLabelColor = 'gray';
+      const springColors = ['#afddd5', '#ffa700', '#ffcccd', '#f56093', '#64864a', '#dfe6e6', '#dfdec0', '#ff7e5a', '#ffbd00', '#7db954', '#feddcb', '#ffc700', '#cee8e5', '#c6b598', '#fee100', '#fac4c4', '#e0e7ad', '#fdbb9f', '#eadcc3', '#eef3b4', '#ffb27b', '#ff284b', '#7abaa1', '#cfeae4'];
+      const autumnColors = ["#57291F", "#C0413B", "#D77B5F", "#FF9200", "#FFCD73", "#F7E5BF", "#C87505", "#F18E3F", "#E59579", "#C14C32", "#80003A", "#506432", "#FFC500", "#B30019", "#EC410B", "#E63400", "#8CB5B5", "#6C3400", "#FFA400", "#41222A", "#FFF7C2", "#FFB27B", "#FFCD87", "#BC7576", "#696B7E"];
+      const winterColors = ["#445A67", "#57838D", "#B4C9C7", "#F3BFB3", "#CCADB2", "#FFEFFF", "#F6F7FB", "#E0F8F5", "#BEEDE5", "#A7D9C9", "#50B4D8", "#9EDDEF", "#F7E5B7", "#D7E2EA", "#96B3C2", "#FFDAD1", "#FFEDDA", "#CAB3C1", "#6E7B8F", "#2E3332", "#C29BA3", "#E3BFB7", "#FFE4C9", "#B7EAF7", "#8A9BA7"];
+      console.log(springColors, autumnColors, winterColors); //DELETE
+
+      const color = d3.scaleOrdinal().range(autumnColors);
+      const unclassifiedLabelColor = "#696B7E";
 
       // Manually adjust nodes position to align by rank
       const rankOrder = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"];
@@ -310,7 +331,12 @@ export default {
       graph.nodes.forEach(node => {
         node.x0 = columnMap[node.rank];
         node.x1 = node.x0 + sankeyGenerator.nodeWidth();
-        node.color = color(node.id); // Assign color to node
+
+        if (node.type === 'unclassified') {
+          node.color = unclassifiedLabelColor;
+        } else {
+          node.color = color(node.id); // Assign color to node
+        }
       });
 
       // Re-run the layout to ensure correct vertical positioning
@@ -388,13 +414,13 @@ export default {
         .data(graph.links)
         .enter().append('path')
         .attr('d', sankeyLinkHorizontal())
-        .attr('stroke', d => d.target.type === 'unclassified' ? 'gray' : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
+        .attr('stroke', d => d.target.type === 'unclassified' ? unclassifiedLabelColor : d3.color(d.source.color)) // Set link color to source node color with reduced opacity
         .attr('clip-path', (d, i) => `url(#clip-path-${i})`)
         .attr('stroke-width', d => Math.max(1, d.width))
         .append('title')
         .text(d => `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`);
 
-        // Add mouse event on links
+        //FIXME: Add mouse event on links
         link
           .on('mouseover', (event, d) => {
             if (d.target.type !== 'unclassified') {
@@ -407,6 +433,34 @@ export default {
             }
           });
 
+      // Function to show tooltip
+      this.showTooltip = (event, d) => {
+        this.hoverDetails = {
+          visible: true,
+          data: d
+        };
+        console.log(this.hoverDetails.data)
+        this.moveTooltip(event, d);
+      };
+
+      // Function to move tooltip
+      this.moveTooltip = (event, d) => {
+        const tooltip = this.$refs.tooltip;
+        const containerRect = this.$refs.sankeyContainer.getBoundingClientRect(); 
+        const drawerWidth = this.$refs.navigationDrawer ? this.$refs.navigationDrawer.clientWidth : 0;
+        
+        if (tooltip) {
+          tooltip.style.left = (event.clientX - containerRect.left - drawerWidth + 15) + 'px'; //FIXME: buggy on horizontal scroll on diagram
+          tooltip.style.top = (event.pageY - 200) + 'px';
+          tooltip.style.borderColor = d3.color(d.color);
+        }
+      };
+
+      // Function to hide tooltip
+      this.hideTooltip = () => {
+        this.hoverDetails.visible = false;
+      };
+
       // Create node group (node + labels) and add mouse events
       const nodeGroup = svg.append('g')
         .selectAll('.node-group')
@@ -417,25 +471,26 @@ export default {
         // .call(drag)
         .on('mouseover', (event, d) => {
           highlightLineage(d);
+          this.showTooltip(event, d);
+        })
+        .on('mousemove', (event, d) => {
+          this.moveTooltip(event, d);
         })
         .on('mouseout', () => {
           resetHighlight();
+          this.hideTooltip();
         })
         .on('click', (event, d) => {
-          if (d.type !== 'unclassified') {
-            this.showNodeDetails(event, d);
-          }
+          this.showNodeDetails(event, d); 
         });
       
       // Create node rectangles
       nodeGroup.append('rect')
         .attr('width', d => d.x1 - d.x0)
         .attr('height', d => this.nodeHeight(d))
-        .attr('fill', d => d.type === "unclassified" ? 'gray' : d.color)
+        .attr('fill', d => d.type === "unclassified" ? unclassifiedLabelColor : d.color)
         .attr('class', 'node') // Apply the CSS class for cursor
-        .style('cursor', d => d.type === 'unclassified' ? 'default' : 'grab')
-        .append('title')
-        .text(d => `${d.name}\n${d.clade_reads} clade reads (${d.proportion}%)`);
+        .style('cursor', 'pointer');
       
       // Add node name labels next to node
       nodeGroup.append('text')
@@ -448,7 +503,7 @@ export default {
         .text(d => d.name)
         .style('font-size', '10px')
         .style('fill', d => d.type === 'unclassified' ? unclassifiedLabelColor : 'black')
-        .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
+        .style('cursor', 'pointer');
         
       // Add clade reads label above node
       nodeGroup.append('text')
@@ -461,7 +516,7 @@ export default {
         .style('font-size', '10px')
         .style('fill', d => d.type === 'unclassified' ? unclassifiedLabelColor : 'black')
         .text(d => this.formatCladeReads(d.clade_reads))
-        .style('cursor', d => d.type === 'unclassified' ? 'default' : 'pointer');
+        .style('cursor', 'pointer');
 
         
       },
@@ -552,5 +607,15 @@ export default {
 
 .node:active {
   cursor: grabbing;
+}
+
+.tooltip {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 </style>
