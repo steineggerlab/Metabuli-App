@@ -1,5 +1,6 @@
 const { defineConfig } = require('@vue/cli-service')
 const path = require('path');
+const fs = require('fs');
 
 module.exports = defineConfig({
   transpileDependencies: true,
@@ -30,6 +31,11 @@ module.exports = defineConfig({
           {
             from: 'public/assets',
             to: 'assets',
+            filter: ['**/*']
+          },
+          {
+            "from": `resources/${process.platform}/${process.arch}`,
+            "to": "bin",
             filter: ['**/*']
           }
         ],
@@ -73,7 +79,22 @@ module.exports = defineConfig({
           'mac',
           'win',
           'linux'
-        ]
+        ],
+        afterPack: async (context) => {
+          const resourcesPath = context.appOutDir;
+          const binaries = [
+            path.join(resourcesPath, 'bin', 'metabuli')
+          ];
+
+          binaries.forEach(binary => {
+            try {
+              fs.chmodSync(binary, '755');
+              console.log(`Permissions set for ${binary}`);
+            } catch (error) {
+              console.error(`Failed to set permissions for ${binary}: ${error.message}`);
+            }
+          });
+        }
       },
     },
   }

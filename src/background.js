@@ -1,18 +1,20 @@
 'use strict'
 
 import { app, protocol, BrowserWindow, screen, ipcMain, dialog } from 'electron'
+const { execFile } = require('child_process');
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
-import fs from 'fs' // Import the filesystem module
-import path from 'path'
+import fs from 'fs'
+import { join } from 'path'
+import { default as os } from 'os';
+import appRootDir from 'app-root-dir';
+
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
-
-
 
 async function createWindow() {
   // Wait for the app to be ready
@@ -32,7 +34,7 @@ async function createWindow() {
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-      preload: path.join(__dirname, 'preload.js')  // Ensure the preload script is specified
+      preload: join(__dirname, 'preload.js')  // Ensure the preload script is specified
     }
   })
 
@@ -116,5 +118,40 @@ ipcMain.handle('open-krona', async (event, filePath) => {
     kronaWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent));
   } catch (error) {
     throw new Error(`Failed to read file: ${error.message}`);
+  }
+});
+
+// To execute bin file for Metabuli
+const platform = os.platform();
+const mapPlatform = (platform) => {
+	switch (platform) {
+		case "win32":
+			return "win";
+		case "darwin":
+			return "mac";
+		case "linux":
+			return "linux";
+		default:
+			return "UNSUPPORTED-PLATFORM";
+	}
+}
+
+const binPath = app.isPackaged ?
+	join(process.resourcesPath, 'bin') : // 'production' process.resourcesPath=metabuli-app/build/mac-universal--x64/Metabuli App.app/Contents/Resources
+	join(appRootDir.get(), 'resources', mapPlatform(platform), os.arch(), 'metabuli', (platform == "win32" ? ".bat" : ""));
+
+ipcMain.on('run-backend', async (event, args) => {
+  try {
+    execFile(binPath, args, (error, stdout, stderr) => {
+      if (error) {
+        throw new Error(`Error executing backend: ${error.message}`);
+      }
+      if (stderr) {
+        console.error(`Backend stderr: ${stderr}`);
+      }
+      event.reply('backend-output', stdout);
+    });
+  } catch (error) {
+    console.error(`Failed to run backend: ${error.message}`);
   }
 });

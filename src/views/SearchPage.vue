@@ -31,7 +31,8 @@ import SearchSetting from '@/components/SearchSetting.vue';
       handleJobComplete(payload) {
         this.$emit('job-complete', { 
           outdir: payload.outdir, 
-          jobid: payload.jobid 
+          jobid: payload.jobid,
+          isSample: payload.isSample
         });
       },
     }

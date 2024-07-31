@@ -47,7 +47,7 @@
           <v-sheet class="d-flex align-center mb-2">
             <v-btn 
               :loading="loading"
-              @click="sendRequest"
+              @click="runBackend"
               color="indigo"
             >
               Run Metabuli
@@ -113,9 +113,9 @@ export default {
       q1: '',
       q2: '',
       database: "",
-      jobid: "",
       outdir: "",
-      maxram: 0
+      jobid: "",
+      // maxram: 0
     },
     jobDetailsSample: { // Sample job details
       q1: 'SRR14484345_1.fq',
@@ -167,42 +167,36 @@ export default {
       this.jobDetails = { ...this.jobDetailsSample };
       this.$emit('job-complete', { 
         outdir: this.jobDetailsSample.outdir, 
-        jobid: this.jobDetailsSample.jobid
+        jobid: this.jobDetailsSample.jobid,
+        isSample: true
       });
       this.triggerSnackbar('success');
     },
-    // Function to populate formData
-    populateFormData() {
-      this.formData.append('q1', this.jobDetails.q1);
-      this.formData.append('q2', this.jobDetails.q2);
-      this.formData.append('database[]', this.jobDetails.database);
-      this.formData.append('jobid', this.jobDetails.jobid);
-      this.formData.append('outdir', this.jobDetails.outdir);
-      this.formData.append('maxram', this.jobDetails.maxram);
-    },
-    async sendRequest () {
-      this.loading = true; // Start loading
-      this.populateFormData();
 
-      // Send the POST API request
-      axios.post('/api/ticket', this.formData)
-        .then(async response => {
-          try {
-            await this.pollJobStatus(response.data.id); // Wait until job completes
+    async runBackend() {
+      this.loading = true; // Start loading 
+      const jobDetailValues = Object.values(this.jobDetails); // Extract values from jobDetails
 
-          } catch (error) {
-            console.error('Error waiting for job completion:', error);
-            this.loading = false; // Stop loading
-          } finally {
-            this.loading = false; // Stop loading
-          }
-        })
-        .catch(() => {
-          // Invalid query error
-          this.triggerSnackbar('error');
+      const params = [
+        'classify',
+        ...jobDetailValues // Append job detail values
+      ];
 
-          this.loading = false;
-        });
+    //   const params = ['classify', 
+    //   '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq',
+    //   '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_2.fq',
+    //   '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/refseq_virus',
+    //   '/Users/sunnylee/Documents/Steinegger Lab/Metabuli-App',
+    //   'TEST0731'
+    // ]; // Replace with actual parameters
+
+      try {
+        window.electron.runBackend(params);
+      } catch (error) {
+        console.error('Error running backend:', error);
+        this.triggerSnackbar('error');
+        this.loading = false; // Stop loading
+      }
     },
     // Function to track job status
     async pollJobStatus(ticketid, interval = 500, timeout = 60000) { // Check job status every 0.5 seconds, timeout after 30 seconds
@@ -219,7 +213,8 @@ export default {
             this.triggerSnackbar('success');
             this.$emit('job-complete', { 
               outdir: this.jobDetails.outdir, 
-              jobid: this.jobDetails.jobid 
+              jobid: this.jobDetails.jobid,
+              isSample: false
             });
 
             return true;
@@ -246,6 +241,30 @@ export default {
       this.snackbar.show = true;
     },
   },
+  mounted() {
+    window.electron.onBackendOutput((output) => {
+      console.log('Backend Output:', output); //DEBUG
+      this.loading = false; // Stop loading
+      this.status = "COMPLETE"; //FIXME: remove if unneeded
+      this.triggerSnackbar('success');
+      
+      // Process the backend output
+      this.$emit('job-complete', { 
+        outdir: this.jobDetails.outdir, 
+        jobid: this.jobDetails.jobid,
+        isSample: false
+      });
+    });
+    
+    window.electron.onBackendError((error) => {
+      console.error('Backend Error:', error);
+
+      // Handle the backend error
+      this.loading = false; // Stop loading
+      this.triggerSnackbar('error');
+    });
+  },
+
 }
 </script>
 

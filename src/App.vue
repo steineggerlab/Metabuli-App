@@ -127,7 +127,8 @@ export default {
       this.checkedResults = false;
       this.completedJob = { 
         outdir: payload.outdir, 
-        jobid: payload.jobid
+        jobid: payload.jobid,
+        isSample: payload.isSample
       }
     },
     handleResultsClick(event) {

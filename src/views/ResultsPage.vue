@@ -63,12 +63,13 @@ export default {
       taxaLimit: 25,
       minCladeReads: 1,
       showUnclassified: true,
+      isSample: null
     };
   },
   methods: {
     async renderKronaViewer(filePath) {
       try {
-        const kronaHtml = await window.electron.readFile(filePath);
+        const kronaHtml = await window.electron.readFile(filePath, this.isSample); //FIXME: too messy, edit readFile preload function
         this.kronaContent = kronaHtml;
       } catch (error) {
         console.error('Error opening Krona viewer:', error);
@@ -76,8 +77,7 @@ export default {
     },
     async readTSVFile(filePath) {
       try {
-        // console.log("tsv filepath: ", filePath)
-        const tsvContent = await window.electron.readFile(filePath);
+        const tsvContent = await window.electron.readFile(filePath, this.isSample); //FIXME: edit readFile preload function
         const json = this.tsvToJSON(tsvContent);
         return json.results;
       } catch (error) {
@@ -107,7 +107,14 @@ export default {
   async mounted() {
     try {
       // Resolve outdir path
-      const resolvedOutdirPath = window.electron.resolvePath(this.$route.query.outdir);
+      let resolvedOutdirPath;
+      if (this.$route.query.isSample === "true") {
+        resolvedOutdirPath = window.electron.resolvePath(this.$route.query.outdir);
+        this.isSample = true;
+      } else {
+        resolvedOutdirPath = this.$route.query.outdir;
+        this.isSample = false;
+      }
       
       // Render report.tsv 
       const reportFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_report.tsv`;
