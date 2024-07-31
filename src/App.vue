@@ -5,7 +5,7 @@
       <v-app-bar-nav-icon @click.stop="rail = !rail"></v-app-bar-nav-icon>
 
       <!-- METABULI TITLE + LOGO -->
-      <div class="d-flex gc-1" style="align-items: center">
+      <div class="d-flex gc-1 ml-3" style="align-items: center">
         <div class="flex-grow-1">
           <v-app-bar-title>Metabuli</v-app-bar-title>
         </div>

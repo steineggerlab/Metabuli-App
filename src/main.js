@@ -16,7 +16,7 @@ import { loadFonts } from './plugins/webfontloader'
 
 loadFonts()
 
-window.document.title = "Metabuli Search Server";
+window.document.title = "Metabuli Search";
 
 const app = createApp(App);
 
