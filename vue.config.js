@@ -34,7 +34,7 @@ module.exports = defineConfig({
             filter: ['**/*']
           },
           {
-            "from": `resources/${process.platform}/${process.arch}`,
+            "from": "resources/${os}/${arch}",
             "to": "bin",
             filter: ['**/*']
           }
