@@ -16,19 +16,8 @@
         <!-- SANKEY TAB-->
         <v-tabs-window-item value="sankey" class="tab-fill-height">
           <!-- TOOLBAR ABOVE SANKEY DIAGRAM -->
-          <div class="d-flex justify-end my-5 mx-10">
-            <!-- Add the download button -->
-            <v-btn color="primary" @click="downloadSankeyAsPng">
-              Download Sankey Diagram png
-            </v-btn>
-
-            <v-btn color="primary" @click="downloadSankeyAsJpg">
-              Download Sankey Diagram jpg
-            </v-btn>
-
-            <v-btn color="primary" @click="downloadSankeyAsHtml">
-              Download Sankey Diagram html
-            </v-btn>
+          <div class="d-flex justify-end my-5 mx-10 gc-2">
+            <SankeyDownloadMenu @format-selected="handleFormatSelected" />
 
             <ConfigureSankeyMenu
               :initialTaxaLimit="taxaLimit"
@@ -63,6 +52,7 @@
 import SankeyDiagram from "@/components/SankeyDiagram.vue";
 import ResultsTable from "@/components/ResultsTable.vue";
 import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
+import SankeyDownloadMenu from "@/components/SankeyDownloadMenu.vue";
 import { saveSvgAsPng } from "save-svg-as-png";
 
 import * as d3 from "d3";
@@ -72,6 +62,7 @@ export default {
   components: {
     ResultsTable,
     SankeyDiagram,
+    SankeyDownloadMenu,
     ConfigureSankeyMenu,
   },
   data() {
@@ -143,11 +134,25 @@ export default {
       this.minCladeReads = settings.minCladeReads;
       this.showUnclassified = settings.showUnclassified;
     },
+    handleFormatSelected(format) {
+      switch (format) {
+        case "png":
+          this.downloadSankeyAsPng();
+          break;
+        case "jpg":
+          this.downloadSankeyAsJpg();
+          break;
+        case "html":
+          this.downloadSankeyAsHtml();
+          break;
+        default:
+          return;
+      }
+    },
     downloadSankeyAsPng() {
       const sankeySvgElement = document.querySelector("#sankey-svg"); // Reference to the SVG ID
       saveSvgAsPng(sankeySvgElement, "sankey-diagram.png");
     },
-
     async downloadSankeyAsJpg() {
       // Get the SVG element
       const sankeySvgElement = document.querySelector("#sankey-svg"); // Reference to the SVG ID
@@ -192,7 +197,6 @@ export default {
         "data:image/svg+xml;base64," +
         btoa(unescape(encodeURIComponent(svgString)));
     },
-
     downloadSankeyAsHtml() {
       const svgElement = document.querySelector("#sankey-svg"); // Correctly reference the SVG ID
       const svgData = new XMLSerializer().serializeToString(svgElement);
