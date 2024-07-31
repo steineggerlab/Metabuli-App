@@ -141,7 +141,7 @@ const mapPlatform = (platform) => {
 }
 
 const binPath = app.isPackaged ?
-	join(process.resourcesPath, 'bin') : // 'production' process.resourcesPath=metabuli-app/build/mac-universal--x64/Metabuli App.app/Contents/Resources
+	join(process.resourcesPath, 'bin', 'metabuli') : // 'production' process.resourcesPath=metabuli-app/build/mac-universal--x64/Metabuli App.app/Contents/Resources
 	join(appRootDir.get(), 'resources', mapPlatform(platform), os.arch(), 'metabuli', (platform == "win32" ? ".bat" : ""));
 
 ipcMain.on('run-backend', async (event, args) => {

@@ -9,6 +9,8 @@ dist_electron/
 dist/
 build/
 
+extracted_asar/
+
 # Makefile generated files
 resources/
 

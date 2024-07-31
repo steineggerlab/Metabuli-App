@@ -20,5 +20,4 @@ contextBridge.exposeInMainWorld('electron', {
   runBackend: (args) => ipcRenderer.send('run-backend', args),
   onBackendOutput: (callback) => ipcRenderer.on('backend-output', (event, output) => callback(output)),
   onBackendError: (callback) => ipcRenderer.on('backend-error', (event, error) => callback(error)),
-
 });
