@@ -8,45 +8,29 @@
 
     <v-card-text>
       <v-tabs-window v-model="tab">
-        <!-- TABLE -->
+        <!-- TABLE TAB -->
         <v-tabs-window-item value="table">
           <ResultsTable :data="results" />
         </v-tabs-window-item>
 
-        <!-- SANKEY -->
+        <!-- SANKEY TAB-->
         <v-tabs-window-item value="sankey" class="tab-fill-height">
 
-          <!-- SLIDER for selecting # of taxa to show per level -->
-          <div class="sankey-slider">
-            <div class="text-caption">Taxa per level</div>
-            <v-slider
-              v-model="sankeySliderValue"
-              thumb-label
-              width="500"
-              show-ticks="always"
-              step="5"
-              :min="5"
-              :max="50"
-              tick-size="1"
-            ></v-slider>
-
-            <div class="text-caption">Minimum number of reads</div>
-            <v-slider
-              v-model="minReadsSliderValue"
-              thumb-label
-              width="500"
-              show-ticks="always"
-              step="5"
-              :min="5"
-              :max="50"
-              tick-size="1"
-            ></v-slider>
+          <!-- TOOLBAR ABOVE SANKEY DIAGRAM -->
+          <div class="d-flex justify-end  my-5 mx-10">
+            <ConfigureSankeyMenu
+              :initialTaxaLimit="taxaLimit"
+              :initialMinCladeReads="minCladeReads"
+              :initialShowUnclassified="showUnclassified"
+              @updateSettings="updateSettings"
+            />
           </div>
 
-          <SankeyDiagram :data="results" :taxaLimit="sankeySliderValue" :minReads="minReadsSliderValue" />
+          <!-- SANKEY DIAGRAM -->
+          <SankeyDiagram :data="results" :taxaLimit="taxaLimit" :minReads="minCladeReads" />
         </v-tabs-window-item>
 
-        <!-- KRONA VIEWER -->
+        <!-- KRONA TAB -->
         <v-tabs-window-item value="krona" class="tab-fill-height">
           <iframe
             v-if="kronaContent"
@@ -62,20 +46,23 @@
 <script>
 import SankeyDiagram from '@/components/SankeyDiagram.vue'
 import ResultsTable  from '@/components/ResultsTable.vue';
+import ConfigureSankeyMenu from '@/components/ConfigureSankeyMenu.vue';
 
 export default {
   name: 'ResultsPage',
   components: {
     ResultsTable,
-    SankeyDiagram
+    SankeyDiagram,
+    ConfigureSankeyMenu
   },
   data() {
     return {
       results: [],
       tab: 'TABLE',
-      sankeySliderValue: 25,
-      minReadsSliderValue: 1,
       kronaContent: '', 
+      taxaLimit: 25,
+      minCladeReads: 1,
+      showUnclassified: true,
     };
   },
   methods: {
@@ -110,6 +97,11 @@ export default {
     saveResults() {
       sessionStorage.setItem('results', JSON.stringify(this.results)); // Save to session storage
     },
+    updateSettings(settings) {
+      this.taxaLimit = settings.taxaLimit;
+      this.minCladeReads = settings.minCladeReads;
+      this.showUnclassified = settings.showUnclassified;
+    }
   },
 
   async mounted() {
@@ -137,8 +129,9 @@ export default {
 .sankey-slider {
   padding-top: 20px;
 }
-.tab-fill-height { /* FIXME */
+.tab-fill-height {
   height: 650px; /* Adjust according to your header/footer height */
-  overflow: auto;
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Hide horizontal overflow */
 }
 </style>

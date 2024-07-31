@@ -222,7 +222,6 @@ export default {
         }
       });
 
-
       // Store links for all nodes
       allNodes.forEach(node => {
         // Find the previous node in the lineage that is in rankOrder
@@ -252,6 +251,27 @@ export default {
       }
         
       return { nodes, links };
+    },
+
+    filterData(data) { //FIXME:
+      let filteredNodes = data.nodes;
+      let filteredLinks = data.links;
+
+      // Filter unclassified nodes if showUnclassified is false
+      if (!this.showUnclassified) {
+        filteredNodes = filteredNodes.filter(node => node.rank !== 'no rank' || !node.name.startsWith('unclassified'));
+        const filteredNodeIds = new Set(filteredNodes.map(node => node.id));
+        filteredLinks = filteredLinks.filter(link => filteredNodeIds.has(link.source) && filteredNodeIds.has(link.target));
+      }
+
+      // Limit the number of nodes and links
+      filteredNodes = filteredNodes.slice(0, this.nodeLimit);
+      filteredLinks = filteredLinks.slice(0, this.linkLimit);
+
+      return {
+        nodes: filteredNodes,
+        links: filteredLinks
+      };
     },
 
     isUnclassifiedTaxa(d) {
@@ -284,6 +304,7 @@ export default {
 
     createSankey() {
       const { nodes, links } = this.graphData;
+      // const { nodes, links } = this.filterData(this.data);
 
       const container = this.$refs.sankeyContainer;
       d3.select(container).selectAll('*').remove(); // Clear the previous diagram
@@ -450,7 +471,7 @@ export default {
         const drawerWidth = this.$refs.navigationDrawer ? this.$refs.navigationDrawer.clientWidth : 0;
         
         if (tooltip) {
-          tooltip.style.left = (event.clientX - containerRect.left - drawerWidth + 15) + 'px'; //FIXME: buggy on horizontal scroll on diagram
+          tooltip.style.left = (event.clientX - containerRect.left - drawerWidth + 15) + 'px';
           tooltip.style.top = (event.pageY - 200) + 'px';
           tooltip.style.borderColor = d3.color(d.color);
         }
