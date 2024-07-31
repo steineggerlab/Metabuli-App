@@ -32,8 +32,10 @@ async function createWindow() {
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      // nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+      // contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      nodeIntegration: true,
+      contextIsolation: true,
       preload: join(__dirname, 'preload.js')  // Ensure the preload script is specified
     }
   })
@@ -45,8 +47,10 @@ async function createWindow() {
   } else {
     createProtocol('app')
     // Load the index.html when not in development
-    // win.loadURL('app://./index.html')
-    win.loadURL(`file://${__dirname}/index.html`)
+    const indexPath = `file://${__dirname}/index.html`
+    win.loadURL(indexPath).catch(err => {
+      console.error(`Failed to load URL: ${indexPath}`, err);
+    });
   }
 }
 

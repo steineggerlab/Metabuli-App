@@ -81,15 +81,33 @@ module.exports = defineConfig({
           'linux'
         ],
         afterPack: async (context) => {
-          const resourcesPath = context.appOutDir;
+          let resourcesPath;
+          if (process.platform === 'darwin') {
+            const appName = context.packager.appInfo.productFilename;
+            resourcesPath = path.join(context.appOutDir, `${appName}.app`, 'Contents', 'Resources', 'bin');
+          } else if (process.platform === 'win32') {
+            resourcesPath = path.join(context.appOutDir, 'resources', 'bin');
+          } else if (process.platform === 'linux') {
+            resourcesPath = path.join(context.appOutDir, 'resources', 'bin');
+          }
+          console.log('Resources Path:', resourcesPath);
+
+          if (!fs.existsSync(resourcesPath)) {
+            console.error(`Path does not exist: ${resourcesPath}`);
+            return;
+          }
+
           const binaries = [
-            path.join(resourcesPath, 'bin', 'metabuli')
+            path.join(resourcesPath, 'metabuli')
           ];
 
           binaries.forEach(binary => {
             try {
               fs.chmodSync(binary, '755');
               console.log(`Permissions set for ${binary}`);
+              const stats = fs.statSync(binary);
+              console.log(`Permissions for ${binary}:`, stats.mode);
+
             } catch (error) {
               console.error(`Failed to set permissions for ${binary}: ${error.message}`);
             }

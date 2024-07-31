@@ -39,12 +39,18 @@
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
     "electron": "^13.0.0",
+    "electron-builder": "^24.13.3",
     "electron-devtools-installer": "^3.1.0",
     "eslint": "^7.32.0",
     "eslint-plugin-vue": "^8.0.3",
-    "vue-cli-plugin-electron-builder": "~2.1.1",
+    "vue-cli-plugin-electron-builder": "^2.1.1",
     "vue-cli-plugin-vuetify": "~2.5.8",
     "webpack-plugin-vuetify": "^2.0.0-alpha.0"
+  },
+  "overrides": {
+    "vue-cli-plugin-electron-builder": {
+      "electron-builder": "^23.0.3"
+    }
   },
   "eslintConfig": {
     "root": true,
