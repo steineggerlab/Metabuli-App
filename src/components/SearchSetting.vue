@@ -281,7 +281,7 @@ export default {
 }
 .search-settings-panel::after {
   content: '';
-  background: url('app://./public/assets/marv_metabuli_small.png') no-repeat;
+  background: url('https://raw.githubusercontent.com/steineggerlab/Metabuli/master/.github/marv_metabuli_small.png') no-repeat;
   background-size: 300px 300px; 
   opacity: 0.5;
   position: absolute;

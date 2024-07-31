@@ -70,7 +70,7 @@ export default {
       results: [],
       tab: "TABLE",
       kronaContent: "",
-      taxaLimit: 25,
+      taxaLimit: 10,
       minCladeReads: 1,
       showUnclassified: true,
       isSample: null,
