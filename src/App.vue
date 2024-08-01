@@ -39,10 +39,7 @@
             :class="{ active: $route.path === items[0].path }"
             @mouseover="hover = items[0].path"
             @mouseleave="hover = ''"
-            :style="{
-              backgroundColor:
-                hover === items[0].path ? '#f0f0f0' : 'transparent',
-            }"
+
             :title="items[0].title"
           ></v-list-item>
         </router-link>
@@ -180,17 +177,20 @@ export default {
   padding-left: 20px;
 }
 
+/* Navigation Drawer Item */
 .no-underline {
   text-decoration: none;
   color: inherit;
 }
-
 .nav-item {
   display: flex;
   align-items: center;
 }
+.nav-item:hover {
+  background-color: rgba(21, 101, 192, 0.1);;
+}
 .nav-item.active {
-  color: #1976d2;
+  color: #1565C0;
 }
 
 .badge-icon {

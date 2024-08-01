@@ -278,17 +278,11 @@ export default {
       }
 
       try {
-        this.$emit("job-started", true);
-        
-        // Process the file content as needed
-        this.$emit("report-uploaded", this.file.path);
+        this.$emit("job-started", true); // FIXME: true sets isSample as true
         
         setTimeout(() => {
-        this.$emit("job-completed", {
-          outdir: this.jobDetailsSample.outdir,
-          jobid: this.jobDetailsSample.jobid,
-          isSample: true,
-        });
+          // Process the file content as needed
+          this.$emit("report-uploaded", this.file.path);
         this.triggerSnackbar("success");
       }, 2000); // FIXME: add await, wait for file to be processed, if file isnt right format, trigger error snackbar
       } catch (error) {

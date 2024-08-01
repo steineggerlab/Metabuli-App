@@ -85,9 +85,11 @@ export default {
       });
     },
     handleReportUpload(filePath) {
+      this.hideDialog();
       this.$emit("report-uploaded", filePath);
     },
     cancelBackend() {
+      this.hideDialog();
       window.electron.cancelBackend();
     },
   },
