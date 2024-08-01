@@ -9,7 +9,7 @@
     <!-- Loading Dialog -->
     <v-dialog v-model="loadingDialog" max-width="320" persistent>
       <v-list class="py-2" color="primary" elevation="12" rounded="lg">
-        <v-list-item prepend-icon="$vuetify-outline" title="Processing Job...">
+        <v-list-item prepend-icon="$setting" title="Processing Job...">
           <template v-slot:prepend>
             <div class="pe-4">
               <v-icon color="primary" size="x-large"></v-icon>

@@ -8,6 +8,10 @@ import {
   mdiApi,
   mdiMagnify,
   mdiDownload,
+  mdiCogs,
+  mdiTimer,
+  mdiTimerSand
+
 } from "@mdi/js"; // Icon search: https://vuetifyjs.com/en/features/icon-fonts/#mdi-icon-search
 
 export default createVuetify({
@@ -39,6 +43,9 @@ export default createVuetify({
       api: mdiApi,
       magnify: mdiMagnify,
       download: mdiDownload,
+      setting: mdiCogs,
+      timer: mdiTimer,
+      hourglass: mdiTimerSand,
     },
     sets: {
       mdi,
