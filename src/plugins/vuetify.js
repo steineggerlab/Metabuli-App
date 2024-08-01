@@ -10,7 +10,8 @@ import {
   mdiDownload,
   mdiCogs,
   mdiTimer,
-  mdiTimerSand
+  mdiTimerSand,
+  mdiFileUpload
 
 } from "@mdi/js"; // Icon search: https://vuetifyjs.com/en/features/icon-fonts/#mdi-icon-search
 
@@ -21,6 +22,8 @@ export default createVuetify({
     },
   },
   theme: {
+    dark: false, // dark theme 제외
+    default: "light",
     themes: {
       light: {
         primary: "#1976D2",
@@ -30,9 +33,11 @@ export default createVuetify({
         info: "#2196F3",
         success: "#4CAF50",
         warning: "#FB8C00",
+        blue: "#004DE5",
       },
     },
   },
+
   icons: {
     defaultSet: "mdi",
     aliases: {
@@ -46,6 +51,7 @@ export default createVuetify({
       setting: mdiCogs,
       timer: mdiTimer,
       hourglass: mdiTimerSand,
+      fileUpload: mdiFileUpload,
     },
     sets: {
       mdi,

@@ -20,19 +20,6 @@
       :dialog="dialog"
       @close-dialog="dialog = false"
     />
-
-    <!-- NODE OR LINK DETAILS PANEL -->
-    <v-sheet
-      class="d-flex align-center justify-center flex-wrap text-center mx-auto my-4 px-4"
-      elevation="4"
-      max-width="800"
-      width="100%"
-      rounded
-    >
-      <v-card-text>
-        <p>Click on a node to see lineage and subtree.</p>
-      </v-card-text>
-    </v-sheet>
   </div>
 </template>
 

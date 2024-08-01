@@ -16,7 +16,13 @@
         <!-- SANKEY TAB-->
         <v-tabs-window-item value="sankey" class="tab-fill-height">
           <!-- TOOLBAR ABOVE SANKEY DIAGRAM -->
-          <div class="d-flex justify-end my-5 mx-10 gc-2">
+          <div class="d-flex justify-space-around my-5 mx-10">
+            <div class="d-flex align-center">
+              Click on a node to see lineage and subtree.
+            </div>
+
+            <v-spacer></v-spacer>
+
             <SankeyDownloadMenu @format-selected="handleFormatSelected" />
 
             <ConfigureSankeyMenu
@@ -54,7 +60,6 @@ import ResultsTable from "@/components/ResultsTable.vue";
 import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
 import SankeyDownloadMenu from "@/components/SankeyDownloadMenu.vue";
 import { saveSvgAsPng } from "save-svg-as-png";
-
 import * as d3 from "d3";
 
 export default {
@@ -78,6 +83,10 @@ export default {
   },
   methods: {
     async renderKronaViewer(filePath) {
+      if (!filePath) {
+        // FIXME: render empty state screen or hide krona tab
+        return;
+      }
       try {
         const kronaHtml = await window.electron.readFile(
           filePath,
@@ -215,27 +224,40 @@ export default {
   },
 
   async mounted() {
+    // Runs when results tab is clicked
     try {
-      // Resolve outdir path
-      let resolvedOutdirPath;
-      if (this.$route.query.isSample === "true") {
-        resolvedOutdirPath = window.electron.resolvePath(
-          this.$route.query.outdir
-        );
-        this.isSample = true;
-      } else {
-        resolvedOutdirPath = this.$route.query.outdir;
+      let reportFilePath;
+      let kronaFilePath;
+
+      if (this.$route.query.jobType === "runSearch") {
+        // Resolve outdir path
+        let resolvedOutdirPath;
+        if (this.$route.query.isSample === "true") {
+          resolvedOutdirPath = window.electron.resolvePath(
+            this.$route.query.outdir
+          );
+          this.isSample = true;
+        } else {
+          resolvedOutdirPath = this.$route.query.outdir;
+          this.isSample = false;
+        }
+
+        // Set file paths for report and krona
+        reportFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_report.tsv`;
+        kronaFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_krona.html`;
+      } else if (this.$route.query.jobType === "uploadReport") {
+        // Set file path for report directly
+        reportFilePath = this.$route.query.reportFilePath;
+        kronaFilePath = null;
         this.isSample = false;
       }
 
       // Render report.tsv
-      const reportFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_report.tsv`;
       const resultsJSON = await this.readTSVFile(`${reportFilePath}`);
       this.results = resultsJSON;
-      this.saveResults();
+      this.saveResults(); // FIXME: figure this out
 
       // Render Krona
-      const kronaFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_krona.html`;
       this.renderKronaViewer(kronaFilePath);
     } catch (error) {
       console.error("Error loading results:", error);

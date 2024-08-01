@@ -83,7 +83,10 @@
     </v-navigation-drawer>
 
     <v-main>
-      <router-view @job-complete="handleJobComplete"></router-view>
+      <router-view
+        @job-complete="handleJobComplete"
+        @report-uploaded="handleReportUpload"
+      ></router-view>
     </v-main>
   </v-app>
 </template>
@@ -106,10 +109,13 @@ export default {
     jobCompleted: false,
     completedJob: {},
     checkedResults: false,
+    reportFilePath: "",
+    jobType: "",
   }),
 
   computed: {
     filteredItems() {
+      // FIXME: what is it
       if (this.jobCompleted) {
         return this.items;
       }
@@ -120,20 +126,44 @@ export default {
   methods: {
     handleJobComplete(payload) {
       this.jobCompleted = true;
+      this.jobType = "runSearch";
       this.checkedResults = false;
+
       this.completedJob = {
         outdir: payload.outdir,
         jobid: payload.jobid,
         isSample: payload.isSample,
       };
     },
+    handleReportUpload(filePath) {
+      this.jobCompleted = true;
+      this.jobType = "uploadReport";
+      this.checkedResults = false;
+
+      this.reportFilePath = filePath;
+    },
     handleResultsClick(event) {
       this.checkedResults = true;
-      event.preventDefault();
-      this.$router.push({
-        name: "ResultsPage",
-        query: this.completedJob,
-      });
+
+      event.preventDefault(); //FIXME: what is rgis
+
+      if (this.jobType === "runSearch") {
+        this.$router.push({
+          name: "ResultsPage",
+          query: {
+            ...this.completedJob,
+            jobType: this.jobType,
+          },
+        });
+      } else if (this.jobType === "uploadReport") {
+        this.$router.push({
+          name: "ResultsPage",
+          query: {
+            reportFilePath: this.reportFilePath,
+            jobType: this.jobType,
+          },
+        });
+      }
     },
   },
 };
@@ -160,7 +190,7 @@ export default {
   align-items: center;
 }
 .nav-item.active {
-  color: #304ffe;
+  color: #1976d2;
 }
 
 .badge-icon {

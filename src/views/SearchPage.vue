@@ -4,6 +4,7 @@
       @job-started="showDialog"
       @job-aborted="hideDialog"
       @job-completed="handleJobComplete"
+      @report-uploaded="handleReportUpload"
     />
 
     <!-- Loading Dialog -->
@@ -63,13 +64,13 @@ export default {
   data() {
     return {
       loadingDialog: false,
-      isSampleJob: false, // Add a flag to indicate if it's a sample job
+      isSampleJob: false,
     };
   },
   methods: {
     showDialog(isSample) {
       this.loadingDialog = true;
-      this.isSampleJob = isSample; // Set the flag based on the emitted event
+      this.isSampleJob = isSample; 
     },
     hideDialog() {
       this.loadingDialog = false;
@@ -82,6 +83,9 @@ export default {
         jobid: payload.jobid,
         isSample: payload.isSample,
       });
+    },
+    handleReportUpload(filePath) {
+      this.$emit("report-uploaded", filePath);
     },
     cancelBackend() {
       window.electron.cancelBackend();
