@@ -138,7 +138,7 @@ export default {
       database: "",
       outdir: "",
       jobid: "",
-      // maxram: 0
+      maxram: null
     },
     jobDetailsSample: {
       // Sample job details
@@ -170,12 +170,18 @@ export default {
       this.runBackend();
     },
     async runBackend() {
-      const jobDetailValues = Object.values(this.jobDetails); // Extract values from jobDetails
-
       const params = [
-        "classify",
-        ...jobDetailValues, // Append job detail values
+        'classify',
+        this.jobDetails.q1,
+        this.jobDetails.q2,
+        this.jobDetails.database,
+        this.jobDetails.outdir,
+        this.jobDetails.jobid,
       ];
+
+      if (this.jobDetails.maxram) {
+        params.push('--max-ram', this.jobDetails.maxram);
+      }
 
       //   const params = ['classify',
       //   '/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq',
