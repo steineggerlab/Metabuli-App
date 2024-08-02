@@ -9,7 +9,7 @@
         <div class="flex-grow-1">
           <v-app-bar-title>Metabuli</v-app-bar-title>
         </div>
-        <v-img src="assets/marv_metabuli_animated.gif" width="50px"></v-img>
+        <v-img src="assets/marv_metabuli_small.png" width="50px"></v-img>
       </div>
 
       <v-spacer></v-spacer>

@@ -9,7 +9,7 @@
     />
 
     <!-- Loading Dialog -->
-    <v-dialog v-model="loadingDialog" max-width="320" persistent>
+    <!-- <v-dialog v-model="loadingDialog" max-width="320" persistent>
       <v-list class="py-2" color="primary" elevation="12" rounded="lg">
         <v-list-item prepend-icon="$setting" title="Processing Job...">
           <template v-slot:prepend>
@@ -29,6 +29,26 @@
         <v-list-item v-if="!isSampleJob">
           <v-btn class="ma-2" @click="cancelBackend">Cancel</v-btn>
         </v-list-item>
+      </v-list>
+    </v-dialog> -->
+
+    <v-dialog v-model="loadingDialog" max-width="320" persistent>
+      <v-list class="d-flex flex-column" elevation="12" rounded="lg">
+        <div class="d-flex flex-column align-center">
+          <v-list-item>
+            <v-img
+              src="assets/marv_metabuli_animated.gif"
+              width="130px"
+            ></v-img>
+          </v-list-item>
+
+          <v-list-item title="Processing Job..."></v-list-item>
+        </div>
+        <div v-if="!isSampleJob" class="d-flex justify-end mr-2">
+          <v-btn variant="plain" color="primary" @click="cancelBackend"
+            >Cancel</v-btn
+          >
+        </div>
       </v-list>
     </v-dialog>
 
@@ -71,7 +91,7 @@ export default {
   methods: {
     showDialog(isSample) {
       this.loadingDialog = true;
-      this.isSampleJob = isSample; 
+      this.isSampleJob = isSample;
     },
     hideDialog() {
       this.loadingDialog = false;
@@ -85,7 +105,7 @@ export default {
         isSample: payload.isSample,
       });
     },
-    handleJobTimeOut () {
+    handleJobTimeOut() {
       this.cancelBackend();
     },
     handleReportUpload(filePath) {

@@ -59,6 +59,21 @@
               </v-container>
             </v-list-item>
 
+            <!-- SLIDER (Figure Height) -->
+            <v-list-item>
+              <div class="text-caption">Figure Height</div>
+              <v-container>
+                <v-slider
+                  class="slider"
+                  v-model="tempFigureHeight"
+                  thumb-label="always"
+                  step="5"
+                  :min="550"
+                  :max="800"
+                ></v-slider>
+              </v-container>
+            </v-list-item>
+
             <!-- SWITCH (Show/Hide Unclassified Nodes) -->
             <v-list-item>
               <v-switch
@@ -114,6 +129,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    initialFigureHeight: {
+      type: Number,
+      default: 550,
+    },
   },
   data() {
     return {
@@ -123,11 +142,13 @@ export default {
       cladeReadsMode: this.initialMinCladeReadsMode,
       cladeReadsValue: this.initialMinCladeReads,
       showUnclassified: this.initialShowUnclassified,
+      figureHeight: this.initialFigureHeight,
 
       tempTaxaLimit: 10,
       tempCladeReadsMode: "%",
       tempCladeReadsValue: 10,
       tempShowUnclassified: false,
+      tempFigureHeight: 550,
 
       isFormValid: true,
     };
@@ -163,6 +184,7 @@ export default {
       this.cladeReadsMode = this.tempCladeReadsMode;
       this.cladeReadsValue = this.tempCladeReadsValue;
       this.showUnclassified = this.tempShowUnclassified;
+      this.figureHeight = this.tempFigureHeight;
 
       this.emitChanges();
       this.menu = false; // Close the menu
@@ -173,6 +195,7 @@ export default {
         taxaLimit: this.taxaLimit,
         minCladeReads: this.cladeReadsValue,
         showUnclassified: this.showUnclassified,
+        figureHeight: this.figureHeight,
       });
     },
     cancelChanges() {
@@ -181,6 +204,8 @@ export default {
       this.tempCladeReadsMode = this.cladeReadsMode;
       this.tempCladeReadsValue = this.cladeReadsValue;
       this.tempShowUnclassified = this.showUnclassified;
+      this.tempFigureHeight = this.figureHeight;
+
       this.menu = false; // Close the menu
     },
   },
@@ -195,6 +220,7 @@ export default {
     this.tempCladeReadsMode = this.cladeReadsMode;
     this.tempCladeReadsValue = this.cladeReadsValue;
     this.tempShowUnclassified = this.showUnclassified;
+    this.tempFigureHeight = this.figureHeight;
   },
 };
 </script>

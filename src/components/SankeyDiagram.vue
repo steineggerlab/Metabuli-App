@@ -40,10 +40,20 @@ export default {
     },
     taxaLimit: {
       type: Number,
+      required: true,
     },
     minReads: {
       type: Number,
+      required: true,
     },
+    showUnclassified: {
+      type: Boolean,
+      required: true,
+    },
+    figureHeight: {
+      type: Number,
+      required: true
+    }
   },
   data() {
     return {
@@ -65,6 +75,9 @@ export default {
     taxaLimit() {
       this.updateSankey();
     },
+    figureHeight() {
+      this.updateSankey();
+    }
   },
   methods: {
     parseData(data) {
@@ -361,7 +374,7 @@ export default {
       const container = this.$refs.sankeyContainer;
       d3.select(container).selectAll("*").remove(); // Clear the previous diagram
       const width = window.innerWidth; // Set width to full window width
-      const height = 500;
+      const height = this.figureHeight;
       const marginBottom = 50; // Margin for rank labels
       const marginRight = 150;
 

@@ -39,6 +39,8 @@
             :data="results"
             :taxaLimit="taxaLimit"
             :minReads="minCladeReads"
+            :showUnclassified="showUnclassified"
+            :figureHeight="figureHeight"
           />
         </v-tabs-window-item>
 
@@ -75,11 +77,12 @@ export default {
       results: [],
       tab: "TABLE",
       kronaContent: null,
+      isSample: null,
       taxaLimit: 10,
       cladeMinReadsMode: "%",
       minCladeReads: 1,
       showUnclassified: true,
-      isSample: null,
+      figureHeight: 550
     };
   },
   methods: {
@@ -144,6 +147,7 @@ export default {
       this.taxaLimit = settings.taxaLimit;
       this.minCladeReads = settings.minCladeReads;
       this.showUnclassified = settings.showUnclassified;
+      this.figureHeight = settings.figureHeight;
     },
     handleFormatSelected(format) {
       switch (format) {
