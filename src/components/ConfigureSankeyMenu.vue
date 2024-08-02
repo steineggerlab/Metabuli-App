@@ -5,6 +5,7 @@
       :close-on-content-click="false"
       location="bottom"
       transition="slide-x-reverse-transition"
+      persistent
     >
       <template v-slot:activator="{ props }">
         <v-btn color="indigo" v-bind="props"> Configure Sankey </v-btn>
@@ -19,7 +20,7 @@
               <v-container>
                 <v-slider
                   class="slider"
-                  v-model="taxaLimit"
+                  v-model="tempTaxaLimit"
                   thumb-label="always"
                   step="5"
                   :min="5"
@@ -35,7 +36,7 @@
               <div class="text-caption">Minimum number of reads</div>
               <v-container class="d-flex align-center">
                 <v-select
-                  v-model="cladeReadsMode"
+                  v-model="tempCladeReadsMode"
                   :items="['%', '#']"
                   variant="underlined"
                   density="compact"
@@ -44,10 +45,10 @@
                   @change="setDefaultValue"
                 ></v-select>
                 <v-text-field
-                  v-model="cladeReadsValue"
+                  v-model="tempCladeReadsValue"
                   type="number"
-                  :min="cladeReadsMode === '%' ? 0 : 1"
-                  :max="cladeReadsMode === '%' ? 100 : 1000"
+                  :min="tempCladeReadsMode === '%' ? 0 : 1"
+                  :max="tempCladeReadsMode === '%' ? 100 : 1000"
                   variant="underlined"
                   density="compact"
                   dense
@@ -61,7 +62,7 @@
             <!-- SWITCH (Show/Hide Unclassified Nodes) -->
             <v-list-item>
               <v-switch
-                v-model="showUnclassified"
+                v-model="tempShowUnclassified"
                 color="purple"
                 label="Show Unclassified Nodes"
                 hide-details
@@ -69,8 +70,24 @@
             </v-list-item>
           </v-list>
 
-          <!-- APPLY CHANGE BUTTON -->
-          <v-btn :disabled="!isFormValid" @click="applyChanges">Apply</v-btn>
+          <!-- APPLY AND CANCEL BUTTONS -->
+          <v-container class="d-flex justify-end gc-2">
+            <v-btn
+              size="small"
+              variant="outlined"
+              color="indigo"
+              @click="cancelChanges"
+              >Cancel</v-btn
+            >
+            <v-btn
+              size="small"
+              variant="flat"
+              color="indigo"
+              :disabled="!isFormValid"
+              @click="applyChanges"
+              >Apply</v-btn
+            >
+          </v-container>
         </v-form>
       </v-card>
     </v-menu>
@@ -101,17 +118,24 @@ export default {
   data() {
     return {
       menu: false,
+
       taxaLimit: this.initialTaxaLimit,
       cladeReadsMode: this.initialMinCladeReadsMode,
       cladeReadsValue: this.initialMinCladeReads,
       showUnclassified: this.initialShowUnclassified,
+
+      tempTaxaLimit: 10,
+      tempCladeReadsMode: "%",
+      tempCladeReadsValue: 10,
+      tempShowUnclassified: false,
+
       isFormValid: true,
     };
   },
   computed: {
     valueRangeRule() {
-      const min = this.cladeReadsMode === "%" ? 0 : 1;
-      const max = this.cladeReadsMode === "%" ? 100 : 1000;
+      const min = this.tempCladeReadsMode === "%" ? 0 : 1;
+      const max = this.tempCladeReadsMode === "%" ? 100 : 1000;
       return (value) => {
         if (value >= min && value <= max) {
           this.isFormValid = true;
@@ -125,8 +149,7 @@ export default {
   },
   methods: {
     setDefaultValue() {
-      console.log(this.cladeReadsMode);
-      this.cladeReadsValue = this.cladeReadsMode === "%" ? 10 : 1000;
+      this.tempCladeReadsValue = this.tempCladeReadsMode === "%" ? 10 : 1000;
       this.validateRange();
     },
     validateRange() {
@@ -135,26 +158,43 @@ export default {
       }
     },
     applyChanges() {
-      // Handle apply button click
-      console.log("Apply changes with value:", this.cladeReadsValue);
+      // Apply the temporary values to the actual data
+      this.taxaLimit = this.tempTaxaLimit;
+      this.cladeReadsMode = this.tempCladeReadsMode;
+      this.cladeReadsValue = this.tempCladeReadsValue;
+      this.showUnclassified = this.tempShowUnclassified;
+
       this.emitChanges();
-      this.menu = false;
+      this.menu = false; // Close the menu
+      console.log("Apply changes with value:", this.cladeReadsValue); // DEBUG
     },
     emitChanges() {
       this.$emit("updateSettings", {
         taxaLimit: this.taxaLimit,
-        minCladeReads: this.minCladeReads,
+        minCladeReads: this.cladeReadsValue,
         showUnclassified: this.showUnclassified,
       });
     },
+    cancelChanges() {
+      // Reset the temporary values to the current actual values
+      this.tempTaxaLimit = this.taxaLimit;
+      this.tempCladeReadsMode = this.cladeReadsMode;
+      this.tempCladeReadsValue = this.cladeReadsValue;
+      this.tempShowUnclassified = this.showUnclassified;
+      this.menu = false; // Close the menu
+    },
   },
   watch: {
-    cladeReadsMode() {
+    tempCladeReadsMode() {
       this.setDefaultValue();
     },
   },
   mounted() {
-    this.setDefaultValue();
+    // Initialize the temporary values
+    this.tempTaxaLimit = this.taxaLimit;
+    this.tempCladeReadsMode = this.cladeReadsMode;
+    this.tempCladeReadsValue = this.cladeReadsValue;
+    this.tempShowUnclassified = this.showUnclassified;
   },
 };
 </script>
