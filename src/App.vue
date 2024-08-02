@@ -35,12 +35,12 @@
         <router-link :to="items[0].path" class="no-underline">
           <v-list-item
             class="nav-item"
+            :title="items[0].title"
             :prepend-icon="`$${items[0].icon}`"
             :class="{ active: $route.path === items[0].path }"
             @mouseover="hover = items[0].path"
             @mouseleave="hover = ''"
-
-            :title="items[0].title"
+            v-ripple
           ></v-list-item>
         </router-link>
 
@@ -53,16 +53,13 @@
           >
             <v-list-item
               class="nav-item"
+              :title="items[1].title"
               :prepend-icon="`$${items[1].icon}`"
               :class="{ active: $route.path === items[1].path }"
               @click="handleResultsClick"
               @mouseover="hover = items[1].path"
               @mouseleave="hover = ''"
-              :style="{
-                backgroundColor:
-                  hover === items[1].path ? '#f0f0f0' : 'transparent',
-              }"
-              :title="items[1].title"
+              v-ripple
             >
               <template v-slot:append>
                 <v-badge
@@ -142,7 +139,7 @@ export default {
     handleResultsClick(event) {
       this.checkedResults = true;
 
-      event.preventDefault(); //FIXME: what is rgis
+      event.preventDefault(); //FIXME: what is this
 
       if (this.jobType === "runSearch") {
         this.$router.push({

@@ -3,6 +3,7 @@
     <SearchSetting
       @job-started="showDialog"
       @job-aborted="hideDialog"
+      @job-timed-out="handleJobTimeOut"
       @job-completed="handleJobComplete"
       @report-uploaded="handleReportUpload"
     />
@@ -83,6 +84,9 @@ export default {
         jobid: payload.jobid,
         isSample: payload.isSample,
       });
+    },
+    handleJobTimeOut () {
+      this.cancelBackend();
     },
     handleReportUpload(filePath) {
       this.hideDialog();

@@ -118,7 +118,8 @@
                   Upload File
                 </v-card-title>
                 <v-card-text
-                  >Upload report.tsv file to visualize directly.</v-card-text
+                  >Upload report.tsv file directly to see
+                  visualization.</v-card-text
                 >
               </v-card>
 
@@ -192,16 +193,30 @@
       </v-dialog>
 
       <!-- Snackbar -->
-      <v-snackbar v-model="snackbar.show" :timeout="snackbar.timeout">
+      <v-snackbar
+        v-model="snackbar.show"
+        :timeout="snackbar.timeout"
+        location="top"
+        color="white"
+      >
         <v-icon :color="snackbar.color" :icon="`$${snackbar.icon}`"></v-icon>
         {{ snackbar.message }}
         <template v-slot:actions>
           <v-btn
+            v-if="snackbar.buttonText"
+            :color="snackbar.color"
+            variant="text"
+            @click="handleSnackbarAction"
+            >{{ snackbar.buttonText }}</v-btn
+          >
+          <v-btn
+            v-else
             :color="snackbar.color"
             variant="text"
             @click="snackbar.show = false"
-            >Close</v-btn
           >
+            Close
+          </v-btn>
         </template>
       </v-snackbar>
     </v-container>
@@ -246,6 +261,8 @@ export default {
       message: "",
       color: "",
       icon: "",
+      buttonText: "",
+      action: null,
       timeout: 3000,
     },
   }),
@@ -279,14 +296,37 @@ export default {
 
       try {
         this.$emit("job-started", true); // FIXME: true sets isSample as true
-        
+
         setTimeout(() => {
-          // Process the file content as needed
-          this.$emit("report-uploaded", this.file.path);
-        this.triggerSnackbar("success");
-      }, 2000); // FIXME: add await, wait for file to be processed, if file isnt right format, trigger error snackbar
+          const reportFilePath = this.file.path;
+
+          // Process the file content
+          this.$emit("report-uploaded", reportFilePath);
+
+          this.triggerSnackbar(
+            "Upload successful. Check the results tab!",
+            "success",
+            "success",
+            "View",
+            () => {
+              this.$router.push({
+                name: "ResultsPage",
+                query: {
+                  reportFilePath: reportFilePath,
+                  jobType: "uploadReport",
+                },
+              });
+            }
+          );
+        }, 2000); // FIXME: add await, wait for file to be processed, if file isnt right format, trigger error snackbar
       } catch (error) {
-        console.error("Error processing file:", error);
+        console.error("Error processing file: ", error.message); // DEBUG
+        this.triggerSnackbar(
+          "Error processing file. Please check file and try again.",
+          "error",
+          "warning",
+          "Dismiss"
+        );
         this.$emit("error");
       }
     },
@@ -300,7 +340,7 @@ export default {
       const params = [
         "classify",
         this.jobDetails.q1,
-        this.jobDetails.q2,
+        this.jobDetails.q2, // FIXME: separate this too
         this.jobDetails.database,
         this.jobDetails.outdir,
         this.jobDetails.jobid,
@@ -313,11 +353,18 @@ export default {
         // Run backend metabuli classify
         window.electron.runBackend(params);
 
-        // Handle backend SUCCESS
-        window.electron.onBackendOutput((output) => {
-          console.log("Backend Output:", output); //DEBUG
+        // Starting poll job status immediately after starting the backend
+        this.pollJobStatus(this.jobDetails.jobid)
+          .then(() => {
+            // Job completed successfully
+            console.log("Job polling completed successfully."); // DEBUG
 
-          this.status = "COMPLETE"; //FIXME: remove if unneeded
+            const completedJob = {
+            outdir: this.jobDetails.outdir,
+            jobid: this.jobDetails.jobid,
+            isSample: false,
+            jobType: "runSearch",
+          };
 
           // Process the backend output
           this.$emit("job-completed", {
@@ -325,32 +372,80 @@ export default {
             jobid: this.jobDetails.jobid,
             isSample: false,
           });
-          this.triggerSnackbar("success");
+
+          // Trigger snackbar
+          this.triggerSnackbar(
+            "Job successfully completed. Check results tab.",
+            "success",
+            "success",
+            "View",
+            () => {
+              this.$router.push({
+                name: "ResultsPage",
+                query: {
+                  ...completedJob,
+                },
+              });
+            }
+          ); 
+          })
+          .catch((error) => {
+            // If job times out
+            console.error("Job polling failed:", error); // DEBUG
+            
+            this.$emit("job-timed-out");
+            
+            this.triggerSnackbar(
+              "Job execution timed out",
+              "warning",
+              "timer",
+              "Retry",
+              this.startJob
+            );
+          });
+
+        // Handle backend SUCCESS
+        window.electron.onBackendOutput((output) => {
+          console.log("Backend Output:", output); //DEBUG
+          this.status = "COMPLETE"; // Signal job polling
         });
 
         // Handle backend ERROR
         window.electron.onBackendError((error) => {
           console.error("Backend Error:", error); // DEBUG
 
-          // Handle the backend error
           this.$emit("job-aborted");
-          this.triggerSnackbar("error");
+          this.triggerSnackbar(
+            "An error occurred. Please check query and try again.",
+            "error",
+            "warning",
+            "Dismiss"
+          );
         });
 
         // Handle backend CANCELLATION
         window.electron.onBackendCancelled((message) => {
           console.log("Backend cancelled:", message); // DEBUG
 
-          // Handle cancellation
           this.$emit("job-aborted");
-          this.triggerSnackbar("error");
-          // this.triggerSnackbar('info', 'Process was cancelled.');
+          this.triggerSnackbar(
+            "Process was cancelled.",
+            "info",
+            "info",
+            "Close"
+          );
         });
       } catch (error) {
         console.log("Error running backend:", error.message); //DEBUG
 
         this.$emit("job-aborted");
-        this.triggerSnackbar("error");
+        this.triggerSnackbar(
+          "An error occurred. Please check query and try again.",
+          "error",
+          "warning",
+          "Dismiss"
+        );
+        // this.triggerSnackbar(`Error: ${error}`, "error", "warning", "Dismiss");
       }
     },
 
@@ -363,7 +458,15 @@ export default {
           jobid: this.jobDetailsSample.jobid,
           isSample: true,
         });
-        this.triggerSnackbar("success");
+        this.triggerSnackbar(
+          "Sample data successfully loaded.",
+          "success",
+          "success",
+          "View",
+          () => {
+            this.$router.push("/results");
+          }
+        ); // FIXME: add button action to go to results page
       }, 2000); // Simulate a job taking 2 seconds
     },
 
@@ -380,54 +483,59 @@ export default {
             this.jobDetails[field] = filePaths[0];
           }
         } catch (error) {
-          console.error("Error selecting file:", error);
+          console.error("Error selecting file:", error); // DEBUG
+          this.triggerSnackbar(
+            `File selection error: ${error}`,
+            "error",
+            "fileAlert",
+            "Dismiss"
+          );
         }
       } else {
-        console.error("File dialog is not supported in the web environment.");
+        console.error("File dialog is not supported in the web environment."); // DEBUG
+        this.triggerSnackbar(
+          "File dialog is not supported in the web environment.",
+          "error",
+          "warning",
+          "Dismiss"
+        );
       }
     },
-    triggerSnackbar(type) {
-      // Change parameters to icon, message, color
+    triggerSnackbar(message, color, icon, buttonText, action) {
       this.snackbar.show = false; // Reset snackbar to ensure reactivity
-      if (type === "success") {
-        this.snackbar.message = "Job complete. Check the results tab!";
-        this.snackbar.color = "green";
-        this.snackbar.icon = "success";
-      } else if (type === "error") {
-        this.snackbar.message =
-          "An error occurred. Please check query and try again.";
-        this.snackbar.color = "red";
-        this.snackbar.icon = "warning";
-      }
+
+      this.snackbar.message = message;
+      this.snackbar.color = color || "info";
+      this.snackbar.icon = icon || "info";
+      this.snackbar.buttonText = buttonText || "";
+      this.snackbar.action = action || null;
+
       this.snackbar.show = true;
     },
+    handleSnackbarAction() {
+      if (this.snackbar.action) {
+        console.log(this.snackbar.action);
+        this.snackbar.action();
+      }
+      this.snackbar.show = false;
+    },
+
     // Function to track job status
-    // FIXME: delete if unneeded
-    async pollJobStatus(ticketid, interval = 500, timeout = 2000) {
-      // Check job status every 0.5 seconds, timeout after 30 seconds
+    async pollJobStatus(interval = 500, timeout = 60000) {
+      // Check job status every 0.5 seconds, 1 second = 1000
       const start = Date.now();
       while (Date.now() - start < timeout) {
         try {
-          // const response = await axios.get(`/api/ticket/${ticketid}`); // Get job status
-          if (status === "COMPLETE") {
-            this.status = "COMPLETE";
-            this.triggerSnackbar("success");
-            this.$emit("job-completed", {
-              outdir: this.jobDetails.outdir,
-              jobid: this.jobDetails.jobid,
-              isSample: false,
-            });
-
+          if (this.status === "COMPLETE") {
             return true;
           }
         } catch (error) {
-          console.error("Error polling job status:", error);
+          console.error("Error polling job status:", error); // DEBUG
         }
         await new Promise((resolve) => setTimeout(resolve, interval));
       }
-      this.$emit("job-aborted");
-      this.triggerSnackbar("error");
-      throw new Error("Polling timed out");
+      // If job times out
+      throw new Error("Polling timed out"); // DEBUG
     },
     toggleApiDialog() {
       this.apiDialog = !this.apiDialog;
@@ -499,5 +607,9 @@ code {
   background-color: #f1f1f1;
   padding: 2px;
   font-size: 12px;
+}
+
+.custom-snackbar {
+  top: 64px !important; /* Adjust this value to match your app bar height */
 }
 </style>
