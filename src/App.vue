@@ -119,7 +119,7 @@ export default {
 
   watch: {
     $route(to) {
-      if (to.path === "results") {
+      if (to.path === "/results") {
         // Detect route changes to the results page regardless of how it's accessed
         // Remove red badge on nav drawer item
         this.checkedResults = true;
