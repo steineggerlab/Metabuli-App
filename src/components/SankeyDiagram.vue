@@ -1,6 +1,13 @@
 <template>
   <div class="sankey-container">
-    <div ref="sankeyContainer" class="sankey-diagram"></div>
+    <!-- <transition name="fade"> -->
+    <div
+      v-if="!loading"
+      key="sankey"
+      ref="sankeyContainer"
+      class="sankey-diagram"
+    ></div>
+    <!-- </transition> -->
 
     <!-- TOOLTIP ON NODE HOVER -->
     <div ref="tooltip" class="tooltip" v-if="hoverDetails.visible">
@@ -69,6 +76,7 @@ export default {
         data: {},
       },
       diagramWidth: window.innerWidth,
+      loading: false,
     };
   },
   computed: {
@@ -94,6 +102,16 @@ export default {
     },
     diagramWidth() {
       this.updateSankey();
+    },
+    loading(newValue) {
+      console.log("Loading state changed:", newValue);
+      if (!newValue) {
+        this.$nextTick(() => {
+          // Ensure the DOM is updated before creating the Sankey diagram.
+          // Runs Only When the Container is Available.
+          this.createSankey();
+        });
+      }
     },
   },
   methods: {
@@ -768,12 +786,22 @@ export default {
       this.diagramWidth = window.innerWidth;
     },
     async updateSankey() {
-      await this.fetchSankey();
+      this.loading = true;
+      try {
+        await this.fetchSankey();
+      } catch (error) {
+        console.error("Error in updateSankey:", error);
+      } finally {
+        setTimeout(() => {
+          this.loading = false;
+        }, 100); // Small delay to ensure DOM updates
+      }
     },
     async fetchSankey() {
-      await new Promise(() => {
+      await new Promise((resolve) => {
         setTimeout(() => {
           this.createSankey();
+          resolve();
         }, 200); // Simulate a slight delay
       });
     },
@@ -781,7 +809,7 @@ export default {
   async mounted() {
     window.addEventListener("resize", this.updateDiagramWidth);
 
-    await this.fetchSankey();
+    this.updateSankey();
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.updateDiagramWidth);
@@ -795,6 +823,7 @@ export default {
   flex-direction: column;
   gap: 10px;
 }
+
 .sankey-diagram {
   flex: 1;
 }
