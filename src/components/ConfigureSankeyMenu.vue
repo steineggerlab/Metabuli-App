@@ -96,19 +96,21 @@
 
             <!-- SWITCH (Show/Hide Unclassified Nodes) -->
             <v-list-item>
+              <v-container class="pt-1">
               <div class="d-flex align-center gc-2">
-                <v-switch
-                  v-model="tempShowUnclassified"
-                  color="purple"
-                  hide-details
-                ></v-switch>
-                <div class="text-caption">Show unclassified taxa</div>
-              </div>
+                  <v-switch
+                    v-model="tempShowUnclassified"
+                    color="indigo"
+                    hide-details
+                  ></v-switch>
+                  <div class="text-caption">Show unclassified taxa</div>
+                </div>
+              </v-container>
             </v-list-item>
           </v-list>
 
           <!-- APPLY AND CANCEL BUTTONS -->
-          <v-container class="d-flex justify-end gc-2">
+          <v-container class="d-flex justify-end gc-2 py-2">
             <v-btn
               size="small"
               variant="outlined"

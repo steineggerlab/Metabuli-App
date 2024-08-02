@@ -16,7 +16,7 @@
         <!-- SANKEY TAB-->
         <v-tabs-window-item value="sankey" class="tab-fill-height">
           <!-- TOOLBAR ABOVE SANKEY DIAGRAM -->
-          <div class="d-flex justify-space-around my-5 mx-10 gc-1">
+          <div class="d-flex justify-space-around my-5 ml-2 mr-10 gc-1">
             <div class="d-flex align-center">
               Click on a node to see lineage and subtree.
             </div>
@@ -81,7 +81,7 @@ export default {
       tab: "TABLE",
       kronaContent: null,
       isSample: null,
-      taxaLimit: 10,
+      taxaLimit: 15,
       cladeMinReadsMode: "%",
       minCladeReads: 1,
       showUnclassified: true,
