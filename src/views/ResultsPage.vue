@@ -30,6 +30,7 @@
               :initialMinCladeReadsMode="cladeMinReadsMode"
               :initialMinCladeReads="minCladeReads"
               :initialShowUnclassified="showUnclassified"
+              :initialLabelOption="labelOption"
               @updateSettings="updateSettings"
             />
           </div>
@@ -41,6 +42,7 @@
             :minReads="minCladeReads"
             :showUnclassified="showUnclassified"
             :figureHeight="figureHeight"
+            :labelOption="labelOption"
           />
         </v-tabs-window-item>
 
@@ -82,7 +84,8 @@ export default {
       cladeMinReadsMode: "%",
       minCladeReads: 1,
       showUnclassified: true,
-      figureHeight: 550
+      figureHeight: 550,
+      labelOption: "cladeReads",
     };
   },
   methods: {
@@ -148,6 +151,7 @@ export default {
       this.minCladeReads = settings.minCladeReads;
       this.showUnclassified = settings.showUnclassified;
       this.figureHeight = settings.figureHeight;
+      this.labelOption = settings.labelOption;
     },
     handleFormatSelected(format) {
       switch (format) {

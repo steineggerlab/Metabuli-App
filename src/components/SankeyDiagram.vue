@@ -52,8 +52,12 @@ export default {
     },
     figureHeight: {
       type: Number,
-      required: true
-    }
+      required: true,
+    },
+    labelOption: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -75,9 +79,18 @@ export default {
     taxaLimit() {
       this.updateSankey();
     },
+    minReads() {
+      this.updateSankey();
+    },
+    showUnclassified() {
+      this.updateSankey();
+    },
     figureHeight() {
       this.updateSankey();
-    }
+    },
+    labelOption() {
+      this.updateSankey();
+    },
   },
   methods: {
     parseData(data) {
@@ -368,6 +381,7 @@ export default {
     },
 
     createSankey() {
+      console.log(this.labelOption);
       const { nodes, links } = this.graphData;
       // const { nodes, links } = this.filterData(this.data);
 
@@ -666,7 +680,7 @@ export default {
         )
         .style("cursor", "pointer");
 
-      // Add clade reads label above node
+      // Add label above node (proportion/clade reads)
       nodeGroup
         .append("text")
         .attr("id", (d) => `cladeReads-${d.id}`)
@@ -679,7 +693,11 @@ export default {
         .style("fill", (d) =>
           d.type === "unclassified" ? unclassifiedLabelColor : "black"
         )
-        .text((d) => this.formatCladeReads(d.clade_reads))
+        .text((d) =>
+          this.labelOption === "proportion"
+            ? this.formatProportion(d.proportion)
+            : this.formatCladeReads(d.clade_reads)
+        )
         .style("cursor", "pointer");
     },
     updateSankey() {
@@ -742,6 +760,9 @@ export default {
         return `${(value / 1000).toFixed(2)}k`;
       }
       return value.toString();
+    },
+    formatProportion(value) {
+      return `${value.toFixed(3)}%`;
     },
   },
   mounted() {

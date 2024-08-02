@@ -74,6 +74,25 @@
               </v-container>
             </v-list-item>
 
+            <!-- LABEL ABOVE NODE (Proportion/Clade Reads) -->
+            <v-list-item>
+              <div class="text-caption">Label Option</div>
+              <v-container>
+                <div class="d-flex align-center flex-column">
+                  <v-btn-toggle
+                    v-model="tempLabelOption"
+                    variant="outlined"
+                    color="indigo"
+                    divided
+                    mandatory
+                  >
+                    <v-btn value="proportion" height="30">Proportion</v-btn>
+                    <v-btn value="cladeReads" height="30">Clade Reads</v-btn>
+                  </v-btn-toggle>
+                </div>
+              </v-container>
+            </v-list-item>
+
             <!-- SWITCH (Show/Hide Unclassified Nodes) -->
             <v-list-item>
               <v-switch
@@ -133,6 +152,10 @@ export default {
       type: Number,
       default: 550,
     },
+    initialLabelOption: {
+      type: String,
+      default: "cladeReads",
+    },
   },
   data() {
     return {
@@ -143,12 +166,14 @@ export default {
       cladeReadsValue: this.initialMinCladeReads,
       showUnclassified: this.initialShowUnclassified,
       figureHeight: this.initialFigureHeight,
+      labelOption: this.initialLabelOption,
 
       tempTaxaLimit: 10,
       tempCladeReadsMode: "%",
       tempCladeReadsValue: 10,
       tempShowUnclassified: false,
       tempFigureHeight: 550,
+      tempLabelOption: "cladeReads",
 
       isFormValid: true,
     };
@@ -185,6 +210,7 @@ export default {
       this.cladeReadsValue = this.tempCladeReadsValue;
       this.showUnclassified = this.tempShowUnclassified;
       this.figureHeight = this.tempFigureHeight;
+      this.labelOption = this.tempLabelOption;
 
       this.emitChanges();
       this.menu = false; // Close the menu
@@ -196,6 +222,7 @@ export default {
         minCladeReads: this.cladeReadsValue,
         showUnclassified: this.showUnclassified,
         figureHeight: this.figureHeight,
+        labelOption: this.labelOption,
       });
     },
     cancelChanges() {
@@ -205,6 +232,7 @@ export default {
       this.tempCladeReadsValue = this.cladeReadsValue;
       this.tempShowUnclassified = this.showUnclassified;
       this.tempFigureHeight = this.figureHeight;
+      this.tempLabelOption = this.labelOption;
 
       this.menu = false; // Close the menu
     },
@@ -221,6 +249,7 @@ export default {
     this.tempCladeReadsValue = this.cladeReadsValue;
     this.tempShowUnclassified = this.showUnclassified;
     this.tempFigureHeight = this.figureHeight;
+    this.tempLabelOption = this.labelOption;
   },
 };
 </script>
