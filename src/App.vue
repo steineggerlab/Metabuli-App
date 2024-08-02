@@ -117,6 +117,16 @@ export default {
     },
   },
 
+  watch: {
+    $route(to) {
+      if (to.path === "results") {
+        // Detect route changes to the results page regardless of how it's accessed
+        // Remove red badge on nav drawer item
+        this.checkedResults = true;
+      }
+    },
+  },
+
   methods: {
     handleJobComplete(payload) {
       this.jobCompleted = true;
@@ -137,9 +147,7 @@ export default {
       this.reportFilePath = filePath;
     },
     handleResultsClick(event) {
-      this.checkedResults = true;
-
-      event.preventDefault(); //FIXME: what is this
+      event.preventDefault(); // Prevents default action interfering custom navigation logic
 
       if (this.jobType === "runSearch") {
         this.$router.push({

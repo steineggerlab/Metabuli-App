@@ -227,8 +227,6 @@ export default {
 
   async mounted() {
     // Runs when results tab is clicked
-    console.log("MOUNTED")
-    console.log("ROUTE QUERY:", this.$route.query)
     try {
       let reportFilePath;
       let kronaFilePath;

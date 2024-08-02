@@ -296,10 +296,10 @@ export default {
 
       try {
         this.$emit("job-started", true); // FIXME: true sets isSample as true
-        
+
         setTimeout(() => {
           const reportFilePath = this.file.path;
-          
+
           // Process the file content
           this.$emit("report-uploaded", reportFilePath);
 
@@ -360,41 +360,41 @@ export default {
             console.log("Job polling completed successfully."); // DEBUG
 
             const completedJob = {
-            outdir: this.jobDetails.outdir,
-            jobid: this.jobDetails.jobid,
-            isSample: false,
-            jobType: "runSearch",
-          };
+              outdir: this.jobDetails.outdir,
+              jobid: this.jobDetails.jobid,
+              isSample: false,
+              jobType: "runSearch",
+            };
 
-          // Process the backend output
-          this.$emit("job-completed", {
-            outdir: this.jobDetails.outdir,
-            jobid: this.jobDetails.jobid,
-            isSample: false,
-          });
+            // Process the backend output
+            this.$emit("job-completed", {
+              outdir: this.jobDetails.outdir,
+              jobid: this.jobDetails.jobid,
+              isSample: false,
+            });
 
-          // Trigger snackbar
-          this.triggerSnackbar(
-            "Job successfully completed. Check the results tab.",
-            "success",
-            "success",
-            "View",
-            () => {
-              this.$router.push({
-                name: "ResultsPage",
-                query: {
-                  ...completedJob,
-                },
-              });
-            }
-          ); 
+            // Trigger snackbar
+            this.triggerSnackbar(
+              "Job successfully completed. Check the results tab.",
+              "success",
+              "success",
+              "View",
+              () => {
+                this.$router.push({
+                  name: "ResultsPage",
+                  query: {
+                    ...completedJob,
+                  },
+                });
+              }
+            );
           })
           .catch((error) => {
             // If job times out
             console.error("Job polling failed:", error); // DEBUG
-            
+
             this.$emit("job-timed-out");
-            
+
             this.triggerSnackbar(
               "Job execution timed out",
               "warning",
@@ -458,15 +458,28 @@ export default {
           jobid: this.jobDetailsSample.jobid,
           isSample: true,
         });
+
+        const completedJob = {
+          outdir: this.jobDetailsSample.outdir,
+          jobid: this.jobDetailsSample.jobid,
+          isSample: true,
+          jobType: "runSearch",
+        };
+
         this.triggerSnackbar(
           "Sample data successfully loaded.",
           "success",
           "success",
           "View",
           () => {
-            this.$router.push("/results");
+            this.$router.push({
+              name: "ResultsPage",
+              query: {
+                ...completedJob,
+              },
+            });
           }
-        ); // FIXME: add button action to go to results page
+        ); 
       }, 2000); // Simulate a job taking 2 seconds
     },
 
