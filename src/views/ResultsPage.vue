@@ -27,6 +27,7 @@
 
             <ConfigureSankeyMenu
               :initialTaxaLimit="taxaLimit"
+              :initialMinCladeReadsMode="cladeMinReadsMode"
               :initialMinCladeReads="minCladeReads"
               :initialShowUnclassified="showUnclassified"
               @updateSettings="updateSettings"
@@ -47,9 +48,8 @@
             :srcdoc="kronaContent"
             style="width: 100%; height: 100%; border: none"
           ></iframe>
-
-          
         </v-tabs-window-item>
+        
       </v-tabs-window>
     </v-card-text>
   </v-card>
@@ -77,6 +77,7 @@ export default {
       tab: "TABLE",
       kronaContent: null,
       taxaLimit: 10,
+      cladeMinReadsMode: '%',
       minCladeReads: 1,
       showUnclassified: true,
       isSample: null,

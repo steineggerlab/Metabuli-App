@@ -575,7 +575,7 @@ export default {
           visible: true,
           data: d,
         };
-        console.log(this.hoverDetails.data);
+        // console.log(this.hoverDetails.data);
         this.moveTooltip(event, d);
       };
 
