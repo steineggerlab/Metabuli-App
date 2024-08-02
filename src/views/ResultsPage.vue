@@ -30,20 +30,21 @@
               :initialMinCladeReadsMode="cladeMinReadsMode"
               :initialMinCladeReads="minCladeReads"
               :initialShowUnclassified="showUnclassified"
+              :initialFigureHeight="figureHeight"
               :initialLabelOption="labelOption"
               @updateSettings="updateSettings"
             />
           </div>
 
           <!-- SANKEY DIAGRAM -->
-          <SankeyDiagram
-            :data="results"
-            :taxaLimit="taxaLimit"
-            :minReads="minCladeReads"
-            :showUnclassified="showUnclassified"
-            :figureHeight="figureHeight"
-            :labelOption="labelOption"
-          />
+            <SankeyDiagram
+              :data="results"
+              :taxaLimit="taxaLimit"
+              :minReads="minCladeReads"
+              :showUnclassified="showUnclassified"
+              :figureHeight="figureHeight"
+              :labelOption="labelOption"
+            />
         </v-tabs-window-item>
 
         <!-- KRONA TAB -->
@@ -84,7 +85,7 @@ export default {
       cladeMinReadsMode: "%",
       minCladeReads: 1,
       showUnclassified: true,
-      figureHeight: 550,
+      figureHeight: 500,
       labelOption: "cladeReads",
     };
   },

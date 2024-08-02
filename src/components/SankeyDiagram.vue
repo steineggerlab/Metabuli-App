@@ -68,6 +68,7 @@ export default {
         visible: false,
         data: {},
       },
+      diagramWidth: window.innerWidth,
     };
   },
   computed: {
@@ -89,6 +90,9 @@ export default {
       this.updateSankey();
     },
     labelOption() {
+      this.updateSankey();
+    },
+    diagramWidth() {
       this.updateSankey();
     },
   },
@@ -387,7 +391,7 @@ export default {
 
       const container = this.$refs.sankeyContainer;
       d3.select(container).selectAll("*").remove(); // Clear the previous diagram
-      const width = window.innerWidth; // Set width to full window width
+      const width = this.diagramWidth; // Set width dynamically to full window width
       const height = this.figureHeight;
       const marginBottom = 50; // Margin for rank labels
       const marginRight = 150;
@@ -764,9 +768,16 @@ export default {
     formatProportion(value) {
       return `${value.toFixed(3)}%`;
     },
+    updateDiagramWidth() {
+      this.diagramWidth = window.innerWidth;
+    },
   },
   mounted() {
+    window.addEventListener("resize", this.updateDiagramWidth);
     this.createSankey();
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateDiagramWidth);
   },
 };
 </script>

@@ -14,23 +14,6 @@
       <v-card min-width="300" class="py-3 mt-1">
         <v-form ref="form">
           <v-list>
-            <!-- SLIDER (Taxa Limit) -->
-            <v-list-item>
-              <div class="text-caption">Taxa per level</div>
-              <v-container>
-                <v-slider
-                  class="slider"
-                  v-model="tempTaxaLimit"
-                  thumb-label="always"
-                  step="5"
-                  :min="5"
-                  :max="30"
-                  tick-size="1"
-                  show-ticks="always"
-                ></v-slider>
-              </v-container>
-            </v-list-item>
-
             <!-- DROPDOWN AND INPUT (Minimum Clade Reads) -->
             <v-list-item>
               <div class="text-caption">Minimum number of reads</div>
@@ -44,6 +27,7 @@
                   class="select-width"
                   @change="setDefaultValue"
                 ></v-select>
+
                 <v-text-field
                   v-model="tempCladeReadsValue"
                   type="number"
@@ -59,6 +43,23 @@
               </v-container>
             </v-list-item>
 
+            <!-- SLIDER (Taxa Limit) -->
+            <v-list-item>
+              <div class="text-caption">Taxa per level</div>
+              <v-container class="menu-item">
+                <v-slider
+                  class="slider"
+                  v-model="tempTaxaLimit"
+                  thumb-label="always"
+                  step="5"
+                  :min="5"
+                  :max="30"
+                  tick-size="1"
+                  show-ticks="always"
+                ></v-slider>
+              </v-container>
+            </v-list-item>
+
             <!-- SLIDER (Figure Height) -->
             <v-list-item>
               <div class="text-caption">Figure Height</div>
@@ -68,7 +69,7 @@
                   v-model="tempFigureHeight"
                   thumb-label="always"
                   step="5"
-                  :min="550"
+                  :min="300"
                   :max="800"
                 ></v-slider>
               </v-container>
@@ -95,12 +96,14 @@
 
             <!-- SWITCH (Show/Hide Unclassified Nodes) -->
             <v-list-item>
-              <v-switch
-                v-model="tempShowUnclassified"
-                color="purple"
-                label="Show Unclassified Nodes"
-                hide-details
-              ></v-switch>
+              <div class="d-flex align-center gc-2">
+                <v-switch
+                  v-model="tempShowUnclassified"
+                  color="purple"
+                  hide-details
+                ></v-switch>
+                <div class="text-caption">Show unclassified taxa</div>
+              </div>
             </v-list-item>
           </v-list>
 
@@ -150,7 +153,6 @@ export default {
     },
     initialFigureHeight: {
       type: Number,
-      default: 550,
     },
     initialLabelOption: {
       type: String,
@@ -255,6 +257,9 @@ export default {
 </script>
 
 <style scoped>
+.v-container {
+  padding-bottom: 0px;
+}
 .slider {
   margin-top: 15px;
 }
