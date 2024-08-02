@@ -385,7 +385,6 @@ export default {
     },
 
     createSankey() {
-      console.log(this.labelOption);
       const { nodes, links } = this.graphData;
       // const { nodes, links } = this.filterData(this.data);
 
@@ -704,8 +703,8 @@ export default {
         )
         .style("cursor", "pointer");
     },
-    updateSankey() {
-      this.createSankey();
+    async updateSankey() {
+      await this.fetchSankey();
     },
     showNodeDetails(event, d) {
       const subtreeData = this.extractSubtreeData(d); // Extract subtree data for the clicked node
@@ -771,10 +770,18 @@ export default {
     updateDiagramWidth() {
       this.diagramWidth = window.innerWidth;
     },
+    async fetchSankey() {
+      await new Promise(() => {
+        setTimeout(() => {
+          this.createSankey();
+        }, 200); // Simulate a slight delay
+      });
+    },
   },
-  mounted() {
+  async mounted() {
     window.addEventListener("resize", this.updateDiagramWidth);
-    this.createSankey();
+
+    await this.fetchSankey();
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.updateDiagramWidth);
