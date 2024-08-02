@@ -703,9 +703,6 @@ export default {
         )
         .style("cursor", "pointer");
     },
-    async updateSankey() {
-      await this.fetchSankey();
-    },
     showNodeDetails(event, d) {
       const subtreeData = this.extractSubtreeData(d); // Extract subtree data for the clicked node
       this.dialog = true;
@@ -769,6 +766,9 @@ export default {
     },
     updateDiagramWidth() {
       this.diagramWidth = window.innerWidth;
+    },
+    async updateSankey() {
+      await this.fetchSankey();
     },
     async fetchSankey() {
       await new Promise(() => {

@@ -218,7 +218,6 @@ export default {
 
       this.emitChanges();
       this.menu = false; // Close the menu
-      console.log("Apply changes with value:", this.cladeReadsValue); // DEBUG
     },
     emitChanges() {
       this.$emit("updateSettings", {
