@@ -3,7 +3,7 @@
     <v-tabs v-model="tab">
       <v-tab value="table">Table</v-tab>
       <v-tab value="sankey">Sankey</v-tab>
-      <v-tab value="krona">Krona</v-tab>
+      <v-tab value="krona" v-if="kronaContent">Krona</v-tab>
     </v-tabs>
 
     <v-card-text>
@@ -44,10 +44,11 @@
         <!-- KRONA TAB -->
         <v-tabs-window-item value="krona" class="tab-fill-height">
           <iframe
-            v-if="kronaContent"
             :srcdoc="kronaContent"
             style="width: 100%; height: 100%; border: none"
           ></iframe>
+
+          
         </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>
@@ -74,7 +75,7 @@ export default {
     return {
       results: [],
       tab: "TABLE",
-      kronaContent: "",
+      kronaContent: null,
       taxaLimit: 10,
       minCladeReads: 1,
       showUnclassified: true,
@@ -85,6 +86,7 @@ export default {
     async renderKronaViewer(filePath) {
       if (!filePath) {
         // FIXME: render empty state screen or hide krona tab
+        this.kronaContent = null;
         return;
       }
       try {
@@ -225,6 +227,8 @@ export default {
 
   async mounted() {
     // Runs when results tab is clicked
+    console.log("MOUNTED")
+    console.log("ROUTE QUERY:", this.$route.query)
     try {
       let reportFilePath;
       let kronaFilePath;

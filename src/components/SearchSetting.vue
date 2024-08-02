@@ -263,7 +263,7 @@ export default {
       icon: "",
       buttonText: "",
       action: null,
-      timeout: 3000,
+      timeout: 5000,
     },
   }),
 
@@ -296,10 +296,10 @@ export default {
 
       try {
         this.$emit("job-started", true); // FIXME: true sets isSample as true
-
+        
         setTimeout(() => {
           const reportFilePath = this.file.path;
-
+          
           // Process the file content
           this.$emit("report-uploaded", reportFilePath);
 
