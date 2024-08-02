@@ -9,7 +9,7 @@
         <div class="flex-grow-1">
           <v-app-bar-title>Metabuli</v-app-bar-title>
         </div>
-        <v-img src="assets/marv_metabuli_small.png" width="50px"></v-img>
+        <v-img src="assets/marv_metabuli_animated.gif" width="50px"></v-img>
       </div>
 
       <v-spacer></v-spacer>
@@ -184,10 +184,10 @@ export default {
   align-items: center;
 }
 .nav-item:hover {
-  background-color: rgba(21, 101, 192, 0.1);;
+  background-color: rgba(21, 101, 192, 0.1);
 }
 .nav-item.active {
-  color: #1565C0;
+  color: #1565c0;
 }
 
 .badge-icon {

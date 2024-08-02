@@ -375,7 +375,7 @@ export default {
 
           // Trigger snackbar
           this.triggerSnackbar(
-            "Job successfully completed. Check results tab.",
+            "Job successfully completed. Check the results tab.",
             "success",
             "success",
             "View",
