@@ -84,7 +84,6 @@
                 variant="underlined"
                 v-model="jobDetails.maxram"
                 suffix="GiB"
-                model-value="128"
                 width="500"
               ></v-text-field>
 
@@ -125,9 +124,10 @@
 
                       <v-col cols="6">
                         <v-text-field
+                          density="compact"
                           :label="setting.parameter"
                           v-model="setting.value"
-                          density="compact"
+                          :rules="getValidationRules(setting.parameter)"
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -291,24 +291,26 @@ export default {
     jobDetails: {
       // Store job details including file paths
       q1: "",
-      q2: null,
+      q2: "",
       database: "",
       outdir: "",
       jobid: "",
-      maxram: null,
+      maxram: "",
     },
     advancedSettings: {
       thread: {
-        title: "Thread",
+        title: "Threads",
         description: "The number of threads used (all by default)",
-        parameter: "--thread",
+        parameter: "--threads",
         value: "",
+        type: "INTEGER",
       },
       minScore: {
         title: "Min Score",
         description: "The minimum score to be classified",
         parameter: "--min-score",
         value: "",
+        type: "FLOAT",
       },
       minSpScore: {
         title: "Min SP Score",
@@ -316,6 +318,7 @@ export default {
           "The minimum score to be classified at or below species rank.",
         parameter: "--min-sp-score",
         value: "",
+        type: "FLOAT",
       },
       taxonomyPath: {
         title: "Taxonomy Path",
@@ -323,13 +326,15 @@ export default {
           "Directory where the taxonomy dump files are stored. (DBDIR/taxonomy by default)",
         parameter: "--taxonomy-path",
         value: "",
+        type: "STRING",
       },
       reducedAA: {
         title: "Reduced AA",
         description:
           "0. Use 20 alphabets or 1. Use 15 alphabets to encode amino acids. Give the same value used for DB creation.",
-        parameter: "--reduced-aa",
+        parameter: "--reduced-aa", // FIXME: 엥 왜 안돼
         value: "",
+        type: "INTEGER",
       },
       accessionLevel: {
         title: "Accession Level",
@@ -337,6 +342,52 @@ export default {
           "Set 1 to use accession level classification (0 by default). It is available when the DB is also built with accession level taxonomy.",
         parameter: "--accession-level",
         value: "",
+        type: "INTEGER",
+      },
+    },
+    validationRules: {
+      "--threads": (value) => {
+        // Input must be valid integer
+        if (value === "" || value === null || value === undefined) {
+          return true;
+        }
+        return (
+          Number.isInteger(Number(value)) || "Input must be a valid integer"
+        );
+      },
+      "--min-score": (value) => {
+        // Input must be valid float
+        if (value === "" || value === null || value === undefined) {
+          return true;
+        }
+        return (
+          (!isNaN(value) && parseFloat(value) === Number(value)) ||
+          "Input must be a valid float"
+        );
+      },
+      "--min-sp-score": (value) => {
+        // Input must be valid float
+        if (value === "" || value === null || value === undefined) {
+          return true;
+        }
+        return (
+          (!isNaN(value) && parseFloat(value) === Number(value)) ||
+          "Input must be a valid float"
+        );
+      },
+      "--reduced-aa": (value) => {
+        // Input can be empty, or either numerical 0 or 1
+        const isEmpty = value === "" || value === null || value === undefined;
+        const validInputs = ["0", "1"];
+
+        return isEmpty || validInputs.includes(value) || "Value must be 0 or 1";
+      },
+      "--accession-level": (value) => {
+        // Input can be empty, or either numerical 0 or 1
+        const isEmpty = value === "" || value === null || value === undefined;
+        const validInputs = ["0", "1"];
+
+        return isEmpty || validInputs.includes(value) || "Value must be 0 or 1";
       },
     },
     jobDetailsSample: {
@@ -362,13 +413,19 @@ export default {
       icon: "",
       buttonText: "",
       action: null,
-      timeout: 5000,
+      timeout: 4000,
     },
   }),
   watch: {
+    jobDetails: {
+      handler(newVal) {
+        console.log(newVal); // DEBUG
+      },
+      deep: true,
+    },
     advancedSettings: {
       handler(newVal) {
-        console.log(newVal);
+        console.log(newVal); // DEBUG
       },
       deep: true,
     },
@@ -380,6 +437,12 @@ export default {
   },
 
   methods: {
+    getValidationRules(parameter) {
+      if (this.validationRules[parameter]) {
+        return [this.validationRules[parameter]];
+      }
+      return [];
+    },
     handleDrop(event) {
       const file = event.dataTransfer.files[0];
       if (file) {
@@ -465,108 +528,65 @@ export default {
       );
 
       // Add max-ram
-      if (this.jobDetails.maxram) {
-        params.push("--max-ram", this.jobDetails.maxram);
+      if (this.jobDetails.maxram !== "") {
+        params.push("--max-ram", parseInt(this.jobDetails.maxram));
       }
+
+      // Add advanced settings
+      for (const key in this.advancedSettings) {
+        let value;
+        const setting = this.advancedSettings[key];
+        if (setting.value !== "") {
+          switch (setting.type) {
+            case "INTEGER":
+              value = parseInt(setting.value);
+              break;
+            case "FLOAT":
+              value = parseFloat(setting.value);
+              break;
+            default:
+              value = setting.value;
+          }
+          params.push(setting.parameter, value);
+        }
+      }
+      console.log(params); // DEBUG
 
       try {
-        // Run backend metabuli classify
+        // Run backend process
+        this.status = "RUNNING";
         window.electron.runBackend(params);
 
-        // Starting poll job status immediately after starting the backend
-        this.pollJobStatus(this.jobDetails.jobid)
-          .then(() => {
-            // Job completed successfully
-            console.log("Job polling completed successfully."); // DEBUG
-
-            const completedJob = {
-              outdir: this.jobDetails.outdir,
-              jobid: this.jobDetails.jobid,
-              isSample: false,
-              jobType: "runSearch",
-            };
-
-            // Process the backend output
-            this.$emit("job-completed", {
-              outdir: this.jobDetails.outdir,
-              jobid: this.jobDetails.jobid,
-              isSample: false,
-            });
-
-            // Trigger snackbar
-            this.triggerSnackbar(
-              "Job successfully completed. Check the results tab.",
-              "success",
-              "success",
-              "View",
-              () => {
-                this.$router.push({
-                  name: "ResultsPage",
-                  query: {
-                    ...completedJob,
-                  },
-                });
-              }
-            );
-          })
-          .catch((error) => {
-            // If job times out
-            console.error("Job polling failed:", error); // DEBUG
-
-            this.$emit("job-timed-out");
-
-            this.triggerSnackbar(
-              "Job execution timed out",
-              "warning",
-              "timer",
-              "Retry",
-              this.startJob
-            );
-          });
-
-        // Handle backend SUCCESS
-        window.electron.onBackendOutput((output) => {
-          console.log("Backend Output:", output); //DEBUG
-          this.status = "COMPLETE"; // Signal job polling
-        });
-
-        // Handle backend ERROR
-        window.electron.onBackendError((error) => {
-          console.error("Backend Error:", error); // DEBUG
-
-          this.$emit("job-aborted");
-          this.triggerSnackbar(
-            "An error occurred. Please check query and try again.",
-            "error",
-            "warning",
-            "Dismiss"
-          );
-        });
-
-        // Handle backend CANCELLATION
-        window.electron.onBackendCancelled((message) => {
-          console.log("Backend cancelled:", message); // DEBUG
-
-          this.$emit("job-aborted");
-          this.triggerSnackbar(
-            "Process was cancelled.",
-            "info",
-            "info",
-            "Close"
-          );
-        });
+        // Poll job status
+        await this.pollJobStatus();
+        this.handleJobSuccess();
       } catch (error) {
-        console.log("Error running backend:", error.message); //DEBUG
-
-        this.$emit("job-aborted");
-        this.triggerSnackbar(
-          "An error occurred. Please check query and try again.",
-          "error",
-          "warning",
-          "Dismiss"
-        );
-        // this.triggerSnackbar(`Error: ${error}`, "error", "warning", "Dismiss");
+        console.error("Error running backend:", error.message); // DEBUG
+        this.handleJobError(error);
+      } finally {
+        this.status = "INITIAL";
       }
+    },
+
+    // Function to track job status
+    async pollJobStatus(interval = 500, timeout = 60000) {
+      console.log("Running poll");
+      const start = Date.now();
+      while (Date.now() - start < timeout) {
+        try {
+          if (this.status === "COMPLETE") {
+            return true;
+          } else if (this.status === "ERROR") {
+            throw new Error("Backend error occurred");
+          }
+        } catch (error) {
+          console.error("Error polling job status:", error); // DEBUG
+          throw error;
+        }
+        await new Promise((resolve) => setTimeout(resolve, interval));
+      }
+      this.status = "TIMEOUT";
+      throw new Error("Polling timed out");
     },
 
     loadSampleData() {
@@ -635,7 +655,9 @@ export default {
       }
     },
     triggerSnackbar(message, color, icon, buttonText, action) {
-      this.snackbar.show = false; // Reset snackbar to ensure reactivity
+      console.log("Snackbar triggered");
+      // this.snackbar.show = false; // Reset snackbar to ensure reactivity
+      if (this.snackbar.show) return; // If multiple snackbars are triggered, show the first one
 
       this.snackbar.message = message;
       this.snackbar.color = color || "info";
@@ -644,6 +666,7 @@ export default {
       this.snackbar.action = action || null;
 
       this.snackbar.show = true;
+      console.log("snackbar executed");
     },
     handleSnackbarAction() {
       if (this.snackbar.action) {
@@ -652,34 +675,87 @@ export default {
       }
       this.snackbar.show = false;
     },
-
-    // Function to track job status
-    async pollJobStatus(interval = 500, timeout = 60000) {
-      // Check job status every 0.5 seconds, 1 second = 1000
-      const start = Date.now();
-      while (Date.now() - start < timeout) {
-        try {
-          if (this.status === "COMPLETE") {
-            return true;
-          }
-        } catch (error) {
-          console.error("Error polling job status:", error); // DEBUG
-        }
-        await new Promise((resolve) => setTimeout(resolve, interval));
-      }
-      // If job times out
-      throw new Error("Polling timed out"); // DEBUG
-    },
     toggleApiDialog() {
       this.apiDialog = !this.apiDialog;
     },
     closeApiDialog() {
       this.apiDialog = false;
     },
+    handleJobSuccess() {
+      console.log("Job polling completed successfully."); // DEBUG
+      const completedJob = {
+        outdir: this.jobDetails.outdir,
+        jobid: this.jobDetails.jobid,
+        isSample: false,
+        jobType: "runSearch",
+      };
+
+      this.$emit("job-completed", {
+        outdir: this.jobDetails.outdir,
+        jobid: this.jobDetails.jobid,
+        isSample: false,
+      });
+
+      this.triggerSnackbar(
+        "Job successfully completed. Check the results tab.",
+        "success",
+        "success",
+        "View",
+        () => {
+          this.$router.push({
+            name: "ResultsPage",
+            query: {
+              ...completedJob,
+            },
+          });
+        }
+      );
+    },
+    handleJobError(error) {
+      console.error("Job polling failed:", error); // DEBUG
+      if (this.status === "TIMEOUT") {
+        this.$emit("job-timed-out");
+        this.triggerSnackbar(
+          "Job execution timed out",
+          "warning",
+          "timer",
+          "Retry",
+          this.startJob
+        );
+      } else {
+        this.$emit("job-aborted");
+        this.triggerSnackbar(
+          `Error: ${error.message}`,
+          "error",
+          "warning",
+          "Dismiss"
+        );
+      }
+    },
+    handleTimeout() {
+      window.electron.cancelBackend();
+    },
   },
 
   mounted() {
-    //
+    window.electron.onBackendOutput((output) => {
+      console.log("Backend Output:", output); //DEBUG
+      this.status = "COMPLETE"; // Signal job polling
+    });
+
+    window.electron.onBackendError((error) => {
+      console.error("Backend Error:", error); // DEBUG
+      this.status = "ERROR"; // Signal job polling to stop
+      this.handleJobError(new Error("Backend execution error"));
+    });
+
+    window.electron.onBackendCancelled((message) => {
+      console.log("Backend cancelled:", message); // DEBUG
+      if (this.status !== "TIMEOUT") {
+        this.status = "ERROR"; // Signal job polling to stop
+        this.handleJobError(new Error("Process was cancelled"));
+      }
+    });
   },
 };
 </script>

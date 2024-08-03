@@ -36,7 +36,7 @@ async function createWindow() {
     y: 0,
     width: width * 0.75,
     height: height,
-    minWidth: 800, 
+    minWidth: 800,
     minHeight: 600,
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
@@ -151,7 +151,8 @@ const mapPlatform = (platform) => {
   }
 };
 
-let childProcess = null; // Track the child process
+let childProcess;
+let backendCancelled = false;
 const binPath = app.isPackaged
   ? join(process.resourcesPath, "bin", "metabuli") // 'production' process.resourcesPath=metabuli-app/build/mac-universal--x64/Metabuli App.app/Contents/Resources
   : join(
@@ -165,7 +166,12 @@ const binPath = app.isPackaged
 
 ipcMain.on("run-backend", async (event, args) => {
   try {
+    backendCancelled = false;
     childProcess = execFile(binPath, args, (error, stdout, stderr) => {
+      if (backendCancelled) {
+        event.reply("backend-cancelled", "Backend process was cancelled.");
+        return;
+      }
       if (error) {
         event.reply(
           "backend-error",
@@ -176,17 +182,20 @@ ipcMain.on("run-backend", async (event, args) => {
       if (stderr) {
         console.error(`Backend stderr: ${stderr}`);
       }
+
+      // On successful execution
       event.reply("backend-output", stdout);
     });
   } catch (error) {
     console.error(`Failed to run backend: ${error.message}`);
+    event.reply("backend-error", `Failed to run backend: ${error.message}`);
   }
 });
 
 // IPC handler to cancel an ongoing backend job
 ipcMain.on("cancel-backend", (event) => {
   if (childProcess) {
+    backendCancelled = true;
     childProcess.kill();
-    event.reply("backend-cancelled", "Backend process was cancelled.");
   }
 });

@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld("electron", {
   openFileDialog: (options) => ipcRenderer.invoke("open-file-dialog", options),
   resolvePath: (relativePath) => path.resolve(__dirname, relativePath),
   openKrona: (filePath) => ipcRenderer.invoke("open-krona", filePath),
+  
   runBackend: (args) => ipcRenderer.send("run-backend", args),
   cancelBackend: () => ipcRenderer.send("cancel-backend"),
   onBackendOutput: (callback) =>
