@@ -73,12 +73,196 @@
                 <div class="ml-3">Selected Path: {{ jobDetails.outdir }}</div>
               </v-sheet>
 
+              <!-- --max-ram -->
               <v-text-field
                 label="Max RAM"
                 variant="underlined"
                 v-model="jobDetails.maxram"
+                suffix="GiB"
+                model-value="128"
                 width="500"
               ></v-text-field>
+
+              <!-- ADVANCED SETTINGS (BUTTON) -->
+              <v-divider></v-divider>
+              <v-card-actions>
+                <v-btn
+                  text="Advanced Settings"
+                  :append-icon="
+                    expandAdvancedSettings ? '$collapse' : '$expand'
+                  "
+                  @click="expandAdvancedSettings = !expandAdvancedSettings"
+                ></v-btn>
+              </v-card-actions>
+
+              <!-- EXPANDABLE PANEL -->
+              <v-expand-transition>
+                <div v-if="expandAdvancedSettings" class="py-2">
+                  <v-container fluid>
+                    <!-- --thread -->
+                    <v-row>
+                      <v-col cols="3">
+                        <v-list-subheader>
+                          <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                              <v-icon
+                                v-bind="props"
+                                icon="$helpCircle"
+                              ></v-icon>
+                            </template>
+                            The number of threads used (all by default)
+                          </v-tooltip>
+                          Thread</v-list-subheader
+                        >
+                      </v-col>
+
+                      <v-col cols="6">
+                        <v-text-field
+                          label="--thread"
+                          v-model="jobDetails.thread"
+                          density="compact"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+
+                    <!-- --min-score -->
+                    <v-row>
+                      <v-col cols="3">
+                        <v-list-subheader>
+                          <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                              <v-icon
+                                v-bind="props"
+                                icon="$helpCircle"
+                              ></v-icon>
+                            </template>
+                            The minimum score to be classified
+                          </v-tooltip>
+                          Min Score</v-list-subheader
+                        >
+                      </v-col>
+
+                      <v-col cols="6">
+                        <v-text-field
+                          label="--min-score"
+                          v-model="jobDetails.minScore"
+                          density="compact"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+
+                    <!-- --min-sp-score -->
+                    <v-row>
+                      <v-col cols="3">
+                        <v-list-subheader>
+                          <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                              <v-icon
+                                v-bind="props"
+                                icon="$helpCircle"
+                              ></v-icon>
+                            </template>
+                            The minimum score to be classified at or below
+                            species rank.
+                          </v-tooltip>
+                          Min SP Score</v-list-subheader
+                        >
+                      </v-col>
+
+                      <v-col cols="6">
+                        <v-text-field
+                          label="--min-sp-score"
+                          v-model="jobDetails.minSpScore"
+                          density="compact"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+
+                    <!-- --taxonomy-path -->
+                    <v-row>
+                      <v-col cols="3">
+                        <v-list-subheader>
+                          <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                              <v-icon
+                                v-bind="props"
+                                icon="$helpCircle"
+                              ></v-icon>
+                            </template>
+                            Directory where the taxonomy dump files are stored.
+                            (DBDIR/taxonomy by default)
+                          </v-tooltip>
+                          Taxonomy Path</v-list-subheader
+                        >
+                      </v-col>
+
+                      <v-col cols="6">
+                        <v-text-field
+                          label="--taxonomy-path"
+                          v-model="jobDetails.taxonomyPath"
+                          density="compact"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+
+                    <!-- --reduced-aa -->
+                    <v-row>
+                      <v-col cols="3">
+                        <v-list-subheader>
+                          <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                              <v-icon
+                                v-bind="props"
+                                icon="$helpCircle"
+                              ></v-icon>
+                            </template>
+                            0. Use 20 alphabets or 1. Use 15 alphabets to encode
+                            amino acids. Give the same value used for DB
+                            creation.
+                          </v-tooltip>
+                          Reduced AA</v-list-subheader
+                        >
+                      </v-col>
+
+                      <v-col cols="6">
+                        <v-text-field
+                          label="--reduced-aa"
+                          v-model="jobDetails.reducedAA"
+                          density="compact"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+
+                    <!-- --accession-level -->
+                    <v-row>
+                      <v-col cols="3">
+                        <v-list-subheader>
+                          <v-tooltip location="top">
+                            <template v-slot:activator="{ props }">
+                              <v-icon
+                                v-bind="props"
+                                icon="$helpCircle"
+                              ></v-icon>
+                            </template>
+                            Set 1 to use accession level classification (0 by
+                            default). It is available when the DB is also built
+                            with accession level taxonomy.
+                          </v-tooltip>
+                          Accession Level</v-list-subheader
+                        >
+                      </v-col>
+
+                      <v-col cols="6">
+                        <v-text-field
+                          label="--accession-level"
+                          v-model="jobDetails.accessionLevel"
+                          density="compact"
+                        ></v-text-field>
+                      </v-col>
+                    </v-row>
+                  </v-container>
+                </div>
+              </v-expand-transition>
 
               <!-- BUTTONS -->
               <v-sheet class="d-flex align-center mb-2">
@@ -100,6 +284,7 @@
               </v-sheet>
             </v-container>
           </v-tabs-window-item>
+
 
           <!-- UPLOAD REPORT -->
           <v-tabs-window-item :value="items[1].value">
@@ -242,6 +427,14 @@ export default {
       jobid: "",
       maxram: null,
     },
+    advancedSettings: {
+      thread: null,
+      minScore: null,
+      minSpScore: null,
+      taxonomyPath: null,
+      reducedAA: null,
+      accessionLevel: null,
+    },
     jobDetailsSample: {
       // Sample job details
       q1: "SRR14484345_1.fq",
@@ -257,6 +450,7 @@ export default {
     loading: false,
     apiDialog: false, // Control the visibility of the API dialog
     endType: "single-end",
+    expandAdvancedSettings: false,
     snackbar: {
       show: false,
       message: "",
@@ -272,9 +466,6 @@ export default {
     handleDrop(event) {
       const file = event.dataTransfer.files[0];
       if (file) {
-        console.log("File path:", file.path); //DELETE
-        // You can now use the file path as needed
-        // this.handleFilePath(file.path);
         this.file = file;
       }
     },
@@ -338,9 +529,7 @@ export default {
       this.runBackend();
     },
     async runBackend() {
-      const params = [
-        "classify",
-      ];
+      const params = ["classify"];
 
       // Add input
       if (this.endType === "single-end") {
@@ -348,11 +537,15 @@ export default {
       } else if (this.endType === "paired-end") {
         params.push(this.jobDetails.q1, this.jobDetails.q2);
       } else if (this.endType === "long-read") {
-         params.push("--seq-mode", 3, this.jobDetails.q1);
+        params.push("--seq-mode", 3, this.jobDetails.q1);
       }
 
       // Add dbdir, outdir, jobid
-      params.push(this.jobDetails.database, this.jobDetails.outdir,this.jobDetails.jobid);
+      params.push(
+        this.jobDetails.database,
+        this.jobDetails.outdir,
+        this.jobDetails.jobid
+      );
 
       // Add max-ram
       if (this.jobDetails.maxram) {
@@ -489,7 +682,7 @@ export default {
               },
             });
           }
-        ); 
+        );
       }, 2000); // Simulate a job taking 2 seconds
     },
 
@@ -591,8 +784,8 @@ export default {
   background-size: 300px 300px;
   opacity: 0.5;
   position: absolute;
-  bottom: 10px;
-  right: 10px;
+  top: 110px;
+  right: 5px;
   width: 300px;
   height: 300px;
 }
@@ -634,5 +827,9 @@ code {
 
 .custom-snackbar {
   top: 64px !important; /* Adjust this value to match your app bar height */
+}
+
+.v-col {
+  padding-bottom: 0px;
 }
 </style>
