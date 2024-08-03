@@ -35,6 +35,7 @@
               >
                 <v-radio label="Single-end" value="single-end"></v-radio>
                 <v-radio label="Paired-end" value="paired-end"></v-radio>
+                <v-radio label="Long-read" value="long-read"></v-radio>
               </v-radio-group>
 
               <v-text-field
@@ -346,6 +347,8 @@ export default {
         params.push("--seq-mode", 1, this.jobDetails.q1);
       } else if (this.endType === "paired-end") {
         params.push(this.jobDetails.q1, this.jobDetails.q2);
+      } else if (this.endType === "long-read") {
+         params.push("--seq-mode", 3, this.jobDetails.q1);
       }
 
       // Add dbdir, outdir, jobid
