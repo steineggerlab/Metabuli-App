@@ -104,8 +104,10 @@
               <v-expand-transition>
                 <div v-if="expandAdvancedSettings" class="py-2">
                   <v-container fluid>
-                    <!-- --thread -->
-                    <v-row>
+                    <v-row
+                      v-for="(setting, key) in advancedSettings"
+                      :key="key"
+                    >
                       <v-col cols="3">
                         <v-list-subheader>
                           <v-tooltip location="top">
@@ -115,152 +117,16 @@
                                 icon="$helpCircle"
                               ></v-icon>
                             </template>
-                            The number of threads used (all by default)
+                            {{ setting.description }}
                           </v-tooltip>
-                          Thread</v-list-subheader
-                        >
+                          {{ setting.title }}
+                        </v-list-subheader>
                       </v-col>
 
                       <v-col cols="6">
                         <v-text-field
-                          label="--thread"
-                          v-model="jobDetails.thread"
-                          density="compact"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-
-                    <!-- --min-score -->
-                    <v-row>
-                      <v-col cols="3">
-                        <v-list-subheader>
-                          <v-tooltip location="top">
-                            <template v-slot:activator="{ props }">
-                              <v-icon
-                                v-bind="props"
-                                icon="$helpCircle"
-                              ></v-icon>
-                            </template>
-                            The minimum score to be classified
-                          </v-tooltip>
-                          Min Score</v-list-subheader
-                        >
-                      </v-col>
-
-                      <v-col cols="6">
-                        <v-text-field
-                          label="--min-score"
-                          v-model="jobDetails.minScore"
-                          density="compact"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-
-                    <!-- --min-sp-score -->
-                    <v-row>
-                      <v-col cols="3">
-                        <v-list-subheader>
-                          <v-tooltip location="top">
-                            <template v-slot:activator="{ props }">
-                              <v-icon
-                                v-bind="props"
-                                icon="$helpCircle"
-                              ></v-icon>
-                            </template>
-                            The minimum score to be classified at or below
-                            species rank.
-                          </v-tooltip>
-                          Min SP Score</v-list-subheader
-                        >
-                      </v-col>
-
-                      <v-col cols="6">
-                        <v-text-field
-                          label="--min-sp-score"
-                          v-model="jobDetails.minSpScore"
-                          density="compact"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-
-                    <!-- --taxonomy-path -->
-                    <v-row>
-                      <v-col cols="3">
-                        <v-list-subheader>
-                          <v-tooltip location="top">
-                            <template v-slot:activator="{ props }">
-                              <v-icon
-                                v-bind="props"
-                                icon="$helpCircle"
-                              ></v-icon>
-                            </template>
-                            Directory where the taxonomy dump files are stored.
-                            (DBDIR/taxonomy by default)
-                          </v-tooltip>
-                          Taxonomy Path</v-list-subheader
-                        >
-                      </v-col>
-
-                      <v-col cols="6">
-                        <v-text-field
-                          label="--taxonomy-path"
-                          v-model="jobDetails.taxonomyPath"
-                          density="compact"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-
-                    <!-- --reduced-aa -->
-                    <v-row>
-                      <v-col cols="3">
-                        <v-list-subheader>
-                          <v-tooltip location="top">
-                            <template v-slot:activator="{ props }">
-                              <v-icon
-                                v-bind="props"
-                                icon="$helpCircle"
-                              ></v-icon>
-                            </template>
-                            0. Use 20 alphabets or 1. Use 15 alphabets to encode
-                            amino acids. Give the same value used for DB
-                            creation.
-                          </v-tooltip>
-                          Reduced AA</v-list-subheader
-                        >
-                      </v-col>
-
-                      <v-col cols="6">
-                        <v-text-field
-                          label="--reduced-aa"
-                          v-model="jobDetails.reducedAA"
-                          density="compact"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-
-                    <!-- --accession-level -->
-                    <v-row>
-                      <v-col cols="3">
-                        <v-list-subheader>
-                          <v-tooltip location="top">
-                            <template v-slot:activator="{ props }">
-                              <v-icon
-                                v-bind="props"
-                                icon="$helpCircle"
-                              ></v-icon>
-                            </template>
-                            Set 1 to use accession level classification (0 by
-                            default). It is available when the DB is also built
-                            with accession level taxonomy.
-                          </v-tooltip>
-                          Accession Level</v-list-subheader
-                        >
-                      </v-col>
-
-                      <v-col cols="6">
-                        <v-text-field
-                          label="--accession-level"
-                          v-model="jobDetails.accessionLevel"
+                          :label="setting.parameter"
+                          v-model="setting.value"
                           density="compact"
                         ></v-text-field>
                       </v-col>
@@ -289,7 +155,6 @@
               </v-sheet>
             </v-container>
           </v-tabs-window-item>
-
 
           <!-- UPLOAD REPORT -->
           <v-tabs-window-item :value="items[1].value">
@@ -433,12 +298,46 @@ export default {
       maxram: null,
     },
     advancedSettings: {
-      thread: null,
-      minScore: null,
-      minSpScore: null,
-      taxonomyPath: null,
-      reducedAA: null,
-      accessionLevel: null,
+      thread: {
+        title: "Thread",
+        description: "The number of threads used (all by default)",
+        parameter: "--thread",
+        value: "",
+      },
+      minScore: {
+        title: "Min Score",
+        description: "The minimum score to be classified",
+        parameter: "--min-score",
+        value: "",
+      },
+      minSpScore: {
+        title: "Min SP Score",
+        description:
+          "The minimum score to be classified at or below species rank.",
+        parameter: "--min-sp-score",
+        value: "",
+      },
+      taxonomyPath: {
+        title: "Taxonomy Path",
+        description:
+          "Directory where the taxonomy dump files are stored. (DBDIR/taxonomy by default)",
+        parameter: "--taxonomy-path",
+        value: "",
+      },
+      reducedAA: {
+        title: "Reduced AA",
+        description:
+          "0. Use 20 alphabets or 1. Use 15 alphabets to encode amino acids. Give the same value used for DB creation.",
+        parameter: "--reduced-aa",
+        value: "",
+      },
+      accessionLevel: {
+        title: "Accession Level",
+        description:
+          "Set 1 to use accession level classification (0 by default). It is available when the DB is also built with accession level taxonomy.",
+        parameter: "--accession-level",
+        value: "",
+      },
     },
     jobDetailsSample: {
       // Sample job details
@@ -466,11 +365,20 @@ export default {
       timeout: 5000,
     },
   }),
- computed: {
+  watch: {
+    advancedSettings: {
+      handler(newVal) {
+        console.log(newVal);
+      },
+      deep: true,
+    },
+  },
+  computed: {
     computedHint() {
       return `${this.jobDetails.jobid}_report.tsv`;
-    }
+    },
   },
+
   methods: {
     handleDrop(event) {
       const file = event.dataTransfer.files[0];
