@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card class="h-100">
     <v-tabs v-model="tab">
       <v-tab value="table">Table</v-tab>
       <v-tab value="sankey">Sankey</v-tab>
@@ -14,7 +14,7 @@
         </v-tabs-window-item>
 
         <!-- SANKEY TAB-->
-        <v-tabs-window-item value="sankey" class="tab-fill-height">
+        <v-tabs-window-item value="sankey" class="h-100">
           <!-- TOOLBAR ABOVE SANKEY DIAGRAM -->
           <div class="d-flex justify-space-around my-5 ml-2 mr-10 gc-1">
             <div class="d-flex align-center">
@@ -49,11 +49,13 @@
         </v-tabs-window-item>
 
         <!-- KRONA TAB -->
-        <v-tabs-window-item value="krona" class="tab-fill-height">
-          <iframe
-            :srcdoc="kronaContent"
-            style="width: 100%; height: 100%; border: none"
-          ></iframe>
+        <v-tabs-window-item value="krona" class="h-100">
+          <div class="pa-4 tab-fill-height">
+            <iframe
+              :srcdoc="kronaContent"
+              style="width: 100%; height: 100%; border: none"
+            ></iframe>
+          </div>
         </v-tabs-window-item>
       </v-tabs-window>
     </v-card-text>
@@ -281,7 +283,7 @@ export default {
 
 <style>
 .tab-fill-height {
-  height: 650px; /* Adjust according to your header/footer height */
+  height: 75vh; /* Adjust according to your header/footer height */
   overflow-y: auto; /* Enable vertical scrolling */
   overflow-x: hidden; /* Hide horizontal overflow */
 }
