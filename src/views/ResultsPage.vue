@@ -27,7 +27,7 @@
 
             <ConfigureSankeyMenu
               :initialTaxaLimit="taxaLimit"
-              :initialMinCladeReadsMode="cladeMinReadsMode"
+              :initialMinCladeReadsMode="minCladeReadsMode"
               :initialMinCladeReads="minCladeReads"
               :initialShowUnclassified="showUnclassified"
               :initialFigureHeight="figureHeight"
@@ -37,14 +37,15 @@
           </div>
 
           <!-- SANKEY DIAGRAM -->
-            <SankeyDiagram
-              :data="results"
-              :taxaLimit="taxaLimit"
-              :minReads="minCladeReads"
-              :showUnclassified="showUnclassified"
-              :figureHeight="figureHeight"
-              :labelOption="labelOption"
-            />
+          <SankeyDiagram
+            :rawData="results"
+            :taxaLimit="taxaLimit"
+            :minCladeReadsMode="minCladeReadsMode"
+            :minReads="minCladeReads"
+            :showUnclassified="showUnclassified"
+            :figureHeight="figureHeight"
+            :labelOption="labelOption"
+          />
         </v-tabs-window-item>
 
         <!-- KRONA TAB -->
@@ -82,7 +83,7 @@ export default {
       kronaContent: null,
       isSample: null,
       taxaLimit: 15,
-      cladeMinReadsMode: "%",
+      minCladeReadsMode: "%",
       minCladeReads: 1,
       showUnclassified: true,
       figureHeight: 500,
@@ -149,6 +150,7 @@ export default {
     },
     updateSettings(settings) {
       this.taxaLimit = settings.taxaLimit;
+      this.minCladeReadsMode = settings.minCladeReadsMode;
       this.minCladeReads = settings.minCladeReads;
       this.showUnclassified = settings.showUnclassified;
       this.figureHeight = settings.figureHeight;
@@ -278,9 +280,6 @@ export default {
 </script>
 
 <style>
-.sankey-slider {
-  padding-top: 20px;
-}
 .tab-fill-height {
   height: 650px; /* Adjust according to your header/footer height */
   overflow-y: auto; /* Enable vertical scrolling */

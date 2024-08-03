@@ -41,12 +41,16 @@ export default {
     SankeyNodeDialog,
   },
   props: {
-    data: {
+    rawData: {
       type: Object,
       required: true,
     },
     taxaLimit: {
       type: Number,
+      required: true,
+    },
+    minCladeReadsMode: {
+      type: String,
       required: true,
     },
     minReads: {
@@ -80,12 +84,68 @@ export default {
     };
   },
   computed: {
+    data() {
+      // Filter out clades from raw data
+      const nonClades = this.rawData.filter((entry) => entry.rank !== "clade");
+      console.log("Nonclades: ", nonClades.length);
+      return nonClades;
+    },
+    filteredData() {
+      // Filter data based on configurations
+
+      if (!this.data) {
+        // Ensure data are defined before filtering
+        return [];
+      }
+
+      return this.data.filter((entry) => {
+        // Check min reads criteria
+        let passesMinReads = false;
+        if (this.minCladeReadsMode === "%") {
+          passesMinReads = parseFloat(entry.proportion) >= this.minReads;
+        } else if (this.minCladeReadsMode === "#") {
+          passesMinReads = parseFloat(entry.clade_reads) >= this.minReads;
+        }
+
+        // Check show unclassified criteria
+        const passesUnclassified =
+          this.showUnclassified || !this.isUnclassifiedTaxa(entry);
+
+        // Data entry must pass both criteria to be included in sankey
+        return passesMinReads && passesUnclassified;
+      });
+    },
+    maxCladeReads() {
+      const rankOrder = [
+        "superkingdom",
+        "kingdom",
+        "phylum",
+        "class",
+        "order",
+        "family",
+        "genus",
+        "species",
+      ];
+      if (this.minCladeReadsMode === "#") {
+        // Highest clade reads from data entries includable on graph (rankOrder + unclassified)
+        return this.data
+          .filter(
+            (entry) =>
+              rankOrder.includes(entry.rank) || this.isUnclassifiedTaxa(entry)
+          )
+          .reduce((max, entry) => Math.max(max, entry.clade_reads), 0);
+      }
+      return 100; // Default value for percentage mode
+    },
     graphData() {
-      return this.parseData(this.data);
+      return this.parseData(this.filteredData);
     },
   },
   watch: {
     taxaLimit() {
+      this.updateSankey();
+    },
+    minCladeReadsMode() {
       this.updateSankey();
     },
     minReads() {
@@ -163,8 +223,9 @@ export default {
       const nodesByRank = {}; // Store nodes by rank for filtering top 10
 
       // Step 1: Create nodes and save lineage data for ALL NODES (excluding clade ranks)
+      console.log("Data:", data);
       data
-        .filter((d) => d.rank !== "clade")
+        // .filter((d) => d.rank !== "clade")
         .forEach((d) => {
           let node = {
             id: d.taxon_id,
@@ -377,7 +438,7 @@ export default {
       const name = d.name;
 
       // Check if the name starts with "unclassified"
-      if (!name.startsWith("unclassified")) {
+      if (!name.includes("unclassified")) {
         return false;
       }
 
@@ -404,7 +465,15 @@ export default {
 
     createSankey() {
       const { nodes, links } = this.graphData;
-      // const { nodes, links } = this.filterData(this.data);
+
+      // Check if nodes and links are not empty
+      if (!nodes.length || !links.length) {
+        console.warn(
+          "No data to create Sankey diagram, max is ",
+          this.maxCladeReads
+        ); // FIXME: what to do when theres no graph to draw (empty state?)
+        return;
+      }
 
       const container = this.$refs.sankeyContainer;
       d3.select(container).selectAll("*").remove(); // Clear the previous diagram

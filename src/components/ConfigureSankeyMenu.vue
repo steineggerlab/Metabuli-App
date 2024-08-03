@@ -97,7 +97,7 @@
             <!-- SWITCH (Show/Hide Unclassified Nodes) -->
             <v-list-item>
               <v-container class="pt-1">
-              <div class="d-flex align-center gc-2">
+                <div class="d-flex align-center gc-2">
                   <v-switch
                     v-model="tempShowUnclassified"
                     color="indigo"
@@ -185,7 +185,7 @@ export default {
   computed: {
     valueRangeRule() {
       const min = this.tempCladeReadsMode === "%" ? 0 : 1;
-      const max = this.tempCladeReadsMode === "%" ? 100 : 1000;
+      const max = this.tempCladeReadsMode === "%" ? 100 : Infinity;
       return (value) => {
         if (value >= min && value <= max) {
           this.isFormValid = true;
@@ -222,7 +222,8 @@ export default {
     emitChanges() {
       this.$emit("updateSettings", {
         taxaLimit: this.taxaLimit,
-        minCladeReads: this.cladeReadsValue,
+        minCladeReadsMode: this.cladeReadsMode,
+        minCladeReads: parseFloat(this.cladeReadsValue),
         showUnclassified: this.showUnclassified,
         figureHeight: this.figureHeight,
         labelOption: this.labelOption,
