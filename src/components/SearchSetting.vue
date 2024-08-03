@@ -125,9 +125,13 @@
                       <v-col cols="6">
                         <v-text-field
                           density="compact"
-                          :label="setting.parameter"
                           v-model="setting.value"
+                          :append-inner-icon="`$${setting.icon}`"
+                          :label="setting.parameter"
                           :rules="getValidationRules(setting.parameter)"
+                          v-on:click="
+                            handleAdvancedSettingsTextFieldClick(setting)
+                          "
                         ></v-text-field>
                       </v-col>
                     </v-row>
@@ -327,6 +331,8 @@ export default {
         parameter: "--taxonomy-path",
         value: "",
         type: "STRING",
+        icon: "file",
+        file: true,
       },
       reducedAA: {
         title: "Reduced AA",
@@ -442,6 +448,12 @@ export default {
         return [this.validationRules[parameter]];
       }
       return [];
+    },
+    async handleAdvancedSettingsTextFieldClick(setting) {
+      if (setting.file) {
+        const filePath = await this.selectFile(null, "directory");
+        setting.value = filePath;
+      }
     },
     handleDrop(event) {
       const file = event.dataTransfer.files[0];
@@ -633,6 +645,9 @@ export default {
           };
           const filePaths = await window.electron.openFileDialog(options);
           if (filePaths && filePaths.length > 0) {
+            if (!field) {
+              return filePaths[0];
+            }
             this.jobDetails[field] = filePaths[0];
           }
         } catch (error) {
