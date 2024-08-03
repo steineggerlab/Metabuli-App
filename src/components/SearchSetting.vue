@@ -28,6 +28,7 @@
           <!-- RUN SEARCH -->
           <v-tabs-window-item :value="items[0].value">
             <v-container>
+              <!-- End Type (single-end, paired-end, long-read) -->
               <v-radio-group
                 v-model="endType"
                 inline
@@ -38,11 +39,15 @@
                 <v-radio label="Long-read" value="long-read"></v-radio>
               </v-radio-group>
 
+              <!-- Job ID -->
               <v-text-field
                 label="Job ID"
                 variant="underlined"
                 v-model="jobDetails.jobid"
                 width="500"
+                :hint="computedHint"
+                persistent-hint
+                class="mb-2"
               ></v-text-field>
 
               <!-- FIXME: refactor -->
@@ -461,7 +466,11 @@ export default {
       timeout: 5000,
     },
   }),
-
+ computed: {
+    computedHint() {
+      return `${this.jobDetails.jobid}_report.tsv`;
+    }
+  },
   methods: {
     handleDrop(event) {
       const file = event.dataTransfer.files[0];
