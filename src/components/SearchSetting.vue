@@ -235,7 +235,7 @@ export default {
     jobDetails: {
       // Store job details including file paths
       q1: "",
-      q2: "",
+      q2: null,
       database: "",
       outdir: "",
       jobid: "",
@@ -339,12 +339,19 @@ export default {
     async runBackend() {
       const params = [
         "classify",
-        this.jobDetails.q1,
-        this.jobDetails.q2, // FIXME: separate this too
-        this.jobDetails.database,
-        this.jobDetails.outdir,
-        this.jobDetails.jobid,
       ];
+
+      // Add input
+      if (this.endType === "single-end") {
+        params.push("--seq-mode", 1, this.jobDetails.q1);
+      } else if (this.endType === "paired-end") {
+        params.push(this.jobDetails.q1, this.jobDetails.q2);
+      }
+
+      // Add dbdir, outdir, jobid
+      params.push(this.jobDetails.database, this.jobDetails.outdir,this.jobDetails.jobid);
+
+      // Add max-ram
       if (this.jobDetails.maxram) {
         params.push("--max-ram", this.jobDetails.maxram);
       }
