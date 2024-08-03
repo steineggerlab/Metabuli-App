@@ -11,7 +11,7 @@
         <v-btn color="indigo" v-bind="props"> Configure Sankey </v-btn>
       </template>
 
-      <v-card min-width="300" class="py-3 mt-1">
+      <v-card min-width="300" class="pt-3 mt-1">
         <v-form ref="form">
           <v-list>
             <!-- DROPDOWN AND INPUT (Minimum Clade Reads) -->
@@ -109,24 +109,22 @@
             </v-list-item>
           </v-list>
 
+          <v-divider></v-divider>
+          
           <!-- APPLY AND CANCEL BUTTONS -->
-          <v-container class="d-flex justify-end gc-2 py-2">
+          <v-card-actions>
+            <v-btn variant="text" @click="cancelChanges"> Cancel </v-btn>
+            <v-spacer></v-spacer>
+
             <v-btn
-              size="small"
-              variant="outlined"
               color="indigo"
-              @click="cancelChanges"
-              >Cancel</v-btn
-            >
-            <v-btn
-              size="small"
-              variant="flat"
-              color="indigo"
+              variant="text"
               :disabled="!isFormValid"
               @click="applyChanges"
-              >Apply</v-btn
             >
-          </v-container>
+              Apply
+            </v-btn>
+          </v-card-actions>
         </v-form>
       </v-card>
     </v-menu>

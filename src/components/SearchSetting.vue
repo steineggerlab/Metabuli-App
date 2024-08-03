@@ -306,7 +306,7 @@
                     class="mr-1 align-center"
                     icon="$fileUpload"
                   ></v-icon>
-                  Upload File
+                  Upload Report File
                 </v-card-title>
                 <v-card-text
                   >Upload report.tsv file directly to see
