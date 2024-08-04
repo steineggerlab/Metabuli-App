@@ -26,8 +26,17 @@
 
         <v-tabs-window v-model="tab">
           <!-- RUN SEARCH -->
-          <v-tabs-window-item :value="items[0].value">
+          <v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="items[0].value">
             <v-container>
+              <v-card flat>
+                <v-card-title>
+                  Configure Search
+                </v-card-title>
+                <!-- <v-card-text
+                  >Upload report.tsv file directly to see
+                  visualization.</v-card-text
+                > -->
+              </v-card>
               <!-- End Type (single-end, paired-end, long-read) -->
               <v-radio-group
                 v-model="endType"
@@ -78,17 +87,8 @@
                 <div class="ml-3">Selected Path: {{ jobDetails.outdir }}</div>
               </v-sheet>
 
-              <!-- --max-ram -->
-              <v-text-field
-                label="Max RAM"
-                variant="underlined"
-                v-model="jobDetails.maxram"
-                suffix="GiB"
-                width="500"
-              ></v-text-field>
-
-              <!-- ADVANCED SETTINGS (BUTTON) -->
-              <v-divider></v-divider>
+              <!-- ADVANCED SETTINGS -->
+                <v-divider class="mt-7"></v-divider>
               <v-card-actions>
                 <v-btn
                   text="Advanced Settings"
@@ -126,9 +126,10 @@
                         <v-text-field
                           density="compact"
                           v-model="setting.value"
-                          :append-inner-icon="`$${setting.icon}`"
+                          :append-inner-icon=getAppendInnerIcon(setting)
                           :label="setting.parameter"
                           :rules="getValidationRules(setting.parameter)"
+                          :suffix="setting.extra?.suffix || ''"
                           v-on:click="
                             handleAdvancedSettingsTextFieldClick(setting)
                           "
@@ -161,7 +162,7 @@
           </v-tabs-window-item>
 
           <!-- UPLOAD REPORT -->
-          <v-tabs-window-item :value="items[1].value">
+          <v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="items[1].value">
             <v-container
               class="gr-2 upload-container"
               @drop="handleDrop"
@@ -299,9 +300,18 @@ export default {
       database: "",
       outdir: "",
       jobid: "",
-      maxram: "",
     },
     advancedSettings: {
+      maxRam: {
+        title: "Max RAM",
+        description: "The maximum RAM usage. (128 GiB by default)",
+        parameter: "--max-ram",
+        value: 128,
+        type: "INTEGER",
+         extra: {
+            suffix: "GiB"
+          }
+      },
       thread: {
         title: "Threads",
         description: "The number of threads used (all by default)",
@@ -331,8 +341,10 @@ export default {
         parameter: "--taxonomy-path",
         value: "",
         type: "STRING",
-        icon: "file",
-        file: true,
+        extra: {
+          appendIcon: "file",
+          file: true,
+        }
       },
       reducedAA: {
         title: "Reduced AA",
@@ -443,6 +455,9 @@ export default {
   },
 
   methods: {
+    getAppendInnerIcon(setting) {
+      return setting.extra?.appendIcon ? `$${setting.extra.appendIcon}` : null;
+    },
     getValidationRules(parameter) {
       if (this.validationRules[parameter]) {
         return [this.validationRules[parameter]];
@@ -450,7 +465,7 @@ export default {
       return [];
     },
     async handleAdvancedSettingsTextFieldClick(setting) {
-      if (setting.file) {
+      if (setting.extra?.file) {
         const filePath = await this.selectFile(null, "directory");
         setting.value = filePath;
       }
@@ -538,11 +553,6 @@ export default {
         this.jobDetails.outdir,
         this.jobDetails.jobid
       );
-
-      // Add max-ram
-      if (this.jobDetails.maxram !== "") {
-        params.push("--max-ram", parseInt(this.jobDetails.maxram));
-      }
 
       // Add advanced settings
       for (const key in this.advancedSettings) {
