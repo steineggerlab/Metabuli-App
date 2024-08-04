@@ -34,11 +34,18 @@
             <v-container>
               <!-- Title -->
               <v-card flat>
-                <v-card-title> Configure Search </v-card-title>
+                <v-card-title> 
+                  <v-icon
+                    left
+                    class="mr-1 align-center"
+                    icon="$dna"
+                  ></v-icon>
+                  Configure Search </v-card-title>
               </v-card>
 
               <!-- End Type (single-end, paired-end, long-read) -->
               <v-form ref="jobForm" v-model="isJobFormValid">
+                <div class="w-50">
                 <v-radio-group
                   v-model="endType"
                   inline
@@ -54,7 +61,7 @@
                   label="Job ID"
                   variant="underlined"
                   v-model="jobDetails.jobid"
-                  width="500"
+
                   :hint="computedHint"
                   persistent-hint
                   class="mb-2"
@@ -116,6 +123,7 @@
                     style="display: none"
                   ></v-text-field>
                 </v-sheet>
+                </div>
 
                 <!-- ADVANCED SETTINGS -->
                 <v-divider class="mt-7"></v-divider>
@@ -407,6 +415,15 @@ export default {
     },
     validationRules: {
       "--max-ram": (value) => {
+        // Input must be valid integer
+        if (value === "" || value === null || value === undefined) {
+          return true;
+        }
+        return (
+          Number.isInteger(Number(value)) || "Input must be a valid integer"
+        );
+      },
+      "--threads": (value) => {
         // Input must be valid integer
         if (value === "" || value === null || value === undefined) {
           return true;

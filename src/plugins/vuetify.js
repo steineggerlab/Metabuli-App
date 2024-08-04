@@ -13,7 +13,8 @@ import {
   mdiTimerSand,
   mdiFileUpload,
   mdiFileAlert,
-  mdiHelpCircle
+  mdiHelpCircle,
+  mdiDna
 } from "@mdi/js"; // Icon search: https://vuetifyjs.com/en/features/icon-fonts/#mdi-icon-search
 
 export default createVuetify({
@@ -54,7 +55,8 @@ export default createVuetify({
       timerSand: mdiTimerSand,
       fileUpload: mdiFileUpload,
       fileAlert: mdiFileAlert,
-      helpCircle: mdiHelpCircle
+      helpCircle: mdiHelpCircle,
+      dna: mdiDna
     },
     sets: {
       mdi,
