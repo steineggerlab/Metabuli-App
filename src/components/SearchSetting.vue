@@ -154,6 +154,8 @@
 
                         <v-col cols="6">
                           <v-text-field
+                            variant="outlined"
+                            rounded="lg"
                             density="compact"
                             v-model="setting.value"
                             :append-inner-icon="getAppendInnerIcon(setting)"
@@ -404,7 +406,7 @@ export default {
       },
     },
     validationRules: {
-       "--max-ram": (value) => {
+      "--max-ram": (value) => {
         // Input must be valid integer
         if (value === "" || value === null || value === undefined) {
           return true;
