@@ -26,143 +26,182 @@
 
         <v-tabs-window v-model="tab">
           <!-- RUN SEARCH -->
-          <v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="items[0].value">
+          <v-tabs-window-item
+            transition="fade-transition"
+            reverse-transition="fade-transition"
+            :value="items[0].value"
+          >
             <v-container>
+              <!-- Title -->
               <v-card flat>
-                <v-card-title>
-                  Configure Search
-                </v-card-title>
-                <!-- <v-card-text
-                  >Upload report.tsv file directly to see
-                  visualization.</v-card-text
-                > -->
+                <v-card-title> Configure Search </v-card-title>
               </v-card>
+
               <!-- End Type (single-end, paired-end, long-read) -->
-              <v-radio-group
-                v-model="endType"
-                inline
-                class="d-flex align-center mb-0"
-              >
-                <v-radio label="Single-end" value="single-end"></v-radio>
-                <v-radio label="Paired-end" value="paired-end"></v-radio>
-                <v-radio label="Long-read" value="long-read"></v-radio>
-              </v-radio-group>
-
-              <!-- Job ID -->
-              <v-text-field
-                label="Job ID"
-                variant="underlined"
-                v-model="jobDetails.jobid"
-                width="500"
-                :hint="computedHint"
-                persistent-hint
-                class="mb-2"
-              ></v-text-field>
-
-              <!-- FIXME: refactor -->
-              <v-sheet class="d-flex align-center mb-2">
-                <v-btn @click="selectFile('q1', 'file')">Select q1 File</v-btn>
-                <div class="ml-3">Selected Path: {{ jobDetails.q1 }}</div>
-              </v-sheet>
-
-              <v-sheet
-                class="d-flex align-center mb-2"
-                v-if="endType === 'paired-end'"
-              >
-                <v-btn @click="selectFile('q2', 'file')">Select q2 File</v-btn>
-                <div class="ml-3">Selected Path: {{ jobDetails.q2 }}</div>
-              </v-sheet>
-
-              <v-sheet class="d-flex align-center mb-2">
-                <v-btn @click="selectFile('database', 'directory')"
-                  >Select Database</v-btn
+              <v-form ref="jobForm" v-model="isJobFormValid">
+                <v-radio-group
+                  v-model="endType"
+                  inline
+                  class="d-flex align-center mb-0"
                 >
-                <div class="ml-3">Selected Path: {{ jobDetails.database }}</div>
-              </v-sheet>
+                  <v-radio label="Single-end" value="single-end"></v-radio>
+                  <v-radio label="Paired-end" value="paired-end"></v-radio>
+                  <v-radio label="Long-read" value="long-read"></v-radio>
+                </v-radio-group>
 
-              <v-sheet class="d-flex align-center mb-2">
-                <v-btn @click="selectFile('outdir', 'directory')"
-                  >Select Output Directory</v-btn
+                <!-- Job ID -->
+                <v-text-field
+                  label="Job ID"
+                  variant="underlined"
+                  v-model="jobDetails.jobid"
+                  width="500"
+                  :hint="computedHint"
+                  persistent-hint
+                  class="mb-2"
+                ></v-text-field>
+
+                <!-- FIXME: refactor -->
+                <v-sheet class="d-flex align-center mb-2">
+                  <v-btn @click="selectFile('q1', 'file')"
+                    >Select q1 File</v-btn
+                  >
+                  <div class="ml-3">Selected Path: {{ jobDetails.q1 }}</div>
+                  <v-text-field
+                    v-model="jobDetails.q1"
+                    :rules="[requiredRule]"
+                    style="display: none"
+                  ></v-text-field>
+                </v-sheet>
+
+                <v-sheet
+                  class="d-flex align-center mb-2"
+                  v-if="endType === 'paired-end'"
                 >
-                <div class="ml-3">Selected Path: {{ jobDetails.outdir }}</div>
-              </v-sheet>
+                  <v-btn @click="selectFile('q2', 'file')"
+                    >Select q2 File</v-btn
+                  >
+                  <div class="ml-3">Selected Path: {{ jobDetails.q2 }}</div>
+                  <v-text-field
+                    v-model="jobDetails.q2"
+                    :rules="[
+                      endType === 'paired-end' ? requiredRule : () => true,
+                    ]"
+                    style="display: none"
+                  ></v-text-field>
+                </v-sheet>
 
-              <!-- ADVANCED SETTINGS -->
+                <v-sheet class="d-flex align-center mb-2">
+                  <v-btn @click="selectFile('database', 'directory')"
+                    >Select Database</v-btn
+                  >
+
+                  <div class="ml-3">
+                    Selected Path: {{ jobDetails.database }}
+                  </div>
+                  <v-text-field
+                    v-model="jobDetails.database"
+                    :rules="[requiredRule]"
+                    style="display: none"
+                  ></v-text-field>
+                </v-sheet>
+
+                <v-sheet class="d-flex align-center mb-2">
+                  <v-btn @click="selectFile('outdir', 'directory')"
+                    >Select Output Directory</v-btn
+                  >
+                  <div class="ml-3">Selected Path: {{ jobDetails.outdir }}</div>
+                  <v-text-field
+                    v-model="jobDetails.outdir"
+                    :rules="[requiredRule]"
+                    style="display: none"
+                  ></v-text-field>
+                </v-sheet>
+
+                <!-- ADVANCED SETTINGS -->
                 <v-divider class="mt-7"></v-divider>
-              <v-card-actions>
-                <v-btn
-                  text="Advanced Settings"
-                  :append-icon="
-                    expandAdvancedSettings ? '$collapse' : '$expand'
-                  "
-                  @click="expandAdvancedSettings = !expandAdvancedSettings"
-                ></v-btn>
-              </v-card-actions>
+                <v-card-actions>
+                  <v-btn
+                    text="Advanced Settings"
+                    :append-icon="
+                      expandAdvancedSettings ? '$collapse' : '$expand'
+                    "
+                    @click="expandAdvancedSettings = !expandAdvancedSettings"
+                  ></v-btn>
+                </v-card-actions>
 
-              <!-- EXPANDABLE PANEL -->
-              <v-expand-transition>
-                <div v-if="expandAdvancedSettings" class="py-2">
-                  <v-container fluid>
-                    <v-row
-                      v-for="(setting, key) in advancedSettings"
-                      :key="key"
-                    >
-                      <v-col cols="3">
-                        <v-list-subheader>
-                          <v-tooltip location="top">
-                            <template v-slot:activator="{ props }">
-                              <v-icon
-                                v-bind="props"
-                                icon="$helpCircle"
-                              ></v-icon>
-                            </template>
-                            {{ setting.description }}
-                          </v-tooltip>
-                          {{ setting.title }}
-                        </v-list-subheader>
-                      </v-col>
+                <!-- EXPANDABLE PANEL -->
+                <v-expand-transition>
+                  <div v-if="expandAdvancedSettings" class="py-2">
+                    <v-container fluid>
+                      <v-row
+                        v-for="(setting, key) in advancedSettings"
+                        :key="key"
+                      >
+                        <v-col cols="3">
+                          <v-list-subheader>
+                            <v-tooltip location="top">
+                              <template v-slot:activator="{ props }">
+                                <v-icon
+                                  v-bind="props"
+                                  icon="$helpCircle"
+                                ></v-icon>
+                              </template>
+                              {{ setting.description }}
+                            </v-tooltip>
+                            {{ setting.title }}
+                          </v-list-subheader>
+                        </v-col>
 
-                      <v-col cols="6">
-                        <v-text-field
-                          density="compact"
-                          v-model="setting.value"
-                          :append-inner-icon=getAppendInnerIcon(setting)
-                          :label="setting.parameter"
-                          :rules="getValidationRules(setting.parameter)"
-                          :suffix="setting.extra?.suffix || ''"
-                          v-on:click="
-                            handleAdvancedSettingsTextFieldClick(setting)
-                          "
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-                  </v-container>
-                </div>
-              </v-expand-transition>
+                        <v-col cols="6">
+                          <v-text-field
+                            density="compact"
+                            v-model="setting.value"
+                            :append-inner-icon="getAppendInnerIcon(setting)"
+                            :label="setting.parameter"
+                            :rules="getValidationRules(setting.parameter)"
+                            :suffix="setting.extra?.suffix || ''"
+                            v-on:click="
+                              handleAdvancedSettingsTextFieldClick(setting)
+                            "
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                    </v-container>
+                  </div>
+                </v-expand-transition>
 
-              <!-- BUTTONS -->
-              <v-sheet class="d-flex align-center mb-2">
-                <v-btn :loading="loading" @click="startJob" color="primary">
-                  Run Metabuli
-                  <template v-slot:loader>
-                    <v-progress-circular indeterminate></v-progress-circular>
-                  </template>
-                </v-btn>
+                <!-- BUTTONS -->
+                <v-sheet class="d-flex align-center mb-2">
+                  <v-btn
+                    :disabled="!isJobFormValid"
+                    @click="startJob"
+                    color="primary"
+                  >
+                    Run Metabuli
+                    <template v-slot:loader>
+                      <v-progress-circular indeterminate></v-progress-circular>
+                    </template>
+                  </v-btn>
 
-                <v-btn
-                  variant="outlined"
-                  class="ml-3"
-                  @click="loadSampleData"
-                  color="primary"
-                >
-                  Load Sample Data
-                </v-btn>
-              </v-sheet>
+                  <v-btn
+                    variant="outlined"
+                    class="ml-3"
+                    @click="loadSampleData"
+                    color="primary"
+                  >
+                    Load Sample Data
+                  </v-btn>
+                </v-sheet>
+              </v-form>
             </v-container>
           </v-tabs-window-item>
 
           <!-- UPLOAD REPORT -->
-          <v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="items[1].value">
+          <v-tabs-window-item
+            transition="fade-transition"
+            reverse-transition="fade-transition"
+            :value="items[1].value"
+          >
             <v-container
               class="gr-2 upload-container"
               @drop="handleDrop"
@@ -292,7 +331,8 @@ export default {
     items: [
       { title: "Run Search", value: "runSearch" },
       { title: "Upload Report", value: "uploadReport" },
-    ],
+    ], // FIXME: rename to tabItems
+    isJobFormValid: false,
     jobDetails: {
       // Store job details including file paths
       q1: "",
@@ -308,9 +348,9 @@ export default {
         parameter: "--max-ram",
         value: 128,
         type: "INTEGER",
-         extra: {
-            suffix: "GiB"
-          }
+        extra: {
+          suffix: "GiB",
+        },
       },
       thread: {
         title: "Threads",
@@ -344,7 +384,7 @@ export default {
         extra: {
           appendIcon: "file",
           file: true,
-        }
+        },
       },
       reducedAA: {
         title: "Reduced AA",
@@ -364,7 +404,7 @@ export default {
       },
     },
     validationRules: {
-      "--threads": (value) => {
+       "--max-ram": (value) => {
         // Input must be valid integer
         if (value === "" || value === null || value === undefined) {
           return true;
@@ -407,7 +447,7 @@ export default {
 
         return isEmpty || validInputs.includes(value) || "Value must be 0 or 1";
       },
-    },
+    }, // FIXME: move requiredRule to here
     jobDetailsSample: {
       // Sample job details
       q1: "SRR14484345_1.fq",
@@ -417,12 +457,11 @@ export default {
       outdir: "/sample_data",
       maxram: 128,
     },
-    file: null,
+    file: null, // FIXME: rename to uploadedReportFile or Path
     status: "INITIAL",
     results: "",
-    loading: false,
     apiDialog: false, // Control the visibility of the API dialog
-    endType: "single-end",
+    endType: "single-end", // FIXME: move this to jobDetails
     expandAdvancedSettings: false,
     snackbar: {
       show: false,
@@ -435,12 +474,6 @@ export default {
     },
   }),
   watch: {
-    jobDetails: {
-      handler(newVal) {
-        console.log(newVal); // DEBUG
-      },
-      deep: true,
-    },
     advancedSettings: {
       handler(newVal) {
         console.log(newVal); // DEBUG
@@ -455,6 +488,9 @@ export default {
   },
 
   methods: {
+    requiredRule(value) {
+      return value !== "" || "This field is required";
+    },
     getAppendInnerIcon(setting) {
       return setting.extra?.appendIcon ? `$${setting.extra.appendIcon}` : null;
     },
@@ -529,7 +565,6 @@ export default {
         this.$emit("error");
       }
     },
-
     startJob() {
       this.$emit("job-started", false); // Emit job-started event to parent
       // Simulate job process
