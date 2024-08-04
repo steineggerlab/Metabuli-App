@@ -531,11 +531,7 @@ export default {
         "#FFB27B",
         "#FFCD87",
         "#BC7576",
-        "#696B7E",
       ];
-      // const springColors = ['#afddd5', '#ffa700', '#ffcccd', '#f56093', '#64864a', '#dfe6e6', '#dfdec0', '#ff7e5a', '#ffbd00', '#7db954', '#feddcb', '#ffc700', '#cee8e5', '#c6b598', '#fee100', '#fac4c4', '#e0e7ad', '#fdbb9f', '#eadcc3', '#eef3b4', '#ffb27b', '#ff284b', '#7abaa1', '#cfeae4'];
-      // const winterColors = ["#445A67", "#57838D", "#B4C9C7", "#F3BFB3", "#CCADB2", "#FFEFFF", "#F6F7FB", "#E0F8F5", "#BEEDE5", "#A7D9C9", "#50B4D8", "#9EDDEF", "#F7E5B7", "#D7E2EA", "#96B3C2", "#FFDAD1", "#FFEDDA", "#CAB3C1", "#6E7B8F", "#2E3332", "#C29BA3", "#E3BFB7", "#FFE4C9", "#B7EAF7", "#8A9BA7"];
-
       const color = d3.scaleOrdinal().range(autumnColors);
       const unclassifiedLabelColor = "#696B7E";
 

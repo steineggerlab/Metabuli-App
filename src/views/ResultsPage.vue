@@ -85,7 +85,7 @@ export default {
       kronaContent: null,
       isSample: null,
       taxaLimit: 15,
-      minCladeReadsMode: "%",
+      minCladeReadsMode: "#",
       minCladeReads: 1,
       showUnclassified: true,
       figureHeight: 500,
