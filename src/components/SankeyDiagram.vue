@@ -74,6 +74,7 @@ export default {
     return {
       nodeDetails: null,
       dialog: false,
+      fullData: null, // rawData with just clades filtered out
       fullGraphData: { nodes: [], links: [] },
       allNodesByRank: {},
       hoverDetails: {
@@ -85,30 +86,15 @@ export default {
     };
   },
   computed: {
-    data() {
-      // Filter out clades from raw data
-      const nonClades = this.rawData.filter((entry) => entry.rank !== "clade");
-      console.log("Nonclades: ", nonClades.length);
-
-      // Store nodes by rank from full data (for calculation of maxTaxaLimit)
-      nonClades.forEach( node => { if (!this.allNodesByRank[node.rank]) {
-              this.allNodesByRank[node.rank] = [];
-            }
-            this.allNodesByRank[node.rank].push(node);
-
-          });
-          this.updateConfigureMenu();
-      return nonClades;
-    },
     filteredData() {
       // Filter data based on configurations
 
-      if (!this.data) {
+      if (!this.fullData) {
         // Ensure data are defined before filtering
         return [];
       }
 
-      return this.data.filter((entry) => {
+      return this.fullData.filter((entry) => {
         // Check min reads criteria
         let passesMinReads = false;
         if (this.minCladeReadsMode === "%") {
@@ -138,7 +124,7 @@ export default {
       ];
       if (this.minCladeReadsMode === "#") {
         // Highest clade reads from data entries includable on graph (rankOrder + unclassified)
-        return this.data
+        return this.fullData
           .filter(
             (entry) =>
               rankOrder.includes(entry.rank) || this.isUnclassifiedTaxa(entry)
@@ -152,8 +138,11 @@ export default {
     },
   },
   watch: {
-    rawData() {
-      this.allNodesByRank = [];
+    rawData: {
+      immediate: true, // Called immediately upon component creation
+      handler(newValue) {
+        this.processRawData(newValue);
+      },
     },
     taxaLimit() {
       this.updateSankey();
@@ -188,6 +177,24 @@ export default {
     },
   },
   methods: {
+    processRawData(data) {
+      this.allNodesByRank = {}; // Reset the nodes by rank
+
+      // Filter out clades from raw data
+      const nonClades = data.filter((entry) => entry.rank !== "clade");
+      this.fullData = nonClades;
+
+      // Store nodes by rank from full data (for calculation of maxTaxaLimit)
+      nonClades.forEach((node) => {
+        if (!this.allNodesByRank[node.rank]) {
+          this.allNodesByRank[node.rank] = [];
+        }
+        this.allNodesByRank[node.rank].push(node);
+      });
+
+      // Update the configure menu with the maximum taxa per rank
+      this.updateConfigureMenu();
+    },
     parseData(data) {
       const nodes = [];
       const unclassifiedNodes = [];
@@ -237,102 +244,101 @@ export default {
 
       // Step 1: Create nodes and save lineage data for ALL NODES (excluding clade ranks)
       console.log("Data:", data);
-      data
-        .forEach((d) => {
-          let node = {
-            id: d.taxon_id,
-            taxon_id: d.taxon_id,
-            name: d.name,
-            rank: d.rank,
-            trueRank: d.rank,
-            proportion: parseFloat(d.proportion),
-            clade_reads: parseFloat(d.clade_reads),
-            taxon_reads: d.taxon_reads,
-            lineage: [
-              ...currentLineage,
-              { id: d.taxon_id, name: d.name, rank: d.rank },
-            ], // Copy current lineage
-            type: "",
-          };
+      data.forEach((d) => {
+        let node = {
+          id: d.taxon_id,
+          taxon_id: d.taxon_id,
+          name: d.name,
+          rank: d.rank,
+          trueRank: d.rank,
+          proportion: parseFloat(d.proportion),
+          clade_reads: parseFloat(d.clade_reads),
+          taxon_reads: d.taxon_reads,
+          lineage: [
+            ...currentLineage,
+            { id: d.taxon_id, name: d.name, rank: d.rank },
+          ], // Copy current lineage
+          type: "",
+        };
 
-          if (d.rank !== "no rank" && !this.isUnclassifiedTaxa(d)) {
-            // Declare type as 'classified'
-            node.type = "classified";
+        if (d.rank !== "no rank" && !this.isUnclassifiedTaxa(d)) {
+          // Declare type as 'classified'
+          node.type = "classified";
 
-            // Add classified node to its corresponding rank collection
-            if (!nodesByRank[d.rank]) {
-              nodesByRank[d.rank] = [];
-            }
-            nodesByRank[d.rank].push(node);
+          // Add classified node to its corresponding rank collection
+          if (!nodesByRank[d.rank]) {
+            nodesByRank[d.rank] = [];
+          }
+          nodesByRank[d.rank].push(node);
 
-            // Include all ranks for lineage tracking
-            if (node.rank !== "clade") {
-              let lastLineageNode = currentLineage[currentLineage.length - 1];
-
-              if (lastLineageNode) {
-                while (
-                  lastLineageNode &&
-                  rankHierarchyFull[node.rank] <=
-                    rankHierarchyFull[lastLineageNode.rank]
-                ) {
-                  currentLineage.pop();
-                  lastLineageNode = currentLineage[currentLineage.length - 1];
-                }
-              }
-
-              // Append current node to currentLineage array + store lineage data
-              currentLineage.push(node);
-              node.lineage = [...currentLineage];
-            }
-          } else if (this.isUnclassifiedTaxa(d)) {
-            // lineage tracking for unclassified taxa
-            let currentLineageCopy = [...currentLineage];
-            const parentName = d.name.replace("unclassified ", "");
-            let lastLineageNode =
-              currentLineageCopy[currentLineageCopy.length - 1];
+          // Include all ranks for lineage tracking
+          if (node.rank !== "clade") {
+            let lastLineageNode = currentLineage[currentLineage.length - 1];
 
             if (lastLineageNode) {
-              while (lastLineageNode && lastLineageNode.name !== parentName) {
-                currentLineageCopy.pop();
-                lastLineageNode =
-                  currentLineageCopy[currentLineageCopy.length - 1];
+              while (
+                lastLineageNode &&
+                rankHierarchyFull[node.rank] <=
+                  rankHierarchyFull[lastLineageNode.rank]
+              ) {
+                currentLineage.pop();
+                lastLineageNode = currentLineage[currentLineage.length - 1];
               }
             }
 
-            // Find the previous node in the lineage that is in rankOrder
-            const parentNode = currentLineageCopy.find(
-              (n) => n.name === parentName
-            );
-            if (parentNode && parentNode === lastLineageNode) {
-              const lineage = currentLineageCopy;
+            // Append current node to currentLineage array + store lineage data
+            currentLineage.push(node);
+            node.lineage = [...currentLineage];
+          }
+        } else if (this.isUnclassifiedTaxa(d)) {
+          // lineage tracking for unclassified taxa
+          let currentLineageCopy = [...currentLineage];
+          const parentName = d.name.replace("unclassified ", "");
+          let lastLineageNode =
+            currentLineageCopy[currentLineageCopy.length - 1];
 
-              let previousNode = null;
-              for (let i = lineage.length - 1; i >= 0; i--) {
-                // Start from the last item
-                if (rankOrder.includes(lineage[i].rank)) {
-                  previousNode = lineage[i];
-                  break;
-                }
-              }
-
-              // Determine the rank immediately to the right of this node
-              const parentRankIndex = rankOrder.indexOf(previousNode.rank);
-
-              // Edit properties for unclassified taxa
-              const nextRank = rankOrder[parentRankIndex + 1];
-
-              node.id = `dummy-${d.taxon_id}`;
-              node.rank = nextRank;
-              node.type = "unclassified";
-
-              // Add unclassified node to currentLineage and save lineage data
-              currentLineageCopy.push(node);
-              node.lineage = [...currentLineageCopy];
-
-              unclassifiedNodes.push(node);
+          if (lastLineageNode) {
+            while (lastLineageNode && lastLineageNode.name !== parentName) {
+              currentLineageCopy.pop();
+              lastLineageNode =
+                currentLineageCopy[currentLineageCopy.length - 1];
             }
           }
-        });
+
+          // Find the previous node in the lineage that is in rankOrder
+          const parentNode = currentLineageCopy.find(
+            (n) => n.name === parentName
+          );
+          if (parentNode && parentNode === lastLineageNode) {
+            const lineage = currentLineageCopy;
+
+            let previousNode = null;
+            for (let i = lineage.length - 1; i >= 0; i--) {
+              // Start from the last item
+              if (rankOrder.includes(lineage[i].rank)) {
+                previousNode = lineage[i];
+                break;
+              }
+            }
+
+            // Determine the rank immediately to the right of this node
+            const parentRankIndex = rankOrder.indexOf(previousNode.rank);
+
+            // Edit properties for unclassified taxa
+            const nextRank = rankOrder[parentRankIndex + 1];
+
+            node.id = `dummy-${d.taxon_id}`;
+            node.rank = nextRank;
+            node.type = "unclassified";
+
+            // Add unclassified node to currentLineage and save lineage data
+            currentLineageCopy.push(node);
+            node.lineage = [...currentLineageCopy];
+
+            unclassifiedNodes.push(node);
+          }
+        }
+      });
 
       // Step 2: Filter top 10 nodes by clade_reads for each rank in rankOrder
       // + Add filtered rank nodes & unclassified nodes to sankey diagram
@@ -415,13 +421,11 @@ export default {
         links: [...allLinks],
       };
 
-      
       return { nodes, links };
     },
     updateConfigureMenu() {
+      console.log("allnodesbyrank: ", this.allNodesByRank);
 
-      console.log("allnodesbyrank: ", this.allNodesByRank)
-      
       let maxValues = 0;
       for (let rank in this.allNodesByRank) {
         const valuesCount = this.allNodesByRank[rank].length;
@@ -429,8 +433,6 @@ export default {
           maxValues = valuesCount;
         }
       }
-      
-      console.log("maxtaxalimit recalculated: ", maxValues)
 
       this.$emit("updateConfigureMenu", {
         maxTaxaPerRank: maxValues,

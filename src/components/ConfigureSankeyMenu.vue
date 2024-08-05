@@ -205,6 +205,7 @@ export default {
       };
     },
   },
+  
   methods: {
     setDefaultValue() {
       this.tempCladeReadsValue = this.tempCladeReadsMode === "%" ? 10 : 1000;
