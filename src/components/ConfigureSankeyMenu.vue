@@ -3,15 +3,16 @@
     <v-menu
       v-model="menu"
       :close-on-content-click="false"
-      location="bottom"
+      :location="menuLocation"
       transition="slide-x-reverse-transition"
       persistent
     >
+      <!-- ACTIVATOR FOR MENU -->
       <template v-slot:activator="{ props }">
-        <v-btn color="indigo" v-bind="props"> Configure Sankey </v-btn>
+        <slot name="activator" v-bind="{ props }"></slot>
       </template>
 
-      <v-card min-width="300" class="pt-3 mt-1">
+      <v-card min-width="300" class="pt-3 my-1">
         <v-form ref="form">
           <v-list>
             <!-- DROPDOWN AND INPUT (Minimum Clade Reads) -->
@@ -110,7 +111,7 @@
           </v-list>
 
           <v-divider></v-divider>
-          
+
           <!-- APPLY AND CANCEL BUTTONS -->
           <v-card-actions>
             <v-btn variant="text" @click="cancelChanges"> Cancel </v-btn>
@@ -157,6 +158,10 @@ export default {
     initialLabelOption: {
       type: String,
       default: "cladeReads",
+    },
+    menuLocation: {
+      type: String,
+      default: "bottom end", // Default position is bottom
     },
   },
   data() {

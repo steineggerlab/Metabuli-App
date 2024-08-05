@@ -3,33 +3,37 @@
     <v-card>
       <!-- Close Dialog Button -->
       <v-card-actions class="py-0">
-        <v-btn icon="$close"  color="gray" @click="closeDialog"></v-btn>
+        <v-btn icon="$close" color="gray" @click="closeDialog"></v-btn>
       </v-card-actions>
 
       <v-card-item class="mx-0 pt-0 summary">
         <!-- Taxon Name Title -->
-        <v-card-title class="font-weight-black">{{ nodeDetails.data.name }}</v-card-title>
-        
+        <v-card-title class="font-weight-black">{{
+          nodeDetails.data.name
+        }}</v-card-title>
+
         <v-row class="mt-2">
           <!-- Rank Column -->
           <v-col>
             <v-card-subtitle>Rank</v-card-subtitle>
-            <v-chip density="compact"  color="primary" label>{{ nodeDetails.data.trueRank }}</v-chip>
+            <v-chip density="compact" color="primary" label>{{
+              nodeDetails.data.trueRank
+            }}</v-chip>
           </v-col>
 
           <!-- Proportion Column -->
           <v-col>
             <v-card-subtitle>Proportion</v-card-subtitle>
-            <v-card-text >{{ nodeDetails.data.proportion }}%</v-card-text>
+            <v-card-text>{{ nodeDetails.data.proportion }}%</v-card-text>
           </v-col>
 
           <!-- Clade Reads Column -->
           <v-col>
             <v-card-subtitle>Clade Reads</v-card-subtitle>
             <v-card-text>{{ nodeDetails.data.clade_reads }}</v-card-text>
-            </v-col>
+          </v-col>
 
-            <!-- Taxon Reads Column -->
+          <!-- Taxon Reads Column -->
           <v-col>
             <v-card-subtitle>Taxon Reads</v-card-subtitle>
             <v-card-text>{{ nodeDetails.data.taxon_reads }}</v-card-text>
@@ -38,67 +42,97 @@
           <v-spacer></v-spacer>
 
           <!-- Tax ID Column -->
-          <v-col style="text-align: right;">
+          <v-col style="text-align: right">
             <v-card-subtitle>Tax ID</v-card-subtitle>
             <v-card-text>{{ nodeDetails.data.taxon_id }}</v-card-text>
           </v-col>
 
           <v-col class="d-flex flex-column justify-start">
             <v-btn
-          color="primary"
-          append-icon="$openInNew"
-          text="NCBI"
-          class="button-text-right text-none"
-          size="small"
-          variant="text"
-          :href="`https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=${nodeDetails.data.taxon_id}`"
-          target="_blank"
-        ></v-btn>
-        <v-btn
-          color="primary"
-          append-icon="$openInNew"
-          text="Assemblies"
-          class="button-text-right text-none"
-          size="small"
-          variant="text"
-           :href="`https://www.ncbi.nlm.nih.gov/assembly/?term=txid${nodeDetails.data.taxon_id}[Organism:exp]`"
+              color="primary"
+              append-icon="$openInNew"
+              text="NCBI"
+              class="button-text-right text-none"
+              size="small"
+              variant="text"
+              :href="`https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=${nodeDetails.data.taxon_id}`"
               target="_blank"
-        ></v-btn>
+            ></v-btn>
+            <v-btn
+              color="primary"
+              append-icon="$openInNew"
+              text="Assemblies"
+              class="button-text-right text-none"
+              size="small"
+              variant="text"
+              :href="`https://www.ncbi.nlm.nih.gov/assembly/?term=txid${nodeDetails.data.taxon_id}[Organism:exp]`"
+              target="_blank"
+            ></v-btn>
           </v-col>
         </v-row>
       </v-card-item>
-      
+
       <v-divider></v-divider>
 
       <!-- Full Lineage & Subtree Sankey -->
       <v-card-item>
-          <v-card-subtitle class="opacity-100 font-weight-bold">Full Lineage</v-card-subtitle>
-          <v-card-text class="px-0 py-0">
-            {{
-              nodeDetails.data.lineage
-                .map((n) => `${n.name} (${n.rank})`)
-                .join(" > ")
-            }}
-          </v-card-text>
-          
-          <!-- NODE SUBTREE SANKEY DIAGRAM -->
-          <SankeyNodeDialogDiagram
-            :data="nodeDetails.subtreeData"
-            :instanceId="uniqueInstanceId"
-          />
+        <v-card-subtitle class="opacity-100 font-weight-bold"
+          >Full Lineage</v-card-subtitle
+        >
+        <v-card-text class="px-0 py-0">
+          {{
+            nodeDetails.data.lineage
+              .map((n) => `${n.name} (${n.rank})`)
+              .join(" > ")
+          }}
+        </v-card-text>
+
+        <!-- NODE SUBTREE SANKEY DIAGRAM -->
+        <SankeyNodeDialogDiagram
+          :data="nodeDetails.subtreeData"
+          :instanceId="uniqueInstanceId"
+        />
       </v-card-item>
+
+      <!-- Floating Action Button -->
+      <ConfigureSankeyMenu
+        :initialTaxaLimit="taxaLimit"
+        :initialMinCladeReadsMode="minCladeReadsMode"
+        :initialMinCladeReads="minCladeReads"
+        :initialShowUnclassified="showUnclassified"
+        :initialFigureHeight="figureHeight"
+        :initialLabelOption="labelOption"
+        :menuLocation="'top end'"
+        @updateSettings="updateSettings"
+      >
+        <template v-slot:activator="{ props }">
+          <v-btn
+            v-bind="props"
+            extended
+            color="indigo"
+            class="fab-bottom-left"
+            text="Configure"
+            prepend-icon="$edit"
+            rounded
+          >
+          </v-btn>
+        </template>
+      </ConfigureSankeyMenu>
+
     </v-card>
   </v-dialog>
 </template>
 
 <script>
 import SankeyNodeDialogDiagram from "./SankeyNodeDialogDiagram.vue";
+import ConfigureSankeyMenu from "./ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
 
 export default {
   name: "SankeyNodeDialog",
   components: {
     SankeyNodeDialogDiagram,
+    ConfigureSankeyMenu,
   },
   props: {
     nodeDetails: Object,
@@ -143,5 +177,13 @@ export default {
 }
 .button-text-right {
   justify-content: flex-end !important;
+}
+
+/* Floating Action Button */
+.fab-bottom-left {
+  position: fixed;
+  bottom: 20px;
+  right: 30px;
+  z-index: 10;
 }
 </style>

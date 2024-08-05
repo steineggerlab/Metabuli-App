@@ -33,7 +33,13 @@
               :initialFigureHeight="figureHeight"
               :initialLabelOption="labelOption"
               @updateSettings="updateSettings"
-            />
+            >
+              <template v-slot:activator="{ props }">
+                <v-btn color="indigo" rounded="xl" v-bind="props"
+                  >Configure Diagram</v-btn
+                >
+              </template>
+            </ConfigureSankeyMenu>
           </div>
 
           <!-- SANKEY DIAGRAM -->
