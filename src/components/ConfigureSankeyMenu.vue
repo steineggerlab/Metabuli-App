@@ -6,6 +6,7 @@
       :location="menuLocation"
       transition="slide-x-reverse-transition"
       persistent
+      @keydown.enter="applyChanges"
     >
       <!-- ACTIVATOR FOR MENU -->
       <template v-slot:activator="{ props }">
@@ -54,7 +55,7 @@
                   thumb-label="always"
                   step="5"
                   :min="5"
-                  :max="30"
+                  :max="maxTaxaLimit"
                   tick-size="1"
                   show-ticks="always"
                 ></v-slider>
@@ -139,6 +140,10 @@ export default {
     initialTaxaLimit: {
       type: Number,
       default: 10,
+    },
+    maxTaxaLimit: {
+      type: Number,
+      default: 100,
     },
     initialMinCladeReadsMode: {
       type: String,

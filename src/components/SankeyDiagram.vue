@@ -75,6 +75,7 @@ export default {
       nodeDetails: null,
       dialog: false,
       fullGraphData: { nodes: [], links: [] },
+      allNodesByRank: {},
       hoverDetails: {
         visible: false,
         data: {},
@@ -88,6 +89,15 @@ export default {
       // Filter out clades from raw data
       const nonClades = this.rawData.filter((entry) => entry.rank !== "clade");
       console.log("Nonclades: ", nonClades.length);
+
+      // Store nodes by rank from full data (for calculation of maxTaxaLimit)
+      nonClades.forEach( node => { if (!this.allNodesByRank[node.rank]) {
+              this.allNodesByRank[node.rank] = [];
+            }
+            this.allNodesByRank[node.rank].push(node);
+
+          });
+          this.updateConfigureMenu();
       return nonClades;
     },
     filteredData() {
@@ -142,6 +152,9 @@ export default {
     },
   },
   watch: {
+    rawData() {
+      this.allNodesByRank = [];
+    },
     taxaLimit() {
       this.updateSankey();
     },
@@ -225,7 +238,6 @@ export default {
       // Step 1: Create nodes and save lineage data for ALL NODES (excluding clade ranks)
       console.log("Data:", data);
       data
-        // .filter((d) => d.rank !== "clade")
         .forEach((d) => {
           let node = {
             id: d.taxon_id,
@@ -403,9 +415,27 @@ export default {
         links: [...allLinks],
       };
 
+      
       return { nodes, links };
     },
+    updateConfigureMenu() {
 
+      console.log("allnodesbyrank: ", this.allNodesByRank)
+      
+      let maxValues = 0;
+      for (let rank in this.allNodesByRank) {
+        const valuesCount = this.allNodesByRank[rank].length;
+        if (valuesCount > maxValues) {
+          maxValues = valuesCount;
+        }
+      }
+      
+      console.log("maxtaxalimit recalculated: ", maxValues)
+
+      this.$emit("updateConfigureMenu", {
+        maxTaxaPerRank: maxValues,
+      });
+    },
     filterData(data) {
       //FIXME:
       let filteredNodes = data.nodes;

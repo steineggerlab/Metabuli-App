@@ -27,6 +27,7 @@
 
             <ConfigureSankeyMenu
               :initialTaxaLimit="taxaLimit"
+              :maxTaxaLimit="maxTaxaLimit"
               :initialMinCladeReadsMode="minCladeReadsMode"
               :initialMinCladeReads="minCladeReads"
               :initialShowUnclassified="showUnclassified"
@@ -51,6 +52,8 @@
             :showUnclassified="showUnclassified"
             :figureHeight="figureHeight"
             :labelOption="labelOption"
+
+            @updateConfigureMenu="updateConfigureMenu"
           />
         </v-tabs-window-item>
 
@@ -91,6 +94,7 @@ export default {
       kronaContent: null,
       isSample: null,
       taxaLimit: 15,
+      maxTaxaLimit: 100,
       minCladeReadsMode: "#",
       minCladeReads: 1,
       showUnclassified: true,
@@ -242,6 +246,9 @@ export default {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     },
+    updateConfigureMenu(sankeyData) {
+      this.maxTaxaLimit = sankeyData.maxTaxaPerRank;
+    }
   },
 
   async mounted() {
