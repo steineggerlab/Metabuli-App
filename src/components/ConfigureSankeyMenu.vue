@@ -208,7 +208,8 @@ export default {
   
   methods: {
     setDefaultValue() {
-      this.tempCladeReadsValue = this.tempCladeReadsMode === "%" ? 10 : 1000;
+      this.tempCladeReadsValue = this.tempCladeReadsMode === "%" ? 0.001 : 1;
+      this.tempLabelOption = this.tempCladeReadsMode === "%" ? "proportion" : "cladeReads";
       this.validateRange();
     },
     validateRange() {

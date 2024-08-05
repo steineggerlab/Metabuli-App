@@ -27,7 +27,7 @@
 
             <ConfigureSankeyMenu
               :initialTaxaLimit="taxaLimit"
-              :maxTaxaLimit="maxTaxaLimit"
+              :maxTaxaLimit="roundedMaxTaxaLimit"
               :initialMinCladeReadsMode="minCladeReadsMode"
               :initialMinCladeReads="minCladeReads"
               :initialShowUnclassified="showUnclassified"
@@ -52,7 +52,6 @@
             :showUnclassified="showUnclassified"
             :figureHeight="figureHeight"
             :labelOption="labelOption"
-
             @updateConfigureMenu="updateConfigureMenu"
           />
         </v-tabs-window-item>
@@ -101,6 +100,12 @@ export default {
       figureHeight: 500,
       labelOption: "cladeReads",
     };
+  },
+  computed: {
+    roundedMaxTaxaLimit() {
+      // Round up maxTaxaLimit to the nearest increment of 5
+      return Math.ceil(this.maxTaxaLimit / 5) * 5;
+    },
   },
   methods: {
     async renderKronaViewer(filePath) {
@@ -248,7 +253,7 @@ export default {
     },
     updateConfigureMenu(sankeyData) {
       this.maxTaxaLimit = sankeyData.maxTaxaPerRank;
-    }
+    },
   },
 
   async mounted() {
