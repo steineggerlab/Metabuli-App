@@ -159,6 +159,7 @@ export default {
     },
     initialFigureHeight: {
       type: Number,
+      default: 300,
     },
     initialLabelOption: {
       type: String,
@@ -205,11 +206,16 @@ export default {
       };
     },
   },
-  
+  watch: {
+    tempCladeReadsMode() {
+      this.setDefaultValue();
+    },
+  },
   methods: {
     setDefaultValue() {
       this.tempCladeReadsValue = this.tempCladeReadsMode === "%" ? 0.001 : 1;
-      this.tempLabelOption = this.tempCladeReadsMode === "%" ? "proportion" : "cladeReads";
+      this.tempLabelOption =
+        this.tempCladeReadsMode === "%" ? "proportion" : "cladeReads";
       this.validateRange();
     },
     validateRange() {
@@ -251,11 +257,7 @@ export default {
       this.menu = false; // Close the menu
     },
   },
-  watch: {
-    tempCladeReadsMode() {
-      this.setDefaultValue();
-    },
-  },
+
   mounted() {
     // Initialize the temporary values
     this.tempTaxaLimit = this.taxaLimit;

@@ -96,15 +96,20 @@
 
       <!-- Floating Action Button -->
       <ConfigureSankeyMenu
-        :initialTaxaLimit="taxaLimit"
-        :initialMinCladeReadsMode="minCladeReadsMode"
-        :initialMinCladeReads="minCladeReads"
-        :initialShowUnclassified="showUnclassified"
-        :initialFigureHeight="figureHeight"
-        :initialLabelOption="labelOption"
+        :initialTaxaLimit="configureMenuSettings.taxaLimit"
+        :maxTaxaLimit="configureMenuSettings.maxTaxaLimit"
+        :initialMinCladeReadsMode="configureMenuSettings.minCladeReadsMode"
+        :initialMinCladeReads="configureMenuSettings.minCladeReads"
+        :initialShowUnclassified="configureMenuSettings.showUnclassified"
+        :initialFigureHeight="configureMenuSettings.figureHeight"
+        :initialLabelOption="configureMenuSettings.labelOption"
         :menuLocation="'top end'"
         @updateSettings="updateSettings"
       >
+      <!-- <ConfigureSankeyMenu
+        :menuLocation="'top end'"
+        @updateSettings="updateSettings"
+      > -->
         <template v-slot:activator="{ props }">
           <v-btn
             v-bind="props"
@@ -118,7 +123,6 @@
           </v-btn>
         </template>
       </ConfigureSankeyMenu>
-
     </v-card>
   </v-dialog>
 </template>
@@ -142,7 +146,22 @@ export default {
     return {
       localDialog: this.dialog,
       uniqueInstanceId: "",
+      configureMenuSettings: {
+        taxaLimit: 15,
+        maxTaxaLimit: 100,
+        minCladeReadsMode: "#",
+        minCladeReads: 1,
+        showUnclassified: true,
+        figureHeight: 500,
+        labelOption: "cladeReads",
+      },
     };
+  },
+  computed: {
+    roundedMaxTaxaLimit() {
+      // Round up maxTaxaLimit to the nearest increment of 5
+      return Math.ceil(this.configureMenuSettings.maxTaxaLimit / 5) * 5;
+    },
   },
   watch: {
     dialog(newVal) {
@@ -155,6 +174,15 @@ export default {
     },
   },
   methods: {
+    updateSettings(settings) {
+      this.configureMenuSettings.taxaLimit = settings.taxaLimit;
+      this.configureMenuSettings.maxTaxaLimit = settings.maxTaxaLimit;
+      this.configureMenuSettings.minCladeReadsMode = settings.minCladeReadsMode;
+      this.configureMenuSettings.minCladeReads = settings.minCladeReads;
+      this.configureMenuSettings.showUnclassified = settings.showUnclassified;
+      this.configureMenuSettings.figureHeight = settings.figureHeight;
+      this.configureMenuSettings.labelOption = settings.labelOption;
+    },
     closeDialog() {
       this.localDialog = false;
     },

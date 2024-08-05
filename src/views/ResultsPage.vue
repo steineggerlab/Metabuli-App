@@ -92,7 +92,8 @@ export default {
       tab: "TABLE",
       kronaContent: null,
       isSample: null,
-      taxaLimit: 15,
+
+      taxaLimit: 20, // FIXME: refactor, make this into dictionary storing info about configuration
       maxTaxaLimit: 100,
       minCladeReadsMode: "#",
       minCladeReads: 1,
