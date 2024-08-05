@@ -75,7 +75,7 @@
       <v-divider></v-divider>
 
       <!-- Full Lineage & Subtree Sankey -->
-      <v-card-item>
+      <v-card-item class="pb-13">
         <v-card-subtitle class="opacity-100 font-weight-bold"
           >Full Lineage</v-card-subtitle
         >
@@ -182,7 +182,7 @@ export default {
 /* Floating Action Button */
 .fab-bottom-left {
   position: fixed;
-  bottom: 20px;
+  bottom: 30px;
   right: 30px;
   z-index: 10;
 }
