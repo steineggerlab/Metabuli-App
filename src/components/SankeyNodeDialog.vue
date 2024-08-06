@@ -108,31 +108,41 @@
       </v-card-item>
 
       <!-- Floating Action Button -->
-      <ConfigureSankeyMenu
-        v-if="nodeDetails.hasSourceLinks"
-        :initialTaxaLimit="configureMenuSettings.taxaLimit"
-        :maxTaxaLimit="configureMenuSettings.maxTaxaLimit"
-        :initialMinCladeReadsMode="configureMenuSettings.minCladeReadsMode"
-        :initialMinCladeReads="configureMenuSettings.minCladeReads"
-        :initialShowUnclassified="configureMenuSettings.showUnclassified"
-        :initialFigureHeight="configureMenuSettings.figureHeight"
-        :initialLabelOption="configureMenuSettings.labelOption"
-        :menuLocation="'top end'"
-        @updateSettings="updateSettings"
-      >
-        <template v-slot:activator="{ props }">
-          <v-btn
-            v-bind="props"
-            extended
-            color="indigo"
-            class="fab-bottom-left"
-            text="Configure"
-            prepend-icon="$edit"
-            rounded
-          >
-          </v-btn>
-        </template>
-      </ConfigureSankeyMenu>
+
+      <div class="fab-container d-flex align-center gc-1 mb-6">
+        <v-btn
+          icon="$download"
+          size="x-small"
+          rounded="circle"
+          @click="handleAction"
+        >
+        </v-btn>
+
+        <ConfigureSankeyMenu
+          v-if="nodeDetails.hasSourceLinks"
+          :initialTaxaLimit="configureMenuSettings.taxaLimit"
+          :maxTaxaLimit="configureMenuSettings.maxTaxaLimit"
+          :initialMinCladeReadsMode="configureMenuSettings.minCladeReadsMode"
+          :initialMinCladeReads="configureMenuSettings.minCladeReads"
+          :initialShowUnclassified="configureMenuSettings.showUnclassified"
+          :initialFigureHeight="configureMenuSettings.figureHeight"
+          :initialLabelOption="configureMenuSettings.labelOption"
+          :menuLocation="'top end'"
+          @updateSettings="updateSettings"
+        >
+          <template v-slot:activator="{ props }">
+            <v-btn
+              v-bind="props"
+              extended
+              color="indigo"
+              text="Configure"
+              prepend-icon="$edit"
+              rounded
+            >
+            </v-btn>
+          </template>
+        </ConfigureSankeyMenu>
+      </div>
     </v-card>
   </v-dialog>
 </template>
@@ -228,11 +238,10 @@ export default {
   justify-content: flex-end !important;
 }
 
-/* Floating Action Button */
-.fab-bottom-left {
+/* Floating Action Button Container */
+.fab-container {
   position: fixed;
-  bottom: 30px;
+  bottom: 16px;
   right: 30px;
-  z-index: 10;
 }
 </style>

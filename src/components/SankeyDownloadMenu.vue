@@ -5,7 +5,7 @@
     location="bottom"
   >
     <template v-slot:activator="{ props }">
-      <v-btn v-bind="props" append-icon="$download" variant="text">
+      <v-btn v-bind="props" append-icon="$download" variant="text" rounded>
         Download
       </v-btn>
     </template>

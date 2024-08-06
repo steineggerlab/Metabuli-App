@@ -9,12 +9,15 @@
     ></div>
 
     <!-- DISPLAY WHILE SANKEY IS LOADING -->
-    <div class="d-flex flex-column align-center justify-center loading-container" v-else>
+    <div
+      class="d-flex flex-column align-center justify-center loading-container"
+      v-else
+    >
       <v-progress-circular
-          color="indigo"
-          size="64"
-          indeterminate
-        ></v-progress-circular>
+        color="indigo"
+        size="64"
+        indeterminate
+      ></v-progress-circular>
     </div>
 
     <!-- TOOLTIP ON NODE HOVER -->
@@ -688,9 +691,11 @@ export default {
       this.fullGraph = fullGraph;
 
       // Add rank column labels
+      const rankLabels = ["D", "K", "P", "C", "O", "F", "G", "S"];
       svg
         .append("g")
         .selectAll("text")
+        // .data(rankLabels)
         .data(rankOrder)
         .enter()
         .append("text")
@@ -698,7 +703,7 @@ export default {
         .attr("y", height + marginBottom / 2)
         .attr("dy", "0.35em")
         .attr("text-anchor", "middle")
-        .text((rank) => rank[0].toUpperCase());
+        .text((rank, index) => rankLabels[index]);
 
       // Draw rank label divider link
       svg
@@ -931,7 +936,6 @@ export default {
 }
 .loading-container {
   height: 400px;
-
 }
 
 .sankey-diagram {
