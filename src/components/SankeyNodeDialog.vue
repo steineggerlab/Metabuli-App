@@ -3,7 +3,11 @@
     <v-card>
       <!-- Close Dialog Button -->
       <v-card-actions class="py-0">
-        <v-btn icon="$close" color="gray" @click="$emit('close-dialog')"></v-btn>
+        <v-btn
+          icon="$close"
+          color="gray"
+          @click="$emit('close-dialog')"
+        ></v-btn>
       </v-card-actions>
 
       <v-card-item class="mx-0 pt-0 summary">
@@ -92,20 +96,19 @@
           :isSubtree="true"
           :instanceId="uniqueInstanceId"
           :rawData="nodeDetails.subtreeData"
-
           :taxaLimit="configureMenuSettings.taxaLimit"
           :minCladeReadsMode="configureMenuSettings.minCladeReadsMode"
           :minReads="configureMenuSettings.minCladeReads"
           :showUnclassified="configureMenuSettings.showUnclassified"
           :figureHeight="configureMenuSettings.figureHeight"
           :labelOption="configureMenuSettings.labelOption"
-          
+          :showAll="configureMenuSettings.showAll"
           @updateConfigureMenu="updateConfigureMenu"
         />
       </v-card-item>
 
       <!-- Floating Action Button -->
-      <!-- <ConfigureSankeyMenu
+      <ConfigureSankeyMenu
         :initialTaxaLimit="configureMenuSettings.taxaLimit"
         :maxTaxaLimit="configureMenuSettings.maxTaxaLimit"
         :initialMinCladeReadsMode="configureMenuSettings.minCladeReadsMode"
@@ -128,26 +131,26 @@
           >
           </v-btn>
         </template>
-      </ConfigureSankeyMenu> -->
+      </ConfigureSankeyMenu>
     </v-card>
   </v-dialog>
 </template>
 
 <script>
 import SankeyDiagram from "@/components/SankeyDiagram.vue";
-// import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
+import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
 
 export default {
   name: "SankeyNodeDialog",
   components: {
     SankeyDiagram,
-    // ConfigureSankeyMenu,
+    ConfigureSankeyMenu,
   },
   props: {
     nodeDetails: {
       type: Object,
-      required: true
+      required: true,
     },
   },
   data() {
@@ -162,6 +165,7 @@ export default {
         showUnclassified: true,
         figureHeight: 500,
         labelOption: "cladeReads",
+        showAll: false,
       },
     };
   },
@@ -183,10 +187,21 @@ export default {
 
     // Sankey Diagram
     updateSettings(settings) {
-      this.configureMenuSettings.taxaLimit = settings.taxaLimit;
-      this.configureMenuSettings.minCladeReadsMode = settings.minCladeReadsMode;
-      this.configureMenuSettings.minCladeReads = settings.minCladeReads;
-      this.configureMenuSettings.showUnclassified = settings.showUnclassified;
+      this.configureMenuSettings.showAll = settings.showAll;
+      if (settings.showAll) {
+        this.configureMenuSettings.taxaLimit =
+          this.configureMenuSettings.maxTaxaLimit;
+        this.configureMenuSettings.minCladeReadsMode = "#";
+        this.configureMenuSettings.minCladeReads = 0;
+        this.configureMenuSettings.showUnclassified = true;
+      } else {
+        this.configureMenuSettings.taxaLimit = settings.taxaLimit;
+        this.configureMenuSettings.minCladeReadsMode =
+          settings.minCladeReadsMode;
+        this.configureMenuSettings.minCladeReads = settings.minCladeReads;
+        this.configureMenuSettings.showUnclassified = settings.showUnclassified;
+      }
+
       this.configureMenuSettings.figureHeight = settings.figureHeight;
       this.configureMenuSettings.labelOption = settings.labelOption;
     },

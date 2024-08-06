@@ -16,7 +16,7 @@
       <v-card min-width="300" class="pt-3 my-1">
         <v-form ref="form">
           <v-list>
-            <!-- SWITCH (Show/Hide Unclassified Nodes) -->
+            <!-- SWITCH (Show all) -->
             <v-list-item>
               <v-container class="pt-1">
                 <div class="d-flex align-center gc-2">
@@ -87,11 +87,11 @@
                   class="slider"
                   v-model="tempTaxaLimit"
                   thumb-label="always"
-                  step="5"
-                  :min="5"
+                  :thumb-size="15"
+                  step="1"
+                  :min="1"
                   :max="maxTaxaLimit"
                   tick-size="1"
-                  show-ticks="always"
                   :disabled="showAll"
                 ></v-slider>
               </v-container>
@@ -107,6 +107,7 @@
                   class="slider"
                   v-model="tempFigureHeight"
                   thumb-label="always"
+                  :thumb-size="15"
                   step="5"
                   :min="300"
                   :max="800"

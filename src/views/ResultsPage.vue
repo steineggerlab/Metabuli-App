@@ -48,6 +48,7 @@
             :isSubtree="false"
             :instanceId="uniqueInstanceId"
             :rawData="results"
+
             :taxaLimit="taxaLimit"
             :minCladeReadsMode="minCladeReadsMode"
             :minReads="minCladeReads"
