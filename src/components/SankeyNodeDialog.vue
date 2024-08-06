@@ -3,7 +3,7 @@
     <v-card>
       <!-- Close Dialog Button -->
       <v-card-actions class="py-0">
-        <v-btn icon="$close" color="gray" @click="$emit('close')"></v-btn>
+        <v-btn icon="$close" color="gray" @click="$emit('close-dialog')"></v-btn>
       </v-card-actions>
 
       <v-card-item class="mx-0 pt-0 summary">

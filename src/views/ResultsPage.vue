@@ -161,7 +161,6 @@ export default {
     },
     hideDialog() {
       this.isDialogVisible = false;
-      this.dialogData = null;
     },
 
     // Function for Krona Rendering
