@@ -16,7 +16,7 @@
         <!-- SANKEY TAB-->
         <v-tabs-window-item value="sankey" class="h-100">
           <!-- TOOLBAR ABOVE SANKEY DIAGRAM -->
-          <div class="d-flex justify-space-around my-5 ml-2 mr-10 gc-1">
+          <div class="d-flex justify-space-around my-5 mx-2 gc-1">
             <div class="d-flex align-center">
               Click on a node to see lineage and subtree.
             </div>
@@ -45,6 +45,8 @@
 
           <!-- SANKEY DIAGRAM -->
           <SankeyDiagram
+            :isSubtree="false"
+            :instanceId="uniqueInstanceId"
             :rawData="results"
             :taxaLimit="taxaLimit"
             :minCladeReadsMode="minCladeReadsMode"
@@ -53,6 +55,14 @@
             :figureHeight="figureHeight"
             :labelOption="labelOption"
             @updateConfigureMenu="updateConfigureMenu"
+            @node-click="showDialog"
+          />
+
+          <!-- NODE DETAILS DIALOG -->
+          <SankeyNodeDialog
+            v-model="isDialogVisible"
+            :nodeDetails="dialogData"
+            @close-dialog="hideDialog"
           />
         </v-tabs-window-item>
 
@@ -75,8 +85,10 @@ import SankeyDiagram from "@/components/SankeyDiagram.vue";
 import ResultsTable from "@/components/ResultsTable.vue";
 import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
 import SankeyDownloadMenu from "@/components/SankeyDownloadMenu.vue";
+import SankeyNodeDialog from "@/components/SankeyNodeDialog.vue";
 import { saveSvgAsPng } from "save-svg-as-png";
 import * as d3 from "d3";
+import { v4 as uuidv4 } from "uuid";
 
 export default {
   name: "ResultsPage",
@@ -85,14 +97,19 @@ export default {
     SankeyDiagram,
     SankeyDownloadMenu,
     ConfigureSankeyMenu,
+    SankeyNodeDialog,
   },
+
   data() {
     return {
+      // Overall
       results: [],
       tab: "TABLE",
       kronaContent: null,
       isSample: null,
 
+      // Sankey Diagram
+      uniqueInstanceId: "",
       taxaLimit: 20, // FIXME: refactor, make this into dictionary storing info about configuration
       maxTaxaLimit: 100,
       minCladeReadsMode: "#",
@@ -100,15 +117,42 @@ export default {
       showUnclassified: true,
       figureHeight: 500,
       labelOption: "cladeReads",
+
+      // Sankey Node Dialog
+      isDialogVisible: false,
+      dialogData: null,
     };
   },
+
   computed: {
     roundedMaxTaxaLimit() {
       // Round up maxTaxaLimit to the nearest increment of 5
       return Math.ceil(this.maxTaxaLimit / 5) * 5;
     },
   },
+
   methods: {
+    // Sankey Diagram
+    updateSettings(settings) {
+      this.taxaLimit = settings.taxaLimit;
+      this.minCladeReadsMode = settings.minCladeReadsMode;
+      this.minCladeReads = settings.minCladeReads;
+      this.showUnclassified = settings.showUnclassified;
+      this.figureHeight = settings.figureHeight;
+      this.labelOption = settings.labelOption;
+    },
+
+    // Sankey Node Dialog
+    showDialog(nodeDetails) {
+      this.dialogData = nodeDetails;
+      this.isDialogVisible = true;
+    },
+    hideDialog() {
+      this.isDialogVisible = false;
+      this.dialogData = null;
+    },
+
+    // Function for Krona Rendering
     async renderKronaViewer(filePath) {
       if (!filePath) {
         // FIXME: render empty state screen or hide krona tab
@@ -125,6 +169,8 @@ export default {
         console.error("Error opening Krona viewer:", error);
       }
     },
+
+    // Helper functions for processing data
     async readTSVFile(filePath) {
       try {
         const tsvContent = await window.electron.readFile(
@@ -166,14 +212,8 @@ export default {
     saveResults() {
       sessionStorage.setItem("results", JSON.stringify(this.results)); // Save to session storage
     },
-    updateSettings(settings) {
-      this.taxaLimit = settings.taxaLimit;
-      this.minCladeReadsMode = settings.minCladeReadsMode;
-      this.minCladeReads = settings.minCladeReads;
-      this.showUnclassified = settings.showUnclassified;
-      this.figureHeight = settings.figureHeight;
-      this.labelOption = settings.labelOption;
-    },
+
+    // Sankey Download Functions
     handleFormatSelected(format) {
       switch (format) {
         case "png":
@@ -258,6 +298,9 @@ export default {
   },
 
   async mounted() {
+    // Generate unique instance ID for Sankey
+    this.uniqueInstanceId = uuidv4();
+
     // Runs when results tab is clicked
     try {
       let reportFilePath;

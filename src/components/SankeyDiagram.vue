@@ -1,13 +1,15 @@
 <template>
   <div class="sankey-container">
-    <!-- <transition name="fade"> -->
+    <!-- DISPLAY ONCE SANKEY IS LOADED -->
     <div
       v-if="!loading"
       key="sankey"
       ref="sankeyContainer"
       class="sankey-diagram"
     ></div>
-    <!-- </transition> -->
+
+    <!-- DISPLAY WHILE SANKEY IS LOADING -->
+    <div v-else>Loading...</div>
 
     <!-- TOOLTIP ON NODE HOVER -->
     <div ref="tooltip" class="tooltip" v-if="hoverDetails.visible">
@@ -20,31 +22,30 @@
       <div>Clade Reads: {{ hoverDetails.data.clade_reads }}</div>
       <div>Taxon Reads: {{ hoverDetails.data.taxon_reads }}</div>
     </div>
-
-    <!-- NODE DETAILS DIALOG -->
-    <SankeyNodeDialog
-      :nodeDetails="nodeDetails"
-      :dialog="dialog"
-      @close-dialog="dialog = false"
-    />
   </div>
 </template>
 
 <script>
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal, sankeyJustify } from "d3-sankey";
-import SankeyNodeDialog from "./SankeyNodeDialog.vue";
 
 export default {
   name: "SankeyDiagram",
   components: {
-    SankeyNodeDialog,
+    //
   },
   props: {
+    isSubtree: {
+      type: Boolean,
+      required: true,
+    },
+    instanceId: String,
     rawData: {
       type: Object,
       required: true,
     },
+
+    // Configuration Options
     taxaLimit: {
       type: Number,
       required: true,
@@ -72,29 +73,29 @@ export default {
   },
   data() {
     return {
-      nodeDetails: null,
-      dialog: false,
-      fullData: null, // rawData with just clades filtered out
+      loading: false,
+      diagramWidth: window.innerWidth,
+
+      // Data for graph rendering
+      nonCladesRawData: null, // rawData with just clades filtered out
       fullGraphData: { nodes: [], links: [] },
       allNodesByRank: {},
       hoverDetails: {
         visible: false,
         data: {},
       },
-      diagramWidth: window.innerWidth,
-      loading: false,
     };
   },
   computed: {
     filteredData() {
       // Filter data based on configurations
 
-      if (!this.fullData) {
+      if (!this.nonCladesRawData) {
         // Ensure data are defined before filtering
         return [];
       }
 
-      return this.fullData.filter((entry) => {
+      return this.nonCladesRawData.filter((entry) => {
         // Check min reads criteria
         let passesMinReads = false;
         if (this.minCladeReadsMode === "%") {
@@ -111,7 +112,12 @@ export default {
         return passesMinReads && passesUnclassified;
       });
     },
+    graphData() {
+      return this.parseData(this.filteredData);
+    },
+
     maxCladeReads() {
+      //DEBUG
       const rankOrder = [
         "superkingdom",
         "kingdom",
@@ -124,7 +130,7 @@ export default {
       ];
       if (this.minCladeReadsMode === "#") {
         // Highest clade reads from data entries includable on graph (rankOrder + unclassified)
-        return this.fullData
+        return this.nonCladesRawData
           .filter(
             (entry) =>
               rankOrder.includes(entry.rank) || this.isUnclassifiedTaxa(entry)
@@ -133,17 +139,26 @@ export default {
       }
       return 100; // Default value for percentage mode
     },
-    graphData() {
-      return this.parseData(this.filteredData);
-    },
   },
   watch: {
+    loading(newValue) {
+      console.log("Loading state changed:", newValue); // DEBUG
+      if (!newValue) {
+        this.$nextTick(() => {
+          // Ensure the DOM is updated before creating the Sankey diagram.
+          // Runs Only When the Container is Available.
+          this.createSankey();
+        });
+      }
+    },
     rawData: {
       immediate: true, // Called immediately upon component creation
       handler(newValue) {
         this.processRawData(newValue);
       },
     },
+
+    // Configuration Options
     taxaLimit() {
       this.updateSankey();
     },
@@ -165,24 +180,16 @@ export default {
     diagramWidth() {
       this.updateSankey();
     },
-    loading(newValue) {
-      console.log("Loading state changed:", newValue);
-      if (!newValue) {
-        this.$nextTick(() => {
-          // Ensure the DOM is updated before creating the Sankey diagram.
-          // Runs Only When the Container is Available.
-          this.createSankey();
-        });
-      }
-    },
   },
+
   methods: {
+    // Function for processing/parsing data
     processRawData(data) {
       this.allNodesByRank = {}; // Reset the nodes by rank
 
       // Filter out clades from raw data
       const nonClades = data.filter((entry) => entry.rank !== "clade");
-      this.fullData = nonClades;
+      this.nonCladesRawData = nonClades;
 
       // Store nodes by rank from full data (for calculation of maxTaxaLimit)
       nonClades.forEach((node) => {
@@ -423,21 +430,6 @@ export default {
 
       return { nodes, links };
     },
-    updateConfigureMenu() {
-      console.log("allnodesbyrank: ", this.allNodesByRank);
-
-      let maxValues = 0;
-      for (let rank in this.allNodesByRank) {
-        const valuesCount = this.allNodesByRank[rank].length;
-        if (valuesCount > maxValues) {
-          maxValues = valuesCount;
-        }
-      }
-
-      this.$emit("updateConfigureMenu", {
-        maxTaxaPerRank: maxValues,
-      });
-    },
     filterData(data) {
       //FIXME:
       let filteredNodes = data.nodes;
@@ -465,7 +457,6 @@ export default {
         links: filteredLinks,
       };
     },
-
     isUnclassifiedTaxa(d) {
       const name = d.name;
 
@@ -485,6 +476,24 @@ export default {
       return true;
     },
 
+    // Function for updating configure menu value ranges based on data
+    updateConfigureMenu() {
+      console.log("allnodesbyrank: ", this.allNodesByRank);
+
+      let maxValues = 0;
+      for (let rank in this.allNodesByRank) {
+        const valuesCount = this.allNodesByRank[rank].length;
+        if (valuesCount > maxValues) {
+          maxValues = valuesCount;
+        }
+      }
+
+      this.$emit("updateConfigureMenu", {
+        maxTaxaPerRank: maxValues,
+      });
+    },
+
+    // Helper functions for drawing Sankey
     nodeHeight(d) {
       // FIXME
       let nodeHeight = d.y1 - d.y0;
@@ -494,7 +503,56 @@ export default {
         return d.y1 - d.y0;
       }
     },
+    formatCladeReads(value) {
+      if (value >= 1000) {
+        return `${(value / 1000).toFixed(2)}k`;
+      }
+      return value.toString();
+    },
+    formatProportion(value) {
+      return `${value.toFixed(3)}%`;
+    },
+    updateDiagramWidth() {
+      this.diagramWidth = window.innerWidth;
+    },
 
+    // Functions for node subtree dialog
+    showNodeDetails(event, d) {
+      const subtreeRawData = this.extractSubtreeRawData(d); // Extract subtree raw data for clicked node
+
+      this.$emit("node-click", {
+        type: "node",
+        data: d,
+        subtreeData: subtreeRawData,
+      });
+    },
+    extractSubtreeRawData(node) {
+      // Used only when isSubtree === false
+      const graph = this.fullGraph;
+      const subtreeNodesTaxonIds = new Set();
+      const subtreeLinks = new Set();
+
+      // Recursive function to get all descendant nodes and links
+      const getDescendants = (currentNode) => {
+        subtreeNodesTaxonIds.add(currentNode.taxon_id);
+        graph.links.forEach((link) => {
+          if (link.source.id === currentNode.id) {
+            subtreeLinks.add(link);
+            getDescendants(link.target);
+          }
+        });
+      };
+      // Get all descendants of the clicked node from total graph data
+      getDescendants(node);
+
+      // Filter data based on the subtree nodes taxon ids
+      const subtreeRawData = this.nonCladesRawData.filter((data) =>
+        subtreeNodesTaxonIds.has(data.taxon_id)
+      );
+      return subtreeRawData;
+    },
+
+    // Main function for drawing Sankey
     createSankey() {
       const { nodes, links } = this.graphData;
 
@@ -601,6 +659,7 @@ export default {
       sankeyGenerator.update(graph);
 
       // Store full graph (used for drawing subtree upon node click)
+      // FIXME: only if isSubtree === false
       const fullGraph = sankeyGenerator({
         nodes: this.fullGraphData.nodes.map((d) => Object.assign({}, d)),
         links: this.fullGraphData.links.map((d) => Object.assign({}, d)),
@@ -671,7 +730,7 @@ export default {
         .data(graph.links)
         .enter()
         .append("clipPath")
-        .attr("id", (d, i) => `clip-path-${i}`)
+        .attr("id", (d, i) => `clip-path-${this.instanceId}-${i}`)
         .append("rect")
         .attr("x", (d) => d.source.x1)
         .attr("y", 0)
@@ -679,7 +738,7 @@ export default {
         .attr("height", height);
 
       // Add links
-      const link = svg
+      svg
         .append("g")
         .attr("fill", "none")
         .attr("stroke-opacity", 0.3)
@@ -693,26 +752,13 @@ export default {
             ? unclassifiedLabelColor
             : d3.color(d.source.color)
         ) // Set link color to source node color with reduced opacity
-        .attr("clip-path", (d, i) => `url(#clip-path-${i})`)
         .attr("stroke-width", (d) => Math.max(1, d.width))
+        .attr("clip-path", (d, i) => `url(#clip-path-${this.instanceId}-${i})`) // add to sankeydiagram.vue
         .append("title")
         .text(
           (d) =>
             `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`
         );
-
-      //FIXME: Add mouse event on links
-      link
-        .on("mouseover", (event, d) => {
-          if (d.target.type !== "unclassified") {
-            d3.select(event.currentTarget).attr("stroke-opacity", 0.5);
-          }
-        })
-        .on("mouseout", (event, d) => {
-          if (d.target.type !== "unclassified") {
-            d3.select(event.currentTarget).attr("stroke-opacity", 0.2);
-          }
-        });
 
       // Function to show tooltip
       this.showTooltip = (event, d) => {
@@ -755,7 +801,6 @@ export default {
         .append("g")
         .attr("class", "node-group")
         .attr("transform", (d) => `translate(${d.x0}, ${d.y0})`)
-        // .call(drag)
         .on("mouseover", (event, d) => {
           highlightLineage(d);
           this.showTooltip(event, d);
@@ -768,7 +813,9 @@ export default {
           this.hideTooltip();
         })
         .on("click", (event, d) => {
-          this.showNodeDetails(event, d);
+          if (!this.isSubtree) {
+            this.showNodeDetails(event, d);
+          }
         });
 
       // Create node rectangles
@@ -811,6 +858,7 @@ export default {
         .style("fill", (d) =>
           d.type === "unclassified" ? unclassifiedLabelColor : "black"
         )
+
         .text((d) =>
           this.labelOption === "proportion"
             ? this.formatProportion(d.proportion)
@@ -818,72 +866,12 @@ export default {
         )
         .style("cursor", "pointer");
     },
-    showNodeDetails(event, d) {
-      const subtreeData = this.extractSubtreeData(d); // Extract subtree data for the clicked node
-      this.dialog = true;
-      this.nodeDetails = {
-        type: "node",
-        data: d,
-        subtreeData: subtreeData,
-      };
-    },
-    extractSubtreeData(node) {
-      const graph = this.fullGraph;
-      const subtreeNodes = new Set();
-      const subtreeLinks = new Set();
 
-      // Recursive function to get all descendant nodes and links
-      const getDescendants = (currentNode) => {
-        subtreeNodes.add(currentNode.id);
-        graph.links.forEach((link) => {
-          if (link.source.id === currentNode.id) {
-            subtreeLinks.add(link);
-            getDescendants(link.target);
-          }
-        });
-      };
-
-      // Recursive function to get all ancestor nodes and links
-      // const getAncestors = (currentNode) => {
-      //   subtreeNodes.add(currentNode.id);
-      //   graph.links.forEach(link => {
-      //     if (link.target.id === currentNode.id) {
-      //       subtreeLinks.add(link);
-      //       getAncestors(link.source);
-      //     }
-      //   });
-      // };
-
-      // Get all descendants and ancestors of the clicked node
-      getDescendants(node);
-      // getAncestors(node);
-
-      // Filter nodes and links based on the subtree sets
-      const subtreeData = {
-        nodes: this.fullGraphData.nodes.filter((n) => subtreeNodes.has(n.id)),
-        links: Array.from(subtreeLinks).map((link) => ({
-          source: link.source.id,
-          target: link.target.id,
-          value: link.value,
-        })),
-      };
-
-      return subtreeData;
-    },
-    formatCladeReads(value) {
-      if (value >= 1000) {
-        return `${(value / 1000).toFixed(2)}k`;
-      }
-      return value.toString();
-    },
-    formatProportion(value) {
-      return `${value.toFixed(3)}%`;
-    },
-    updateDiagramWidth() {
-      this.diagramWidth = window.innerWidth;
-    },
+    // Functions for rerendering/updating Sankey
     async updateSankey() {
+      // Start loading, show loading display
       this.loading = true;
+
       try {
         await this.fetchSankey();
       } catch (error) {
@@ -897,16 +885,19 @@ export default {
     async fetchSankey() {
       await new Promise((resolve) => {
         setTimeout(() => {
-          this.createSankey();
+          //  this.fullGraph = this.getGraphData(); // Replace with actual data fetching logic
+          this.createSankey(); // Create the Sankey diagram immediately after getting data
           resolve();
-        }, 200); // Simulate a slight delay
+        }, 50); // Immediate execution after fetching data
       });
     },
   },
+
   async mounted() {
+    // Listener for screen resizing event
     window.addEventListener("resize", this.updateDiagramWidth);
 
-    this.updateSankey();
+    await this.updateSankey();
   },
   beforeUnmount() {
     window.removeEventListener("resize", this.updateDiagramWidth);

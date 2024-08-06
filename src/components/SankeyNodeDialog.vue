@@ -1,9 +1,9 @@
 <template>
-  <v-dialog v-model="localDialog" max-width="window.innerWidth" scrollable>
+  <v-dialog max-width="window.innerWidth" scrollable>
     <v-card>
       <!-- Close Dialog Button -->
       <v-card-actions class="py-0">
-        <v-btn icon="$close" color="gray" @click="closeDialog"></v-btn>
+        <v-btn icon="$close" color="gray" @click="$emit('close')"></v-btn>
       </v-card-actions>
 
       <v-card-item class="mx-0 pt-0 summary">
@@ -88,14 +88,24 @@
         </v-card-text>
 
         <!-- NODE SUBTREE SANKEY DIAGRAM -->
-        <SankeyNodeDialogDiagram
-          :data="nodeDetails.subtreeData"
+        <SankeyDiagram
+          :isSubtree="true"
           :instanceId="uniqueInstanceId"
+          :rawData="nodeDetails.subtreeData"
+
+          :taxaLimit="configureMenuSettings.taxaLimit"
+          :minCladeReadsMode="configureMenuSettings.minCladeReadsMode"
+          :minReads="configureMenuSettings.minCladeReads"
+          :showUnclassified="configureMenuSettings.showUnclassified"
+          :figureHeight="configureMenuSettings.figureHeight"
+          :labelOption="configureMenuSettings.labelOption"
+          
+          @updateConfigureMenu="updateConfigureMenu"
         />
       </v-card-item>
 
       <!-- Floating Action Button -->
-      <ConfigureSankeyMenu
+      <!-- <ConfigureSankeyMenu
         :initialTaxaLimit="configureMenuSettings.taxaLimit"
         :maxTaxaLimit="configureMenuSettings.maxTaxaLimit"
         :initialMinCladeReadsMode="configureMenuSettings.minCladeReadsMode"
@@ -106,10 +116,6 @@
         :menuLocation="'top end'"
         @updateSettings="updateSettings"
       >
-      <!-- <ConfigureSankeyMenu
-        :menuLocation="'top end'"
-        @updateSettings="updateSettings"
-      > -->
         <template v-slot:activator="{ props }">
           <v-btn
             v-bind="props"
@@ -122,32 +128,34 @@
           >
           </v-btn>
         </template>
-      </ConfigureSankeyMenu>
+      </ConfigureSankeyMenu> -->
     </v-card>
   </v-dialog>
 </template>
 
 <script>
-import SankeyNodeDialogDiagram from "./SankeyNodeDialogDiagram.vue";
-import ConfigureSankeyMenu from "./ConfigureSankeyMenu.vue";
+import SankeyDiagram from "@/components/SankeyDiagram.vue";
+// import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
 
 export default {
   name: "SankeyNodeDialog",
   components: {
-    SankeyNodeDialogDiagram,
-    ConfigureSankeyMenu,
+    SankeyDiagram,
+    // ConfigureSankeyMenu,
   },
   props: {
-    nodeDetails: Object,
-    dialog: Boolean,
+    nodeDetails: {
+      type: Object,
+      required: true
+    },
   },
   data() {
     return {
-      localDialog: this.dialog,
       uniqueInstanceId: "",
+
       configureMenuSettings: {
-        taxaLimit: 15,
+        taxaLimit: 20,
         maxTaxaLimit: 100,
         minCladeReadsMode: "#",
         minCladeReads: 1,
@@ -161,32 +169,29 @@ export default {
     roundedMaxTaxaLimit() {
       // Round up maxTaxaLimit to the nearest increment of 5
       return Math.ceil(this.configureMenuSettings.maxTaxaLimit / 5) * 5;
-    },
-  },
-  watch: {
-    dialog(newVal) {
-      this.localDialog = newVal;
-    },
-    localDialog(newVal) {
-      if (!newVal) {
-        this.$emit("close-dialog");
-      }
+      // return Math.ceil(this.maxTaxaLimit / 5) * 5;
     },
   },
   methods: {
+    // Configuration Menu
+    updateConfigureMenu(sankeyData) {
+      if (sankeyData) {
+        this.configureMenuSettings.maxTaxaLimit =
+          Math.ceil(sankeyData.maxTaxaPerRank / 5) * 5;
+      }
+    },
+
+    // Sankey Diagram
     updateSettings(settings) {
       this.configureMenuSettings.taxaLimit = settings.taxaLimit;
-      this.configureMenuSettings.maxTaxaLimit = settings.maxTaxaLimit;
       this.configureMenuSettings.minCladeReadsMode = settings.minCladeReadsMode;
       this.configureMenuSettings.minCladeReads = settings.minCladeReads;
       this.configureMenuSettings.showUnclassified = settings.showUnclassified;
       this.configureMenuSettings.figureHeight = settings.figureHeight;
       this.configureMenuSettings.labelOption = settings.labelOption;
     },
-    closeDialog() {
-      this.localDialog = false;
-    },
   },
+
   mounted() {
     this.uniqueInstanceId = uuidv4();
   },
