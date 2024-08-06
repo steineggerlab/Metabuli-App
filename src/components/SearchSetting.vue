@@ -7,9 +7,6 @@
         <v-toolbar class="custom-toolbar" density="compact">
           Search Settings
           <v-spacer></v-spacer>
-          <v-btn icon @click="toggleApiDialog">
-            <v-icon icon="$api" size="28"></v-icon>
-          </v-btn>
 
           <!-- TABS -->
           <template v-slot:extension>
@@ -34,95 +31,138 @@
             <v-container>
               <!-- Title -->
               <v-card flat>
-                <v-card-title> 
-                  <v-icon
-                    left
-                    class="mr-1 align-center"
-                    icon="$dna"
-                  ></v-icon>
-                  Configure Search </v-card-title>
+                <v-card-title class="font-weight-black">
+                  <v-icon left class="mr-1 align-center" icon="$dna"></v-icon>
+                  Configure Search
+                </v-card-title>
               </v-card>
 
               <!-- End Type (single-end, paired-end, long-read) -->
               <v-form ref="jobForm" v-model="isJobFormValid">
                 <div class="w-50">
-                <v-radio-group
-                  v-model="endType"
-                  inline
-                  class="d-flex align-center mb-0"
-                >
-                  <v-radio label="Single-end" value="single-end"></v-radio>
-                  <v-radio label="Paired-end" value="paired-end"></v-radio>
-                  <v-radio label="Long-read" value="long-read"></v-radio>
-                </v-radio-group>
-
-                <!-- Job ID -->
-                <v-text-field
-                  label="Job ID"
-                  variant="underlined"
-                  v-model="jobDetails.jobid"
-
-                  :hint="computedHint"
-                  persistent-hint
-                  class="mb-2"
-                ></v-text-field>
-
-                <!-- FIXME: refactor -->
-                <v-sheet class="d-flex align-center mb-2">
-                  <v-btn @click="selectFile('q1', 'file')"
-                    >Select q1 File</v-btn
+                  <v-radio-group
+                    v-model="endType"
+                    inline
+                    color="primary"
+                    class="d-flex align-center mb-0 opacity-100 text-caption text-black"
                   >
-                  <div class="ml-3">Selected Path: {{ jobDetails.q1 }}</div>
-                  <v-text-field
-                    v-model="jobDetails.q1"
-                    :rules="[requiredRule]"
-                    style="display: none"
-                  ></v-text-field>
-                </v-sheet>
+                    <v-radio label="Single-end" value="single-end"></v-radio>
+                    <v-radio label="Paired-end" value="paired-end"></v-radio>
+                    <v-radio label="Long-read" value="long-read"></v-radio>
+                  </v-radio-group>
 
-                <v-sheet
-                  class="d-flex align-center mb-2"
-                  v-if="endType === 'paired-end'"
-                >
-                  <v-btn @click="selectFile('q2', 'file')"
-                    >Select q2 File</v-btn
+                  <!-- Job ID -->
+                  <v-text-field
+                    label="Job ID"
+                    variant="underlined"
+                    v-model="jobDetails.jobid"
+                    color="primary"
+                    :hint="computedHint"
+                    persistent-hint
+                    class="mb-2"
+                  ></v-text-field>
+
+                  <!-- FIXME: refactor -->
+                  <!-- Q1 File -->
+                  <v-sheet class="d-flex align-center mb-2 gc-3">
+                    <v-btn @click="selectFile('q1', 'file')"
+                      >Select q1 File</v-btn
+                    >
+                    <v-chip
+                      v-if="jobDetails.q1"
+                      label
+                      closable
+                      color="primary"
+                      density="comfortable"
+                      prepend-icon="$fileFilled"
+                      @click:close="clearFile('q1')"
+                      class="filename-chip text-break"
+                    >
+                      {{ this.extractFilename(jobDetails.q1) }}</v-chip
+                    >
+                    <v-text-field
+                      v-model="jobDetails.q1"
+                      :rules="[requiredRule]"
+                      style="display: none"
+                    ></v-text-field>
+                  </v-sheet>
+
+                  <!-- Q2 File -->
+                  <v-sheet
+                    class="d-flex align-center mb-2 gc-3"
+                    v-if="endType === 'paired-end'"
                   >
-                  <div class="ml-3">Selected Path: {{ jobDetails.q2 }}</div>
-                  <v-text-field
-                    v-model="jobDetails.q2"
-                    :rules="[
-                      endType === 'paired-end' ? requiredRule : () => true,
-                    ]"
-                    style="display: none"
-                  ></v-text-field>
-                </v-sheet>
+                    <v-btn @click="selectFile('q2', 'file')"
+                      >Select q2 File</v-btn
+                    >
+                    <v-chip
+                      v-if="jobDetails.q2"
+                      label
+                      closable
+                      color="primary"
+                      density="comfortable"
+                      prepend-icon="$fileFilled"
+                      @click:close="clearFile('q2')"
+                      class="filename-chip text-break"
+                    >
+                      {{ this.extractFilename(jobDetails.q2) }}</v-chip
+                    >
+                    <v-text-field
+                      v-model="jobDetails.q2"
+                      :rules="[
+                        endType === 'paired-end' ? requiredRule : () => true,
+                      ]"
+                      style="display: none"
+                    ></v-text-field>
+                  </v-sheet>
 
-                <v-sheet class="d-flex align-center mb-2">
-                  <v-btn @click="selectFile('database', 'directory')"
-                    >Select Database</v-btn
-                  >
+                  <!-- Database Directory -->
+                  <v-sheet class="d-flex align-center mb-2 gc-3">
+                    <v-btn @click="selectFile('database', 'directory')"
+                      >Select Database</v-btn
+                    >
+                    <v-chip
+                      v-if="jobDetails.database"
+                      label
+                      closable
+                      color="primary"
+                      density="comfortable"
+                      prepend-icon="$folder"
+                      @click:close="clearFile('database')"
+                      class="filename-chip text-break"
+                    >
+                      {{ this.extractFilename(jobDetails.database) }}</v-chip
+                    >
+                    <v-text-field
+                      v-model="jobDetails.database"
+                      :rules="[requiredRule]"
+                      style="display: none"
+                    ></v-text-field>
+                  </v-sheet>
 
-                  <div class="ml-3">
-                    Selected Path: {{ jobDetails.database }}
-                  </div>
-                  <v-text-field
-                    v-model="jobDetails.database"
-                    :rules="[requiredRule]"
-                    style="display: none"
-                  ></v-text-field>
-                </v-sheet>
-
-                <v-sheet class="d-flex align-center mb-2">
-                  <v-btn @click="selectFile('outdir', 'directory')"
-                    >Select Output Directory</v-btn
-                  >
-                  <div class="ml-3">Selected Path: {{ jobDetails.outdir }}</div>
-                  <v-text-field
-                    v-model="jobDetails.outdir"
-                    :rules="[requiredRule]"
-                    style="display: none"
-                  ></v-text-field>
-                </v-sheet>
+                  <!-- Output Directory -->
+                  <v-sheet class="d-flex align-center mb-2 gc-3">
+                    <v-btn @click="selectFile('outdir', 'directory')"
+                      >Select Output Dir</v-btn
+                    >
+                    <v-chip
+                      v-if="jobDetails.outdir"
+                      label
+                      closable
+                      color="primary"
+                      density="comfortable"
+                      prepend-icon="$folder"
+                      @click:close="clearFile('outdir')"
+                      class="filename-chip text-break"
+                    >
+                      {{ this.extractFilename(jobDetails.outdir) }}</v-chip
+                    >
+                    <v-text-field
+                      v-model="jobDetails.outdir"
+                      :rules="[requiredRule]"
+                      style="display: none"
+                    ></v-text-field>
+                  </v-sheet>
                 </div>
 
                 <!-- ADVANCED SETTINGS -->
@@ -165,6 +205,7 @@
                             variant="outlined"
                             rounded="lg"
                             density="compact"
+                            color="primary"
                             v-model="setting.value"
                             :append-inner-icon="getAppendInnerIcon(setting)"
                             :label="setting.parameter"
@@ -219,7 +260,7 @@
             >
               <!-- TITLE -->
               <v-card flat>
-                <v-card-title>
+                <v-card-title class="font-weight-black">
                   <v-icon
                     left
                     class="mr-1 align-center"
@@ -236,7 +277,7 @@
               <v-sheet class="d-flex flex-column w-66 gr-2 mb-2">
                 <!-- Upload Box -->
                 <div
-                  class="align-center dotted-border"
+                  class="d-flex flex-column align-center dotted-border gr-3"
                   @click="triggerFilePicker"
                 >
                   <v-file-input
@@ -246,20 +287,25 @@
                     @change="handleFileSelect"
                     accept=".tsv"
                   ></v-file-input>
-                  <v-icon size="50" icon="$fileUpload" color="#004DE5"></v-icon>
-                  <p>Drag & drop your file or select a file.</p>
+                  <v-icon size="50" icon="$fileUpload" color="primary"></v-icon>
+                  <p class="text-body-2">
+                    Drag & drop your file or select a file.
+                  </p>
                 </div>
 
                 <!-- Show Uploaded Files -->
                 <div v-if="file" class="uploaded-file">
                   <v-card-subtitle>Uploaded File</v-card-subtitle>
-                  <v-chip
-                    close
-                    closable
-                    color="primary"
-                    @click:close="removeFile"
-                    >{{ file.name }}</v-chip
-                  >
+                  <v-card-text class="py-1">
+                    <v-chip
+                      label
+                      closable
+                      prepend-icon="$file"
+                      color="primary"
+                      @click:close="removeFile"
+                      >{{ file.name }}</v-chip
+                    >
+                  </v-card-text>
                 </div>
 
                 <!-- Upload Button -->
@@ -275,32 +321,6 @@
           </v-tabs-window-item>
         </v-tabs-window>
       </v-card>
-
-      <!-- API Dialog -->
-      <v-dialog v-model="apiDialog" max-width="800">
-        <v-card>
-          <v-card-title> cURL Command </v-card-title>
-          <v-card-text>
-            Use this command to get a submit a file in FASTA or FASTQ format to
-            the Metabuli search server. Replace the ‘PATH_TO_FILE’ and
-            '@PATH_TO_DIRECTORY' string with the path to the file or directory.
-          </v-card-text>
-          <v-card-text>
-            <code
-              >curl -X POST -F q1=@PATH_TO_FILE -F q2=@PATH_TO_FILE -F
-              'database[]=@PATH_TO_DIRECTORY' -F 'mode=3diaa' -F
-              outdir=@PATH_TO_DIRECTORY -F jobid='test'
-              "http://localhost:8081/api/ticket"</code
-            >
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="closeApiDialog"
-              >Close</v-btn
-            >
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
 
       <!-- Snackbar -->
       <v-snackbar
@@ -507,8 +527,19 @@ export default {
   },
 
   methods: {
+    // Run Search
+    extractFilename(path) {
+      return path.split("/").pop();
+    },
+    clearFile(field) {
+      this.jobDetails[field] = null;
+      this.$refs.jobForm.validate();
+    },
     requiredRule(value) {
-      return value !== "" || "This field is required";
+      if (value === "" || value === null || value === undefined) {
+        return "This field is required";
+      }
+      return true;
     },
     getAppendInnerIcon(setting) {
       return setting.extra?.appendIcon ? `$${setting.extra.appendIcon}` : null;
@@ -525,6 +556,8 @@ export default {
         setting.value = filePath;
       }
     },
+
+    // Upload Report
     handleDrop(event) {
       const file = event.dataTransfer.files[0];
       if (file) {
@@ -584,6 +617,8 @@ export default {
         this.$emit("error");
       }
     },
+
+    // Send backend request for run search
     startJob() {
       this.$emit("job-started", false); // Emit job-started event to parent
       // Simulate job process
@@ -754,12 +789,6 @@ export default {
       }
       this.snackbar.show = false;
     },
-    toggleApiDialog() {
-      this.apiDialog = !this.apiDialog;
-    },
-    closeApiDialog() {
-      this.apiDialog = false;
-    },
     handleJobSuccess() {
       console.log("Job polling completed successfully."); // DEBUG
       const completedJob = {
@@ -860,6 +889,12 @@ export default {
   right: 5px;
   width: 300px;
   height: 300px;
+}
+.filename-chip {
+  max-width: 400px; /* Adjust the width as needed */
+
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* UPLOAD REPORT TAB */

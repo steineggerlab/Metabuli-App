@@ -2,7 +2,7 @@
   <v-app>
     <v-app-bar>
       <!-- NAVIGATION DRAWER TOGGLE -->
-      <v-app-bar-nav-icon @click.stop="rail = !rail"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon rounded="xl" @click.stop="rail = !rail"></v-app-bar-nav-icon>
 
       <!-- METABULI TITLE + LOGO -->
       <div class="d-flex gc-1 ml-3" style="align-items: center">

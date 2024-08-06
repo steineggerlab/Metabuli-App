@@ -9,29 +9,6 @@
     />
 
     <!-- Loading Dialog -->
-    <!-- <v-dialog v-model="loadingDialog" max-width="320" persistent>
-      <v-list class="py-2" color="primary" elevation="12" rounded="lg">
-        <v-list-item prepend-icon="$setting" title="Processing Job...">
-          <template v-slot:prepend>
-            <div class="pe-4">
-              <v-icon color="primary" size="x-large"></v-icon>
-            </div>
-          </template>
-          <template v-slot:append>
-            <v-progress-circular
-              color="primary"
-              indeterminate="disable-shrink"
-              size="16"
-              width="2"
-            ></v-progress-circular>
-          </template>
-        </v-list-item>
-        <v-list-item v-if="!isSampleJob">
-          <v-btn class="ma-2" @click="cancelBackend">Cancel</v-btn>
-        </v-list-item>
-      </v-list>
-    </v-dialog> -->
-
     <v-dialog v-model="loadingDialog" max-width="320" persistent>
       <v-list class="d-flex flex-column" elevation="12" rounded="lg">
         <div class="d-flex flex-column align-center">
@@ -53,7 +30,7 @@
     </v-dialog>
 
     <!-- Footer: Reference to Paper -->
-    <v-container>
+    <v-container class="pt-0">
       <v-card>
         <v-toolbar class="custom-toolbar" density="compact"
           >Reference</v-toolbar

@@ -109,7 +109,7 @@
       </v-card-item>
 
       <!-- Floating Action Button -->
-      <div class="fab-container d-flex align-center gc-1 mb-6">
+      <div v-if="nodeDetails.hasSourceLinks" class="fab-container d-flex align-center gc-1 mb-6">
         <SankeyDownloadMenu
           :menuLocation="'top end'"
           @format-selected="emitSubtreeDownloadFormat"
@@ -126,7 +126,6 @@
         </SankeyDownloadMenu>
 
         <ConfigureSankeyMenu
-          v-if="nodeDetails.hasSourceLinks"
           :initialTaxaLimit="configureMenuSettings.taxaLimit"
           :maxTaxaLimit="configureMenuSettings.maxTaxaLimit"
           :initialMinCladeReadsMode="configureMenuSettings.minCladeReadsMode"
