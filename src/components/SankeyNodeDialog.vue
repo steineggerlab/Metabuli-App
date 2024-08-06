@@ -83,7 +83,7 @@
         <v-card-subtitle class="opacity-100 font-weight-bold"
           >Full Lineage</v-card-subtitle
         >
-        <v-card-text class="px-0 py-0">
+        <v-card-text class="px-0 py-0 mb-4">
           {{
             nodeDetails.data.lineage
               .map((n) => `${n.name} (${n.rank})`)
@@ -109,7 +109,6 @@
       </v-card-item>
 
       <!-- Floating Action Button -->
-
       <div class="fab-container d-flex align-center gc-1 mb-6">
         <SankeyDownloadMenu
           :menuLocation="'top end'"
