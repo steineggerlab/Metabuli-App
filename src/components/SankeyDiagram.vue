@@ -70,6 +70,10 @@ export default {
       type: String,
       required: true,
     },
+    showAll: {
+      type: Boolean,
+      required: true,
+    },
   },
   data() {
     return {
@@ -89,6 +93,10 @@ export default {
   computed: {
     filteredData() {
       // Filter data based on configurations
+      // If showAll is true, skip filtering and return all data
+      if (this.showAll) {
+        return this.nonCladesRawData;
+      }
 
       if (!this.nonCladesRawData) {
         // Ensure data are defined before filtering

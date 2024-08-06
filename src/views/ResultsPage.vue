@@ -54,6 +54,7 @@
             :showUnclassified="showUnclassified"
             :figureHeight="figureHeight"
             :labelOption="labelOption"
+            :showAll="showAll"
             @updateConfigureMenu="updateConfigureMenu"
             @node-click="showDialog"
           />
@@ -117,6 +118,7 @@ export default {
       showUnclassified: true,
       figureHeight: 500,
       labelOption: "cladeReads",
+      showAll: false,
 
       // Sankey Node Dialog
       isDialogVisible: false,
@@ -134,10 +136,20 @@ export default {
   methods: {
     // Sankey Diagram
     updateSettings(settings) {
-      this.taxaLimit = settings.taxaLimit;
-      this.minCladeReadsMode = settings.minCladeReadsMode;
-      this.minCladeReads = settings.minCladeReads;
-      this.showUnclassified = settings.showUnclassified;
+      this.showAll = settings.showAll;
+
+      if (settings.showAll) {
+        this.taxaLimit = this.maxTaxaLimit;
+        this.minCladeReadsMode = "#";
+        this.minCladeReads = 0;
+        this.showUnclassified = true;
+      } else {
+        this.taxaLimit = settings.taxaLimit;
+        this.minCladeReadsMode = settings.minCladeReadsMode;
+        this.minCladeReads = settings.minCladeReads;
+        this.showUnclassified = settings.showUnclassified;
+      }
+
       this.figureHeight = settings.figureHeight;
       this.labelOption = settings.labelOption;
     },

@@ -21,7 +21,7 @@
               <v-container class="pt-1">
                 <div class="d-flex align-center gc-2">
                   <v-switch
-                    v-model="tempShowAll"
+                    v-model="showAll"
                     color="indigo"
                     hide-details
                     @update:modelValue="validateRange"
@@ -41,7 +41,7 @@
                     v-model="tempShowUnclassified"
                     color="indigo"
                     hide-details
-                    :disabled="tempShowAll"
+                    :disabled="showAll"
                   ></v-switch>
                   <div class="text-caption">Show unclassified taxa</div>
                 </div>
@@ -60,7 +60,7 @@
                   dense
                   class="select-width"
                   @change="setDefaultValue"
-                  :disabled="tempShowAll"
+                  :disabled="showAll"
                 ></v-select>
 
                 <v-text-field
@@ -74,7 +74,7 @@
                   class="flex-grow-1"
                   :rules="[valueRangeRule]"
                   @input="validateRange"
-                  :disabled="tempShowAll"
+                  :disabled="showAll"
                 ></v-text-field>
               </v-container>
             </v-list-item>
@@ -92,7 +92,7 @@
                   :max="maxTaxaLimit"
                   tick-size="1"
                   show-ticks="always"
-                  :disabled="tempShowAll"
+                  :disabled="showAll"
                 ></v-slider>
               </v-container>
             </v-list-item>
@@ -197,7 +197,7 @@ export default {
     return {
       menu: false,
 
-      tempShowAll: false,
+      showAll: false,
       taxaLimit: this.initialTaxaLimit,
       cladeReadsMode: this.initialMinCladeReadsMode,
       cladeReadsValue: this.initialMinCladeReads,
@@ -217,11 +217,10 @@ export default {
   },
   computed: {
     valueRangeRule() {
-      const min = this.tempCladeReadsMode === "%" ? 0 : 1;
+      const min = this.tempCladeReadsMode === "%" ? 0 : 0;
       const max = this.tempCladeReadsMode === "%" ? 100 : Infinity;
       return (value) => {
-        if (this.tempShowAll || (value >= min && value <= max)) {
-          console.log("this.showall:", this.tempShowAll);
+        if (this.showAll || (value >= min && value <= max)) {
           this.isFormValid = true;
           return true;
         } else {
@@ -250,7 +249,7 @@ export default {
     },
     applyChanges() {
       // Apply the temporary values to the actual data
-      if (!this.tempShowAll) {
+      if (!this.showAll) {
         this.taxaLimit = this.tempTaxaLimit;
         this.cladeReadsMode = this.tempCladeReadsMode;
         this.cladeReadsValue = this.tempCladeReadsValue;
@@ -270,6 +269,7 @@ export default {
     },
     emitChanges() {
       this.$emit("updateSettings", {
+        showAll: this.showAll,
         taxaLimit: this.taxaLimit,
         minCladeReadsMode: this.cladeReadsMode,
         minCladeReads: parseFloat(this.cladeReadsValue),
