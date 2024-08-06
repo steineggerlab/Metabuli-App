@@ -74,7 +74,7 @@
                       closable
                       color="primary"
                       density="comfortable"
-                      prepend-icon="$fileFilled"
+                      prepend-icon="$file"
                       @click:close="clearFile('q1')"
                       class="filename-chip text-break"
                     >
@@ -101,7 +101,7 @@
                       closable
                       color="primary"
                       density="comfortable"
-                      prepend-icon="$fileFilled"
+                      prepend-icon="$file"
                       @click:close="clearFile('q2')"
                       class="filename-chip text-break"
                     >
