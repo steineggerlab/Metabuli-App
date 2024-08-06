@@ -16,6 +16,38 @@
       <v-card min-width="300" class="pt-3 my-1">
         <v-form ref="form">
           <v-list>
+            <!-- SWITCH (Show/Hide Unclassified Nodes) -->
+            <v-list-item>
+              <v-container class="pt-1">
+                <div class="d-flex align-center gc-2">
+                  <v-switch
+                    v-model="tempShowAll"
+                    color="indigo"
+                    hide-details
+                    @update:modelValue="validateRange"
+                  ></v-switch>
+                  <div class="text-caption">Show all</div>
+                </div>
+              </v-container>
+            </v-list-item>
+
+            <v-divider></v-divider>
+
+            <!-- SWITCH (Show/Hide Unclassified Nodes) -->
+            <v-list-item>
+              <v-container class="pt-1">
+                <div class="d-flex align-center gc-2">
+                  <v-switch
+                    v-model="tempShowUnclassified"
+                    color="indigo"
+                    hide-details
+                    :disabled="tempShowAll"
+                  ></v-switch>
+                  <div class="text-caption">Show unclassified taxa</div>
+                </div>
+              </v-container>
+            </v-list-item>
+
             <!-- DROPDOWN AND INPUT (Minimum Clade Reads) -->
             <v-list-item>
               <div class="text-caption">Minimum number of reads</div>
@@ -28,6 +60,7 @@
                   dense
                   class="select-width"
                   @change="setDefaultValue"
+                  :disabled="tempShowAll"
                 ></v-select>
 
                 <v-text-field
@@ -41,6 +74,7 @@
                   class="flex-grow-1"
                   :rules="[valueRangeRule]"
                   @input="validateRange"
+                  :disabled="tempShowAll"
                 ></v-text-field>
               </v-container>
             </v-list-item>
@@ -58,9 +92,12 @@
                   :max="maxTaxaLimit"
                   tick-size="1"
                   show-ticks="always"
+                  :disabled="tempShowAll"
                 ></v-slider>
               </v-container>
             </v-list-item>
+
+            <v-divider class="py-3"></v-divider>
 
             <!-- SLIDER (Figure Height) -->
             <v-list-item>
@@ -92,20 +129,6 @@
                     <v-btn value="proportion" height="30">Proportion</v-btn>
                     <v-btn value="cladeReads" height="30">Clade Reads</v-btn>
                   </v-btn-toggle>
-                </div>
-              </v-container>
-            </v-list-item>
-
-            <!-- SWITCH (Show/Hide Unclassified Nodes) -->
-            <v-list-item>
-              <v-container class="pt-1">
-                <div class="d-flex align-center gc-2">
-                  <v-switch
-                    v-model="tempShowUnclassified"
-                    color="indigo"
-                    hide-details
-                  ></v-switch>
-                  <div class="text-caption">Show unclassified taxa</div>
                 </div>
               </v-container>
             </v-list-item>
@@ -174,6 +197,7 @@ export default {
     return {
       menu: false,
 
+      tempShowAll: false,
       taxaLimit: this.initialTaxaLimit,
       cladeReadsMode: this.initialMinCladeReadsMode,
       cladeReadsValue: this.initialMinCladeReads,
@@ -196,7 +220,8 @@ export default {
       const min = this.tempCladeReadsMode === "%" ? 0 : 1;
       const max = this.tempCladeReadsMode === "%" ? 100 : Infinity;
       return (value) => {
-        if (value >= min && value <= max) {
+        if (this.tempShowAll || (value >= min && value <= max)) {
+          console.log("this.showall:", this.tempShowAll);
           this.isFormValid = true;
           return true;
         } else {
@@ -225,10 +250,18 @@ export default {
     },
     applyChanges() {
       // Apply the temporary values to the actual data
-      this.taxaLimit = this.tempTaxaLimit;
-      this.cladeReadsMode = this.tempCladeReadsMode;
-      this.cladeReadsValue = this.tempCladeReadsValue;
-      this.showUnclassified = this.tempShowUnclassified;
+      if (!this.tempShowAll) {
+        this.taxaLimit = this.tempTaxaLimit;
+        this.cladeReadsMode = this.tempCladeReadsMode;
+        this.cladeReadsValue = this.tempCladeReadsValue;
+        this.showUnclassified = this.tempShowUnclassified;
+      } else {
+        // Reset the temporary values to the current actual values
+        this.tempTaxaLimit = this.taxaLimit;
+        this.tempCladeReadsMode = this.cladeReadsMode;
+        this.tempCladeReadsValue = this.cladeReadsValue;
+        this.tempShowUnclassified = this.showUnclassified;
+      }
       this.figureHeight = this.tempFigureHeight;
       this.labelOption = this.tempLabelOption;
 
