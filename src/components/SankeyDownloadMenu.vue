@@ -2,15 +2,13 @@
   <v-menu
     v-model="downloadMenu"
     transition="slide-y-transition"
-    location="bottom"
+    :location="menuLocation"
   >
     <template v-slot:activator="{ props }">
-      <v-btn v-bind="props" append-icon="$download" variant="text" rounded>
-        Download
-      </v-btn>
+      <slot name="activator" v-bind="{ props }"></slot>
     </template>
 
-    <v-list class="sankey-dropdown">
+    <v-list class="my-1">
       <v-list-item
         v-for="(item, i) in items"
         :key="i"
@@ -25,6 +23,12 @@
 
 <script>
 export default {
+  props: {
+    menuLocation: {
+      type: String,
+      default: "bottom end",
+    },
+  },
   data: () => ({
     downloadMenu: false,
     format: null,
@@ -42,9 +46,3 @@ export default {
   },
 };
 </script>
-
-<style>
-.sankey-dropdown {
-  margin-top: 4px;
-}
-</style>

@@ -93,6 +93,7 @@
 
         <!-- NODE SUBTREE SANKEY DIAGRAM -->
         <SankeyDiagram
+          :id="sankeyId"
           :isSubtree="true"
           :instanceId="uniqueInstanceId"
           :rawData="nodeDetails.subtreeData"
@@ -110,13 +111,20 @@
       <!-- Floating Action Button -->
 
       <div class="fab-container d-flex align-center gc-1 mb-6">
-        <v-btn
-          icon="$download"
-          size="x-small"
-          rounded="circle"
-          @click="handleAction"
+        <SankeyDownloadMenu
+          :menuLocation="'top end'"
+          @format-selected="emitSubtreeDownloadFormat"
         >
-        </v-btn>
+          <template v-slot:activator="{ props }">
+            <v-btn
+              v-bind="props"
+              icon="$download"
+              size="x-small"
+              rounded="circle"
+            >
+            </v-btn>
+          </template>
+        </SankeyDownloadMenu>
 
         <ConfigureSankeyMenu
           v-if="nodeDetails.hasSourceLinks"
@@ -149,6 +157,7 @@
 
 <script>
 import SankeyDiagram from "@/components/SankeyDiagram.vue";
+import SankeyDownloadMenu from "@/components/SankeyDownloadMenu.vue";
 import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
 
@@ -156,6 +165,7 @@ export default {
   name: "SankeyNodeDialog",
   components: {
     SankeyDiagram,
+    SankeyDownloadMenu,
     ConfigureSankeyMenu,
   },
   props: {
@@ -166,6 +176,7 @@ export default {
   },
   data() {
     return {
+      sankeyId: "subtree-sankey-svg",
       uniqueInstanceId: "",
 
       configureMenuSettings: {
@@ -215,6 +226,11 @@ export default {
 
       this.configureMenuSettings.figureHeight = settings.figureHeight;
       this.configureMenuSettings.labelOption = settings.labelOption;
+    },
+
+    // Sankey Download Functions
+    emitSubtreeDownloadFormat(format) {
+      this.$emit("download-sankey", { sankeyId: this.sankeyId, format });
     },
   },
 

@@ -14,7 +14,7 @@
         </v-tabs-window-item>
 
         <!-- SANKEY TAB-->
-        <v-tabs-window-item value="sankey" >
+        <v-tabs-window-item value="sankey">
           <!-- TOOLBAR ABOVE SANKEY DIAGRAM -->
           <div class="d-flex justify-space-around my-5 mx-2 gc-1">
             <div class="d-flex align-center">
@@ -23,7 +23,18 @@
 
             <v-spacer></v-spacer>
 
-            <SankeyDownloadMenu @format-selected="handleFormatSelected" />
+            <SankeyDownloadMenu @format-selected="emitMainSankeyDownloadFormat">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  append-icon="$download"
+                  variant="text"
+                  rounded
+                >
+                  Download
+                </v-btn>
+              </template>
+            </SankeyDownloadMenu>
 
             <ConfigureSankeyMenu
               :initialTaxaLimit="taxaLimit"
@@ -33,6 +44,7 @@
               :initialShowUnclassified="showUnclassified"
               :initialFigureHeight="figureHeight"
               :initialLabelOption="labelOption"
+              :menuLocation="'bottom end'"
               @updateSettings="updateSettings"
             >
               <template v-slot:activator="{ props }">
@@ -45,10 +57,10 @@
 
           <!-- SANKEY DIAGRAM -->
           <SankeyDiagram
+            :id="'sankey-svg'"
             :isSubtree="false"
             :instanceId="uniqueInstanceId"
             :rawData="results"
-
             :taxaLimit="taxaLimit"
             :minCladeReadsMode="minCladeReadsMode"
             :minReads="minCladeReads"
@@ -65,6 +77,7 @@
             v-model="isDialogVisible"
             :nodeDetails="dialogData"
             @close-dialog="hideDialog"
+            @download-sankey="handleFormatSelected"
           />
         </v-tabs-window-item>
 
@@ -226,28 +239,31 @@ export default {
     },
 
     // Sankey Download Functions
-    handleFormatSelected(format) {
+    emitMainSankeyDownloadFormat(format) {
+      this.handleFormatSelected({ format, sankeyId: "sankey-svg" });
+    },
+    handleFormatSelected({ sankeyId, format }) {
       switch (format) {
         case "png":
-          this.downloadSankeyAsPng();
+          this.downloadSankeyAsPng(sankeyId);
           break;
         case "jpg":
-          this.downloadSankeyAsJpg();
+          this.downloadSankeyAsJpg(sankeyId);
           break;
         case "html":
-          this.downloadSankeyAsHtml();
+          this.downloadSankeyAsHtml(sankeyId);
           break;
         default:
           return;
       }
     },
-    downloadSankeyAsPng() {
-      const sankeySvgElement = document.querySelector("#sankey-svg"); // Reference to the SVG ID
+    downloadSankeyAsPng(sankeyId) {
+      const sankeySvgElement = document.querySelector(`#${sankeyId}`); // Reference to the SVG ID
       saveSvgAsPng(sankeySvgElement, "sankey-diagram.png");
     },
-    async downloadSankeyAsJpg() {
+    async downloadSankeyAsJpg(sankeyId) {
       // Get the SVG element
-      const sankeySvgElement = document.querySelector("#sankey-svg"); // Reference to the SVG ID
+      const sankeySvgElement = document.querySelector(`#${sankeyId}`); // Reference to the SVG ID
       const svg = d3.select(sankeySvgElement);
       const svgString = new XMLSerializer().serializeToString(svg.node());
 
@@ -289,8 +305,8 @@ export default {
         "data:image/svg+xml;base64," +
         btoa(unescape(encodeURIComponent(svgString)));
     },
-    downloadSankeyAsHtml() {
-      const svgElement = document.querySelector("#sankey-svg"); // Correctly reference the SVG ID
+    downloadSankeyAsHtml(sankeyId) {
+      const svgElement = document.querySelector(`#${sankeyId}`); // Correctly reference the SVG ID
       const svgData = new XMLSerializer().serializeToString(svgElement);
       const svgBlob = new Blob([svgData], {
         type: "image/svg+xml;charset=utf-8",

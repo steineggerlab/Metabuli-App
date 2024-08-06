@@ -44,6 +44,10 @@ export default {
     //
   },
   props: {
+    id: {
+      type: String,
+      required: true, // Make sure this prop is required so you always provide it
+    },
     isSubtree: {
       type: Boolean,
       required: true,
@@ -596,7 +600,7 @@ export default {
         .append("svg")
         .attr("width", width)
         .attr("height", height + marginBottom)
-        .attr("id", "sankey-svg"); // ID for download reference
+        .attr("id", this.id);  // Set the id based on the prop for download reference
 
       const sankeyGenerator = sankey()
         .nodeId((d) => d.id)
