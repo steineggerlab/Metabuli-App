@@ -9,7 +9,13 @@
     ></div>
 
     <!-- DISPLAY WHILE SANKEY IS LOADING -->
-    <div v-else>Loading...</div>
+    <div class="d-flex flex-column align-center justify-center loading-container" v-else>
+      <v-progress-circular
+          color="indigo"
+          size="64"
+          indeterminate
+        ></v-progress-circular>
+    </div>
 
     <!-- TOOLTIP ON NODE HOVER -->
     <div ref="tooltip" class="tooltip" v-if="hoverDetails.visible">
@@ -527,7 +533,7 @@ export default {
     // Functions for node subtree dialog
     showNodeDetails(event, d) {
       const subtreeRawData = this.extractSubtreeRawData(d); // Extract subtree raw data for clicked node
-      const hasSourceLinks = d.sourceLinks.length > 0 ? true : false; // Determine if the node has any outgoing links
+      const hasSourceLinks = subtreeRawData.length > 1 ? true : false; // Determine if the subtree has more than 1 node
 
       this.$emit("node-click", {
         type: "node",
@@ -920,6 +926,12 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
+  height: 100%; /* Ensure it takes full viewport height */
+}
+.loading-container {
+  height: 400px;
+
 }
 
 .sankey-diagram {
