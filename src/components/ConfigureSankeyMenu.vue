@@ -13,7 +13,7 @@
         <slot name="activator" v-bind="{ props }"></slot>
       </template>
 
-      <v-card min-width="300" class="pt-3 my-1">
+      <v-card min-width="300" class=" my-1">
         <v-form ref="form">
           <v-list>
             <!-- SWITCH (Show all) -->

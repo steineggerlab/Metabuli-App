@@ -527,11 +527,13 @@ export default {
     // Functions for node subtree dialog
     showNodeDetails(event, d) {
       const subtreeRawData = this.extractSubtreeRawData(d); // Extract subtree raw data for clicked node
+      const hasSourceLinks = d.sourceLinks.length > 0 ? true : false; // Determine if the node has any outgoing links
 
       this.$emit("node-click", {
         type: "node",
         data: d,
         subtreeData: subtreeRawData,
+        hasSourceLinks: hasSourceLinks,
       });
     },
     extractSubtreeRawData(node) {

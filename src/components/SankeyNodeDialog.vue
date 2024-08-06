@@ -109,6 +109,7 @@
 
       <!-- Floating Action Button -->
       <ConfigureSankeyMenu
+        v-if="nodeDetails.hasSourceLinks"
         :initialTaxaLimit="configureMenuSettings.taxaLimit"
         :maxTaxaLimit="configureMenuSettings.maxTaxaLimit"
         :initialMinCladeReadsMode="configureMenuSettings.minCladeReadsMode"
