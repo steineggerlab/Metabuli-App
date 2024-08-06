@@ -137,8 +137,8 @@
                         divided
                         mandatory
                       >
-                        <v-btn value="proportion" height="30">Proportion</v-btn>
-                        <v-btn value="cladeReads" height="30"
+                        <v-btn value="proportion" height="30" class="rounded-s-lg rounded-e-0">Proportion</v-btn>
+                        <v-btn value="cladeReads" height="30" class="rounded-s-0 rounded-e-lg"
                           >Clade Reads</v-btn
                         >
                       </v-btn-toggle>

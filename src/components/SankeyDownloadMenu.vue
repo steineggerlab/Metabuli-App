@@ -13,9 +13,9 @@
         v-for="(item, i) in items"
         :key="i"
         @click="selectFormat(item.value)"
-        class="d-flex align-center"
+        class="d-flex align-center justify-center"
       >
-        <v-list-item-title>{{ item.text }}</v-list-item-title>
+        <v-list-item-title class="text-center">{{ item.text }}</v-list-item-title>
       </v-list-item>
     </v-list>
   </v-menu>
