@@ -4,6 +4,7 @@
       <!-- Close Dialog Button -->
       <v-card-actions class="py-0">
         <v-btn
+          rounded="xl"
           icon="$close"
           color="gray"
           @click="$emit('close-dialog')"
@@ -20,7 +21,7 @@
           <!-- Rank Column -->
           <v-col>
             <v-card-subtitle>Rank</v-card-subtitle>
-            <v-chip density="compact" color="primary" label>{{
+            <v-chip density="compact" color="primary font-weight-bold" label>{{
               nodeDetails.data.trueRank
             }}</v-chip>
           </v-col>
@@ -79,7 +80,7 @@
       <v-divider></v-divider>
 
       <!-- Full Lineage & Subtree Sankey -->
-      <v-card-item class="pb-13">
+      <v-card-item class="pb-0">
         <v-card-subtitle class="opacity-100 font-weight-bold"
           >Full Lineage</v-card-subtitle
         >
@@ -109,7 +110,10 @@
       </v-card-item>
 
       <!-- Floating Action Button -->
-      <div v-if="nodeDetails.hasSourceLinks" class="fab-container d-flex align-center gc-1 mb-6">
+      <div
+        v-if="nodeDetails.hasSourceLinks"
+        class="fab-container d-flex align-center gc-1 mb-6"
+      >
         <SankeyDownloadMenu
           :menuLocation="'top end'"
           @format-selected="emitSubtreeDownloadFormat"

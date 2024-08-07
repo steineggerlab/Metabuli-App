@@ -22,14 +22,46 @@
 
     <!-- TOOLTIP ON NODE HOVER -->
     <div ref="tooltip" class="tooltip" v-if="hoverDetails.visible">
-      <div>{{ hoverDetails.data.name }}</div>
-      <div>
-        Rank: <strong>{{ hoverDetails.data.trueRank }}</strong>
-      </div>
-      <div>TaxID: {{ hoverDetails.data.taxon_id }}</div>
-      <div>Proportion: {{ hoverDetails.data.proportion }}%</div>
-      <div>Clade Reads: {{ hoverDetails.data.clade_reads }}</div>
-      <div>Taxon Reads: {{ hoverDetails.data.taxon_reads }}</div>
+      <v-card class="rounded-lg text-white tooltip">
+        <v-col>
+          <v-row>
+            <div>
+              <p class="mb-n1" style="font-size: 0.6rem">
+                #{{ hoverDetails.data.taxon_id }}
+              </p>
+              <v-card-title
+                class="opacity-100 text-subtitle-2 pt-0 pb-0 px-0 font-weight-bold"
+                >{{ hoverDetails.data.name }}</v-card-title
+              >
+            </div>
+            <v-chip
+              variant="tonal"
+              color="orange-lighten-1 px-2 font-weight-bold"
+              density="compact"
+              >{{ hoverDetails.data.trueRank }}</v-chip
+            >
+          </v-row>
+
+          <v-row>
+            <v-divider class="my-2"></v-divider>
+          </v-row>
+
+          <v-row>
+            <v-card-subtitle>Proportion</v-card-subtitle>
+            <v-card-text>{{ hoverDetails.data.proportion }}%</v-card-text>
+          </v-row>
+
+          <v-row>
+            <v-card-subtitle>Clade Reads</v-card-subtitle>
+            <v-card-text>{{ hoverDetails.data.clade_reads }}</v-card-text>
+          </v-row>
+
+          <v-row>
+            <v-card-subtitle>Taxon Reads</v-card-subtitle>
+            <v-card-text>{{ hoverDetails.data.taxon_reads }}</v-card-text>
+          </v-row>
+        </v-col>
+      </v-card>
     </div>
   </div>
 </template>
@@ -590,8 +622,8 @@ export default {
 
       const container = this.$refs.sankeyContainer;
       d3.select(container).selectAll("*").remove(); // Clear the previous diagram
-      const width = this.diagramWidth; // Set width dynamically to full window width
-      const width = 1100; // Set width dynamically to full window width
+
+      const width = 1100;
       const height = this.figureHeight;
       const marginBottom = 50; // Margin for rank labels
       const marginRight = 150;
@@ -601,7 +633,7 @@ export default {
         .append("svg")
         .attr("width", width)
         .attr("height", height + marginBottom)
-        .attr("id", this.id);  // Set the id based on the prop for download reference
+        .attr("id", this.id); // Set the id based on the prop for download reference
 
       const sankeyGenerator = sankey()
         .nodeId((d) => d.id)
@@ -792,24 +824,18 @@ export default {
           visible: true,
           data: d,
         };
-        // console.log(this.hoverDetails.data);
-        this.moveTooltip(event, d);
+        this.moveTooltip(event);
       };
 
       // Function to move tooltip
-      this.moveTooltip = (event, d) => {
+      this.moveTooltip = (event) => {
         const tooltip = this.$refs.tooltip;
-        const containerRect =
-          this.$refs.sankeyContainer.getBoundingClientRect();
-        const drawerWidth = this.$refs.navigationDrawer
-          ? this.$refs.navigationDrawer.clientWidth
-          : 0;
+        const offsetX = this.isSubtree ? -12 : 12;
+        const offsetY = this.isSubtree ? -24 : 0;
 
         if (tooltip) {
-          tooltip.style.left =
-            event.clientX - containerRect.left - drawerWidth + 15 + "px";
-          tooltip.style.top = event.pageY - 200 + "px";
-          tooltip.style.borderColor = d3.color(d.color);
+          tooltip.style.left = event.pageX + offsetX + "px";
+          tooltip.style.top = event.clientY + offsetY + "px";
         }
       };
 
@@ -831,8 +857,8 @@ export default {
           highlightLineage(d);
           this.showTooltip(event, d);
         })
-        .on("mousemove", (event, d) => {
-          this.moveTooltip(event, d);
+        .on("mousemove", (event) => {
+          this.moveTooltip(event);
         })
         .on("mouseout", () => {
           resetHighlight();
@@ -931,7 +957,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .sankey-container {
   display: flex;
   flex-direction: column;
@@ -945,6 +971,7 @@ export default {
 
 .sankey-diagram {
   overflow-x: scroll;
+  padding-bottom: 32px;
 }
 .taxid-breadcrumbs a {
   text-decoration: none;
@@ -953,18 +980,43 @@ export default {
 .node {
   cursor: grab;
 }
-
 .node:active {
   cursor: grabbing;
 }
 
+/* Node Hover Tooltip */
 .tooltip {
-  position: absolute;
-  background-color: white;
-  border: 1px solid #ccc;
-  padding: 10px;
-  border-radius: 5px;
+  position: fixed;
+  background-color: rgba(38, 50, 56, 0.95);
   pointer-events: none;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.tooltip .v-card {
+  padding-right: 16px;
+  padding-left: 16px;
+  padding-top: 10px;
+  padding-bottom: 8px;
+}
+.tooltip .v-row {
+  display: flex;
+  align-content: center;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 16px;
+}
+.tooltip .v-card-title {
+  max-width: 200px;
+  word-wrap: break-word;
+  white-space: normal; /* Ensure text wraps */
+}
+.tooltip .v-card-subtitle {
+  padding-left: 0px;
+}
+.tooltip .v-card-text {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-right: 0px;
+  padding-left: 0px;
+  text-align: end;
 }
 </style>
