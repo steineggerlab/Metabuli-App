@@ -287,9 +287,9 @@
                     @change="handleFileSelect"
                     accept=".tsv"
                   ></v-file-input>
-                  <v-icon size="50" icon="$fileUpload" color="primary"></v-icon>
+                  <v-icon size="50" icon="$fileUpload" color="blue-accent-4"></v-icon>
                   <p class="text-body-2">
-                    Drag & drop your file or select a file.
+                    Drag & drop your file here or choose from files.
                   </p>
                 </div>
 
@@ -909,14 +909,17 @@ export default {
 
 .dotted-border {
   border: 2px dashed #ccc;
+  border-width: 2px;
   border-radius: 5px;
   padding: 40px;
   text-align: center;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .dotted-border:hover {
-  background-color: #f9f9f9;
+  border: 2px dashed #1976D2;
+  background-color: rgba(21, 101, 192, 0.04);
 }
 
 .uploaded-file {
