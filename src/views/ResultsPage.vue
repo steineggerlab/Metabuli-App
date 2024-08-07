@@ -375,6 +375,6 @@ export default {
 .tab-fill-height {
   height: 75vh; /* Adjust according to your header/footer height */
   overflow-y: auto; /* Enable vertical scrolling */
-  overflow-x: hidden; /* Hide horizontal overflow */
+  overflow-x: auto; /* Hide horizontal overflow */
 }
 </style>

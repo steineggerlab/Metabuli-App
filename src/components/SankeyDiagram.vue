@@ -591,6 +591,7 @@ export default {
       const container = this.$refs.sankeyContainer;
       d3.select(container).selectAll("*").remove(); // Clear the previous diagram
       const width = this.diagramWidth; // Set width dynamically to full window width
+      const width = 1100; // Set width dynamically to full window width
       const height = this.figureHeight;
       const marginBottom = 50; // Margin for rank labels
       const marginRight = 150;
@@ -943,7 +944,7 @@ export default {
 }
 
 .sankey-diagram {
-  flex: 1;
+  overflow-x: scroll;
 }
 .taxid-breadcrumbs a {
   text-decoration: none;
