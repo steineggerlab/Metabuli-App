@@ -715,7 +715,6 @@ export default {
       sankeyGenerator.update(graph);
 
       // Store full graph (used for drawing subtree upon node click)
-      // FIXME: only if isSubtree === false
       const fullGraph = sankeyGenerator({
         nodes: this.fullGraphData.nodes.map((d) => Object.assign({}, d)),
         links: this.fullGraphData.links.map((d) => Object.assign({}, d)),
@@ -811,12 +810,7 @@ export default {
             : d3.color(d.source.color)
         ) // Set link color to source node color with reduced opacity
         .attr("stroke-width", (d) => Math.max(1, d.width))
-        .attr("clip-path", (d, i) => `url(#clip-path-${this.instanceId}-${i})`) // add to sankeydiagram.vue
-        .append("title")
-        .text(
-          (d) =>
-            `${d.source.name} → ${d.target.name}\n${d.target.clade_reads} clade reads (${d.target.proportion}%)`
-        );
+        .attr("clip-path", (d, i) => `url(#clip-path-${this.instanceId}-${i})`);
 
       // Function to show tooltip
       this.showTooltip = (event, d) => {
@@ -937,7 +931,6 @@ export default {
     async fetchSankey() {
       await new Promise((resolve) => {
         setTimeout(() => {
-          //  this.fullGraph = this.getGraphData(); // Replace with actual data fetching logic
           this.createSankey(); // Create the Sankey diagram immediately after getting data
           resolve();
         }, 50); // Immediate execution after fetching data

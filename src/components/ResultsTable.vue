@@ -89,13 +89,13 @@ export default {
           title: "Clade Reads",
           align: "center",
           key: "clade_reads",
-          width: "160px",
+          width: "140px",
         },
         {
           title: "Taxon Reads",
           align: "center",
           key: "taxon_reads",
-          width: "160px",
+          width: "140px",
         },
         {
           title: "Rank",
