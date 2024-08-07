@@ -71,13 +71,11 @@
                     <v-chip
                       v-if="jobDetails.q1"
                       label
-                      closable
                       color="primary"
                       density="comfortable"
-                      prepend-icon="$file"
-                      @click:close="clearFile('q1')"
-                      class="filename-chip text-break"
+                      class="filename-chip"
                     >
+                    <v-icon icon="$delete" @click="clearFile('q1')" class="mr-1"></v-icon>
                       {{ this.extractFilename(jobDetails.q1) }}</v-chip
                     >
                     <v-text-field
@@ -98,13 +96,11 @@
                     <v-chip
                       v-if="jobDetails.q2"
                       label
-                      closable
                       color="primary"
                       density="comfortable"
-                      prepend-icon="$file"
-                      @click:close="clearFile('q2')"
-                      class="filename-chip text-break"
+                      class="filename-chip"
                     >
+                    <v-icon icon="$delete" @click="clearFile('q2')" class="mr-1"></v-icon>
                       {{ this.extractFilename(jobDetails.q2) }}</v-chip
                     >
                     <v-text-field
@@ -124,13 +120,11 @@
                     <v-chip
                       v-if="jobDetails.database"
                       label
-                      closable
                       color="primary"
                       density="comfortable"
-                      prepend-icon="$folder"
-                      @click:close="clearFile('database')"
-                      class="filename-chip text-break"
+                      class="filename-chip"
                     >
+                    <v-icon icon="$delete" @click="clearFile('database')" class="mr-1"></v-icon>
                       {{ this.extractFilename(jobDetails.database) }}</v-chip
                     >
                     <v-text-field
@@ -148,13 +142,11 @@
                     <v-chip
                       v-if="jobDetails.outdir"
                       label
-                      closable
                       color="primary"
                       density="comfortable"
-                      prepend-icon="$folder"
-                      @click:close="clearFile('outdir')"
-                      class="filename-chip text-break"
+                      class="filename-chip"
                     >
+                    <v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
                       {{ this.extractFilename(jobDetails.outdir) }}</v-chip
                     >
                     <v-text-field
@@ -891,10 +883,10 @@ export default {
   height: 300px;
 }
 .filename-chip {
+  padding-left: 8px;
   max-width: 400px; /* Adjust the width as needed */
-
+  align-items: center;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* UPLOAD REPORT TAB */
