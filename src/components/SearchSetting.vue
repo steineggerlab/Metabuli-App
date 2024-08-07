@@ -258,7 +258,7 @@
                     class="mr-1 align-center"
                     icon="$fileUpload"
                   ></v-icon>
-                  Upload Report File
+                  Upload Previous Report
                 </v-card-title>
                 <v-card-text
                   >Upload report.tsv file directly to see
@@ -672,7 +672,7 @@ export default {
     },
 
     // Function to track job status
-    async pollJobStatus(interval = 500, timeout = 60000) {
+    async pollJobStatus(interval = 500, timeout = 180000) {
       console.log("Running poll");
       const start = Date.now();
       while (Date.now() - start < timeout) {
