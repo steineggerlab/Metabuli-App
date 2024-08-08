@@ -7,7 +7,7 @@
       <!-- METABULI TITLE + LOGO -->
       <div class="d-flex gc-1 ml-3" style="align-items: center">
         <div class="flex-grow-1">
-          <v-app-bar-title>Metabuli</v-app-bar-title>
+          <v-app-bar-title class="text-overline font-weight-medium" style="font-size: 15px !important;">Metabuli</v-app-bar-title>
         </div>
         <v-img src="assets/marv_metabuli_small.png" width="50px"></v-img>
       </div>

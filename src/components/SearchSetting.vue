@@ -31,7 +31,7 @@
             <v-container>
               <!-- Title -->
               <v-card flat>
-                <v-card-title class="font-weight-black">
+                <v-card-title class="search-setting-title">
                   <v-icon left class="mr-1 align-center" icon="$dna"></v-icon>
                   Configure Search
                 </v-card-title>
@@ -252,7 +252,7 @@
             >
               <!-- TITLE -->
               <v-card flat>
-                <v-card-title class="font-weight-black">
+                <v-card-title class="search-setting-title">
                   <v-icon
                     left
                     class="mr-1 align-center"
@@ -864,6 +864,14 @@ export default {
 .status-container {
   display: flex;
   align-items: center;
+}
+
+.search-setting-title {
+  font-family: Roboto;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
 /* SEARCH SETTINGS TAB */
