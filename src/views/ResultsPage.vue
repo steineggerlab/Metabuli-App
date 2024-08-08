@@ -6,11 +6,11 @@
       <v-tab value="krona" v-if="kronaContent">Krona</v-tab>
     </v-tabs>
 
-    <v-card-text class="h-100 pb-0">
+    <v-card-text class="d-flex flex-column h-100 pb-0">
       <v-tabs-window v-model="tab" class="h-100">
         <!-- TABLE TAB -->
-        <v-tabs-window-item value="table">
-          <ResultsTable :data="results" />
+        <v-tabs-window-item value="table" class="h-100">
+          <ResultsTable :data="results" class="h-100"/>
         </v-tabs-window-item>
 
         <!-- SANKEY TAB-->

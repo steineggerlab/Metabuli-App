@@ -1,5 +1,5 @@
 <template>
-  <v-data-table :headers="headers" :items="filteredTableResults" height="550px">
+  <v-data-table :headers="headers" :items="filteredTableResults" height="550px" density="comfortable" items-per-page="20" multi-sort sticky>
     <template v-slot:top>
       <div class="d-flex align-center">
         <!-- NUMBER OF DATA ITEMS -->
@@ -19,8 +19,8 @@
       </div>
     </template>
 
-    <template v-slot:item="{ item, index }">
-      <tr :class="index % 2 === 0 ? 'grey-background' : 'white-background'">
+    <template v-slot:item="{ item }">
+      <tr >
         <!-- PROPORTION -->
         <td>
           <div class="proportion-cell">
@@ -231,7 +231,6 @@ export default {
 .taxon-reads-text {
   position: relative;
   padding: 8px;
-  z-index: 1;
 }
 
 /* Alternating row background */
