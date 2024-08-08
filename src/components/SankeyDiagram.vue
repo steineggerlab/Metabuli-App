@@ -963,8 +963,15 @@ export default {
 
 .sankey-diagram {
   height: 100%;
-  overflow-x: scroll;
   padding-bottom: 32px;
+  overflow-x: scroll;
+  /* Hide horizontal scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+/* Hide horizontal scrollbar for Chrome, Safari and Opera */
+.sankey-diagram::-webkit-scrollbar {
+  display: none;
 }
 .taxid-breadcrumbs a {
   text-decoration: none;

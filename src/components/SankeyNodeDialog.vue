@@ -1,5 +1,5 @@
 <template>
-  <v-dialog max-width="window.innerWidth" scrollable>
+  <v-dialog height="100%" max-width="window.innerWidth" scrollable>
     <v-card>
       <!-- Close Dialog Button -->
       <v-card-actions class="py-0">
