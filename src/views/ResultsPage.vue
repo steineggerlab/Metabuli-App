@@ -84,7 +84,7 @@
 
         <!-- KRONA TAB -->
         <v-tabs-window-item value="krona" class="h-100">
-          <div class="pa-4 tab-fill-height">
+          <div class="pa-4 tab-fill-height" style="overflow-y: hidden;">
             <iframe
               :srcdoc="kronaContent"
               style="width: 100%; height: 100%; border: none"
