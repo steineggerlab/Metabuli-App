@@ -1,5 +1,5 @@
 <template>
-  <div class="sankey-container">
+  <div class="sankey-container d-flex flex-column flex-shrink-1">
     <!-- DISPLAY ONCE SANKEY IS LOADED -->
     <div
       v-if="!loading"
@@ -953,7 +953,6 @@ export default {
 <style scoped>
 .sankey-container {
   display: flex;
-  flex-direction: column;
   gap: 10px;
   width: 100%;
   height: 100%; /* Ensure it takes full viewport height */
@@ -963,6 +962,7 @@ export default {
 }
 
 .sankey-diagram {
+  height: 100%;
   overflow-x: scroll;
   padding-bottom: 32px;
 }

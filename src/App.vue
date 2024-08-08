@@ -77,7 +77,7 @@
     </v-navigation-drawer>
 
     <v-main>
-      <router-view
+      <router-view class="h-100"
         @job-complete="handleJobComplete"
         @report-uploaded="handleReportUpload"
       ></router-view>

@@ -1,20 +1,20 @@
 <template>
-  <v-card class="h-100">
+  <v-card class="d-flex flex-column flex-shrink-1 h-100">
     <v-tabs v-model="tab">
       <v-tab value="table">Table</v-tab>
       <v-tab value="sankey">Sankey</v-tab>
       <v-tab value="krona" v-if="kronaContent">Krona</v-tab>
     </v-tabs>
 
-    <v-card-text class="d-flex flex-column flex-grow-1">
-      <v-tabs-window v-model="tab">
+    <v-card-text class="d-flex flex-column h-100 pb-0">
+      <v-tabs-window v-model="tab" class="h-100">
         <!-- TABLE TAB -->
         <v-tabs-window-item value="table">
           <ResultsTable :data="results" />
         </v-tabs-window-item>
 
         <!-- SANKEY TAB-->
-        <v-tabs-window-item value="sankey">
+        <v-tabs-window-item value="sankey" class="d-flex flex-column h-100">
           <!-- TOOLBAR ABOVE SANKEY DIAGRAM -->
           <div class="d-flex justify-space-around my-5 mx-2 gc-1">
             <div class="d-flex align-center">
@@ -78,6 +78,7 @@
             :nodeDetails="dialogData"
             @close-dialog="hideDialog"
             @download-sankey="handleFormatSelected"
+            class="align-top"
           />
         </v-tabs-window-item>
 
