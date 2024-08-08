@@ -6,7 +6,7 @@
       <v-tab value="krona" v-if="kronaContent">Krona</v-tab>
     </v-tabs>
 
-    <v-card-text class="d-flex flex-column h-100 pb-0">
+    <v-card-text class="h-100 pb-0">
       <v-tabs-window v-model="tab" class="h-100">
         <!-- TABLE TAB -->
         <v-tabs-window-item value="table">
@@ -14,7 +14,7 @@
         </v-tabs-window-item>
 
         <!-- SANKEY TAB-->
-        <v-tabs-window-item value="sankey" class="d-flex flex-column h-100">
+        <v-tabs-window-item value="sankey" class="h-100">
           <!-- TOOLBAR ABOVE SANKEY DIAGRAM -->
           <div class="d-flex justify-space-around my-5 mx-2 gc-1">
             <div class="d-flex align-center">
