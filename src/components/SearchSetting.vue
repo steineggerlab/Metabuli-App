@@ -618,7 +618,7 @@ export default {
             jobid: null,
             isSample: false,
             jobType: "uploadReport",
-            backendOutput: "N/A",
+            backendOutput: null,
             resultsJSON: this.processedResults.jsonData.results,
             kronaContent: this.processedResults.kronaContent, // null
           };
@@ -672,7 +672,7 @@ export default {
           jobid: this.jobDetailsSample.jobid,
           isSample: true,
           jobType: "runSearch",
-          backendOutput: "N/A",
+          backendOutput: null,
           resultsJSON: this.processedResults.jsonData.results,
           kronaContent: this.processedResults.kronaContent,
         };
@@ -948,9 +948,7 @@ export default {
         jobType: completedJob.jobType,
         isSample: completedJob.isSample,
         jobStatus: "Completed", // Example additional data
-        backendOutput: completedJob.backendOutput
-          ? completedJob.backendOutput
-          : "N/A",
+        backendOutput: completedJob.backendOutput,
         jobId: completedJob.jobid,
         // timeTaken: jobDetails.timeTaken,  // Example additional data
         results: completedJob.resultsJSON, // Assuming results is available here
