@@ -75,7 +75,11 @@
                       density="comfortable"
                       class="filename-chip"
                     >
-                    <v-icon icon="$delete" @click="clearFile('q1')" class="mr-1"></v-icon>
+                      <v-icon
+                        icon="$delete"
+                        @click="clearFile('q1')"
+                        class="mr-1"
+                      ></v-icon>
                       {{ this.extractFilename(jobDetails.q1) }}</v-chip
                     >
                     <v-text-field
@@ -100,7 +104,11 @@
                       density="comfortable"
                       class="filename-chip"
                     >
-                    <v-icon icon="$delete" @click="clearFile('q2')" class="mr-1"></v-icon>
+                      <v-icon
+                        icon="$delete"
+                        @click="clearFile('q2')"
+                        class="mr-1"
+                      ></v-icon>
                       {{ this.extractFilename(jobDetails.q2) }}</v-chip
                     >
                     <v-text-field
@@ -124,7 +132,11 @@
                       density="comfortable"
                       class="filename-chip"
                     >
-                    <v-icon icon="$delete" @click="clearFile('database')" class="mr-1"></v-icon>
+                      <v-icon
+                        icon="$delete"
+                        @click="clearFile('database')"
+                        class="mr-1"
+                      ></v-icon>
                       {{ this.extractFilename(jobDetails.database) }}</v-chip
                     >
                     <v-text-field
@@ -146,7 +158,11 @@
                       density="comfortable"
                       class="filename-chip"
                     >
-                    <v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
+                      <v-icon
+                        icon="$delete"
+                        @click="clearFile('outdir')"
+                        class="mr-1"
+                      ></v-icon>
                       {{ this.extractFilename(jobDetails.outdir) }}</v-chip
                     >
                     <v-text-field
@@ -279,7 +295,11 @@
                     @change="handleFileSelect"
                     accept=".tsv"
                   ></v-file-input>
-                  <v-icon size="50" icon="$fileUpload" color="blue-accent-4"></v-icon>
+                  <v-icon
+                    size="50"
+                    icon="$fileUpload"
+                    color="blue-accent-4"
+                  ></v-icon>
                   <p class="text-body-2">
                     Drag & drop your file here or choose from files.
                   </p>
@@ -355,7 +375,7 @@ export default {
       { title: "Run Search", value: "runSearch" },
       { title: "Upload Report", value: "uploadReport" },
     ], // FIXME: rename to tabItems
-    
+
     // Properties for Run New Search tab
     isJobFormValid: false,
     jobDetails: {
@@ -493,14 +513,15 @@ export default {
     },
     endType: "single-end", // FIXME: move this to jobDetails
     expandAdvancedSettings: false,
-    
+
     // Properties for Upload Report tab
     file: null, // FIXME: rename to uploadedReportFile or Path
-    
+
     // Properties for job processing status, response, and results
     status: "INITIAL",
     results: "",
     backendOutput: null,
+    processedResults: null,
     snackbar: {
       show: false,
       message: "",
@@ -511,13 +532,13 @@ export default {
       timeout: 4000,
     },
   }),
-  
+
   computed: {
     computedHint() {
       return `${this.jobDetails.jobid}_report.tsv`;
     },
   },
-  
+
   watch: {
     advancedSettings: {
       handler(newVal) {
@@ -526,7 +547,7 @@ export default {
       deep: true,
     },
   },
-  
+
   methods: {
     // Run Search
     extractFilename(path) {
@@ -558,7 +579,7 @@ export default {
       }
     },
 
-    // Upload Report
+    // UPLOAD REPORT TAB
     handleDrop(event) {
       const file = event.dataTransfer.files[0];
       if (file) {
@@ -583,27 +604,43 @@ export default {
       }
 
       try {
+        // Starting loading dialog
         this.$emit("job-started", true); // FIXME: true sets isSample as true
 
+        // Process the file content
+        await this.processResults("uploadReport", false);
+        console.log("processed:", this.processedResults); // DEBUG
+
         setTimeout(() => {
-          const reportFilePath = this.file.path;
+          // Object storing info about completedJob
+          const completedJob = {
+            outdir: null,
+            jobid: null,
+            isSample: false,
+            jobType: "uploadReport",
+            backendOutput: "N/A",
+            resultsJSON: this.processedResults.jsonData.results,
+            kronaContent: this.processedResults.kronaContent, // null
+          };
 
-          // Process the file content
-          this.$emit("report-uploaded", reportFilePath);
+          // Store completed job in local storage
+          console.log("sample completedjob", completedJob); // DEBUG
+          this.storeResults(completedJob);
 
+          // Store latest job in local storage for results rendering
+          localStorage.setItem(
+            "processedResults",
+            JSON.stringify(completedJob)
+          );
+
+          // Trigger snackbar
           this.triggerSnackbar(
             "Upload successful. Check the results tab!",
             "success",
             "success",
             "View",
             () => {
-              this.$router.push({
-                name: "ResultsPage",
-                query: {
-                  reportFilePath: reportFilePath,
-                  jobType: "uploadReport",
-                },
-              });
+              this.$router.push({ name: "ResultsPage" });
             }
           );
         }, 2000); // FIXME: add await, wait for file to be processed, if file isnt right format, trigger error snackbar
@@ -619,10 +656,86 @@ export default {
       }
     },
 
-    // Send backend request for run search
+    // RUN SEARCH TAB
+    // Function for loading sample data report file
+    async loadSampleData() {
+      // Start loading dialog
+      this.$emit("job-started", true);
+
+      // Process report file
+      await this.processResults("runSearch", true);
+
+      setTimeout(() => {
+        // Object storing info about completedJob
+        const completedJob = {
+          outdir: this.jobDetailsSample.outdir,
+          jobid: this.jobDetailsSample.jobid,
+          isSample: true,
+          jobType: "runSearch",
+          backendOutput: "N/A",
+          resultsJSON: this.processedResults.jsonData.results,
+          kronaContent: this.processedResults.kronaContent,
+        };
+
+        // Store completed job in local storage
+        console.log("sample completedjob", completedJob); // DEBUG
+        this.storeResults(completedJob);
+
+        // Store latest job in local storage for results rendering
+        localStorage.setItem("processedResults", JSON.stringify(completedJob));
+
+        // Trigger snackbar
+        this.triggerSnackbar(
+          "Sample data successfully loaded.",
+          "success",
+          "success",
+          "View",
+          () => {
+            this.$router.push({ name: "ResultsPage" });
+          }
+        );
+      }, 2000); // Simulate a job taking 2 seconds
+    },
+    // File picker select function for new run search
+    async selectFile(field, type) {
+      // FIXME: unify with UPLOAD REPORT TAB file selector function
+      if (window.electron) {
+        try {
+          const options = {
+            properties: type === "file" ? ["openFile"] : ["openDirectory"],
+          };
+          const filePaths = await window.electron.openFileDialog(options);
+          if (filePaths && filePaths.length > 0) {
+            if (!field) {
+              return filePaths[0];
+            }
+            this.jobDetails[field] = filePaths[0];
+          }
+        } catch (error) {
+          console.error("Error selecting file:", error); // DEBUG
+          this.triggerSnackbar(
+            `File selection error: ${error}`,
+            "error",
+            "fileAlert",
+            "Dismiss"
+          );
+        }
+      } else {
+        console.error("File dialog is not supported in the web environment."); // DEBUG
+        this.triggerSnackbar(
+          "File dialog is not supported in the web environment.",
+          "error",
+          "warning",
+          "Dismiss"
+        );
+      }
+    },
+    // Start backend job request
     startJob() {
-      this.$emit("job-started", false); // Emit job-started event to parent
-      // Simulate job process
+      // Start loading dialog
+      this.$emit("job-started", false);
+
+      // Start backend request
       this.runBackend();
     },
     async runBackend() {
@@ -669,8 +782,10 @@ export default {
         this.status = "RUNNING";
         window.electron.runBackend(params);
 
-        // Poll job status
+        // Poll job status + process results
         await this.pollJobStatus();
+
+        // Store completed job in local storage + trigger snackbar
         this.handleJobSuccess();
       } catch (error) {
         console.error("Error running backend:", error.message); // DEBUG
@@ -679,15 +794,21 @@ export default {
         this.status = "INITIAL";
       }
     },
-
-    // Function to track job status
+    // Function to track job status + process results + trigger snackbar
     async pollJobStatus(interval = 500, timeout = 180000) {
-      console.log("Running poll");
+      console.log("Running poll"); // DEBUG
       const start = Date.now();
       while (Date.now() - start < timeout) {
         try {
           if (this.status === "COMPLETE") {
-            return true;
+            try {
+              await this.processResults("runSearch", false);
+              console.log("processed:", this.processedResults); // DEBUG
+
+              return true;
+            } catch (error) {
+              console.error("Error processing results:", error);
+            }
           } else if (this.status === "ERROR") {
             throw new Error("Backend error occurred");
           }
@@ -701,160 +822,149 @@ export default {
       throw new Error("Polling timed out");
     },
 
-    loadSampleData() {
-      this.$emit("job-started", true);
+    // Function for processing results (shared for both tabs)
+    async processResults(jobType, isSample) {
+      let reportFilePath;
+      let kronaFilePath;
 
-      setTimeout(() => {
-        this.$emit("job-completed", {
-          outdir: this.jobDetailsSample.outdir,
-          jobid: this.jobDetailsSample.jobid,
-          isSample: true,
-        });
-
-        const completedJob = {
-          outdir: this.jobDetailsSample.outdir,
-          jobid: this.jobDetailsSample.jobid,
-          isSample: true,
-          jobType: "runSearch",
-        };
-
-        // Store completed job in local storage
-        console.log("sample completedjob", completedJob) // DEBUG
-        this.storeResults(completedJob);
-
-        this.triggerSnackbar(
-          "Sample data successfully loaded.",
-          "success",
-          "success",
-          "View",
-          () => {
-            this.$router.push({
-              name: "ResultsPage",
-              query: {
-                ...completedJob,
-              },
-            });
-          }
-        );
-      }, 2000); // Simulate a job taking 2 seconds
-    },
-
-    async selectFile(field, type) {
-      // File picker select function for RUN SEARCH TAB
-      // FIXME: unify with UPLOAD REPORT TAB file selector function
-      if (window.electron) {
-        try {
-          const options = {
-            properties: type === "file" ? ["openFile"] : ["openDirectory"],
-          };
-          const filePaths = await window.electron.openFileDialog(options);
-          if (filePaths && filePaths.length > 0) {
-            if (!field) {
-              return filePaths[0];
-            }
-            this.jobDetails[field] = filePaths[0];
-          }
-        } catch (error) {
-          console.error("Error selecting file:", error); // DEBUG
-          this.triggerSnackbar(
-            `File selection error: ${error}`,
-            "error",
-            "fileAlert",
-            "Dismiss"
+      if (jobType === "runSearch") {
+        // Resolve outdir path
+        let resolvedOutdirPath;
+        let jobId;
+        if (isSample) {
+          resolvedOutdirPath = window.electron.resolvePath(
+            this.jobDetailsSample.outdir
           );
+          jobId = this.jobDetailsSample.jobid;
+        } else {
+          resolvedOutdirPath = this.jobDetails.outdir;
+          jobId = this.jobDetails.jobid;
         }
-      } else {
-        console.error("File dialog is not supported in the web environment."); // DEBUG
-        this.triggerSnackbar(
-          "File dialog is not supported in the web environment.",
-          "error",
-          "warning",
-          "Dismiss"
-        );
+
+        // Set file paths for report and krona
+        reportFilePath = `${resolvedOutdirPath}/${jobId}_report.tsv`;
+        kronaFilePath = `${resolvedOutdirPath}/${jobId}_krona.html`;
+      } else if (jobType === "uploadReport") {
+        // Set file path for report directly
+        reportFilePath = this.file.path;
+        kronaFilePath = null;
+      }
+
+      // Read and process TSV and Krona HTML here
+      const tsvData = await this.readTSVFile(reportFilePath, isSample);
+      const jsonData = this.tsvToJSON(tsvData);
+      const kronaContent = await this.readKronaHTML(kronaFilePath, isSample);
+
+      // Store in component for emission
+      this.processedResults = { jsonData, kronaContent };
+    },
+    // Helper functions for processing data
+    async readTSVFile(filePath, isSample) {
+      try {
+        const tsvContent = await window.electron.readFile(filePath, isSample); //FIXME: edit readFile preload function
+        return tsvContent;
+      } catch (error) {
+        console.error("Error reading TSV file:", error);
       }
     },
-    triggerSnackbar(message, color, icon, buttonText, action) {
-      console.log("Snackbar triggered");
-      // this.snackbar.show = false; // Reset snackbar to ensure reactivity
-      if (this.snackbar.show) return; // If multiple snackbars are triggered, show the first one
+    tsvToJSON(tsv) {
+      const headers = [
+        "proportion",
+        "clade_reads",
+        "taxon_reads",
+        "rank",
+        "taxon_id",
+        "name",
+      ];
+      const records = tsv
+        .split("\n")
+        .map((line) => {
+          const data = line.split("\t").map((item) => item.trim()); // Strip leading and trailing whitespace
+          return Object.fromEntries(
+            headers.map((header, index) => [header, data[index]])
+          );
+        })
+        .filter(
+          (record) =>
+            !Object.values(record).every(
+              (field) => field === "" || field === undefined || field === null
+            )
+        ); // Filter out empty rows
 
-      this.snackbar.message = message;
-      this.snackbar.color = color || "info";
-      this.snackbar.icon = icon || "info";
-      this.snackbar.buttonText = buttonText || "";
-      this.snackbar.action = action || null;
-
-      this.snackbar.show = true;
-      console.log("snackbar executed");
+      return { results: records };
     },
-    handleSnackbarAction() {
-      if (this.snackbar.action) {
-        console.log(this.snackbar.action);
-        this.snackbar.action();
+    async readKronaHTML(filePath, isSample) {
+      if (!filePath) {
+        // Results tab will hide krona tab for null
+        return null;
       }
-      this.snackbar.show = false;
+
+      try {
+        const kronaHtml = await window.electron.readFile(filePath, isSample); //FIXME: too messy, edit readFile preload function
+        return kronaHtml;
+      } catch (error) {
+        console.error("Error opening Krona viewer:", error);
+      }
     },
     handleJobSuccess() {
       console.log("Job polling completed successfully."); // DEBUG
+
+      // Object storing info about completedJob
       const completedJob = {
         outdir: this.jobDetails.outdir,
         jobid: this.jobDetails.jobid,
         isSample: false,
         jobType: "runSearch",
         backendOutput: this.backendOutput,
+        resultsJSON: this.processedResults.jsonData.results,
+        kronaContent: this.processedResults.kronaContent,
       };
 
-      this.$emit("job-completed", {
-        outdir: this.jobDetails.outdir,
-        jobid: this.jobDetails.jobid,
-        isSample: false,
-      });
-
       // Store completed job in local storage
-      console.log("run job completed:", completedJob); // DEBUG
+      console.log("newrun completedJob:", completedJob); // DEBUG
       this.storeResults(completedJob);
 
+      // Store latest job in local storage for results rendering
+      localStorage.setItem("processedResults", JSON.stringify(completedJob));
+
+      // Trigger snackbar
       this.triggerSnackbar(
         "Job successfully completed. Check the results tab.",
         "success",
         "success",
         "View",
         () => {
-          this.$router.push({
-            name: "ResultsPage",
-            query: {
-              ...completedJob,
-            },
-          });
+          this.$router.push({ name: "ResultsPage" });
         }
       );
     },
     storeResults(completedJob) {
-       // Retrieve existing jobs from localStorage
-    let jobsHistory = JSON.parse(localStorage.getItem('jobsHistory') || '[]');
+      // Retrieve existing jobs from localStorage
+      let jobsHistory = JSON.parse(localStorage.getItem("jobsHistory") || "[]");
 
-    // Create a new job entry with additional details
-    const jobEntry = {
-      timestamp: new Date().toISOString(), // Timestamp of job completion
-      jobType: completedJob.jobType,
-      jobStatus: 'Completed',           // Example additional data
-      backendOutput: completedJob.backendOutput ? completedJob.backendOutput : "N/A",
-      // id: jobDetails.jobid,
-      // timeTaken: jobDetails.timeTaken,  // Example additional data
-      // kronaContent: this.kronaContent,  // Assuming kronaContent is available here
-      // results: this.results,            // Assuming results is available here
-      actions: null,
-      ...completedJob,  // Add other job details
-    };
+      // Create a new job entry with additional details
+      const jobEntry = {
+        timestamp: new Date().toISOString(), // Timestamp of job completion
+        jobType: completedJob.jobType,
+        jobStatus: "Completed", // Example additional data
+        backendOutput: completedJob.backendOutput
+          ? completedJob.backendOutput
+          : "N/A",
+        jobId: completedJob.jobid,
+        // timeTaken: jobDetails.timeTaken,  // Example additional data
+        results: completedJob.resultsJSON, // Assuming results is available here
+        kronaContent: completedJob.kronaContent, // Assuming kronaContent is available here
+        actions: null,
+      };
 
-    // Add the new job to the history array
-    jobsHistory.push(jobEntry);
+      // Add the new job to the history array
+      jobsHistory.push(jobEntry);
 
-    // Save the updated jobs history back to localStorage
-    localStorage.setItem('jobsHistory', JSON.stringify(jobsHistory));
+      // Save the updated jobs history back to localStorage
+      localStorage.setItem("jobsHistory", JSON.stringify(jobsHistory));
 
-    // // Emit job-completed event if needed
-    // this.$emit('job-completed', jobDetails);
+      // Emit job-completed event: close loading dialog and expose results tab in navigation drawer
+      this.$emit("job-completed", jobEntry);
     },
     handleJobError(error) {
       console.error("Job polling failed:", error); // DEBUG
@@ -879,6 +989,28 @@ export default {
     },
     handleTimeout() {
       window.electron.cancelBackend();
+    },
+
+    // Functions managing snackbar
+    triggerSnackbar(message, color, icon, buttonText, action) {
+      console.log("Snackbar shown"); // DEBUG
+      if (this.snackbar.show) return; // If multiple snackbars are triggered, show the first one
+
+      this.snackbar.message = message;
+      this.snackbar.color = color || "info";
+      this.snackbar.icon = icon || "info";
+      this.snackbar.buttonText = buttonText || "";
+      this.snackbar.action = action || null;
+
+      this.snackbar.show = true;
+      console.log("snackbar executed");
+    },
+    handleSnackbarAction() {
+      if (this.snackbar.action) {
+        console.log(this.snackbar.action);
+        this.snackbar.action();
+      }
+      this.snackbar.show = false;
     },
   },
 
@@ -964,7 +1096,7 @@ export default {
 }
 
 .dotted-border:hover {
-  border: 2px dashed #1976D2;
+  border: 2px dashed #1976d2;
   background-color: rgba(21, 101, 192, 0.04);
 }
 

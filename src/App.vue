@@ -111,6 +111,7 @@ export default {
   },
 
   data: () => ({
+    // Navigation drawer
     rail: true,
     hover: "",
     items: [
@@ -118,10 +119,10 @@ export default {
       { title: "Results", path: "/results", icon: "chartBar" },
       { title: "History", path: "/history", icon: "history" },
     ],
+
+    // Job completion handling
     jobCompleted: false,
-    completedJob: {},
     checkedResults: false,
-    reportFilePath: "",
     jobType: "",
   }),
 
@@ -136,44 +137,29 @@ export default {
   },
 
   methods: {
-    handleJobComplete(payload) {
+    handleJobComplete() {
+      // Expose Results Tab navigation drawer item
       this.jobCompleted = true;
+      // Expose red badge
+      this.checkedResults = false;
+
+      // Indicates jobType needed to show krona tab
       this.jobType = "runSearch";
-      this.checkedResults = false;
-
-      this.completedJob = {
-        outdir: payload.outdir,
-        jobid: payload.jobid,
-        isSample: payload.isSample,
-      };
     },
-    handleReportUpload(filePath) {
+
+    handleReportUpload() {
+      // Expose Results Tab navigation drawer item
       this.jobCompleted = true;
-      this.jobType = "uploadReport";
+      // Expose red badge
       this.checkedResults = false;
 
-      this.reportFilePath = filePath;
+      // Indicates jobType needed to hide krona tab
+      this.jobType = "uploadReport";
     },
     handleResultsClick(event) {
       event.preventDefault(); // Prevents default action interfering custom navigation logic
 
-      if (this.jobType === "runSearch") {
-        this.$router.push({
-          name: "ResultsPage",
-          query: {
-            ...this.completedJob,
-            jobType: this.jobType,
-          },
-        });
-      } else if (this.jobType === "uploadReport") {
-        this.$router.push({
-          name: "ResultsPage",
-          query: {
-            reportFilePath: this.reportFilePath,
-            jobType: this.jobType,
-          },
-        });
-      }
+      this.$router.push({ name: "ResultsPage" });
     },
   },
 };

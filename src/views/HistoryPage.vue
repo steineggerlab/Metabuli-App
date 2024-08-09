@@ -14,8 +14,9 @@
       </template>
 
       <template v-slot:[`item.actions`]="{ item }">
-        <v-btn variant="text" icon="$eye" @click="viewDetails(item)"> </v-btn>
-        <v-btn variant="text" icon="$trash" @click="deleteJob(item.id)">
+        <v-btn variant="text" icon="$eye" @click="viewDetails(item.results)">
+        </v-btn>
+        <v-btn variant="text" icon="$trash" @click="deleteJob(item.timestamp)">
         </v-btn>
       </template>
     </v-data-table>
@@ -49,9 +50,11 @@ export default {
       // Logic to view job details (could route to a detailed view page)
       console.log("View job details:", job);
     },
-    deleteJob(jobId) {
+    deleteJob(timestamp) {
       // Remove the job from jobsHistory
-      this.jobsHistory = this.jobsHistory.filter((job) => job.id !== jobId);
+      this.jobsHistory = this.jobsHistory.filter(
+        (job) => job.timestamp !== timestamp
+      );
       // Update localStorage
       localStorage.setItem("jobsHistory", JSON.stringify(this.jobsHistory));
     },
