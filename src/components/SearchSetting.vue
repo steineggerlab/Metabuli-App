@@ -349,11 +349,14 @@
 export default {
   name: "SearchSetting",
   data: () => ({
+    // Properties for Search Settings Tab Panel
     tab: "runSearch",
     items: [
       { title: "Run Search", value: "runSearch" },
       { title: "Upload Report", value: "uploadReport" },
     ], // FIXME: rename to tabItems
+    
+    // Properties for Run New Search tab
     isJobFormValid: false,
     jobDetails: {
       // Store job details including file paths
@@ -488,12 +491,16 @@ export default {
       outdir: "/sample_data",
       maxram: 128,
     },
-    file: null, // FIXME: rename to uploadedReportFile or Path
-    status: "INITIAL",
-    results: "",
-    apiDialog: false, // Control the visibility of the API dialog
     endType: "single-end", // FIXME: move this to jobDetails
     expandAdvancedSettings: false,
+    
+    // Properties for Upload Report tab
+    file: null, // FIXME: rename to uploadedReportFile or Path
+    
+    // Properties for job processing status, response, and results
+    status: "INITIAL",
+    results: "",
+    backendOutput: null,
     snackbar: {
       show: false,
       message: "",
@@ -504,6 +511,13 @@ export default {
       timeout: 4000,
     },
   }),
+  
+  computed: {
+    computedHint() {
+      return `${this.jobDetails.jobid}_report.tsv`;
+    },
+  },
+  
   watch: {
     advancedSettings: {
       handler(newVal) {
@@ -512,12 +526,7 @@ export default {
       deep: true,
     },
   },
-  computed: {
-    computedHint() {
-      return `${this.jobDetails.jobid}_report.tsv`;
-    },
-  },
-
+  
   methods: {
     // Run Search
     extractFilename(path) {
@@ -709,6 +718,10 @@ export default {
           jobType: "runSearch",
         };
 
+        // Store completed job in local storage
+        console.log("sample completedjob", completedJob) // DEBUG
+        this.storeResults(completedJob);
+
         this.triggerSnackbar(
           "Sample data successfully loaded.",
           "success",
@@ -788,6 +801,7 @@ export default {
         jobid: this.jobDetails.jobid,
         isSample: false,
         jobType: "runSearch",
+        backendOutput: this.backendOutput,
       };
 
       this.$emit("job-completed", {
@@ -795,6 +809,10 @@ export default {
         jobid: this.jobDetails.jobid,
         isSample: false,
       });
+
+      // Store completed job in local storage
+      console.log("run job completed:", completedJob); // DEBUG
+      this.storeResults(completedJob);
 
       this.triggerSnackbar(
         "Job successfully completed. Check the results tab.",
@@ -810,6 +828,32 @@ export default {
           });
         }
       );
+    },
+    storeResults(completedJob) {
+       // Retrieve existing jobs from localStorage
+    let jobsHistory = JSON.parse(localStorage.getItem('jobsHistory') || '[]');
+
+    // Create a new job entry with additional details
+    const jobEntry = {
+      timestamp: new Date().toISOString(), // Timestamp of job completion
+      jobType: completedJob.jobType,
+      jobStatus: 'Completed',           // Example additional data
+      backendOutput: completedJob.backendOutput ? completedJob.backendOutput : "N/A",
+      // id: jobDetails.jobid,
+      // timeTaken: jobDetails.timeTaken,  // Example additional data
+      // kronaContent: this.kronaContent,  // Assuming kronaContent is available here
+      // results: this.results,            // Assuming results is available here
+      ...completedJob,  // Add other job details
+    };
+
+    // Add the new job to the history array
+    jobsHistory.push(jobEntry);
+
+    // Save the updated jobs history back to localStorage
+    localStorage.setItem('jobsHistory', JSON.stringify(jobsHistory));
+
+    // // Emit job-completed event if needed
+    // this.$emit('job-completed', jobDetails);
     },
     handleJobError(error) {
       console.error("Job polling failed:", error); // DEBUG
@@ -841,6 +885,7 @@ export default {
     window.electron.onBackendOutput((output) => {
       console.log("Backend Output:", output); //DEBUG
       this.status = "COMPLETE"; // Signal job polling
+      this.backendOutput = output;
     });
 
     window.electron.onBackendError((error) => {

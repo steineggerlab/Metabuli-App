@@ -73,6 +73,19 @@
             </v-list-item>
           </router-link>
         </v-slide-y-transition>
+
+        <!-- DATA INPUT NAVIGATION ITEM -->
+        <router-link :to="items[2].path" class="no-underline">
+          <v-list-item
+            class="nav-item"
+            :title="items[2].title"
+            :prepend-icon="`$${items[2].icon}`"
+            :class="{ active: $route.path === items[2].path }"
+            @mouseover="hover = items[2].path"
+            @mouseleave="hover = ''"
+            v-ripple
+          ></v-list-item>
+        </router-link>
       </v-list>
     </v-navigation-drawer>
 
@@ -99,6 +112,7 @@ export default {
     items: [
       { title: "Data Input", path: "/search", icon: "upload" },
       { title: "Results", path: "/results", icon: "chartBar" },
+      { title: "History", path: "/history", icon: "history" },
     ],
     jobCompleted: false,
     completedJob: {},
@@ -106,16 +120,6 @@ export default {
     reportFilePath: "",
     jobType: "",
   }),
-
-  computed: {
-    filteredItems() {
-      // FIXME: what is it
-      if (this.jobCompleted) {
-        return this.items;
-      }
-      return this.items.filter((item) => item.title !== "Results");
-    },
-  },
 
   watch: {
     $route(to) {

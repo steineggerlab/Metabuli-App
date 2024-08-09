@@ -81,6 +81,7 @@ export default {
         jobid: payload.jobid,
         isSample: payload.isSample,
       });
+
     },
     handleJobTimeOut() {
       this.cancelBackend();

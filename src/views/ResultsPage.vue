@@ -10,7 +10,7 @@
       <v-tabs-window v-model="tab" class="h-100">
         <!-- TABLE TAB -->
         <v-tabs-window-item value="table" class="h-100">
-          <ResultsTable :data="results" class="h-100"/>
+          <ResultsTable :data="results" class="h-100" />
         </v-tabs-window-item>
 
         <!-- SANKEY TAB-->
@@ -84,7 +84,7 @@
 
         <!-- KRONA TAB -->
         <v-tabs-window-item value="krona" class="h-100">
-          <div class="pa-4 tab-fill-height" style="overflow-y: hidden;">
+          <div class="pa-4 tab-fill-height" style="overflow-y: hidden">
             <iframe
               :srcdoc="kronaContent"
               style="width: 100%; height: 100%; border: none"
@@ -119,8 +119,8 @@ export default {
   data() {
     return {
       // Overall
-      results: [],
       tab: "TABLE",
+      results: [],
       kronaContent: null,
       isSample: null,
 
@@ -234,9 +234,6 @@ export default {
         ); // Filter out empty rows
 
       return { results: records };
-    },
-    saveResults() {
-      sessionStorage.setItem("results", JSON.stringify(this.results)); // Save to session storage
     },
 
     // Sankey Download Functions
@@ -361,10 +358,10 @@ export default {
       // Render report.tsv
       const resultsJSON = await this.readTSVFile(`${reportFilePath}`);
       this.results = resultsJSON;
-      this.saveResults(); // FIXME: figure this out
 
       // Render Krona
-      this.renderKronaViewer(kronaFilePath);
+      await this.renderKronaViewer(kronaFilePath);
+
     } catch (error) {
       console.error("Error loading results:", error);
     }
