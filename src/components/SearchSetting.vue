@@ -946,6 +946,7 @@ export default {
       const jobEntry = {
         timestamp: new Date().toISOString(), // Timestamp of job completion
         jobType: completedJob.jobType,
+        isSample: completedJob.isSample,
         jobStatus: "Completed", // Example additional data
         backendOutput: completedJob.backendOutput
           ? completedJob.backendOutput

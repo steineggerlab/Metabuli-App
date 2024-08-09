@@ -21,6 +21,7 @@ import {
   mdiHistory,
   mdiEye,
   mdiDelete,
+  mdiTimelapse,
 } from "@mdi/js"; // Icon search: https://vuetifyjs.com/en/features/icon-fonts/#mdi-icon-search
 
 export default createVuetify({
@@ -69,6 +70,7 @@ export default createVuetify({
       history: mdiHistory,
       eye: mdiEye,
       trash: mdiDelete,
+      timelapse: mdiTimelapse,
     },
     sets: {
       mdi,
