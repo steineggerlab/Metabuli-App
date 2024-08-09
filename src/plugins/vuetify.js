@@ -18,7 +18,9 @@ import {
   mdiOpenInNew,
   mdiFile,
   mdiFolder,
-  mdiHistory
+  mdiHistory,
+  mdiEye,
+  mdiDelete,
 } from "@mdi/js"; // Icon search: https://vuetifyjs.com/en/features/icon-fonts/#mdi-icon-search
 
 export default createVuetify({
@@ -65,6 +67,8 @@ export default createVuetify({
       fileFilled: mdiFile,
       folder: mdiFolder,
       history: mdiHistory,
+      eye: mdiEye,
+      trash: mdiDelete,
     },
     sets: {
       mdi,

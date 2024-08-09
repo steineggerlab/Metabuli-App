@@ -843,6 +843,7 @@ export default {
       // timeTaken: jobDetails.timeTaken,  // Example additional data
       // kronaContent: this.kronaContent,  // Assuming kronaContent is available here
       // results: this.results,            // Assuming results is available here
+      actions: null,
       ...completedJob,  // Add other job details
     };
 
@@ -884,8 +885,8 @@ export default {
   mounted() {
     window.electron.onBackendOutput((output) => {
       console.log("Backend Output:", output); //DEBUG
-      this.status = "COMPLETE"; // Signal job polling
       this.backendOutput = output;
+      this.status = "COMPLETE"; // Signal job polling
     });
 
     window.electron.onBackendError((error) => {

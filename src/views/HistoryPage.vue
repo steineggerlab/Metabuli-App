@@ -7,20 +7,17 @@
       class="elevation-1"
     >
       <template v-slot:top>
-        <v-toolbar flat>
-          <v-toolbar-title>Job History</v-toolbar-title>
+        <v-toolbar class="custom-toolbar" density="compact">
+          Job History
           <v-spacer></v-spacer>
         </v-toolbar>
       </template>
 
-      <!-- <template v-slot:item.actions="{ item }">
-        <v-btn icon @click="viewDetails(item)">
-          <v-icon>mdi-eye</v-icon>
+      <template v-slot:[`item.actions`]="{ item }">
+        <v-btn variant="text" icon="$eye" @click="viewDetails(item)"> </v-btn>
+        <v-btn variant="text" icon="$trash" @click="deleteJob(item.id)">
         </v-btn>
-        <v-btn icon @click="deleteJob(item.id)">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </template> -->
+      </template>
     </v-data-table>
   </v-container>
 </template>
@@ -37,7 +34,7 @@ export default {
         { title: "Backend Output", value: "backendOutput" },
         // { text: 'Job ID', value: 'id' },
         // { text: 'Time Taken', value: 'timeTaken' },
-        // { text: 'Actions', value: 'actions', sortable: false },
+        { title: "Actions", value: "actions", sortable: false },
       ],
       jobsHistory: [], // To store the retrieved history
     };
