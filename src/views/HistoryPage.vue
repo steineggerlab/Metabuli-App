@@ -1,5 +1,6 @@
 <template>
-  <v-container>
+  <v-container class="w-100">
+    <v-card>
     <v-data-table
       :headers="headers"
       :items="jobsHistory"
@@ -12,6 +13,11 @@
           Job History
           <v-spacer></v-spacer>
         </v-toolbar>
+      </template>
+
+      <!-- Timestamp Column -->
+      <template v-slot:[`item.timestamp`]="{ item }">
+        {{ formatTimestamp(item.timestamp) }}
       </template>
 
       <!-- Job Type Column -->
@@ -32,6 +38,7 @@
           v-if="item.jobStatus === 'Completed'"
           color="green"
           prepend-icon="$complete"
+          density="comfortable"
         >
           Completed
         </v-chip>
@@ -40,23 +47,45 @@
           v-else-if="item.jobStatus === 'Error'"
           color="red"
           prepend-icon="$close"
+          density="comfortable"
         >
           Failed
         </v-chip>
 
-        <v-chip v-else color="grey" prepend-icon="$timelapse">
+        <v-chip
+          v-else
+          color="grey"
+          prepend-icon="$timelapse"
+          density="comfortable"
+        >
           Incomplete
         </v-chip>
       </template>
 
       <!-- Action Column -->
       <template v-slot:[`item.actions`]="{ item }">
-        <v-btn variant="text" icon="$eye" @click="viewDetails(item.results)">
-        </v-btn>
-        <v-btn variant="text" icon="$trash" @click="deleteJob(item.timestamp)">
-        </v-btn>
+        <div class="d-flex align-center justify-center">
+
+          <v-btn
+            variant="text"
+            icon="$eye"
+            size="small"
+            rounded="xl"
+            @click="viewDetails(item)"
+          >
+          </v-btn>
+          <v-btn
+            variant="text"
+            icon="$trash"
+            size="small"
+            rounded="xl"
+            @click="deleteJob(item.timestamp)"
+          >
+          </v-btn>
+        </div>
       </template>
     </v-data-table>
+    </v-card>
   </v-container>
 </template>
 
@@ -69,10 +98,10 @@ export default {
         { title: "Completed At", value: "timestamp" },
         { title: "Type ", value: "jobType" },
         { title: "Backend Output", value: "backendOutput" },
-        { title: "Status", value: "jobStatus" },
+        { title: "Status", value: "jobStatus", align: "center" },
         // { text: 'Job ID', value: 'id' },
         // { text: 'Time Taken', value: 'timeTaken' },
-        { title: "Actions", value: "actions", sortable: false },
+        { title: "Actions", value: "actions", align: "center", sortable: false },
       ],
       jobsHistory: [], // To store the retrieved history
     };
@@ -83,9 +112,15 @@ export default {
     console.log(this.jobsHistory);
   },
   methods: {
-    viewDetails(job) {
-      // Logic to view job details (could route to a detailed view page)
-      console.log("View job details:", job);
+    viewDetails(jobItem) {
+      const completedJob = {
+        jobType: "runSearch",
+        resultsJSON: jobItem.results,
+        kronaContent: jobItem.kronaContent,
+      };
+
+      localStorage.setItem("processedResults", JSON.stringify(completedJob));
+      this.$router.push({ name: "ResultsPage" });
     },
     deleteJob(timestamp) {
       // Remove the job from jobsHistory
@@ -94,6 +129,10 @@ export default {
       );
       // Update localStorage
       localStorage.setItem("jobsHistory", JSON.stringify(this.jobsHistory));
+    },
+    formatTimestamp(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleString(); // You can customize this as needed
     },
   },
 };
