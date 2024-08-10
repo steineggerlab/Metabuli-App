@@ -44,7 +44,7 @@
           </v-chip>
 
           <v-chip
-            v-else-if="item.jobStatus === 'Error'"
+            v-else-if="item.jobStatus === 'Failed'"
             color="red"
             prepend-icon="$close"
             density="comfortable"
@@ -64,8 +64,8 @@
 
         <template v-slot:[`item.backendOutput`]="{ item }">
           <v-btn
-            variant="tonal"
-            color="primary"
+            variant="text"
+
             size="small"
             prepend-icon="$openInNew"
             class="text-body-2"
@@ -80,12 +80,14 @@
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex align-center justify-center">
             <v-btn
-              variant="text"
-              icon="$eye"
+
+              prepend-icon="$eye"
+variant="tonal"
+            color="primary"
               size="small"
-              rounded="xl"
+              class="text-body-2"
               @click="viewDetails(item)"
-            >
+            >See Results
             </v-btn>
             <v-btn
               variant="text"

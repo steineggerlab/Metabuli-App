@@ -372,7 +372,7 @@ export default {
     // Properties for Search Settings Tab Panel
     tab: "runSearch",
     items: [
-      { title: "Run Search", value: "runSearch" },
+      { title: "New Search", value: "runSearch" },
       { title: "Upload Report", value: "uploadReport" },
     ], // FIXME: rename to tabItems
 
@@ -617,6 +617,7 @@ export default {
             outdir: null,
             jobid: null,
             isSample: false,
+            jobStatus: "Completed",
             jobType: "uploadReport",
             backendOutput: null,
             resultsJSON: this.processedResults.jsonData.results,
@@ -671,6 +672,7 @@ export default {
           outdir: this.jobDetailsSample.outdir,
           jobid: this.jobDetailsSample.jobid,
           isSample: true,
+          jobStatus: "Completed",
           jobType: "runSearch",
           backendOutput: null,
           resultsJSON: this.processedResults.jsonData.results,
@@ -914,6 +916,7 @@ export default {
         outdir: this.jobDetails.outdir,
         jobid: this.jobDetails.jobid,
         isSample: false,
+        jobStatus: "Completed",
         jobType: "runSearch",
         backendOutput: this.backendOutput,
         resultsJSON: this.processedResults.jsonData.results,
@@ -938,21 +941,21 @@ export default {
         }
       );
     },
-    storeResults(completedJob) {
+    storeResults(job) {
       // Retrieve existing jobs from localStorage
       let jobsHistory = JSON.parse(localStorage.getItem("jobsHistory") || "[]");
 
       // Create a new job entry with additional details
       const jobEntry = {
         timestamp: new Date().toISOString(), // Timestamp of job completion
-        jobType: completedJob.jobType,
-        isSample: completedJob.isSample,
-        jobStatus: "Completed", // Example additional data
-        backendOutput: completedJob.backendOutput,
-        jobId: completedJob.jobid,
+        jobType: job.jobType,
+        isSample: job.isSample,
+        jobStatus: job.jobStatus, // Example additional data
+        backendOutput: job.backendOutput,
+        jobId: job.jobid,
         // timeTaken: jobDetails.timeTaken,  // Example additional data
-        results: completedJob.resultsJSON, // Assuming results is available here
-        kronaContent: completedJob.kronaContent, // Assuming kronaContent is available here
+        results: job.resultsJSON, // Assuming results is available here
+        kronaContent: job.kronaContent, // Assuming kronaContent is available here
         actions: null,
       };
 
@@ -967,6 +970,23 @@ export default {
     },
     handleJobError(error) {
       console.error("Job polling failed:", error); // DEBUG
+
+      // Failed job object to store in local storage
+      const failedJob = {
+        outdir: this.jobDetails.outdir,
+        jobid: this.jobDetails.jobid,
+        isSample: false,
+        jobStatus: "Failed", 
+        jobType: "runSearch",
+        backendOutput: null,
+        resultsJSON: null,
+        kronaContent: null,
+      };
+
+      // Store completed job in local storage
+      console.log("newrun failed job:", failedJob); // DEBUG
+      this.storeResults(failedJob);
+
       if (this.status === "TIMEOUT") {
         this.$emit("job-timed-out");
         this.triggerSnackbar(
@@ -1021,9 +1041,9 @@ export default {
     });
 
     window.electron.onBackendError((error) => {
-      console.error("Backend Error:", error); // DEBUG
+      // console.error("Backend Error:", error); // DEBUG
       this.status = "ERROR"; // Signal job polling to stop
-      this.handleJobError(new Error("Backend execution error"));
+      this.handleJobError(new Error("Backend execution error:", error.message));
     });
 
     window.electron.onBackendCancelled((message) => {
