@@ -531,6 +531,7 @@ export default {
       action: null,
       timeout: 4000,
     },
+    errorHandled: false,
   }),
 
   computed: {
@@ -733,13 +734,36 @@ export default {
       }
     },
     // Start backend job request
-    startJob() {
-      // Start loading dialog
-      this.$emit("job-started", false);
+    async startJob() {
+      try {
+        // Start loading dialog
+        this.status = "RUNNING";
+        this.$emit("job-started", false);
 
-      // Start backend request
-      this.runBackend();
+        // Start backend request and job polling simultaneously
+        const backendPromise = this.runBackend();
+        const pollingPromise = this.pollJobStatus();
+
+        // Wait for either backend to complete or polling to timeout/fail
+        await Promise.race([backendPromise, pollingPromise]);
+        // console.log("Job finished", this.status); // DEBUG
+
+        // If backend completes successfully and polling hasn't timed out
+        if (this.status === "COMPLETE") {
+          await this.processResults("runSearch", false); // Make sure this is called after backend completion
+          // console.log("processed:", this.processedResults); // DEBUG
+          this.handleJobSuccess();
+        }
+      } catch (error) {
+        console.error("Error:", error.message); // Single error handling point
+        this.handleJobError(error);
+      } finally {
+        if (this.status !== "COMPLETE") {
+          this.status = "INITIAL";
+        }
+      }
     },
+
     async runBackend() {
       const params = ["classify"];
 
@@ -777,51 +801,49 @@ export default {
           params.push(setting.parameter, value);
         }
       }
-      console.log(params); // DEBUG
+      console.log("params:", params); // DEBUG
 
-      try {
-        // Run backend process
-        this.status = "RUNNING";
+      // Return a promise that resolves or rejects based on backend success or failure
+      return new Promise((resolve, reject) => {
         window.electron.runBackend(params);
 
-        // Poll job status + process results
-        await this.pollJobStatus();
+        window.electron.onBackendOutput((output) => {
+          if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
 
-        // Store completed job in local storage + trigger snackbar
-        this.handleJobSuccess();
-      } catch (error) {
-        console.error("Error running backend:", error.message); // DEBUG
-        this.handleJobError(error);
-      } finally {
-        this.status = "INITIAL";
-      }
+          console.log("Backend Output:", output); // DEBUG
+          this.backendOutput = output;
+          this.status = "COMPLETE"; // Signal job polling
+          resolve(); // Resolve the backend promise
+        });
+
+        window.electron.onBackendError((error) => {
+          if (!this.errorHandled) {
+            this.errorHandled = true;
+            this.status = "ERROR"; // Signal job polling to stop
+            // console.error("Backend Error:", error); // Single error log
+            reject(new Error("Backend execution error:", error));
+          }
+        });
+      });
     },
+
     // Function to track job status + process results + trigger snackbar
     async pollJobStatus(interval = 500, timeout = 180000) {
       console.log("Running poll"); // DEBUG
       const start = Date.now();
       while (Date.now() - start < timeout) {
-        try {
-          if (this.status === "COMPLETE") {
-            try {
-              await this.processResults("runSearch", false);
-              console.log("processed:", this.processedResults); // DEBUG
+        if (this.errorHandled || this.status === "COMPLETE") return true;
 
-              return true;
-            } catch (error) {
-              console.error("Error processing results:", error);
-            }
-          } else if (this.status === "ERROR") {
-            throw new Error("Backend error occurred");
-          }
-        } catch (error) {
-          console.error("Error polling job status:", error); // DEBUG
-          throw error;
+        if (this.status === "ERROR") {
+          throw new Error("Backend error occurred");
         }
+
         await new Promise((resolve) => setTimeout(resolve, interval));
       }
-      this.status = "TIMEOUT";
-      throw new Error("Polling timed out");
+      if (!this.errorHandled) {
+        this.status = "TIMEOUT";
+        throw new Error("Polling timed out");
+      }
     },
 
     // Function for processing results (shared for both tabs)
@@ -951,9 +973,9 @@ export default {
         timestamp: new Date().toISOString(), // Timestamp of job completion
         jobType: job.jobType,
         isSample: job.isSample,
-        jobStatus: job.jobStatus, 
+        jobStatus: job.jobStatus,
         backendOutput: job.backendOutput,
-        results: job.resultsJSON, 
+        results: job.resultsJSON,
         kronaContent: job.kronaContent,
       };
 
@@ -966,15 +988,19 @@ export default {
       // Emit job-completed event: close loading dialog and expose results tab in navigation drawer
       this.$emit("job-completed", jobEntry);
     },
-    handleJobError(error) {
-      console.error("Job polling failed:", error); // DEBUG
 
-      // Failed job object to store in local storage
+    handleJobError() {
+      this.errorHandled = true; // Ensure flag is set to prevent further handling
+      this.status = "ERROR"; // Set status to ERROR
+
+      // Additional error handling logic (save failed job to local storage, trigger snackbar)
+
+      // Create failed job object to store in local storage
       const failedJob = {
         outdir: this.jobDetails.outdir,
         jobid: this.jobDetails.jobid,
         isSample: false,
-        jobStatus: "Failed", 
+        jobStatus: "Failed",
         jobType: "runSearch",
         backendOutput: null,
         resultsJSON: null,
@@ -982,12 +1008,13 @@ export default {
       };
 
       // Store completed job in local storage
-      console.log("newrun failed job:", failedJob); // DEBUG
+      // console.log("newrun failed job:", failedJob); // DEBUG
       this.storeResults(failedJob);
 
       if (this.status === "TIMEOUT") {
         this.$emit("job-timed-out");
         this.triggerSnackbar(
+          // FIXME: test this
           "Job execution timed out",
           "warning",
           "timer",
@@ -997,13 +1024,16 @@ export default {
       } else {
         this.$emit("job-aborted");
         this.triggerSnackbar(
-          `Error: ${error.message}`,
+          // FIXME: Triggers on cancel as well
+          // FIXME: saves result multiple times
+          "Job was aborted",
           "error",
           "warning",
           "Dismiss"
         );
       }
     },
+
     handleTimeout() {
       window.electron.cancelBackend();
     },
@@ -1032,18 +1062,9 @@ export default {
   },
 
   mounted() {
-    window.electron.onBackendOutput((output) => {
-      console.log("Backend Output:", output); //DEBUG
-      this.backendOutput = output;
-      this.status = "COMPLETE"; // Signal job polling
-    });
+    this.errorHandled = false; // Flag to ensure errors are handled only once
 
-    window.electron.onBackendError((error) => {
-      // console.error("Backend Error:", error); // DEBUG
-      this.status = "ERROR"; // Signal job polling to stop
-      this.handleJobError(new Error("Backend execution error:", error.message));
-    });
-
+    // FIXME: refactor this
     window.electron.onBackendCancelled((message) => {
       console.log("Backend cancelled:", message); // DEBUG
       if (this.status !== "TIMEOUT") {
