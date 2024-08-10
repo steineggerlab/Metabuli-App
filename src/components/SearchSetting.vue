@@ -824,6 +824,14 @@ export default {
             reject(new Error("Backend execution error:", error));
           }
         });
+
+        window.electron.onBackendCancelled((message) => {
+          console.log("Backend cancelled:", message); // DEBUG
+          if (this.status !== "TIMEOUT" && !this.errorHandled) {
+            this.status = "ERROR"; // Signal job polling to stop
+            this.handleJobError(new Error("Process was cancelled"));
+          }
+        });
       });
     },
 
@@ -837,7 +845,6 @@ export default {
         if (this.status === "ERROR") {
           throw new Error("Backend error occurred");
         }
-
         await new Promise((resolve) => setTimeout(resolve, interval));
       }
       if (!this.errorHandled) {
@@ -1063,15 +1070,6 @@ export default {
 
   mounted() {
     this.errorHandled = false; // Flag to ensure errors are handled only once
-
-    // FIXME: refactor this
-    window.electron.onBackendCancelled((message) => {
-      console.log("Backend cancelled:", message); // DEBUG
-      if (this.status !== "TIMEOUT") {
-        this.status = "ERROR"; // Signal job polling to stop
-        this.handleJobError(new Error("Process was cancelled"));
-      }
-    });
   },
 };
 </script>
