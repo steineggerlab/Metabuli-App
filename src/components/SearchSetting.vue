@@ -947,16 +947,14 @@ export default {
 
       // Create a new job entry with additional details
       const jobEntry = {
+        jobId: job.jobid,
         timestamp: new Date().toISOString(), // Timestamp of job completion
         jobType: job.jobType,
         isSample: job.isSample,
-        jobStatus: job.jobStatus, // Example additional data
+        jobStatus: job.jobStatus, 
         backendOutput: job.backendOutput,
-        jobId: job.jobid,
-        // timeTaken: jobDetails.timeTaken,  // Example additional data
-        results: job.resultsJSON, // Assuming results is available here
-        kronaContent: job.kronaContent, // Assuming kronaContent is available here
-        actions: null,
+        results: job.resultsJSON, 
+        kronaContent: job.kronaContent,
       };
 
       // Add the new job to the history array

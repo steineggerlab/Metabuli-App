@@ -15,6 +15,12 @@
           </v-toolbar>
         </template>
 
+        <!-- Job ID Column -->
+        <template v-slot:[`item.jobId`]="{ item }">
+          <span v-if="item.jobId === ''">-</span>
+          <span v-else>{{ item.jobId }}</span>
+        </template>
+
         <!-- Timestamp Column -->
         <template v-slot:[`item.timestamp`]="{ item }">
           {{ formatTimestamp(item.timestamp) }}
@@ -65,7 +71,6 @@
         <template v-slot:[`item.backendOutput`]="{ item }">
           <v-btn
             variant="text"
-
             size="small"
             prepend-icon="$openInNew"
             class="text-body-2"
@@ -80,14 +85,14 @@
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex align-center justify-center">
             <v-btn
-
               prepend-icon="$eye"
-variant="tonal"
-            color="primary"
+              variant="tonal"
+              color="primary"
               size="small"
               class="text-body-2"
+              :disabled="!item.results"
               @click="viewDetails(item)"
-            >See Results
+              >See Results
             </v-btn>
             <v-btn
               variant="text"
@@ -152,12 +157,11 @@ export default {
   data() {
     return {
       headers: [
+        { title: "Job ID", value: "jobId" },
         { title: "Completed At", value: "timestamp" },
         { title: "Type ", value: "jobType" },
         { title: "Status", value: "jobStatus", align: "center" },
         { title: "Job Details", value: "backendOutput", align: "center" },
-        // { text: 'Job ID', value: 'id' },
-        // { text: 'Time Taken', value: 'timeTaken' },
         {
           title: "Actions",
           value: "actions",
