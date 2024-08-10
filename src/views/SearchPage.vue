@@ -5,7 +5,6 @@
       @job-aborted="hideDialog"
       @job-timed-out="handleJobTimeOut"
       @job-completed="handleJobComplete"
-      @report-uploaded="handleReportUpload"
     />
 
     <!-- Loading Dialog -->
@@ -74,20 +73,21 @@ export default {
       this.loadingDialog = false;
     },
 
-    handleJobComplete(payload) {
+    handleJobComplete(completedJob) {
+      // Close loading dialog
       this.hideDialog();
-      this.$emit("job-complete", {
-        outdir: payload.outdir,
-        jobid: payload.jobid,
-        isSample: payload.isSample,
-      });
+
+      // Show results tab & badge in navigation drawer
+      // Show/hide krona tab depending on jobType
+      if (completedJob.jobType === "runSearch") {
+        this.$emit("job-complete");
+      } else if (completedJob.jobType === "uploadReport") {
+        this.$emit("report-uploaded");
+      }
     },
+
     handleJobTimeOut() {
       this.cancelBackend();
-    },
-    handleReportUpload(filePath) {
-      this.hideDialog();
-      this.$emit("report-uploaded", filePath);
     },
     cancelBackend() {
       this.hideDialog();

@@ -335,7 +335,7 @@ export default {
 .configure-menu .v-list-item {
   width: 100%;
 }
-::v-deep .configure-menu .v-expansion-panel-text__wrapper {
+:deep(.configure-menu .v-expansion-panel-text__wrapper) {
   padding: 0px;
 }
 </style>

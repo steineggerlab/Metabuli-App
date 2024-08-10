@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import SearchPage from '../views/SearchPage.vue';
 import ResultsPage from '../views/ResultsPage.vue';
+import HistoryPage from '@/views/HistoryPage.vue';
 
 const routes = [
   {
@@ -17,7 +18,13 @@ const routes = [
     path: '/results',
     name: 'ResultsPage',
     component: ResultsPage
+  },
+  {
+    path: '/history',
+    name: 'HistoryPage',
+    component: HistoryPage,
   }
+
 ];
 
 const router = createRouter({

@@ -10,7 +10,7 @@
       <v-tabs-window v-model="tab" class="h-100">
         <!-- TABLE TAB -->
         <v-tabs-window-item value="table" class="h-100">
-          <ResultsTable :data="results" class="h-100"/>
+          <ResultsTable :data="results" class="h-100" />
         </v-tabs-window-item>
 
         <!-- SANKEY TAB-->
@@ -84,7 +84,7 @@
 
         <!-- KRONA TAB -->
         <v-tabs-window-item value="krona" class="h-100">
-          <div class="pa-4 tab-fill-height" style="overflow-y: hidden;">
+          <div class="pa-4 tab-fill-height" style="overflow-y: hidden">
             <iframe
               :srcdoc="kronaContent"
               style="width: 100%; height: 100%; border: none"
@@ -119,8 +119,8 @@ export default {
   data() {
     return {
       // Overall
-      results: [],
       tab: "TABLE",
+      results: [],
       kronaContent: null,
       isSample: null,
 
@@ -176,67 +176,6 @@ export default {
     },
     hideDialog() {
       this.isDialogVisible = false;
-    },
-
-    // Function for Krona Rendering
-    async renderKronaViewer(filePath) {
-      if (!filePath) {
-        // FIXME: render empty state screen or hide krona tab
-        this.kronaContent = null;
-        return;
-      }
-      try {
-        const kronaHtml = await window.electron.readFile(
-          filePath,
-          this.isSample
-        ); //FIXME: too messy, edit readFile preload function
-        this.kronaContent = kronaHtml;
-      } catch (error) {
-        console.error("Error opening Krona viewer:", error);
-      }
-    },
-
-    // Helper functions for processing data
-    async readTSVFile(filePath) {
-      try {
-        const tsvContent = await window.electron.readFile(
-          filePath,
-          this.isSample
-        ); //FIXME: edit readFile preload function
-        const json = this.tsvToJSON(tsvContent);
-        return json.results;
-      } catch (error) {
-        console.error("Error reading TSV file:", error);
-      }
-    },
-    tsvToJSON(tsv) {
-      const headers = [
-        "proportion",
-        "clade_reads",
-        "taxon_reads",
-        "rank",
-        "taxon_id",
-        "name",
-      ];
-      const records = tsv
-        .split("\n")
-        .map((line) => {
-          const data = line.split("\t").map((item) => item.trim()); // Strip leading and trailing whitespace
-          return Object.fromEntries(
-            headers.map((header, index) => [header, data[index]])
-          );
-        })
-        .filter(
-          (record) =>
-            !Object.values(record).every(
-              (field) => field === "" || field === undefined || field === null
-            )
-        ); // Filter out empty rows
-
-      return { results: records };
-    },
-    saveResults() {
-      sessionStorage.setItem("results", JSON.stringify(this.results)); // Save to session storage
     },
 
     // Sankey Download Functions
@@ -324,47 +263,34 @@ export default {
     updateConfigureMenu(sankeyData) {
       this.maxTaxaLimit = sankeyData.maxTaxaPerRank;
     },
+
+    // Function for rendering results
+    renderResults(processedResults) {
+      // Logic to render the table and Sankey diagram using the passed data
+      console.log(
+        "render data",
+        processedResults.resultsJSON,
+        processedResults.kronaContent
+      );
+      this.results = processedResults.resultsJSON;
+      this.kronaContent = processedResults.kronaContent;
+    },
   },
 
   async mounted() {
+    // Runs when results tab is clicked
+
     // Generate unique instance ID for Sankey
     this.uniqueInstanceId = uuidv4();
 
-    // Runs when results tab is clicked
     try {
-      let reportFilePath;
-      let kronaFilePath;
-
-      if (this.$route.query.jobType === "runSearch") {
-        // Resolve outdir path
-        let resolvedOutdirPath;
-        if (this.$route.query.isSample === "true") {
-          resolvedOutdirPath = window.electron.resolvePath(
-            this.$route.query.outdir
-          );
-          this.isSample = true;
-        } else {
-          resolvedOutdirPath = this.$route.query.outdir;
-          this.isSample = false;
-        }
-
-        // Set file paths for report and krona
-        reportFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_report.tsv`;
-        kronaFilePath = `${resolvedOutdirPath}/${this.$route.query.jobid}_krona.html`;
-      } else if (this.$route.query.jobType === "uploadReport") {
-        // Set file path for report directly
-        reportFilePath = this.$route.query.reportFilePath;
-        kronaFilePath = null;
-        this.isSample = false;
+      // Retrieve and parse completedJob from local storage
+      const processedResults = JSON.parse(
+        localStorage.getItem("processedResults")
+      );
+      if (processedResults) {
+        this.renderResults(processedResults);
       }
-
-      // Render report.tsv
-      const resultsJSON = await this.readTSVFile(`${reportFilePath}`);
-      this.results = resultsJSON;
-      this.saveResults(); // FIXME: figure this out
-
-      // Render Krona
-      this.renderKronaViewer(kronaFilePath);
     } catch (error) {
       console.error("Error loading results:", error);
     }
