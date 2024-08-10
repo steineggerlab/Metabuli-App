@@ -17,7 +17,7 @@
 
         <!-- Job ID Column -->
         <template v-slot:[`item.jobId`]="{ item }">
-          <span v-if="item.jobId === ''">-</span>
+          <span v-if="item.jobId === '' || item.jobId === null">-</span>
           <span v-else>{{ item.jobId }}</span>
         </template>
 
