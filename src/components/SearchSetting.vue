@@ -759,6 +759,7 @@ export default {
         if (this.status !== "COMPLETE") {
           this.status = "INITIAL";
         }
+        this.errorHandled = false; // Resets error handled tracking
       }
     },
 
@@ -824,7 +825,8 @@ export default {
 
         window.electron.onBackendCancelled(() => {
           if (this.status !== "TIMEOUT" && !this.errorHandled) {
-            this.status = "ERROR"; // Signal job polling to stop
+            this.status = "CANCELLED";
+            this.backendOutput = "Process was cancelled";
             reject(new Error("Process was cancelled"));
           }
         });
@@ -832,7 +834,7 @@ export default {
     },
 
     // Function to track job status + process results + trigger snackbar
-    async pollJobStatus(interval = 500, timeout = 180000) {
+    async pollJobStatus(interval = 500, timeout = 180000) { // FIXME: decide timeout duration
       console.log("Running poll"); // DEBUG
       const start = Date.now();
       while (Date.now() - start < timeout) {
@@ -994,7 +996,6 @@ export default {
 
     handleJobError() {
       this.errorHandled = true; // Ensure flag is set to prevent further handling
-      this.status = "ERROR"; // Set status to ERROR
 
       // Additional error handling logic (save failed job to local storage, trigger snackbar)
 
@@ -1011,30 +1012,25 @@ export default {
       };
 
       // Store completed job in local storage
-      // console.log("newrun failed job:", failedJob); // DEBUG
       this.storeResults(failedJob);
 
       if (this.status === "TIMEOUT") {
         this.$emit("job-timed-out");
         this.triggerSnackbar(
-          // FIXME: test this
           "Job execution timed out",
           "warning",
           "timer",
           "Retry",
           this.startJob
         );
+      } else if (this.status === "CANCELLED") {
+        this.triggerSnackbar("Job was cancelled", "info", "cancel", "Dismiss");
       } else {
         this.$emit("job-aborted");
-        this.triggerSnackbar(
-          // FIXME: Triggers on cancel as well
-          // FIXME: saves result multiple times
-          "Job was aborted",
-          "error",
-          "warning",
-          "Dismiss"
-        );
+        this.triggerSnackbar("Job was aborted", "error", "warning", "Dismiss");
       }
+
+      this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
     },
 
     handleTimeout() {
@@ -1042,18 +1038,24 @@ export default {
     },
 
     // Functions managing snackbar
-    triggerSnackbar(message, color, icon, buttonText, action) {
+    triggerSnackbar(
+      message,
+      color = "info",
+      icon = "info",
+      buttonText = "",
+      action = null
+    ) {
       console.log("Snackbar shown"); // DEBUG
       if (this.snackbar.show) return; // If multiple snackbars are triggered, show the first one
 
       this.snackbar.message = message;
-      this.snackbar.color = color || "info";
-      this.snackbar.icon = icon || "info";
-      this.snackbar.buttonText = buttonText || "";
-      this.snackbar.action = action || null;
+      this.snackbar.color = color;
+      this.snackbar.icon = icon;
+      this.snackbar.buttonText = buttonText;
+      this.snackbar.action = action;
 
       this.snackbar.show = true;
-      console.log("snackbar executed");
+      console.log("snackbar executed"); // DEBUG
     },
     handleSnackbarAction() {
       if (this.snackbar.action) {
