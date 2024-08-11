@@ -746,12 +746,10 @@ export default {
 
         // Wait for either backend to complete or polling to timeout/fail
         await Promise.race([backendPromise, pollingPromise]);
-        // console.log("Job finished", this.status); // DEBUG
 
         // If backend completes successfully and polling hasn't timed out
         if (this.status === "COMPLETE") {
           await this.processResults("runSearch", false); // Make sure this is called after backend completion
-          // console.log("processed:", this.processedResults); // DEBUG
           this.handleJobSuccess();
         }
       } catch (error) {
@@ -820,16 +818,14 @@ export default {
           if (!this.errorHandled) {
             this.errorHandled = true;
             this.status = "ERROR"; // Signal job polling to stop
-            // console.error("Backend Error:", error); // Single error log
             reject(new Error("Backend execution error:", error));
           }
         });
 
-        window.electron.onBackendCancelled((message) => {
-          console.log("Backend cancelled:", message); // DEBUG
+        window.electron.onBackendCancelled(() => {
           if (this.status !== "TIMEOUT" && !this.errorHandled) {
             this.status = "ERROR"; // Signal job polling to stop
-            this.handleJobError(new Error("Process was cancelled"));
+            reject(new Error("Process was cancelled"));
           }
         });
       });
