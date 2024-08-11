@@ -42,26 +42,44 @@
         <template v-slot:[`item.jobStatus`]="{ item }">
           <v-chip
             v-if="item.jobStatus === 'Completed'"
-            color="green"
-            prepend-icon="$complete"
+            color="success"
+            prepend-icon="$success"
             density="comfortable"
           >
             Completed
           </v-chip>
 
           <v-chip
-            v-else-if="item.jobStatus === 'Failed'"
-            color="red"
-            prepend-icon="$close"
+            v-else-if="item.jobStatus === 'ERROR'"
+            color="error"
+            prepend-icon="$warning"
             density="comfortable"
           >
             Failed
           </v-chip>
 
           <v-chip
-            v-else
+            v-else-if="item.jobStatus === 'TIMEOUT'"
             color="grey"
             prepend-icon="$timelapse"
+            density="comfortable"
+          >
+            Timeout
+          </v-chip>
+
+          <v-chip
+            v-else-if="item.jobStatus === 'CANCELLED'"
+            color="warning"
+            prepend-icon="$cancel"
+            density="comfortable"
+          >
+            Cancelled
+          </v-chip>
+
+          <v-chip
+            v-else
+            color="grey"
+            prepend-icon="$helpCircle"
             density="comfortable"
           >
             Incomplete

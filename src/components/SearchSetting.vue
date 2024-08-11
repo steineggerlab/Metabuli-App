@@ -1004,7 +1004,7 @@ export default {
         outdir: this.jobDetails.outdir,
         jobid: this.jobDetails.jobid,
         isSample: false,
-        jobStatus: "Failed",
+        jobStatus: this.status,
         jobType: "runSearch",
         backendOutput: null,
         resultsJSON: null,
