@@ -133,6 +133,45 @@ export default {
         visible: false,
         data: {},
       },
+      rawFullGraphData: { nodes: [], links: [] },
+
+      rankOrder: [
+        "superkingdom",
+        "kingdom",
+        "phylum",
+        "class",
+        "order",
+        "family",
+        "genus",
+        "species",
+        "no rank",
+      ],
+      autumnColors: [
+        "#57291F",
+        "#C0413B",
+        "#D77B5F",
+        "#FF9200",
+        "#FFCD73",
+        "#F7E5BF",
+        "#C87505",
+        "#F18E3F",
+        "#E59579",
+        "#C14C32",
+        "#80003A",
+        "#506432",
+        "#FFC500",
+        "#B30019",
+        "#EC410B",
+        "#E63400",
+        "#8CB5B5",
+        "#6C3400",
+        "#FFA400",
+        "#41222A",
+        "#FFF7C2",
+        "#FFB27B",
+        "#FFCD87",
+        "#BC7576",
+      ] // Define color scale (https://wondernote.org/color-palettes-for-web-digital-blog-graphic-design-with-hexadecimal-codes/)
     };
   },
   computed: {
@@ -167,32 +206,6 @@ export default {
     },
     graphData() {
       return this.parseData(this.filteredData);
-    },
-    rawFullGraphData() {
-      return this.parseData(this.nonCladesRawData, true);
-    },
-    maxCladeReads() {
-      //DEBUG
-      const rankOrder = [
-        "superkingdom",
-        "kingdom",
-        "phylum",
-        "class",
-        "order",
-        "family",
-        "genus",
-        "species",
-      ];
-      if (this.minCladeReadsMode === "#") {
-        // Highest clade reads from data entries includable on graph (rankOrder + unclassified)
-        return this.nonCladesRawData
-          .filter(
-            (entry) =>
-              rankOrder.includes(entry.rank) || this.isUnclassifiedTaxa(entry)
-          )
-          .reduce((max, entry) => Math.max(max, entry.clade_reads), 0);
-      }
-      return 100; // Default value for percentage mode
     },
   },
   watch: {
@@ -253,53 +266,18 @@ export default {
           [10, 10],
           [width - marginRight, height - 6],
         ]);
-        const rankOrder = [
-        "superkingdom",
-        "kingdom",
-        "phylum",
-        "class",
-        "order",
-        "family",
-        "genus",
-        "species",
-        "no rank",
-      ];
-      const columnWidth = (width - marginRight) / rankOrder.length;
-      const columnMap = rankOrder.reduce((acc, rank, index) => {
+      const columnWidth = (width - marginRight) / this.rankOrder.length;
+      const columnMap = this.rankOrder.reduce((acc, rank, index) => {
         const leftMargin = 10;
         acc[rank] = index * columnWidth + leftMargin;
         return acc;
       }, {});
-      const autumnColors = [
-        "#57291F",
-        "#C0413B",
-        "#D77B5F",
-        "#FF9200",
-        "#FFCD73",
-        "#F7E5BF",
-        "#C87505",
-        "#F18E3F",
-        "#E59579",
-        "#C14C32",
-        "#80003A",
-        "#506432",
-        "#FFC500",
-        "#B30019",
-        "#EC410B",
-        "#E63400",
-        "#8CB5B5",
-        "#6C3400",
-        "#FFA400",
-        "#41222A",
-        "#FFF7C2",
-        "#FFB27B",
-        "#FFCD87",
-        "#BC7576",
-      ];
-      const color = d3.scaleOrdinal().range(autumnColors);
+
+      const color = d3.scaleOrdinal().range(this.autumnColors);
       // const unclassifiedLabelColor = "#696B7E";
 
-      console.log("this.rawFullGraphData", this.rawFullGraphData)
+       // Store full graph (used for drawing subtree upon node click)
+      console.log("this.rawFullGraphData", this.rawFullGraphData) // DEBUG
       const fullGraph = sankeyGenerator({
         nodes: this.rawFullGraphData.nodes.map((d) => Object.assign({}, d)),
         links: this.rawFullGraphData.links.map((d) => Object.assign({}, d)),
@@ -329,6 +307,9 @@ export default {
         this.allNodesByRank[node.rank].push(node);
       });
 
+      // Store full graph data from raw data
+      this.rawFullGraphData = this.parseData(this.nonCladesRawData, true);
+
       // Update the configure menu with the maximum taxa per rank
       this.updateConfigureMenu();
     },
@@ -339,16 +320,6 @@ export default {
       const links = [];
       const allLinks = [];
 
-      const rankOrder = [
-        "superkingdom",
-        "kingdom",
-        "phylum",
-        "class",
-        "order",
-        "family",
-        "genus",
-        "species",
-      ];
       const rankOrderFull = [
         "superkingdom",
         "kingdom",
@@ -452,17 +423,17 @@ export default {
             let previousNode = null;
             for (let i = lineage.length - 1; i >= 0; i--) {
               // Start from the last item
-              if (rankOrder.includes(lineage[i].rank)) {
+              if (this.rankOrder.includes(lineage[i].rank)) {
                 previousNode = lineage[i];
                 break;
               }
             }
 
             // Determine the rank immediately to the right of this node
-            const parentRankIndex = rankOrder.indexOf(previousNode.rank);
+            const parentRankIndex = this.rankOrder.indexOf(previousNode.rank);
 
             // Edit properties for unclassified taxa
-            const nextRank = rankOrder[parentRankIndex + 1];
+            const nextRank = this.rankOrder[parentRankIndex + 1];
 
             node.id = `dummy-${d.taxon_id}`;
             node.rank = nextRank;
@@ -479,7 +450,7 @@ export default {
 
       // Step 2: Filter top 10 nodes by clade_reads for each rank in rankOrder
       // + Add filtered rank nodes & unclassified nodes to sankey diagram
-      rankOrder.forEach((rank) => {
+      this.rankOrder.forEach((rank) => {
         if (nodesByRank[rank]) {
           // Store all nodes
           allNodes.push(...nodesByRank[rank]);
@@ -511,7 +482,7 @@ export default {
         for (let i = lineage.length - 2; i >= 0; i--) {
           // Start from the second last item
           if (
-            rankOrder.includes(lineage[i].rank) &&
+            this.rankOrder.includes(lineage[i].rank) &&
             nodes.includes(lineage[i])
           ) {
             previousNode = lineage[i];
@@ -537,7 +508,7 @@ export default {
         for (let i = lineage.length - 2; i >= 0; i--) {
           // Start from the second last item
           if (
-            rankOrder.includes(lineage[i].rank) &&
+            this.rankOrder.includes(lineage[i].rank) &&
             allNodes.includes(lineage[i])
           ) {
             previousNode = lineage[i];
@@ -638,7 +609,6 @@ export default {
     extractSubtreeRawData(node) {
       // Used only when isSubtree === false
 
-      // const graph = this.fullGraph;
       const graph = this.getRawFullGraph();
       console.log("graph", graph); // DEBUG
       const subtreeNodesTaxonIds = new Set();
@@ -672,8 +642,7 @@ export default {
       // Check if nodes and links are not empty
       if (!nodes.length || !links.length) {
         console.warn(
-          "No data to create Sankey diagram, max is ",
-          this.maxCladeReads
+          "No data to create Sankey diagram",
         ); // FIXME: what to do when theres no graph to draw (empty state?)
         return;
       }
@@ -709,50 +678,12 @@ export default {
         links: links.map((d) => Object.assign({}, d)),
       });
 
-      // Define color scale (https://wondernote.org/color-palettes-for-web-digital-blog-graphic-design-with-hexadecimal-codes/)
-      const autumnColors = [
-        "#57291F",
-        "#C0413B",
-        "#D77B5F",
-        "#FF9200",
-        "#FFCD73",
-        "#F7E5BF",
-        "#C87505",
-        "#F18E3F",
-        "#E59579",
-        "#C14C32",
-        "#80003A",
-        "#506432",
-        "#FFC500",
-        "#B30019",
-        "#EC410B",
-        "#E63400",
-        "#8CB5B5",
-        "#6C3400",
-        "#FFA400",
-        "#41222A",
-        "#FFF7C2",
-        "#FFB27B",
-        "#FFCD87",
-        "#BC7576",
-      ];
-      const color = d3.scaleOrdinal().range(autumnColors);
+      const color = d3.scaleOrdinal().range(this.autumnColors);
       const unclassifiedLabelColor = "#696B7E";
 
       // Manually adjust nodes position to align by rank
-      const rankOrder = [
-        "superkingdom",
-        "kingdom",
-        "phylum",
-        "class",
-        "order",
-        "family",
-        "genus",
-        "species",
-        "no rank",
-      ];
-      const columnWidth = (width - marginRight) / rankOrder.length;
-      const columnMap = rankOrder.reduce((acc, rank, index) => {
+      const columnWidth = (width - marginRight) / this.rankOrder.length;
+      const columnMap = this.rankOrder.reduce((acc, rank, index) => {
         const leftMargin = 10;
         acc[rank] = index * columnWidth + leftMargin;
         return acc;
@@ -772,25 +703,13 @@ export default {
       // Re-run the layout to ensure correct vertical positioning
       sankeyGenerator.update(graph);
 
-      // Store full graph (used for drawing subtree upon node click)
-      const fullGraph = sankeyGenerator({
-        nodes: this.fullGraphData.nodes.map((d) => Object.assign({}, d)),
-        links: this.fullGraphData.links.map((d) => Object.assign({}, d)),
-      });
-      fullGraph.nodes.forEach((node) => {
-        node.x0 = columnMap[node.rank];
-        node.x1 = node.x0 + sankeyGenerator.nodeWidth();
-        node.color = color(node.id); // Assign color to node
-      });
-      this.fullGraph = fullGraph;
-
       // Add rank column labels
       const rankLabels = ["D", "K", "P", "C", "O", "F", "G", "S"];
       svg
         .append("g")
         .selectAll("text")
         // .data(rankLabels)
-        .data(rankOrder)
+        .data(this.rankOrder)
         .enter()
         .append("text")
         .attr("x", (rank) => columnMap[rank] + sankeyGenerator.nodeWidth() / 2)

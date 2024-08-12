@@ -223,7 +223,7 @@ export default {
 
       tempTaxaLimit: 10,
       tempCladeReadsMode: "%",
-      tempCladeReadsValue: 10,
+      tempCladeReadsValue: 0.01,
       tempShowUnclassified: false,
       tempFigureHeight: 550,
       tempLabelOption: "cladeReads",

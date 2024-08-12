@@ -185,7 +185,7 @@ export default {
         taxaLimit: 20,
         maxTaxaLimit: 100,
         minCladeReadsMode: "%",
-        minCladeReads: 0.01,
+        minCladeReads: 0.0,
         showUnclassified: true,
         figureHeight: 500,
         labelOption: "proportion",
