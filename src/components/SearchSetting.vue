@@ -635,6 +635,9 @@ export default {
             JSON.stringify(completedJob)
           );
 
+          // Emit job-completed event: close loading dialog and expose results tab in navigation drawer
+          this.$emit("job-completed", completedJob);
+
           // Trigger snackbar
           this.triggerSnackbar(
             "Upload successful. Check the results tab!",
@@ -686,6 +689,9 @@ export default {
 
         // Store latest job in local storage for results rendering
         localStorage.setItem("processedResults", JSON.stringify(completedJob));
+
+        // Emit job-completed event: close loading dialog and expose results tab in navigation drawer
+        this.$emit("job-completed", completedJob);
 
         // Trigger snackbar
         this.triggerSnackbar(
@@ -816,9 +822,7 @@ export default {
         });
 
         window.electron.onBackendError((error) => {
-
           if (!this.errorHandled) {
-
             this.status = "ERROR"; // Signal job polling to stop
             reject(new Error("Backend execution error:", error));
           }
@@ -835,7 +839,8 @@ export default {
     },
 
     // Function to track job status + process results + trigger snackbar
-    async pollJobStatus(interval = 500, timeout = 180000) { // FIXME: decide timeout duration
+    async pollJobStatus(interval = 500, timeout = 180000) {
+      // FIXME: decide timeout duration
       console.log("Running poll"); // DEBUG
       const start = Date.now();
       while (Date.now() - start < timeout) {
@@ -968,6 +973,9 @@ export default {
           this.$router.push({ name: "ResultsPage" });
         }
       );
+
+      // Emit job-completed event: close loading dialog and expose results tab in navigation drawer
+      this.$emit("job-completed", completedJob);
     },
     storeResults(job) {
       // Retrieve existing jobs from localStorage
@@ -990,9 +998,6 @@ export default {
 
       // Save the updated jobs history back to localStorage
       localStorage.setItem("jobsHistory", JSON.stringify(jobsHistory));
-
-      // Emit job-completed event: close loading dialog and expose results tab in navigation drawer
-      this.$emit("job-completed", jobEntry);
     },
 
     handleJobError() {
@@ -1018,17 +1023,30 @@ export default {
       if (this.status === "TIMEOUT") {
         this.$emit("job-timed-out");
         this.triggerSnackbar(
-          "Job execution timed out",
+          "Job execution timed out.",
           "warning",
           "timer",
           "Retry",
           this.startJob
         );
       } else if (this.status === "CANCELLED") {
-        this.triggerSnackbar("Job was cancelled", "info", "cancel", "Dismiss");
+        this.triggerSnackbar("Job was cancelled.", "info", "cancel", "Dismiss");
+      } else if (this.status === "ERROR") {
+        this.$emit("job-aborted");
+        this.triggerSnackbar(
+          "Invalid request. Check your query and try again.",
+          "error",
+          "warning",
+          "Dismiss"
+        );
       } else {
         this.$emit("job-aborted");
-        this.triggerSnackbar("Job was aborted", "error", "warning", "Dismiss");
+        this.triggerSnackbar(
+          "An unexpected error occurred. Please try again.",
+          "error",
+          "warning",
+          "Dismiss"
+        );
       }
 
       this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
