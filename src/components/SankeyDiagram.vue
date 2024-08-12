@@ -823,15 +823,23 @@ export default {
 
       // Function to move tooltip
       this.moveTooltip = (event) => {
-        const tooltip = this.$refs.tooltip;
-        const offsetX = this.isSubtree ? -12 : 12;
-        const offsetY = this.isSubtree ? -24 : 0;
+        requestAnimationFrame(() => {
+          const tooltip = this.$refs.tooltip;
+          const offsetX = this.isSubtree ? -12 : 12;
+          const offsetY = this.isSubtree ? -24 : 0;
 
-        if (tooltip) {
-          tooltip.style.left = event.pageX + offsetX + "px";
-          tooltip.style.top = event.clientY + offsetY + "px";
-        }
+          if (tooltip) {
+            tooltip.style.left = `${event.pageX + offsetX}px`;
+            tooltip.style.top = `${event.clientY + offsetY}px`;
+          }
+        });
       };
+
+      // Throttled mousemove function
+      const tooltipDelay = 50; // Throttle delay in ms
+      const throttledMouseMove = this.throttle((event) => {
+        this.moveTooltip(event);
+      }, tooltipDelay);
 
       // Function to hide tooltip
       this.hideTooltip = () => {
@@ -852,7 +860,7 @@ export default {
           this.showTooltip(event, d);
         })
         .on("mousemove", (event) => {
-          this.moveTooltip(event);
+          throttledMouseMove(event);
         })
         .on("mouseout", () => {
           resetHighlight();
@@ -935,6 +943,19 @@ export default {
           resolve();
         }, 50); // Immediate execution after fetching data
       });
+    },
+
+    // Throttle function (used for improving performance during node hover)
+    throttle(func, delay) {
+      let lastCall = 0;
+      return function (...args) {
+        const now = new Date().getTime();
+        if (now - lastCall < delay) {
+          return;
+        }
+        lastCall = now;
+        return func(...args);
+      };
     },
   },
 
