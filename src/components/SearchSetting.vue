@@ -816,8 +816,9 @@ export default {
         });
 
         window.electron.onBackendError((error) => {
+
           if (!this.errorHandled) {
-            this.errorHandled = true;
+
             this.status = "ERROR"; // Signal job polling to stop
             reject(new Error("Backend execution error:", error));
           }
