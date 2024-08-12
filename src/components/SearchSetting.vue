@@ -839,7 +839,7 @@ export default {
     },
 
     // Function to track job status + process results + trigger snackbar
-    async pollJobStatus(interval = 500, timeout = 180000) {
+    async pollJobStatus(interval = 500, timeout = Infinity) {
       // FIXME: decide timeout duration
       console.log("Running poll"); // DEBUG
       const start = Date.now();
