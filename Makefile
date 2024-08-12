@@ -3,16 +3,7 @@
 FRONTEND_APP := metabuli
 metabulilink := https://mmseqs.com/metabuli/
 
-# ifeq (${FRONTEND_APP},mmseqs)
-# hash := ${mmseqshash}
-# all: build/icon.icns build/icon.ico win mac linux
-# else
-# hash := ${foldseekhash}
-# all: build/icon.icns build/icon.ico mac linux
-# endif
-
-# all: build/icon.icns build/icon.ico mac linux
-all: mac linux
+all: mac linux win
 ifneq ($(shell uname -s),Darwin)
 # llvm-lipo is part of llvm since release 14
 LIPO ?= llvm-lipo
@@ -20,37 +11,9 @@ else
 LIPO ?= lipo
 endif
 
-# win: resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/mmseqs-web-backend.exe
-# mac: resources/mac/x64/${FRONTEND_APP} resources/mac/arm64/${FRONTEND_APP} resources/mac/arm64/mmseqs-web-backend resources/mac/x64/mmseqs-web-backend
-# linux: resources/linux/arm64/${FRONTEND_APP} resources/linux/x64/${FRONTEND_APP} resources/linux/arm64/mmseqs-web-backend resources/linux/x64/mmseqs-web-backend
-
+win: resources/win/x64/${FRONTEND_APP}.bat 
 mac: resources/mac/x64/${FRONTEND_APP} resources/mac/arm64/${FRONTEND_APP} 
-linux: resources/linux/arm64/${FRONTEND_APP} resources/linux/x64/${FRONTEND_APP} 
-# build/icon.icns build/icon.ico: ICONS.intermediate ;
-# .INTERMEDIATE: ICONS.intermediate
-# ICONS.intermediate: frontend/assets/marv1-square.svg
-# 	mkdir -p build
-# 	./node_modules/.bin/icon-gen -i frontend/assets/marv1-square.svg -o build --icns --icns-name icon --ico --ico-name icon
-
-# resources/mac/x64/mmseqs-web-backend: backend/*.go backend/go.*
-# 	mkdir -p resources/mac/x64
-# 	cd backend/ && GOOS=darwin GOARCH=amd64  CGO_ENABLED=0 go build -o ../resources/mac/x64/mmseqs-web-backend
-
-# resources/mac/arm64/mmseqs-web-backend: backend/*.go backend/go.*
-# 	mkdir -p resources/mac/arm64
-# 	cd backend/ && GOOS=darwin GOARCH=arm64  CGO_ENABLED=0 go build -o ../resources/mac/arm64/mmseqs-web-backend
-
-# resources/linux/x64/mmseqs-web-backend: backend/*.go backend/go.*
-# 	mkdir -p resources/linux/x64
-# 	cd backend/ && GOOS=linux  GOARCH=amd64  CGO_ENABLED=0 go build -o ../resources/linux/x64/mmseqs-web-backend
-
-# resources/linux/arm64/mmseqs-web-backend: backend/*.go backend/go.*
-# 	mkdir -p resources/linux/arm64
-# 	cd backend/ && GOOS=linux  GOARCH=arm64  CGO_ENABLED=0 go build -o ../resources/linux/arm64/mmseqs-web-backend
-
-# resources/win/x64/mmseqs-web-backend.exe: backend/*.go backend/go.*
-# 	mkdir -p resources/win/x64
-# 	cd backend/ && GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o ../resources/win/x64/mmseqs-web-backend.exe
+linux: resources/linux/arm64/${FRONTEND_APP} resources/linux/x64/${FRONTEND_APP}
 
 resources/mac/${FRONTEND_APP}:
 	mkdir -p resources/mac
@@ -70,11 +33,6 @@ resources/linux/x64/${FRONTEND_APP}-sse2:
 	wget -nv -q -O - https://mmseqs.com/metabuli/metabuli-linux-sse2.tar.gz | tar -xOf - ${FRONTEND_APP}/bin/${FRONTEND_APP} > resources/linux/x64/${FRONTEND_APP}-sse2
 	chmod +x resources/linux/x64/${FRONTEND_APP}-sse2
 
-# resources/linux/x64/${FRONTEND_APP}-sse41:
-# 	mkdir -p resources/linux/x64
-# 	wget -nv -q -O - https://mmseqs.com/archive/$(hash)/${FRONTEND_APP}-linux-sse41.tar.gz | tar -xOf - ${FRONTEND_APP}/bin/${FRONTEND_APP} > resources/linux/x64/${FRONTEND_APP}-sse41
-# 	chmod +x resources/linux/x64/${FRONTEND_APP}-sse41
-
 resources/linux/x64/${FRONTEND_APP}-avx2:
 	mkdir -p resources/linux/x64
 	wget -nv -q -O - https://mmseqs.com/metabuli/metabuli-linux-avx2.tar.gz | tar -xOf - ${FRONTEND_APP}/bin/${FRONTEND_APP} > resources/linux/x64/${FRONTEND_APP}-avx2
@@ -89,14 +47,11 @@ resources/linux/arm64/${FRONTEND_APP}:
 	wget -nv -q -O - https://mmseqs.com/metabuli/metabuli-linux-arm64.tar.gz | tar -xOf - ${FRONTEND_APP}/bin/${FRONTEND_APP} > resources/linux/arm64/${FRONTEND_APP}
 	chmod +x resources/linux/arm64/${FRONTEND_APP}
 
-# resources/win/x64/${FRONTEND_APP}.bat:
-# 	mkdir -p resources/win/x64
-# 	cd resources/win/x64 && wget -nv -O ${FRONTEND_APP}-win64.zip https://mmseqs.com/archive/$(hash)/${FRONTEND_APP}-win64.zip \
-# 		&& unzip ${FRONTEND_APP}-win64.zip && mv ${FRONTEND_APP}/* . && rmdir ${FRONTEND_APP} && rm ${FRONTEND_APP}-win64.zip
-# 	chmod -R +x resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/bin/*
+resources/win/x64/${FRONTEND_APP}.bat:
+	mkdir -p resources/win/x64
+	cd resources/win/x64 && wget -nv -O ${FRONTEND_APP}-win64.zip https://mmseqs.com/metabuli/metabuli-win64.zip \
+		&& unzip ${FRONTEND_APP}-win64.zip && mv ${FRONTEND_APP}/* . && rmdir ${FRONTEND_APP} && rm ${FRONTEND_APP}-win64.zip
+	chmod -R +x resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/bin/*
 
-# clean:
-# 	# @rm -f build/icon.icns build/icon.ico
-# 	@rm -rf resources/mac/* resources/linux/* 
 clean:
-	@rm -rf resources/mac/* resources/linux/* 
+	@rm -rf resources/mac/* resources/linux/* resources/win/* 

@@ -431,14 +431,14 @@ export default {
           file: true,
         },
       },
-      reducedAA: {
-        title: "Reduced AA",
-        description:
-          "0. Use 20 alphabets or 1. Use 15 alphabets to encode amino acids. Give the same value used for DB creation.",
-        parameter: "--reduced-aa", // FIXME: 엥 왜 안돼
-        value: "",
-        type: "INTEGER",
-      },
+      // reducedAA: {
+      //   title: "Reduced AA",
+      //   description:
+      //     "0. Use 20 alphabets or 1. Use 15 alphabets to encode amino acids. Give the same value used for DB creation.",
+      //   parameter: "--reduced-aa", // FIXME: 엥 왜 안돼
+      //   value: "",
+      //   type: "INTEGER",
+      // },
       accessionLevel: {
         title: "Accession Level",
         description:
@@ -866,15 +866,18 @@ export default {
         // Resolve outdir path
         let resolvedOutdirPath;
         let jobId;
-        if (isSample) {
-          resolvedOutdirPath = window.electron.resolvePath(
-            this.jobDetailsSample.outdir
-          );
-          jobId = this.jobDetailsSample.jobid;
-        } else {
-          resolvedOutdirPath = this.jobDetails.outdir;
-          jobId = this.jobDetails.jobid;
-        }
+
+        resolvedOutdirPath = isSample ? this.jobDetailsSample.outdir : this.jobDetails.outdir;
+         jobId = isSample ? this.jobDetailsSample.jobid : this.jobDetails.jobid;
+
+
+        // if (isSample) {
+        //   resolvedOutdirPath = this.jobDetailsSample.outdir;
+        //   jobId = this.jobDetailsSample.jobid;
+        // } else {
+        //   resolvedOutdirPath = this.jobDetails.outdir;
+        //   jobId = this.jobDetails.jobid;
+        // }
 
         // Set file paths for report and krona
         reportFilePath = `${resolvedOutdirPath}/${jobId}_report.tsv`;

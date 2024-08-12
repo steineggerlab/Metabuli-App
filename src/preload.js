@@ -4,6 +4,7 @@ const fs = require("fs").promises;
 
 contextBridge.exposeInMainWorld("electron", {
   readFile: async (filePath, isRelativePath) => {
+    console.log("filepath", filePath); // DEBUG
     // 'development' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/dist_electron
     // 'production' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/build/mac-universal--arm64/Metabuli App.app/Contents/Resources/app.asar
     const basePath =
@@ -11,6 +12,7 @@ contextBridge.exposeInMainWorld("electron", {
         ? path.join(__dirname, "..", "public")
         : path.join(__dirname);
     const fullPath = isRelativePath ? path.join(basePath, filePath) : filePath;
+    console.log("fullpath", fullPath); // DEBUG
     try {
       return await fs.readFile(fullPath, "utf-8");
     } catch (error) {
@@ -18,7 +20,6 @@ contextBridge.exposeInMainWorld("electron", {
     }
   },
   openFileDialog: (options) => ipcRenderer.invoke("open-file-dialog", options),
-  resolvePath: (relativePath) => path.resolve(__dirname, relativePath),
   openKrona: (filePath) => ipcRenderer.invoke("open-krona", filePath),
   
   runBackend: (args) => ipcRenderer.send("run-backend", args),

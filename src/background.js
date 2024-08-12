@@ -152,22 +152,25 @@ const mapPlatform = (platform) => {
 };
 
 let childProcess;
-let backendCancelled = false;
+let backendCancelled = false
 const binPath = app.isPackaged
-  ? join(process.resourcesPath, "bin", "metabuli") // 'production' process.resourcesPath=metabuli-app/build/mac-universal--x64/Metabuli App.app/Contents/Resources
+  ? join(process.resourcesPath, "bin") // 'production' process.resourcesPath=metabuli-app/build/mac-universal--x64/Metabuli App.app/Contents/Resources
   : join(
       appRootDir.get(),
       "resources",
       mapPlatform(platform),
-      os.arch(),
-      "metabuli",
-      platform == "win32" ? ".bat" : ""
+      os.arch()
     );
+const backendBinary = join(
+      binPath,
+      "metabuli" + (platform == "win32" ? ".bat" : "")
+    );
+
 
 ipcMain.on("run-backend", async (event, args) => {
   try {
     backendCancelled = false;
-    childProcess = execFile(binPath, args, (error, stdout, stderr) => {
+    childProcess = execFile(backendBinary, args, (error, stdout, stderr) => {
       if (backendCancelled) {
         event.reply("backend-cancelled", "Backend process was cancelled.");
         return;

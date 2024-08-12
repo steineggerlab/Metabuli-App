@@ -1,96 +1,95 @@
-const { defineConfig } = require('@vue/cli-service')
-const path = require('path');
-const fs = require('fs');
+const { defineConfig } = require("@vue/cli-service");
+const path = require("path");
+const fs = require("fs");
 
 module.exports = defineConfig({
   transpileDependencies: true,
 
-  outputDir: path.resolve(__dirname, 'build'),
+  outputDir: path.resolve(__dirname, "build"),
 
   pluginOptions: {
     vuetify: {
-			// https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vuetify-loader
-		},
+      // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vuetify-loader
+    },
     electronBuilder: {
-      preload: path.resolve(__dirname, 'src/preload.js'), // Ensure this path is correct
+      preload: path.resolve(__dirname, "src/preload.js"), // Ensure this path is correct
       builderOptions: {
         directories: {
-          output: 'build' // Set the output directory for the built app
+          output: "build", // Set the output directory for the built app
         },
         extraResources: [
           {
-            from: path.resolve(__dirname, 'src/preload.js'), // Ensure this path is correct
-            to: 'preload.js',
-            filter: ['**/*'],
+            from: path.resolve(__dirname, "src/preload.js"), // Ensure this path is correct
+            to: "preload.js",
+            filter: ["**/*"],
           },
           {
-            from: 'public/sample_data',
-            to: 'sample_data',
-            filter: ['**/*']
+            from: "public/sample_data",
+            to: "sample_data",
+            filter: ["**/*"],
           },
           {
-            from: 'public/assets',
-            to: 'assets',
-            filter: ['**/*']
+            from: "public/assets",
+            to: "assets",
+            filter: ["**/*"],
           },
           {
-            "from": "resources/${os}/${arch}",
-            "to": "bin",
-            filter: ['**/*']
-          }
+            from: "resources/${os}/${arch}",
+            to: "bin",
+            filter: ["**/*"],
+          },
         ],
-         // Add icon paths for different platforms
-         mac: {
-          icon: path.resolve(__dirname, 'src/assets/icons/icon.icns'),
+        // Add icon paths for different platforms
+        mac: {
+          icon: path.resolve(__dirname, "src/assets/icons/icon.icns"),
           target: [
             {
-              target: 'dmg',
-              arch: [ 
-                'universal' 
-              ]
-            }
-          ]
+              target: "dmg",
+              arch: ["universal"],
+            },
+          ],
         },
         win: {
-          icon: path.resolve(__dirname, 'src/assets/icons/icon.ico'),
+          icon: path.resolve(__dirname, "src/assets/icons/icon.ico"),
           target: [
             {
-              "target": "nsis",
-              "arch": [
-                "x64"
-              ]
-            } 
-          ] 
+              target: "nsis",
+              arch: ["x64"],
+            },
+          ],
         },
         linux: {
-          icon: path.resolve(__dirname, 'src/assets/icons/icon.png'),
-          "target": [
+          category: "Science",
+          icon: path.resolve(__dirname, "src/assets/icons/icon.png"),
+          target: [
             {
-              "target": "AppImage",
-              "arch": [
-                "x64",
-                "arm64"
-              ]
-            }
-          ]
+              target: "AppImage",
+              arch: ["x64", "arm64"],
+            },
+          ],
         },
         // Define the targets for the build
-        target: [
-          'mac',
-          'win',
-          'linux'
-        ],
+        target: ["mac", "win", "linux"],
         afterPack: async (context) => {
           let resourcesPath;
-          if (process.platform === 'darwin') {
+          const platform = context.packager.platform.name;
+          console.log("Target platform:", platform);
+
+          if (platform === "mac") {
             const appName = context.packager.appInfo.productFilename;
-            resourcesPath = path.join(context.appOutDir, `${appName}.app`, 'Contents', 'Resources', 'bin');
-          } else if (process.platform === 'win32') {
-            resourcesPath = path.join(context.appOutDir, 'resources', 'bin');
-          } else if (process.platform === 'linux') {
-            resourcesPath = path.join(context.appOutDir, 'resources', 'bin');
+            resourcesPath = path.join(
+              context.appOutDir,
+              `${appName}.app`,
+              "Contents",
+              "Resources",
+              "bin"
+            );
+          } else if (platform === "windows") {
+            resourcesPath = path.join(context.appOutDir, "resources", "bin");
+          } else if (platform === "linux") {
+            resourcesPath = path.join(context.appOutDir, "resources", "bin");
           }
-          console.log('Resources Path:', resourcesPath);
+          console.log("Resources Path:", resourcesPath);
 
           if (!fs.existsSync(resourcesPath)) {
             console.error(`Path does not exist: ${resourcesPath}`);
@@ -98,22 +97,26 @@ module.exports = defineConfig({
           }
 
           const binaries = [
-            path.join(resourcesPath, 'metabuli')
+            path.join(
+              resourcesPath,
+              "metabuli" + (platform == "windows" ? ".bat" : "")
+            ),
           ];
 
-          binaries.forEach(binary => {
+          binaries.forEach((binary) => {
             try {
-              fs.chmodSync(binary, '755');
+              fs.chmodSync(binary, "755");
               console.log(`Permissions set for ${binary}`);
               const stats = fs.statSync(binary);
               console.log(`Permissions for ${binary}:`, stats.mode);
-
             } catch (error) {
-              console.error(`Failed to set permissions for ${binary}: ${error.message}`);
+              console.error(
+                `Failed to set permissions for ${binary}: ${error.message}`
+              );
             }
           });
-        }
+        },
       },
     },
-  }
-})
+  },
+});
