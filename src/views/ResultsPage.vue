@@ -128,11 +128,11 @@ export default {
       uniqueInstanceId: "",
       taxaLimit: 20, // FIXME: refactor, make this into dictionary storing info about configuration
       maxTaxaLimit: 100,
-      minCladeReadsMode: "#",
-      minCladeReads: 1,
+      minCladeReadsMode: "%",
+      minCladeReads: 0.01,
       showUnclassified: true,
       figureHeight: 500,
-      labelOption: "cladeReads",
+      labelOption: "proportion",
       showAll: false,
 
       // Sankey Node Dialog

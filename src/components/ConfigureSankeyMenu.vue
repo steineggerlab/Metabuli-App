@@ -188,7 +188,7 @@ export default {
     },
     initialMinCladeReads: {
       type: Number,
-      default: 10,
+      default: 0.01,
     },
     initialShowUnclassified: {
       type: Boolean,
