@@ -168,7 +168,9 @@ export default {
     graphData() {
       return this.parseData(this.filteredData);
     },
-
+    rawFullGraphData() {
+      return this.parseData(this.nonCladesRawData, true);
+    },
     maxCladeReads() {
       //DEBUG
       const rankOrder = [
@@ -236,6 +238,81 @@ export default {
   },
 
   methods: {
+    getRawFullGraph() {
+      const width = 1100;
+      const height = this.figureHeight;
+      // const marginBottom = 50; // Margin for rank labels
+      const marginRight = 150;
+      const sankeyGenerator = sankey()
+        .nodeId((d) => d.id)
+        .nodeAlign(sankeyJustify)
+        .nodeWidth(20)
+        .nodePadding(13)
+        .iterations(100)
+        .extent([
+          [10, 10],
+          [width - marginRight, height - 6],
+        ]);
+        const rankOrder = [
+        "superkingdom",
+        "kingdom",
+        "phylum",
+        "class",
+        "order",
+        "family",
+        "genus",
+        "species",
+        "no rank",
+      ];
+      const columnWidth = (width - marginRight) / rankOrder.length;
+      const columnMap = rankOrder.reduce((acc, rank, index) => {
+        const leftMargin = 10;
+        acc[rank] = index * columnWidth + leftMargin;
+        return acc;
+      }, {});
+      const autumnColors = [
+        "#57291F",
+        "#C0413B",
+        "#D77B5F",
+        "#FF9200",
+        "#FFCD73",
+        "#F7E5BF",
+        "#C87505",
+        "#F18E3F",
+        "#E59579",
+        "#C14C32",
+        "#80003A",
+        "#506432",
+        "#FFC500",
+        "#B30019",
+        "#EC410B",
+        "#E63400",
+        "#8CB5B5",
+        "#6C3400",
+        "#FFA400",
+        "#41222A",
+        "#FFF7C2",
+        "#FFB27B",
+        "#FFCD87",
+        "#BC7576",
+      ];
+      const color = d3.scaleOrdinal().range(autumnColors);
+      // const unclassifiedLabelColor = "#696B7E";
+
+      console.log("this.rawFullGraphData", this.rawFullGraphData)
+      const fullGraph = sankeyGenerator({
+        nodes: this.rawFullGraphData.nodes.map((d) => Object.assign({}, d)),
+        links: this.rawFullGraphData.links.map((d) => Object.assign({}, d)),
+      });
+      fullGraph.nodes.forEach((node) => {
+        node.x0 = columnMap[node.rank];
+        node.x1 = node.x0 + sankeyGenerator.nodeWidth();
+        node.color = color(node.id); // Assign color to node
+      });
+
+      return fullGraph;
+      
+    },
     // Function for processing/parsing data
     processRawData(data) {
       this.allNodesByRank = {}; // Reset the nodes by rank
@@ -243,7 +320,7 @@ export default {
       // Filter out clades from raw data
       const nonClades = data.filter((entry) => entry.rank !== "clade");
       this.nonCladesRawData = nonClades;
-
+      // console.log("this.nonCladeRawData", nonClades)
       // Store nodes by rank from full data (for calculation of maxTaxaLimit)
       nonClades.forEach((node) => {
         if (!this.allNodesByRank[node.rank]) {
@@ -255,7 +332,7 @@ export default {
       // Update the configure menu with the maximum taxa per rank
       this.updateConfigureMenu();
     },
-    parseData(data) {
+    parseData(data, isFullGraph = false) {
       const nodes = [];
       const unclassifiedNodes = [];
       const allNodes = [];
@@ -410,7 +487,7 @@ export default {
           // Sort nodes by clade_reads in descending order and select the top nodes based on slider value
           const topNodes = nodesByRank[rank]
             .sort((a, b) => b.clade_reads - a.clade_reads)
-            .slice(0, this.taxaLimit);
+            .slice(0, isFullGraph ? nodesByRank[rank].length : this.taxaLimit);
           nodes.push(...topNodes);
         }
       });
@@ -422,6 +499,8 @@ export default {
         // Add unclassified nodes to sankey
         nodes.push(node);
       });
+
+      console.log("allNodes", allNodes) // DEBUG
 
       // Step 3: Create links based on filtered nodes' lineage
       nodes.forEach((node) => {
@@ -481,34 +560,9 @@ export default {
         links: [...allLinks],
       };
 
+      console.log("this.fullGraphData", this.fullGraphData) // DEBUG
+
       return { nodes, links };
-    },
-    filterData(data) {
-      //FIXME:
-      let filteredNodes = data.nodes;
-      let filteredLinks = data.links;
-
-      // Filter unclassified nodes if showUnclassified is false
-      if (!this.showUnclassified) {
-        filteredNodes = filteredNodes.filter(
-          (node) =>
-            node.rank !== "no rank" || !node.name.startsWith("unclassified")
-        );
-        const filteredNodeIds = new Set(filteredNodes.map((node) => node.id));
-        filteredLinks = filteredLinks.filter(
-          (link) =>
-            filteredNodeIds.has(link.source) && filteredNodeIds.has(link.target)
-        );
-      }
-
-      // Limit the number of nodes and links
-      filteredNodes = filteredNodes.slice(0, this.nodeLimit);
-      filteredLinks = filteredLinks.slice(0, this.linkLimit);
-
-      return {
-        nodes: filteredNodes,
-        links: filteredLinks,
-      };
     },
     isUnclassifiedTaxa(d) {
       const name = d.name;
@@ -583,7 +637,10 @@ export default {
     },
     extractSubtreeRawData(node) {
       // Used only when isSubtree === false
-      const graph = this.fullGraph;
+
+      // const graph = this.fullGraph;
+      const graph = this.getRawFullGraph();
+      console.log("graph", graph); // DEBUG
       const subtreeNodesTaxonIds = new Set();
       const subtreeLinks = new Set();
 
@@ -609,6 +666,7 @@ export default {
 
     // Main function for drawing Sankey
     createSankey() {
+      console.log("this.graphData", this.graphData)
       const { nodes, links } = this.graphData;
 
       // Check if nodes and links are not empty

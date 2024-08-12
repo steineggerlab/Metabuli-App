@@ -267,11 +267,11 @@ export default {
     // Function for rendering results
     renderResults(processedResults) {
       // Logic to render the table and Sankey diagram using the passed data
-      console.log(
-        "render data",
-        processedResults.resultsJSON,
-        processedResults.kronaContent
-      );
+      // console.log(
+      //   "render data",
+      //   processedResults.resultsJSON,
+      //   processedResults.kronaContent
+      // );
       this.results = processedResults.resultsJSON;
       this.kronaContent = processedResults.kronaContent;
     },
