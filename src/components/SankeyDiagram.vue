@@ -133,7 +133,6 @@ export default {
         visible: false,
         data: {},
       },
-      rawFullGraphData: { nodes: [], links: [] },
 
       rankOrder: [
         "superkingdom",
@@ -252,44 +251,16 @@ export default {
 
   methods: {
     getRawFullGraph() {
-      const width = 1100;
-      const height = this.figureHeight;
-      // const marginBottom = 50; // Margin for rank labels
-      const marginRight = 150;
       const sankeyGenerator = sankey()
         .nodeId((d) => d.id)
-        .nodeAlign(sankeyJustify)
-        .nodeWidth(20)
-        .nodePadding(13)
-        .iterations(100)
-        .extent([
-          [10, 10],
-          [width - marginRight, height - 6],
-        ]);
-      const columnWidth = (width - marginRight) / this.rankOrder.length;
-      const columnMap = this.rankOrder.reduce((acc, rank, index) => {
-        const leftMargin = 10;
-        acc[rank] = index * columnWidth + leftMargin;
-        return acc;
-      }, {});
-
-      const color = d3.scaleOrdinal().range(this.autumnColors);
-      // const unclassifiedLabelColor = "#696B7E";
 
        // Store full graph (used for drawing subtree upon node click)
-      console.log("this.rawFullGraphData", this.rawFullGraphData) // DEBUG
       const fullGraph = sankeyGenerator({
-        nodes: this.rawFullGraphData.nodes.map((d) => Object.assign({}, d)),
-        links: this.rawFullGraphData.links.map((d) => Object.assign({}, d)),
-      });
-      fullGraph.nodes.forEach((node) => {
-        node.x0 = columnMap[node.rank];
-        node.x1 = node.x0 + sankeyGenerator.nodeWidth();
-        node.color = color(node.id); // Assign color to node
+        nodes: this.fullGraphData.nodes.map((d) => Object.assign({}, d)),
+        links: this.fullGraphData.links.map((d) => Object.assign({}, d)),
       });
 
-      return fullGraph;
-      
+      return fullGraph;    
     },
     // Function for processing/parsing data
     processRawData(data) {
@@ -308,7 +279,7 @@ export default {
       });
 
       // Store full graph data from raw data
-      this.rawFullGraphData = this.parseData(this.nonCladesRawData, true);
+      this.fullGraphData = this.parseData(this.nonCladesRawData, true);
 
       // Update the configure menu with the maximum taxa per rank
       this.updateConfigureMenu();
@@ -458,7 +429,7 @@ export default {
           // Sort nodes by clade_reads in descending order and select the top nodes based on slider value
           const topNodes = nodesByRank[rank]
             .sort((a, b) => b.clade_reads - a.clade_reads)
-            .slice(0, isFullGraph ? nodesByRank[rank].length : this.taxaLimit);
+            .slice(0, isFullGraph ? nodesByRank[rank].length : this.taxaLimit); // Don't apply taxaLimit when parsing fullGraphData
           nodes.push(...topNodes);
         }
       });
@@ -470,8 +441,6 @@ export default {
         // Add unclassified nodes to sankey
         nodes.push(node);
       });
-
-      console.log("allNodes", allNodes) // DEBUG
 
       // Step 3: Create links based on filtered nodes' lineage
       nodes.forEach((node) => {
@@ -524,14 +493,6 @@ export default {
           });
         }
       });
-
-      // Store full graph data
-      this.fullGraphData = {
-        nodes: [...allNodes],
-        links: [...allLinks],
-      };
-
-      console.log("this.fullGraphData", this.fullGraphData) // DEBUG
 
       return { nodes, links };
     },
@@ -610,7 +571,7 @@ export default {
       // Used only when isSubtree === false
 
       const graph = this.getRawFullGraph();
-      console.log("graph", graph); // DEBUG
+      console.log("fullGraph", graph); // DEBUG
       const subtreeNodesTaxonIds = new Set();
       const subtreeLinks = new Set();
 
@@ -636,7 +597,7 @@ export default {
 
     // Main function for drawing Sankey
     createSankey() {
-      console.log("this.graphData", this.graphData)
+      console.log("this.graphData", this.graphData) // DEBUG
       const { nodes, links } = this.graphData;
 
       // Check if nodes and links are not empty
