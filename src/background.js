@@ -7,6 +7,7 @@ import {
   screen,
   ipcMain,
   dialog,
+  shell,
 } from "electron";
 const { execFile } = require("child_process");
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
@@ -47,6 +48,12 @@ async function createWindow() {
       contextIsolation: true,
       preload: join(__dirname, "preload.js"), // Ensure the preload script is specified
     },
+  });
+
+  // Intercepting new-window events to open external URLs in the default browser
+  win.webContents.on("new-window", (event, url) => {
+    event.preventDefault(); // Prevent the default behavior
+    shell.openExternal(url); // Open the URL in the default browser
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -152,20 +159,14 @@ const mapPlatform = (platform) => {
 };
 
 let childProcess;
-let backendCancelled = false
+let backendCancelled = false;
 const binPath = app.isPackaged
   ? join(process.resourcesPath, "bin") // 'production' process.resourcesPath=metabuli-app/build/mac-universal--x64/Metabuli App.app/Contents/Resources
-  : join(
-      appRootDir.get(),
-      "resources",
-      mapPlatform(platform),
-      os.arch()
-    );
+  : join(appRootDir.get(), "resources", mapPlatform(platform), os.arch());
 const backendBinary = join(
-      binPath,
-      "metabuli" + (platform == "win32" ? ".bat" : "")
-    );
-
+  binPath,
+  "metabuli" + (platform == "win32" ? ".bat" : "")
+);
 
 ipcMain.on("run-backend", async (event, args) => {
   try {

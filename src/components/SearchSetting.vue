@@ -121,29 +121,70 @@
                   </v-sheet>
 
                   <!-- Database Directory -->
-                  <v-sheet class="d-flex align-center mb-2 gc-3">
-                    <v-btn @click="selectFile('database', 'directory')"
-                      >Select Database</v-btn
-                    >
-                    <v-chip
-                      v-if="jobDetails.database"
-                      label
-                      color="primary"
-                      density="comfortable"
-                      class="filename-chip"
-                    >
-                      <v-icon
-                        icon="$delete"
-                        @click="clearFile('database')"
-                        class="mr-1"
-                      ></v-icon>
-                      {{ this.extractFilename(jobDetails.database) }}</v-chip
-                    >
-                    <v-text-field
-                      v-model="jobDetails.database"
-                      :rules="[requiredRule]"
-                      style="display: none"
-                    ></v-text-field>
+                  <v-sheet class="d-flex flex-column mb-2">
+                    <div class="d-flex align-center mb-0 gc-3">
+                      <v-btn @click="selectFile('database', 'directory')"
+                        >Select Database</v-btn
+                      >
+                      <v-chip
+                        v-if="jobDetails.database"
+                        label
+                        color="primary"
+                        density="comfortable"
+                        class="filename-chip"
+                      >
+                        <v-icon
+                          icon="$delete"
+                          @click="clearFile('database')"
+                          class="mr-1"
+                        ></v-icon>
+                        {{ this.extractFilename(jobDetails.database) }}</v-chip
+                      >
+                      <v-text-field
+                        v-model="jobDetails.database"
+                        :rules="[requiredRule]"
+                        style="display: none"
+                      ></v-text-field>
+                    </div>
+
+                    <!-- Database Download Links Table -->
+                    <div>
+                      <v-menu
+                        v-model="menu"
+                        :close-on-content-click="false"
+                        offset-y
+                      >
+                        <!-- Use slot to make the button the activator -->
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            variant="plain"
+                            density="compact"
+                            color="primary"
+                            class="text-caption font-weight-medium mt-0 py-1 pl-0 d-flex align-start"
+                            v-bind="props"
+                          >
+                            <div class="d-flex align-center gc-1">
+                              <v-icon icon="$helpCircleOutline"></v-icon>
+                              Database Download Links
+                            </div>
+                          </v-btn>
+                        </template>
+
+                        <v-card rounded="lg">
+                          <v-data-table
+                            :headers="databaseDownloadHeaders"
+                            :items="databaseDownloadItems"
+                            hide-default-footer
+                          >
+                            <template v-slot:[`item.name`]="{ item }">
+                              <a :href="item.link" target="_blank">{{
+                                item.name
+                              }}</a>
+                            </template>
+                          </v-data-table>
+                        </v-card>
+                      </v-menu>
+                    </div>
                   </v-sheet>
 
                   <!-- Output Directory -->
@@ -375,7 +416,7 @@ export default {
       { title: "New Search", value: "runSearch" },
       { title: "Upload Report", value: "uploadReport" },
     ], // FIXME: rename to tabItems
-
+    menu: false,
     // Properties for Run New Search tab
     isJobFormValid: false,
     jobDetails: {
@@ -513,6 +554,39 @@ export default {
     },
     endType: "single-end", // FIXME: move this to jobDetails
     expandAdvancedSettings: false,
+
+    // Database Download Table
+    databaseDownloadHeaders: [
+      { title: "Name", value: "name" },
+      { title: "Uploaded", value: "uploaded" },
+      { title: "Size", value: "size" },
+    ],
+    databaseDownloadItems: [
+      {
+        name: "gtdb.tar.gz",
+        uploaded: "Mon, 01 Apr 2024 03:37:39 GMT", // Use a date format that suits your needs
+        size: "68.8 GB", // Size can be in different formats (MB, GB, etc.)
+        link: "https://metabuli.steineggerlab.workers.dev/gtdb.tar.gz",
+      },
+      {
+        name: "refseq_prokaryote_virus.tar.gz",
+        uploaded: "Mon, 01 Apr 2024 09:32:29 GMT",
+        size: "88.7 GB",
+        link: "https://metabuli.steineggerlab.workers.dev/refseq_prokaryote_virus.tar.gz",
+      },
+      {
+        name: "refseq_release217+human.tar.gz",
+        uploaded: "Tue, 04 Jul 2023 13:48:16 GMT",
+        size: "306.4 GB",
+        link: "https://metabuli.steineggerlab.workers.dev/refseq_release217+human.tar.gz",
+      },
+      {
+        name: "refseq_virus.tar.gz",
+        uploaded: "Mon, 01 Apr 2024 02:42:58 GMT",
+        size: "4.0 GB",
+        link: "https://metabuli.steineggerlab.workers.dev/refseq_virus.tar.gz",
+      },
+    ],
 
     // Properties for Upload Report tab
     file: null, // FIXME: rename to uploadedReportFile or Path
@@ -867,9 +941,10 @@ export default {
         let resolvedOutdirPath;
         let jobId;
 
-        resolvedOutdirPath = isSample ? this.jobDetailsSample.outdir : this.jobDetails.outdir;
-         jobId = isSample ? this.jobDetailsSample.jobid : this.jobDetails.jobid;
-
+        resolvedOutdirPath = isSample
+          ? this.jobDetailsSample.outdir
+          : this.jobDetails.outdir;
+        jobId = isSample ? this.jobDetailsSample.jobid : this.jobDetails.jobid;
 
         // if (isSample) {
         //   resolvedOutdirPath = this.jobDetailsSample.outdir;
