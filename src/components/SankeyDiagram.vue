@@ -145,6 +145,29 @@ export default {
         "species",
         "no rank",
       ],
+      rankOrderFull: [
+        "superkingdom",
+        "kingdom",
+        "subkingdom",
+        "superphylum",
+        "phylum",
+        "subphylum",
+        "superclass",
+        "class",
+        "subclass",
+        "superorder",
+        "order",
+        "suborder",
+        "superfamily",
+        "family",
+        "subfamily",
+        "supergenus",
+        "genus",
+        "subgenus",
+        "superspecies",
+        "species",
+        "subspecies",
+      ],
       autumnColors: [
         "#57291F",
         "#C0413B",
@@ -267,7 +290,7 @@ export default {
       this.allNodesByRank = {}; // Reset the nodes by rank
 
       // Filter out clades from raw data
-      const nonClades = data.filter((entry) => entry.rank !== "clade");
+      const nonClades = data.filter((entry) => this.rankOrderFull.includes(entry.rank));
       this.nonCladesRawData = nonClades;
       // console.log("this.nonCladeRawData", nonClades)
       // Store nodes by rank from full data (for calculation of maxTaxaLimit)
@@ -291,30 +314,7 @@ export default {
       const links = [];
       const allLinks = [];
 
-      const rankOrderFull = [
-        "superkingdom",
-        "kingdom",
-        "subkingdom",
-        "superphylum",
-        "phylum",
-        "subphylum",
-        "superclass",
-        "class",
-        "subclass",
-        "superorder",
-        "order",
-        "suborder",
-        "superfamily",
-        "family",
-        "subfamily",
-        "supergenus",
-        "genus",
-        "subgenus",
-        "superspecies",
-        "species",
-        "subspecies",
-      ];
-      const rankHierarchyFull = rankOrderFull.reduce((acc, rank, index) => {
+      const rankHierarchyFull = this.rankOrderFull.reduce((acc, rank, index) => {
         acc[rank] = index;
         return acc;
       }, {});
