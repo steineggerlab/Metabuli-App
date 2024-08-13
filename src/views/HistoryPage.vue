@@ -4,9 +4,13 @@
       <v-data-table
         :headers="headers"
         :items="jobsHistory"
+        item-value="timestamp"
         :items-per-page="10"
         class="elevation-1"
         :sort-by="[{ key: 'timestamp', order: 'desc' }]"
+        select-strategy="page"
+        show-select
+        v-model="selectedItems"
       >
         <template v-slot:top>
           <v-toolbar class="custom-toolbar" density="compact">
@@ -124,6 +128,35 @@
         </template>
       </v-data-table>
 
+      <!-- Floating Action Box for Selected Items -->
+      <v-fade-transition>
+        <div
+          v-if="selectedItems.length > 0"
+          class="floating-action-box bg-white py-2 px-3 elevation-3 rounded-lg"
+        >
+          <v-chip
+            variant="flat"
+            color="black"
+            size="small"
+            density="comfortable"
+            rounded="lg"
+            class="px-2"
+            >{{ selectedItems.length }}</v-chip
+          >
+          <v-chip variant="text">selected</v-chip>
+          <v-btn
+            variant="outlined"
+            color="error"
+            prepend-icon="$trash"
+            size="small"
+            class="text-body-2 px-2"
+            style="border-color: #e0e0e0"
+            @click="deleteSelectedItems"
+            >Delete</v-btn
+          >
+        </div>
+      </v-fade-transition>
+
       <!-- Dialog to display the backend output -->
       <v-dialog v-model="dialog" max-width="800px">
         <v-card class="text-break">
@@ -188,6 +221,7 @@ export default {
         },
       ],
       jobsHistory: [], // To store the retrieved history
+      selectedItems: [], // To track selected items
 
       // Job Details dialog
       dialog: false,
@@ -220,6 +254,16 @@ export default {
       // Update localStorage
       localStorage.setItem("jobsHistory", JSON.stringify(this.jobsHistory));
     },
+    deleteSelectedItems() {
+      // Remove the selected jobs from jobsHistory
+      this.jobsHistory = this.jobsHistory.filter(
+        (job) => !this.selectedItems.includes(job.timestamp)
+      );
+      // Clear selected items
+      this.selectedItems = [];
+      // Update localStorage
+      localStorage.setItem("jobsHistory", JSON.stringify(this.jobsHistory));
+    },
     formatTimestamp(timestamp) {
       const date = new Date(timestamp);
       return date.toLocaleString(); // You can customize this as needed
@@ -247,5 +291,11 @@ export default {
 </script>
 
 <style scoped>
-/* Add any custom styles here */
+.floating-action-box {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
 </style>
