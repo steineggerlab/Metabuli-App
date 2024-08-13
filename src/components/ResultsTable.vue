@@ -1,5 +1,13 @@
 <template>
-  <v-data-table :headers="headers" :items="filteredTableResults" height="550px" density="comfortable" items-per-page="20" multi-sort sticky>
+  <v-data-table
+    :headers="headers"
+    :items="filteredTableResults"
+    height="550px"
+    density="comfortable"
+    items-per-page="20"
+    multi-sort
+    sticky
+  >
     <template v-slot:top>
       <div class="d-flex align-center">
         <!-- NUMBER OF DATA ITEMS -->
@@ -12,15 +20,70 @@
           v-model="searchQuery"
           prepend-inner-icon="$magnify"
           density="compact"
-          label="Filter results"
+          label="Search results"
           variant="outlined"
+          rounded="lg"
           single-line
+          color="indigo"
         ></v-text-field>
       </div>
     </template>
 
+    <template v-slot:[`header.rank`]>
+      <div class="d-flex align-center justify-space-between">
+        <span>Rank</span>
+        <v-menu
+          v-model="rankMenu"
+          width="250"
+          transition="scale-transition"
+          :close-on-content-click="false"
+          location="bottom end"
+          @click:outside="closeMenu"
+        >
+          <template v-slot:activator="{ props }">
+            <v-btn
+              :variant="rankFilterVariant"
+              :color="rankFilterColor"
+              icon
+              size="small"
+              density="comfortable"
+              v-bind="props"
+            >
+              <v-icon icon="$filterVariant"></v-icon>
+            </v-btn>
+          </template>
+
+          <v-select
+            v-model="filters.rank"
+            :items="rankOrderFull"
+            variant="outlined"
+            label="Filter by Rank"
+            multiple
+            density="compact"
+            clearable
+            color="indigo"
+            style="background-color: white"
+            class="rounded-t-lg"
+            @blur="closeMenu"
+          >
+            <template v-slot:selection="{ item, index }">
+              <v-chip v-if="index < 2" color="indigo">
+                <span>{{ item.title }}</span>
+              </v-chip>
+              <span
+                v-if="index === 2"
+                class="text-grey text-caption align-self-center"
+              >
+                (+{{ filters.rank.length - 2 }} others)
+              </span>
+            </template>
+          </v-select>
+        </v-menu>
+      </div>
+    </template>
+
     <template v-slot:item="{ item }">
-      <tr >
+      <tr>
         <!-- PROPORTION -->
         <td>
           <div class="proportion-cell">
@@ -102,11 +165,21 @@ export default {
           align: "start",
           key: "rank",
           width: "140px",
-          sortRaw: (a, b) => this.rankSort(a.rank, b.rank),
+          sortable: false,
+          // sortRaw: (a, b) => this.rankSort(a.rank, b.rank),
         },
         { title: "Taxon ID", align: "start", key: "taxon_id", width: "140px" },
         { title: "Name", align: "start", key: "name" },
       ],
+      rankMenu: false, // State for controlling visibility of rank filter dropdown
+      filters: {
+        proportion: null,
+        clade_reads: null,
+        taxon_reads: null,
+        rank: null,
+        taxon_id: "",
+        name: "",
+      },
       searchQuery: "",
       rankOrderFull: [
         "superkingdom",
@@ -170,14 +243,65 @@ export default {
   computed: {
     filteredTableResults() {
       return this.data.filter((item) => {
-        return Object.values(item).some((value) =>
+        const matchesProportion =
+          this.filters.proportion === null ||
+          item.proportion >= this.filters.proportion;
+        const matchesCladeReads =
+          this.filters.clade_reads === null ||
+          item.clade_reads >= this.filters.clade_reads;
+        const matchesTaxonReads =
+          this.filters.taxon_reads === null ||
+          item.taxon_reads >= this.filters.taxon_reads;
+        const matchesRank =
+          this.filters.rank === null ||
+          this.filters.rank.length === 0 ||
+          this.filters.rank.includes(item.rank);
+        const matchesTaxonId = item.taxon_id
+          .toString()
+          .toLowerCase()
+          .includes(this.filters.taxon_id.toLowerCase());
+        const matchesName = item.name
+          .toString()
+          .toLowerCase()
+          .includes(this.filters.name.toLowerCase());
+        const matchesQuery = Object.values(item).some((value) =>
           value
             .toString()
             .toLowerCase()
             .includes(this.searchQuery.toLowerCase())
         );
+
+        return (
+          matchesProportion &&
+          matchesCladeReads &&
+          matchesTaxonReads &&
+          matchesRank &&
+          matchesTaxonId &&
+          matchesName &&
+          matchesQuery
+        );
       });
     },
+    rankFilterVariant() {
+      return this.filters.rank && this.filters.rank.length > 0
+        ? "tonal"
+        : "plain";
+    },
+    rankFilterColor() {
+      return this.filters.rank && this.filters.rank.length > 0
+        ? "indigo"
+        : "black";
+    },
+    // filteredTableResults() {
+    //   return this.data.filter((item) => {
+    //     return Object.values(item).some((value) =>
+    //       value
+    //         .toString()
+    //         .toLowerCase()
+    //         .includes(this.searchQuery.toLowerCase())
+    //     );
+    //   });
+    // },
     totalItems() {
       return this.filteredTableResults.length;
     },
@@ -201,6 +325,9 @@ export default {
     getRankColor(rank) {
       const rankIndex = this.rankOrderFull.indexOf(rank);
       return this.autumnColors[rankIndex % this.autumnColors.length];
+    },
+    closeMenu() {
+      this.rankMenu = false;
     },
   },
 };
