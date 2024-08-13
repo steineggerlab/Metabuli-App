@@ -285,7 +285,7 @@ export default {
     rankFilterVariant() {
       return this.filters.rank && this.filters.rank.length > 0
         ? "tonal"
-        : "plain";
+        : "text";
     },
     rankFilterColor() {
       return this.filters.rank && this.filters.rank.length > 0

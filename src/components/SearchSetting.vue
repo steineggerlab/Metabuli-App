@@ -171,17 +171,35 @@
                         </template>
 
                         <v-card rounded="lg">
-                          <v-data-table
-                            :headers="databaseDownloadHeaders"
-                            :items="databaseDownloadItems"
-                            hide-default-footer
-                          >
-                            <template v-slot:[`item.name`]="{ item }">
-                              <a :href="item.link" target="_blank">{{
-                                item.name
-                              }}</a>
-                            </template>
-                          </v-data-table>
+                          <v-card-text>
+                            <v-data-table
+                              :headers="databaseDownloadHeaders"
+                              :items="databaseDownloadItems"
+                              hide-default-footer
+                            >
+                              <template v-slot:[`item.name`]="{ item }">
+                                <a
+                                  :href="item.link"
+                                  target="_blank"
+                                  class="font-weight-medium text-decoration-none"
+                                  >{{ item.name }}</a
+                                >
+                              </template>
+                            </v-data-table>
+
+                            <!-- Download Tip -->
+                            <v-divider class="my-4"></v-divider>
+                            <p>
+                              For faster downloads, consider using
+                              <code class="font-weight-medium">aria2c</code>.
+                              <a
+                                href="https://aria2.github.io/"
+                                target="_blank"
+                                class="text-caption text-decoration-none"
+                                >Learn more</a
+                              >
+                            </p>
+                          </v-card-text>
                         </v-card>
                       </v-menu>
                     </div>
