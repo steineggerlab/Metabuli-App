@@ -63,7 +63,6 @@
             clearable
             color="indigo"
             style="background-color: white"
-            class="rounded-t-lg"
             @blur="closeMenu"
           >
             <template v-slot:selection="{ item, index }">

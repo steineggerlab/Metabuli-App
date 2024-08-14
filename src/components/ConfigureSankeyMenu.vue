@@ -136,7 +136,7 @@
                       :thumb-size="15"
                       step="5"
                       :min="300"
-                      :max="800"
+                      :max="1000"
                     ></v-slider>
                   </v-container>
                 </v-list-item>
@@ -388,6 +388,9 @@ export default {
 /* Expansion Panel */
 .configure-menu .v-list-item {
   width: 100%;
+}
+:deep(.configure-menu .v-list-item__content){
+  overflow: visible; /* Allow slider thumb overflow */
 }
 .configure-menu .v-input--horizontal {
   margin-left: 0px;
