@@ -5,6 +5,7 @@
       @job-aborted="hideDialog"
       @job-timed-out="handleJobTimeOut"
       @job-completed="handleJobComplete"
+      @backend-realtime-output="updateRealtimeOutput"
     />
 
     <!-- Loading Dialog -->
@@ -19,6 +20,9 @@
           </v-list-item>
 
           <v-list-item title="Processing Job..."></v-list-item>
+
+          <!-- Display Real-time Output -->
+          <v-list-item v-if="backendOutput">{{ backendOutput }}</v-list-item>
         </div>
         <div v-if="!isSampleJob" class="d-flex justify-end mr-2">
           <v-btn variant="plain" color="primary" @click="cancelBackend"
@@ -62,6 +66,7 @@ export default {
     return {
       loadingDialog: false,
       isSampleJob: false,
+      backendOutput: "", // Data property to store real-time output
     };
   },
   methods: {
@@ -72,7 +77,9 @@ export default {
     hideDialog() {
       this.loadingDialog = false;
     },
-
+    updateRealtimeOutput(output) {
+      this.backendOutput = output; // Update real-time output
+    },
     handleJobComplete(completedJob) {
       // Close loading dialog
       this.hideDialog();
@@ -88,6 +95,7 @@ export default {
 
     handleJobTimeOut() {
       this.cancelBackend();
+      this.backendOutput = "Job timed out."; // Display timeout message
     },
     cancelBackend() {
       this.hideDialog();

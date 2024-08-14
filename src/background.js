@@ -9,7 +9,7 @@ import {
   dialog,
   shell,
 } from "electron";
-const { execFile } = require("child_process");
+const { execFile, spawn } = require("child_process");
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
 import fs from "fs";
@@ -171,24 +171,34 @@ const backendBinary = join(
 ipcMain.on("run-backend", async (event, args) => {
   try {
     backendCancelled = false;
-    childProcess = execFile(backendBinary, args, (error, stdout, stderr) => {
+    childProcess = spawn(backendBinary, args);
+
+    // Handle real-time stdout stream
+    childProcess.stdout.on("data", (data) => {
+      event.reply("backend-realtime-output", data.toString());
+    });
+
+    // Handle real-time stderr stream
+    childProcess.stderr.on("data", (data) => {
+      console.error(`Backend stderr: ${data.toString()}`);
+      event.reply("backend-error", data.toString());
+    });
+
+    // Handle process exit
+    childProcess.on("close", (code) => {
       if (backendCancelled) {
-        event.reply("backend-cancelled", "Backend process was cancelled.");
-        return;
-      }
-      if (error) {
+        event.reply("backend-cancelled", "Job processing was cancelled.");
+      } else if (code !== 0) {
         event.reply(
           "backend-error",
-          `Error executing backend: ${error.message}`
+          `Backend process exited with code ${code}`
         );
-        return;
+      } else {
+        event.reply(
+          "backend-complete",
+          "Job processing was completed successfully."
+        );
       }
-      if (stderr) {
-        console.error(`Backend stderr: ${stderr}`);
-      }
-
-      // On successful execution
-      event.reply("backend-output", stdout);
     });
   } catch (error) {
     console.error(`Failed to run backend: ${error.message}`);

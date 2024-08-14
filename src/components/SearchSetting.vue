@@ -615,6 +615,7 @@ export default {
     status: "INITIAL",
     results: "",
     backendOutput: null,
+
     processedResults: null,
     snackbar: {
       show: false,
@@ -772,7 +773,7 @@ export default {
           isSample: true,
           jobStatus: "Completed",
           jobType: "runSearch",
-          backendOutput: null,
+          backendOutput: "",
           resultsJSON: this.processedResults.jsonData.results,
           kronaContent: this.processedResults.kronaContent,
         };
@@ -906,26 +907,37 @@ export default {
       return new Promise((resolve, reject) => {
         window.electron.runBackend(params);
 
-        window.electron.onBackendOutput((output) => {
+        // Real-time output
+        window.electron.onBackendRealtimeOutput((output) => {
+          console.log("Backend Real-time Output:", output); // DEBUG
+
+          this.backendOutput += output; // Append output in real-time
+          this.$emit("backend-realtime-output", output); // Emit the final output to the parent
+          this.status = "RUNNING"; // Keep the status as RUNNING
+        });
+
+        window.electron.onBackendComplete((message) => {
           if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
 
-          console.log("Backend Output:", output); // DEBUG
-          this.backendOutput = output;
+          console.log("Backend Complete:", message); // DEBUG
+          this.backendOutput += message;
           this.status = "COMPLETE"; // Signal job polling
           resolve(); // Resolve the backend promise
         });
 
         window.electron.onBackendError((error) => {
           if (!this.errorHandled) {
+            const message = "\nJob processing was terminated due to an error.";
+            this.backendOutput += message;
             this.status = "ERROR"; // Signal job polling to stop
             reject(new Error("Backend execution error:", error));
           }
         });
 
-        window.electron.onBackendCancelled(() => {
+        window.electron.onBackendCancelled((message) => {
           if (this.status !== "TIMEOUT" && !this.errorHandled) {
+            this.backendOutput += message;
             this.status = "CANCELLED";
-            this.backendOutput = "Process was cancelled";
             reject(new Error("Process was cancelled"));
           }
         });
@@ -1108,7 +1120,7 @@ export default {
         isSample: false,
         jobStatus: this.status,
         jobType: "runSearch",
-        backendOutput: null,
+        backendOutput: this.backendOutput,
         resultsJSON: null,
         kronaContent: null,
       };

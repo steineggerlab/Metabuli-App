@@ -21,7 +21,7 @@ contextBridge.exposeInMainWorld("electron", {
   },
   openFileDialog: (options) => ipcRenderer.invoke("open-file-dialog", options),
   openKrona: (filePath) => ipcRenderer.invoke("open-krona", filePath),
-  
+
   runBackend: (args) => ipcRenderer.send("run-backend", args),
   cancelBackend: () => ipcRenderer.send("cancel-backend"),
   onBackendOutput: (callback) =>
@@ -30,4 +30,11 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.on("backend-error", (event, error) => callback(error)),
   onBackendCancelled: (callback) =>
     ipcRenderer.on("backend-cancelled", (event, message) => callback(message)),
+
+  onBackendRealtimeOutput: (callback) =>
+    ipcRenderer.on("backend-realtime-output", (event, output) =>
+      callback(output)
+    ),
+  onBackendComplete: (callback) =>
+    ipcRenderer.on("backend-complete", (event, message) => callback(message)),
 });
