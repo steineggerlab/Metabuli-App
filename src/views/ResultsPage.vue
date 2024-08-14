@@ -1,6 +1,6 @@
 <template>
   <v-card class="d-flex flex-column flex-shrink-1 h-100">
-    <v-tabs v-model="tab">
+    <v-tabs v-model="tab" color="primary">
       <v-tab value="table">Table</v-tab>
       <v-tab value="sankey">Sankey</v-tab>
       <v-tab value="krona" v-if="kronaContent">Krona</v-tab>
