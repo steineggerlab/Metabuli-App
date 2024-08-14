@@ -614,7 +614,7 @@ export default {
     // Properties for job processing status, response, and results
     status: "INITIAL",
     results: "",
-    backendOutput: null,
+    backendOutput: "",
 
     processedResults: null,
     snackbar: {
@@ -773,7 +773,7 @@ export default {
           isSample: true,
           jobStatus: "Completed",
           jobType: "runSearch",
-          backendOutput: "",
+          backendOutput: null,
           resultsJSON: this.processedResults.jsonData.results,
           kronaContent: this.processedResults.kronaContent,
         };
