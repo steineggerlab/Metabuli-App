@@ -2,6 +2,7 @@
   <v-container class="w-100">
     <v-card>
       <v-data-table
+        v-model="selectedItems"
         :headers="headers"
         :items="jobsHistory"
         item-value="timestamp"
@@ -10,12 +11,16 @@
         :sort-by="[{ key: 'timestamp', order: 'desc' }]"
         select-strategy="page"
         show-select
-        v-model="selectedItems"
+        hide-default-footer
       >
         <template v-slot:top>
-          <v-toolbar class="custom-toolbar" density="compact">
-            Job History
-            <v-spacer></v-spacer>
+          <v-toolbar class="custom-toolbar py-3" density="compact">
+            <div class="d-flex flex-column">
+              <div>Job History</div>
+              <v-list-item-subtitle
+                >Metabuli stores the latest 10 job histories</v-list-item-subtitle
+              >
+            </div>
           </v-toolbar>
         </template>
 
@@ -150,7 +155,7 @@
             prepend-icon="$trash"
             size="small"
             class="text-body-2 px-2"
-            style="border-color: #e0e0e0"
+            style="border-color: #808080"
             @click="deleteSelectedItems"
             >Delete</v-btn
           >
