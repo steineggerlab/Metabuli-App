@@ -6,7 +6,6 @@
       :location="menuLocation"
       transition="slide-x-reverse-transition"
       persistent
-      @keydown.enter="applyChanges"
     >
       <!-- ACTIVATOR FOR MENU -->
       <template v-slot:activator="{ props }">
@@ -57,18 +56,35 @@
 
                 <!-- DROPDOWN AND INPUT (Minimum Clade Reads) -->
                 <v-list-item>
-                  <div class="text-caption">Minimum number of reads</div>
-                  <v-container class="d-flex align-center">
-                    <v-select
+                  <div class="text-caption">
+                    <p>Minimum number of reads</p>
+                    <p class="text-grey">%: Proportion | #: Clade Reads</p>
+                  </div>
+                  <v-container class="d-flex align-center gc-4">
+                    <v-btn-toggle
                       v-model="tempCladeReadsMode"
-                      :items="['%', '#']"
-                      variant="underlined"
-                      density="compact"
-                      dense
-                      class="select-width"
                       @change="setDefaultValue"
                       :disabled="showAll"
-                    ></v-select>
+                      variant="outlined"
+                      color="indigo"
+                      divided
+                      mandatory
+                    >
+                      <v-btn
+                        icon
+                        value="%"
+                        height="30"
+                        class="rounded-s-lg rounded-e-0 text-caption"
+                        >%</v-btn
+                      >
+                      <v-btn
+                        icon
+                        value="#"
+                        height="30"
+                        class="rounded-e-lg rounded-s-0 text-caption"
+                        >#</v-btn
+                      >
+                    </v-btn-toggle>
 
                     <v-text-field
                       v-model="tempCladeReadsValue"
@@ -108,7 +124,7 @@
                           variant="outlined"
                           density="compact"
                           class="mx-0"
-                          style="width: 70px"
+                          style="width: 90px;"
                           type="number"
                           hide-details
                           single-line
@@ -157,13 +173,13 @@
                           value="proportion"
                           height="30"
                           class="rounded-s-lg rounded-e-0"
-                          >Proportion</v-btn
+                          >Proportion %</v-btn
                         >
                         <v-btn
                           value="cladeReads"
                           height="30"
                           class="rounded-s-0 rounded-e-lg"
-                          >Clade Reads</v-btn
+                          >Clade Reads #</v-btn
                         >
                       </v-btn-toggle>
                     </div>
@@ -261,7 +277,7 @@ export default {
         // Check if the value is empty or contains only a hyphen
         if (value === "" || value === "-" || isNaN(value)) {
           this.isFormValid = false;
-          return `Value cannot be empty or just a hyphen`;
+          return `Input required`;
         }
 
         // Check if the value is within the valid range
@@ -272,8 +288,8 @@ export default {
           this.isFormValid = false;
           const rule =
             this.tempCladeReadsMode === "%"
-              ? `Value not in valid range (0-100)`
-              : `Value not in valid range (${min}<)`;
+              ? `Valid range: 0-100`
+              : `Valid range: ${min}<`;
           return rule;
         }
       };
@@ -298,7 +314,7 @@ export default {
       // Check if the value is empty or contains only a hyphen
       if (value === "" || value === "-" || isNaN(value)) {
         this.isFormValid = false;
-        return `Value cannot be empty or just a hyphen`;
+        return `Invalid input`;
       }
 
       // Check if the value is within the valid range
@@ -376,11 +392,6 @@ export default {
   padding-bottom: 0px;
 }
 
-.select-width {
-  width: auto;
-  flex: 0 1 auto;
-}
-
 .slider {
   margin-top: 15px;
 }
@@ -389,7 +400,17 @@ export default {
 .configure-menu .v-list-item {
   width: 100%;
 }
-:deep(.configure-menu .v-list-item__content){
+
+/* Button Toggle Style */
+:deep(.configure-menu .v-list-item .v-btn__content) {
+  font-family: Roboto;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  text-transform: capitalize;
+}
+
+:deep(.configure-menu .v-list-item__content) {
   overflow: visible; /* Allow slider thumb overflow */
 }
 .configure-menu .v-input--horizontal {
