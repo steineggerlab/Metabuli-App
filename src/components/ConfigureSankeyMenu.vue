@@ -309,7 +309,7 @@ export default {
     },
     taxaLimitRangeRule(value) {
       const min = 1;
-      const max = this.maxTaxaLimit;
+      const max = Infinity;
 
       // Check if the value is empty or contains only a hyphen
       if (value === "" || value === "-" || isNaN(value)) {
@@ -323,7 +323,7 @@ export default {
         return true;
       } else {
         this.isFormValid = false;
-        return `Value not in valid range (${min}-${max})`;
+        return `Value not in valid range (${min}<)`;
       }
     },
     validateRange() {
