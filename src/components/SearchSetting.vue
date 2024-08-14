@@ -230,10 +230,21 @@
                       style="display: none"
                     ></v-text-field>
                   </v-sheet>
+
+                  <!-- --max-ram -->
+                  <v-sheet>
+                    <v-text-field
+                      v-model="jobDetails.maxram"
+                      :rules="getValidationRules('--max-ram')"
+                      label="Max RAM"
+                      variant="underlined"
+                      suffix="GiB"
+                    ></v-text-field>
+                  </v-sheet>
                 </div>
 
                 <!-- ADVANCED SETTINGS -->
-                <v-divider class="mt-7"></v-divider>
+                <v-divider class="mt-2"></v-divider>
                 <v-card-actions>
                   <v-btn
                     text="Advanced Settings"
@@ -446,18 +457,19 @@ export default {
       database: "",
       outdir: "",
       jobid: "",
+      maxram: "",
     },
     advancedSettings: {
-      maxRam: {
-        title: "Max RAM",
-        description: "The maximum RAM usage. (128 GiB by default)",
-        parameter: "--max-ram",
-        value: 128,
-        type: "INTEGER",
-        extra: {
-          suffix: "GiB",
-        },
-      },
+      // maxRam: {
+      //   title: "Max RAM",
+      //   description: "The maximum RAM usage. (128 GiB by default)",
+      //   parameter: "--max-ram",
+      //   value: 128,
+      //   type: "INTEGER",
+      //   extra: {
+      //     suffix: "GiB",
+      //   },
+      // },
       thread: {
         title: "Threads",
         description: "The number of threads used (all by default)",
@@ -510,11 +522,12 @@ export default {
       },
     },
     validationRules: {
+      // 1. Input is required
       "--max-ram": (value) => {
-        // Input must be valid integer
         if (value === "" || value === null || value === undefined) {
-          return true;
+          return "This field is required";
         }
+        // 2. Input must be valid integer
         return (
           Number.isInteger(Number(value)) || "Input must be a valid integer"
         );
@@ -883,6 +896,11 @@ export default {
         this.jobDetails.jobid
       );
 
+      // Add max-ram
+      if (this.jobDetails.maxram !== "") {
+        params.push("--max-ram", parseInt(this.jobDetails.maxram));
+      }
+
       // Add advanced settings
       for (const key in this.advancedSettings) {
         let value;
@@ -1224,8 +1242,8 @@ export default {
   background-size: 300px 300px;
   opacity: 0.5;
   position: absolute;
-  top: 110px;
-  right: 5px;
+  top: 140px;
+  right: 20px;
   width: 300px;
   height: 300px;
 }
@@ -1250,7 +1268,7 @@ export default {
   border: 2px dashed #ccc;
   border-width: 2px;
   border-radius: 5px;
-  padding: 40px;
+  padding: 70px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
