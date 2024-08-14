@@ -100,7 +100,23 @@
                       :max="maxTaxaLimit"
                       tick-size="1"
                       :disabled="showAll"
-                    ></v-slider>
+                      @change="validateRange"
+                    >
+                      <template v-slot:append>
+                        <v-text-field
+                          v-model="tempTaxaLimit"
+                          variant="outlined"
+                          density="compact"
+                          class="mx-0"
+                          style="width: 70px"
+                          type="number"
+                          hide-details
+                          single-line
+                          :rules="[taxaLimitRangeRule]"
+                          @input="validateRange"
+                        ></v-text-field>
+                      </template>
+                    </v-slider>
                   </v-container>
                 </v-list-item>
               </v-expansion-panel-text>
@@ -137,8 +153,16 @@
                         divided
                         mandatory
                       >
-                        <v-btn value="proportion" height="30" class="rounded-s-lg rounded-e-0">Proportion</v-btn>
-                        <v-btn value="cladeReads" height="30" class="rounded-s-0 rounded-e-lg"
+                        <v-btn
+                          value="proportion"
+                          height="30"
+                          class="rounded-s-lg rounded-e-0"
+                          >Proportion</v-btn
+                        >
+                        <v-btn
+                          value="cladeReads"
+                          height="30"
+                          class="rounded-s-0 rounded-e-lg"
                           >Clade Reads</v-btn
                         >
                       </v-btn-toggle>
@@ -234,12 +258,23 @@ export default {
       const min = this.tempCladeReadsMode === "%" ? 0 : 0;
       const max = this.tempCladeReadsMode === "%" ? 100 : Infinity;
       return (value) => {
+        // Check if the value is empty or contains only a hyphen
+        if (value === "" || value === "-" || isNaN(value)) {
+          this.isFormValid = false;
+          return `Value cannot be empty or just a hyphen`;
+        }
+
+        // Check if the value is within the valid range
         if (this.showAll || (value >= min && value <= max)) {
           this.isFormValid = true;
           return true;
         } else {
           this.isFormValid = false;
-          return `Value not in valid range (${min}-${max})`;
+          const rule =
+            this.tempCladeReadsMode === "%"
+              ? `Value not in valid range (0-100)`
+              : `Value not in valid range (${min}<)`;
+          return rule;
         }
       };
     },
@@ -255,6 +290,25 @@ export default {
       this.tempLabelOption =
         this.tempCladeReadsMode === "%" ? "proportion" : "cladeReads";
       this.validateRange();
+    },
+    taxaLimitRangeRule(value) {
+      const min = 1;
+      const max = this.maxTaxaLimit;
+
+      // Check if the value is empty or contains only a hyphen
+      if (value === "" || value === "-" || isNaN(value)) {
+        this.isFormValid = false;
+        return `Value cannot be empty or just a hyphen`;
+      }
+
+      // Check if the value is within the valid range
+      if (this.showAll || (value >= min && value <= max)) {
+        this.isFormValid = true;
+        return true;
+      } else {
+        this.isFormValid = false;
+        return `Value not in valid range (${min}-${max})`;
+      }
     },
     validateRange() {
       if (this.$refs.form) {
@@ -334,6 +388,10 @@ export default {
 /* Expansion Panel */
 .configure-menu .v-list-item {
   width: 100%;
+}
+.configure-menu .v-input--horizontal {
+  margin-left: 0px;
+  margin-right: 0px;
 }
 :deep(.configure-menu .v-expansion-panel-text__wrapper) {
   padding: 0px;
