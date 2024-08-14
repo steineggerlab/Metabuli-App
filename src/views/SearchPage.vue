@@ -9,27 +9,44 @@
     />
 
     <!-- Loading Dialog -->
-    <v-dialog v-model="loadingDialog" max-width="320" persistent>
-      <v-list class="d-flex flex-column" elevation="12" rounded="lg">
-        <div class="d-flex flex-column align-center">
-          <v-list-item>
-            <v-img
-              src="assets/marv_metabuli_animated.gif"
-              width="130px"
-            ></v-img>
+    <v-dialog v-model="loadingDialog" persistent>
+      <v-card class="mx-auto" width="700">
+        <v-list>
+          <!-- Title -->
+          <v-list-item class="font-weight-bold text-h6 pb-0 pl-8 text-button">
+            <span>Processing Job...</span>
+            <template v-slot:append>
+              <v-img src="assets/marv_metabuli_animated.gif" width="60"></v-img>
+            </template>
           </v-list-item>
 
-          <v-list-item title="Processing Job..."></v-list-item>
-
           <!-- Display Real-time Output -->
-          <v-list-item v-if="backendOutput">{{ backendOutput }}</v-list-item>
-        </div>
-        <div v-if="!isSampleJob" class="d-flex justify-end mr-2">
-          <v-btn variant="plain" color="primary" @click="cancelBackend"
-            >Cancel</v-btn
-          >
-        </div>
-      </v-list>
+          <v-list-item class="pt-1">
+            <template v-slot:subtitle>
+              <v-textarea
+                variant="outlined"
+                v-if="backendOutput"
+                v-model="backendOutput"
+                label="Command Line Output"
+                rows="15"
+                no-resize
+                readonly
+                hide-details="true"
+                bg-color="white"
+                class="mt-3 mx-0 text-caption"
+                ref="outputTextarea"
+              ></v-textarea>
+            </template>
+          </v-list-item>
+
+          <!-- Cancel Button -->
+          <div v-if="!isSampleJob" class="d-flex justify-end mr-2">
+            <v-btn variant="plain" color="primary" @click="cancelBackend"
+              >Cancel</v-btn
+            >
+          </div>
+        </v-list>
+      </v-card>
     </v-dialog>
 
     <!-- Footer: Reference to Paper -->
@@ -70,6 +87,7 @@ export default {
     };
   },
   methods: {
+    // Show/hide dialog
     showDialog(isSample) {
       this.loadingDialog = true;
       this.isSampleJob = isSample;
@@ -77,9 +95,18 @@ export default {
     hideDialog() {
       this.loadingDialog = false;
     },
+
+    // Loading dialog log textarea
     updateRealtimeOutput(output) {
       this.backendOutput = output; // Update real-time output
+      this.$nextTick(this.scrollToBottom); // Scroll to the bottom after updat
     },
+    scrollToBottom() {
+      const textarea = this.$refs.outputTextarea.$el.querySelector("textarea");
+      textarea.scrollTop = textarea.scrollHeight;
+    },
+
+    // Job handling
     handleJobComplete(completedJob) {
       // Close loading dialog
       this.hideDialog();
@@ -92,7 +119,6 @@ export default {
         this.$emit("report-uploaded");
       }
     },
-
     handleJobTimeOut() {
       this.cancelBackend();
       this.backendOutput = "Job timed out."; // Display timeout message
@@ -104,3 +130,14 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* Log textarea */
+:deep(.v-textarea .v-field__input) {
+  font-family: Roboto;
+  background-color: white;
+  font-size: 12px;
+  margin-top: 16px;
+  /* -webkit-mask-image: none; */
+}
+</style>

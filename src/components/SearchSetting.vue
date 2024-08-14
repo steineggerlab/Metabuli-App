@@ -878,7 +878,7 @@ export default {
     },
 
     async runBackend() {
-      const params = ["classify"];
+      let params = ["classify"];
 
       // Add input
       if (this.endType === "single-end") {
@@ -921,6 +921,18 @@ export default {
       }
       console.log("params:", params); // DEBUG
 
+      // params = [
+      //   "classify",
+      //   "--seq-mode",
+      //   1,
+      //   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq",
+      //   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/refseq_virus",
+      //   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example",
+      //   "",
+      //   "--max-ram",
+      //   32,
+      // ];
+
       // Return a promise that resolves or rejects based on backend success or failure
       return new Promise((resolve, reject) => {
         window.electron.runBackend(params);
@@ -930,7 +942,7 @@ export default {
           console.log("Backend Real-time Output:", output); // DEBUG
 
           this.backendOutput += output; // Append output in real-time
-          this.$emit("backend-realtime-output", output); // Emit the final output to the parent
+          this.$emit("backend-realtime-output", this.backendOutput); // Emit the final output to the parent
           this.status = "RUNNING"; // Keep the status as RUNNING
         });
 
@@ -995,14 +1007,6 @@ export default {
           ? this.jobDetailsSample.outdir
           : this.jobDetails.outdir;
         jobId = isSample ? this.jobDetailsSample.jobid : this.jobDetails.jobid;
-
-        // if (isSample) {
-        //   resolvedOutdirPath = this.jobDetailsSample.outdir;
-        //   jobId = this.jobDetailsSample.jobid;
-        // } else {
-        //   resolvedOutdirPath = this.jobDetails.outdir;
-        //   jobId = this.jobDetails.jobid;
-        // }
 
         // Set file paths for report and krona
         reportFilePath = `${resolvedOutdirPath}/${jobId}_report.tsv`;

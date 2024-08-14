@@ -161,9 +161,9 @@
       <v-dialog v-model="dialog" max-width="800px">
         <v-card class="text-break">
           <v-card-title
-            class="headline d-flex justify-space-between align-center"
+            class="headline pl-4 d-flex justify-space-between align-center"
           >
-            Backend Output
+            Job Processing Output Log
             <v-btn
               icon="$clipboard"
               variant="text"
@@ -174,9 +174,9 @@
             >
             </v-btn>
           </v-card-title>
-          <v-card-subtitle
+          <!-- <v-card-subtitle
             >Metabuli Classify Command Line Output</v-card-subtitle
-          >
+          > -->
           <v-card-text
             class="w-100 text-break"
             style="
