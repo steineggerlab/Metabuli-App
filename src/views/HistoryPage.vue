@@ -233,7 +233,6 @@ export default {
   mounted() {
     // Load job history from localStorage when the component is mounted
     this.jobsHistory = JSON.parse(localStorage.getItem("jobsHistory") || "[]");
-    console.log(this.jobsHistory);
   },
   methods: {
     viewDetails(jobItem) {

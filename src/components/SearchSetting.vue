@@ -157,7 +157,7 @@
                         <!-- Use slot to make the button the activator -->
                         <template v-slot:activator="{ props }">
                           <v-btn
-                            variant="plain"
+                            variant="text"
                             density="compact"
                             color="primary"
                             class="text-caption font-weight-medium mt-0 py-1 pl-0 d-flex align-start"
@@ -425,6 +425,8 @@
 </template>
 
 <script>
+import { trimAndStoreJobsHistory } from "@/plugins/storageUtils.js";
+
 export default {
   name: "SearchSetting",
   data: () => ({
@@ -1074,9 +1076,6 @@ export default {
       this.$emit("job-completed", completedJob);
     },
     storeResults(job) {
-      // Retrieve existing jobs from localStorage
-      let jobsHistory = JSON.parse(localStorage.getItem("jobsHistory") || "[]");
-
       // Create a new job entry with additional details
       const jobEntry = {
         jobId: job.jobid,
@@ -1089,11 +1088,12 @@ export default {
         kronaContent: job.kronaContent,
       };
 
+      // Retrieve existing jobs from localStorage
+      let jobsHistory = JSON.parse(localStorage.getItem("jobsHistory") || "[]");
       // Add the new job to the history array
       jobsHistory.push(jobEntry);
-
-      // Save the updated jobs history back to localStorage
-      localStorage.setItem("jobsHistory", JSON.stringify(jobsHistory));
+      // Trim and store latest 10
+      jobsHistory = trimAndStoreJobsHistory(jobsHistory);
     },
 
     handleJobError() {
