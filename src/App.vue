@@ -19,15 +19,17 @@
 
       <!-- LINK BUTTONS -->
       <v-btn href="https://metabuli.steineggerlab.workers.dev/" target="_blank"
-      >Database Download</v-btn
+        >Database Download</v-btn
       >
       <v-btn href="https://steineggerlab.com/en/" target="_blank"
-      >Steinegger Lab</v-btn
+        >Steinegger Lab</v-btn
       >
-      <v-btn href="https://github.com/steineggerlab/Metabuli" target="_blank"
-      icon="$github" density="comfortable"
-        ></v-btn
-      >
+      <v-btn
+        href="https://github.com/steineggerlab/Metabuli"
+        target="_blank"
+        icon="$github"
+        density="comfortable"
+      ></v-btn>
     </v-app-bar>
 
     <!-- NAVIGATION DRAWER -->
