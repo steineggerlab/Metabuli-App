@@ -53,12 +53,14 @@
 
                   <!-- Job ID -->
                   <v-text-field
-                    label="Job ID"
-                    variant="underlined"
                     v-model="jobDetails.jobid"
-                    color="primary"
+                    :rules="[requiredRule]"
                     :hint="computedHint"
                     persistent-hint
+                    label="Job ID"
+                    variant="underlined"
+                    density="comfortable"
+                    color="primary"
                     class="mb-2"
                   ></v-text-field>
 
@@ -235,10 +237,15 @@
                   <v-sheet>
                     <v-text-field
                       v-model="jobDetails.maxram"
-                      :rules="getValidationRules('--max-ram')"
+                      :rules="[
+                        ...getValidationRules('--max-ram'),
+                        requiredRule,
+                      ]"
                       label="Max RAM"
                       variant="underlined"
+                      density="comfortable"
                       suffix="GiB"
+                      class="mt-2"
                     ></v-text-field>
                   </v-sheet>
                 </div>
@@ -524,9 +531,9 @@ export default {
     validationRules: {
       // 1. Input is required
       "--max-ram": (value) => {
-        if (value === "" || value === null || value === undefined) {
-          return "This field is required";
-        }
+        // if (value === "" || value === null || value === undefined) {
+        //   return "Required field *";
+        // }
         // 2. Input must be valid integer
         return (
           Number.isInteger(Number(value)) || "Input must be a valid integer"
@@ -668,7 +675,7 @@ export default {
     },
     requiredRule(value) {
       if (value === "" || value === null || value === undefined) {
-        return "This field is required";
+        return "Required field *";
       }
       return true;
     },
@@ -766,7 +773,7 @@ export default {
         }, 2000);
       } catch (error) {
         console.error("Error processing file: ", error.message); // DEBUG
-        
+
         // Set log message
         this.backendOutput = "Error processing file: " + error.message;
         this.$emit("job-aborted");
@@ -1067,7 +1074,7 @@ export default {
     validateReportTSVData(records) {
       // Validation criteria for report.tsv file format
       const firstRecord = records[0];
-     
+
       // No parsed data
       if (firstRecord === undefined) return false;
 
