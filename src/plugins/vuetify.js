@@ -25,6 +25,7 @@ import {
   mdiTimelapse,
   mdiClipboardMultipleOutline,
   mdiFilterVariant,
+  mdiGithub,
 } from "@mdi/js"; // Icon search: https://vuetifyjs.com/en/features/icon-fonts/#mdi-icon-search
 
 export default createVuetify({
@@ -76,7 +77,8 @@ export default createVuetify({
       trash: mdiDelete,
       timelapse: mdiTimelapse,
       clipboard: mdiClipboardMultipleOutline,
-      filterVariant: mdiFilterVariant
+      filterVariant: mdiFilterVariant,
+      github: mdiGithub,
     },
     sets: {
       mdi,

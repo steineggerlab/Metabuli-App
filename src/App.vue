@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar>
+    <v-app-bar class="px-1">
       <!-- METABULI LOGO + TITLE -->
       <v-btn icon readonly rounded="xl">
         <v-img
@@ -17,12 +17,16 @@
 
       <v-spacer></v-spacer>
 
-      <!-- GITHUB LINK BUTTONS -->
-      <v-btn href="https://github.com/steineggerlab/Metabuli" target="_blank"
-        >GitHub</v-btn
+      <!-- LINK BUTTONS -->
+      <v-btn href="https://metabuli.steineggerlab.workers.dev/" target="_blank"
+      >Database Download</v-btn
       >
       <v-btn href="https://steineggerlab.com/en/" target="_blank"
-        >Steinegger Lab</v-btn
+      >Steinegger Lab</v-btn
+      >
+      <v-btn href="https://github.com/steineggerlab/Metabuli" target="_blank"
+      icon="$github" density="comfortable"
+        ></v-btn
       >
     </v-app-bar>
 
