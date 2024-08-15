@@ -29,17 +29,13 @@
             :value="items[0].value"
           >
             <v-container>
-              <!-- Title -->
-              <v-card flat>
-                <v-card-title class="search-setting-title">
-                  <v-icon left class="mr-1 align-center" icon="$dna"></v-icon>
-                  Configure Search
-                </v-card-title>
-              </v-card>
-
-              <!-- End Type (single-end, paired-end, long-read) -->
+              <!-- Required Fields -->
               <v-form ref="jobForm" v-model="isJobFormValid">
+                <v-card-title class="text-button font-weight-bold"
+                  >Required Fields</v-card-title
+                >
                 <div class="w-50">
+                  <!-- End Type (single-end, paired-end, long-read) -->
                   <v-radio-group
                     v-model="endType"
                     inline
@@ -259,6 +255,7 @@
                       expandAdvancedSettings ? '$collapse' : '$expand'
                     "
                     @click="expandAdvancedSettings = !expandAdvancedSettings"
+                    class="font-weight-bold"
                   ></v-btn>
                 </v-card-actions>
 
@@ -345,14 +342,9 @@
             >
               <!-- TITLE -->
               <v-card flat>
-                <v-card-title class="search-setting-title">
-                  <v-icon
-                    left
-                    class="mr-1 align-center"
-                    icon="$fileUpload"
-                  ></v-icon>
-                  Upload Previous Report
-                </v-card-title>
+                <v-card-title class="text-button font-weight-bold"
+                  >Upload Previous Report</v-card-title
+                >
                 <v-card-text
                   >Upload report.tsv file directly to see
                   visualization.</v-card-text
