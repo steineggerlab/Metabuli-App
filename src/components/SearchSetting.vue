@@ -720,6 +720,11 @@ export default {
         await this.processResults("uploadReport", false);
         console.log("processed:", this.processedResults); // DEBUG
 
+        // Throw error if invalid report.tsv file
+        if (!this.processedResults.jsonData) {
+          throw new Error("Invalid report file");
+        }
+
         setTimeout(() => {
           // Object storing info about completedJob
           const completedJob = {
@@ -745,7 +750,6 @@ export default {
 
           // Emit job-completed event: close loading dialog and expose results tab in navigation drawer
           this.$emit("job-completed", completedJob);
-
           // Trigger snackbar
           this.triggerSnackbar(
             "Upload successful. Check the results tab!",
@@ -756,16 +760,33 @@ export default {
               this.$router.push({ name: "ResultsPage" });
             }
           );
-        }, 2000); // FIXME: add await, wait for file to be processed, if file isnt right format, trigger error snackbar
+        }, 2000);
       } catch (error) {
         console.error("Error processing file: ", error.message); // DEBUG
+        this.$emit("job-aborted");
+
+        this.status = "ERROR";
+        // Create failed job object to store in local storage
+        const failedJob = {
+          outdir: null,
+          jobid: null,
+          isSample: false,
+          jobStatus: "ERROR", // this.status
+          jobType: "uploadReport",
+          backendOutput: null,
+          resultsJSON: null,
+          kronaContent: null,
+        };
+        // Store completed job in local storage
+        this.storeResults(failedJob);
+
+        // Trigger snackbar
         this.triggerSnackbar(
           "Error processing file. Please check file and try again.",
           "error",
           "warning",
           "Dismiss"
         );
-        this.$emit("error");
       }
     },
 
@@ -1034,6 +1055,18 @@ export default {
         console.error("Error reading TSV file:", error);
       }
     },
+    validateReportTSVData(records) {
+      // Validation criteria for report.tsv file format
+      const firstRecord = records[0];
+      return (
+        (firstRecord.rank === "no rank" &&
+          firstRecord.taxon_id === "0" &&
+          firstRecord.name === "unclassified") ||
+        (firstRecord.rank === "no rank" &&
+          firstRecord.taxon_id === "1" &&
+          firstRecord.name === "root")
+      );
+    },
     tsvToJSON(tsv) {
       const headers = [
         "proportion",
@@ -1058,7 +1091,12 @@ export default {
             )
         ); // Filter out empty rows
 
-      return { results: records };
+      // Validate report.tsv file
+      if (this.validateReportTSVData(records)) {
+        return { results: records };
+      } else {
+        return null; // Return null if the row does not meet the criteria
+      }
     },
     async readKronaHTML(filePath, isSample) {
       if (!filePath) {
@@ -1150,6 +1188,7 @@ export default {
       // Store completed job in local storage
       this.storeResults(failedJob);
 
+      // Trigger snackbar corresponding to case
       if (this.status === "TIMEOUT") {
         this.$emit("job-timed-out");
         this.triggerSnackbar(
