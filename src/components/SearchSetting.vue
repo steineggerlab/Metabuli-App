@@ -722,8 +722,11 @@ export default {
 
         // Throw error if invalid report.tsv file
         if (!this.processedResults.jsonData) {
-          throw new Error("Invalid report file");
+          throw new Error("Invalid report file.");
         }
+
+        // Set log message
+        this.backendOutput = "Report file was processed successfully.";
 
         setTimeout(() => {
           // Object storing info about completedJob
@@ -733,7 +736,7 @@ export default {
             isSample: false,
             jobStatus: "Completed",
             jobType: "uploadReport",
-            backendOutput: null,
+            backendOutput: this.backendOutput,
             resultsJSON: this.processedResults.jsonData.results,
             kronaContent: this.processedResults.kronaContent, // null
           };
@@ -763,6 +766,9 @@ export default {
         }, 2000);
       } catch (error) {
         console.error("Error processing file: ", error.message); // DEBUG
+        
+        // Set log message
+        this.backendOutput = "Error processing file: " + error.message;
         this.$emit("job-aborted");
 
         this.status = "ERROR";
@@ -773,7 +779,7 @@ export default {
           isSample: false,
           jobStatus: "ERROR", // this.status
           jobType: "uploadReport",
-          backendOutput: null,
+          backendOutput: this.backendOutput,
           resultsJSON: null,
           kronaContent: null,
         };
@@ -799,6 +805,9 @@ export default {
       // Process report file
       await this.processResults("runSearch", true);
 
+      // Set log message
+      this.backendOutput = "Sample data was loaded successfully.";
+
       setTimeout(() => {
         // Object storing info about completedJob
         const completedJob = {
@@ -807,7 +816,7 @@ export default {
           isSample: true,
           jobStatus: "Completed",
           jobType: "runSearch",
-          backendOutput: null,
+          backendOutput: this.backendOutput,
           resultsJSON: this.processedResults.jsonData.results,
           kronaContent: this.processedResults.kronaContent,
         };
@@ -1058,6 +1067,10 @@ export default {
     validateReportTSVData(records) {
       // Validation criteria for report.tsv file format
       const firstRecord = records[0];
+     
+      // No parsed data
+      if (firstRecord === undefined) return false;
+
       return (
         (firstRecord.rank === "no rank" &&
           firstRecord.taxon_id === "0" &&

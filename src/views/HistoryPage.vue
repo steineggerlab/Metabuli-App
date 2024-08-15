@@ -104,7 +104,7 @@
             :disabled="!item.backendOutput"
             @click="viewBackendOutput(item.backendOutput)"
           >
-            View Details
+            View Log
           </v-btn>
         </template>
 
@@ -168,7 +168,7 @@
           <v-card-title
             class="headline pl-4 d-flex justify-space-between align-center"
           >
-            Job Processing Output Log
+            Job Process Output Log
             <v-btn
               icon="$clipboard"
               variant="text"
@@ -215,9 +215,9 @@ export default {
       headers: [
         { title: "Job ID", value: "jobId" },
         { title: "Completed At", value: "timestamp" },
-        { title: "Type ", value: "jobType" },
+        { title: "Type ", value: "jobType", align: "center" },
         { title: "Status", value: "jobStatus", align: "center" },
-        { title: "Job Details", value: "backendOutput", align: "center" },
+        { title: "Process Log", value: "backendOutput", align: "center" },
         {
           title: "Actions",
           value: "actions",
