@@ -35,12 +35,13 @@
                   >Required Fields</v-card-title
                 >
                 <div class="w-66 search-required-fields">
-                  <!-- End Type (single-end, paired-end, long-read) -->
                   <v-container>
+                    <!-- End Type (single-end, paired-end, long-read) -->
                     <v-row>
                       <v-col cols="3">
                         <v-list-subheader>Mode</v-list-subheader>
                       </v-col>
+
                       <v-col>
                         <v-btn-toggle
                           v-model="endType"
@@ -72,9 +73,9 @@
                       </v-col>
                     </v-row>
 
+                    <!-- Job ID -->
                     <v-row>
                       <v-col cols="3">
-                        <!-- Job ID -->
                         <v-list-subheader>Job ID</v-list-subheader>
                       </v-col>
                       <v-col>
@@ -92,93 +93,171 @@
                       </v-col>
                     </v-row>
 
+                    <!-- Select Files -->
                     <v-row>
                       <v-col cols="3">
                         <v-list-subheader class="pr-0"
                           >Select Files</v-list-subheader
                         >
                       </v-col>
-                      <v-col>
+
+                      <v-col cols="9" class="search-files">
                         <!-- Q1 File -->
-                        <v-sheet class="d-flex align-center mb-2 gc-3">
-                          <v-btn
-                            @click="selectFile('q1', 'file')"
-                            prepend-icon="$file"
-                            density="comfortable"
-                            size="default"
-                            class="text-caption font-weight-medium rounded-lg"
-                            >Read 1</v-btn
-                          >
-                          <v-chip
-                            v-if="jobDetails.q1"
-                            label
-                            color="primary"
-                            density="comfortable"
-                            class="filename-chip"
-                          >
-                            <v-icon
-                              icon="$delete"
-                              @click="clearFile('q1')"
-                              class="mr-1"
-                            ></v-icon>
-                            {{ this.extractFilename(jobDetails.q1) }}</v-chip
-                          >
-                          <v-text-field
-                            v-model="jobDetails.q1"
-                            :rules="[requiredRule]"
-                            style="display: none"
-                          ></v-text-field>
-                        </v-sheet>
-
-                        <!-- Q2 File -->
-                        <v-sheet
-                          class="d-flex align-center mb-2 gc-3"
-                          v-if="endType === 'paired-end'"
-                        >
-                          <v-btn
-                            @click="selectFile('q2', 'file')"
-                            prepend-icon="$file"
-                            density="comfortable"
-                            size="default"
-                            class="text-caption font-weight-medium rounded-lg"
-                            >Read 2</v-btn
-                          >
-                          <v-chip
-                            v-if="jobDetails.q2"
-                            label
-                            color="primary"
-                            density="comfortable"
-                            class="filename-chip"
-                          >
-                            <v-icon
-                              icon="$delete"
-                              @click="clearFile('q2')"
-                              class="mr-1"
-                            ></v-icon>
-                            {{ this.extractFilename(jobDetails.q2) }}</v-chip
-                          >
-                          <v-text-field
-                            v-model="jobDetails.q2"
-                            :rules="[
-                              endType === 'paired-end'
-                                ? requiredRule
-                                : () => true,
-                            ]"
-                            style="display: none"
-                          ></v-text-field>
-                        </v-sheet>
-
-                        <!-- Database Directory -->
-                        <v-sheet class="d-flex flex-column mb-2">
-                          <div class="d-flex align-center mb-0 gc-3">
+                        <v-row>
+                          <v-col cols="6">
                             <v-btn
-                              @click="selectFile('database', 'directory')"
-                              prepend-icon="$folder"
+                              @click="selectFile('q1', 'file')"
+                              prepend-icon="$file"
                               density="comfortable"
                               size="default"
-                              class="text-caption font-weight-medium rounded-lg"
-                              >Database</v-btn
+                              class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+                              >Read 1 File</v-btn
                             >
+                            <v-text-field
+                              v-model="jobDetails.q1"
+                              :rules="[requiredRule]"
+                              style="display: none"
+                            ></v-text-field>
+                          </v-col>
+                          <v-col cols="6" class="filename-col">
+                            <v-chip
+                              v-if="jobDetails.q1"
+                              label
+                              color="primary"
+                              density="comfortable"
+                              class="filename-chip"
+                            >
+                              <v-icon
+                                icon="$delete"
+                                @click="clearFile('q1')"
+                                class="mr-1"
+                              ></v-icon>
+                              {{ this.extractFilename(jobDetails.q1) }}</v-chip
+                            >
+                          </v-col>
+                        </v-row>
+
+                        <!-- Q2 File -->
+                        <v-row v-if="endType === 'paired-end'">
+                          <v-col cols="6">
+                            <v-btn
+                              @click="selectFile('q2', 'file')"
+                              prepend-icon="$file"
+                              density="comfortable"
+                              size="default"
+                              class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+                              >Read 2 File</v-btn
+                            >
+                            <v-text-field
+                              v-model="jobDetails.q2"
+                              :rules="[
+                                endType === 'paired-end'
+                                  ? requiredRule
+                                  : () => true,
+                              ]"
+                              style="display: none"
+                            ></v-text-field>
+                          </v-col>
+
+                          <v-col cols="6" class="filename-col">
+                            <v-chip
+                              v-if="jobDetails.q2"
+                              label
+                              color="primary"
+                              density="comfortable"
+                              class="filename-chip"
+                            >
+                              <v-icon
+                                icon="$delete"
+                                @click="clearFile('q2')"
+                                class="mr-1"
+                              ></v-icon>
+                              {{ this.extractFilename(jobDetails.q2) }}</v-chip
+                            >
+                          </v-col>
+                        </v-row>
+
+                        <!-- Database Directory -->
+                        <v-row>
+                          <v-col cols="6">
+                            <div class="d-flex align-center mb-0 gc-3">
+                              <v-btn
+                                @click="selectFile('database', 'directory')"
+                                prepend-icon="$folder"
+                                density="comfortable"
+                                size="default"
+                                class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+                                >Database</v-btn
+                              >
+                              <v-text-field
+                                v-model="jobDetails.database"
+                                :rules="[requiredRule]"
+                                style="display: none"
+                              ></v-text-field>
+                            </div>
+
+                            <!-- Database Download Links Table -->
+                            <div v-if="false">
+                              <v-menu
+                                v-model="menu"
+                                :close-on-content-click="false"
+                                offset-y
+                              >
+                                <template v-slot:activator="{ props }">
+                                  <v-btn
+                                    variant="text"
+                                    density="compact"
+                                    color="primary"
+                                    class="text-caption font-weight-medium mt-0 py-1 pl-0 d-flex align-start"
+                                    v-bind="props"
+                                  >
+                                    <div class="d-flex align-center gc-1">
+                                      <v-icon
+                                        icon="$helpCircleOutline"
+                                      ></v-icon>
+                                      Database Download Links
+                                    </div>
+                                  </v-btn>
+                                </template>
+
+                                <v-card rounded="lg">
+                                  <v-card-text>
+                                    <v-data-table
+                                      :headers="databaseDownloadHeaders"
+                                      :items="databaseDownloadItems"
+                                      hide-default-footer
+                                    >
+                                      <template v-slot:[`item.name`]="{ item }">
+                                        <a
+                                          :href="item.link"
+                                          target="_blank"
+                                          class="font-weight-medium text-decoration-none"
+                                          >{{ item.name }}</a
+                                        >
+                                      </template>
+                                    </v-data-table>
+
+                                    <!-- Download Tip -->
+                                    <v-divider class="my-4"></v-divider>
+                                    <p>
+                                      For faster downloads, consider using
+                                      <code class="font-weight-medium"
+                                        >aria2c</code
+                                      >.
+                                      <a
+                                        href="https://aria2.github.io/"
+                                        target="_blank"
+                                        class="text-caption text-decoration-none"
+                                        >Learn more</a
+                                      >
+                                    </p>
+                                  </v-card-text>
+                                </v-card>
+                              </v-menu>
+                            </div>
+                          </v-col>
+
+                          <v-col cols="6" class="filename-col">
                             <v-chip
                               v-if="jobDetails.database"
                               label
@@ -195,110 +274,51 @@
                                 this.extractFilename(jobDetails.database)
                               }}</v-chip
                             >
+                          </v-col>
+                        </v-row>
+
+                        <!-- Output Directory -->
+                        <v-row>
+                          <v-col cols="6">
+                            <v-btn
+                              @click="selectFile('outdir', 'directory')"
+                              prepend-icon="$folder"
+                              density="comfortable"
+                              size="default"
+                              class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+                              >Output Directory</v-btn
+                            >
                             <v-text-field
-                              v-model="jobDetails.database"
+                              v-model="jobDetails.outdir"
                               :rules="[requiredRule]"
                               style="display: none"
                             ></v-text-field>
-                          </div>
+                          </v-col>
 
-                          <!-- Database Download Links Table -->
-                          <div v-if="false">
-                            <v-menu
-                              v-model="menu"
-                              :close-on-content-click="false"
-                              offset-y
+                          <v-col cols="6" class="filename-col">
+                            <v-chip
+                              v-if="jobDetails.outdir"
+                              label
+                              color="primary"
+                              density="comfortable"
+                              class="filename-chip"
                             >
-                              <!-- Use slot to make the button the activator -->
-                              <template v-slot:activator="{ props }">
-                                <v-btn
-                                  variant="text"
-                                  density="compact"
-                                  color="primary"
-                                  class="text-caption font-weight-medium mt-0 py-1 pl-0 d-flex align-start"
-                                  v-bind="props"
-                                >
-                                  <div class="d-flex align-center gc-1">
-                                    <v-icon icon="$helpCircleOutline"></v-icon>
-                                    Database Download Links
-                                  </div>
-                                </v-btn>
-                              </template>
-
-                              <v-card rounded="lg">
-                                <v-card-text>
-                                  <v-data-table
-                                    :headers="databaseDownloadHeaders"
-                                    :items="databaseDownloadItems"
-                                    hide-default-footer
-                                  >
-                                    <template v-slot:[`item.name`]="{ item }">
-                                      <a
-                                        :href="item.link"
-                                        target="_blank"
-                                        class="font-weight-medium text-decoration-none"
-                                        >{{ item.name }}</a
-                                      >
-                                    </template>
-                                  </v-data-table>
-
-                                  <!-- Download Tip -->
-                                  <v-divider class="my-4"></v-divider>
-                                  <p>
-                                    For faster downloads, consider using
-                                    <code class="font-weight-medium"
-                                      >aria2c</code
-                                    >.
-                                    <a
-                                      href="https://aria2.github.io/"
-                                      target="_blank"
-                                      class="text-caption text-decoration-none"
-                                      >Learn more</a
-                                    >
-                                  </p>
-                                </v-card-text>
-                              </v-card>
-                            </v-menu>
-                          </div>
-                        </v-sheet>
-
-                        <!-- Output Directory -->
-                        <v-sheet class="d-flex align-center mb-2 gc-3">
-                          <v-btn
-                            @click="selectFile('outdir', 'directory')"
-                            prepend-icon="$folder"
-                            density="comfortable"
-                            size="default"
-                            class="text-caption font-weight-medium rounded-lg"
-                            >Output Dir</v-btn
-                          >
-                          <v-chip
-                            v-if="jobDetails.outdir"
-                            label
-                            color="primary"
-                            density="comfortable"
-                            class="filename-chip"
-                          >
-                            <v-icon
-                              icon="$delete"
-                              @click="clearFile('outdir')"
-                              class="mr-1"
-                            ></v-icon>
-                            {{
-                              this.extractFilename(jobDetails.outdir)
-                            }}</v-chip
-                          >
-                          <v-text-field
-                            v-model="jobDetails.outdir"
-                            :rules="[requiredRule]"
-                            style="display: none"
-                          ></v-text-field>
-                        </v-sheet>
+                              <v-icon
+                                icon="$delete"
+                                @click="clearFile('outdir')"
+                                class="mr-1"
+                              ></v-icon>
+                              {{
+                                this.extractFilename(jobDetails.outdir)
+                              }}</v-chip
+                            >
+                          </v-col>
+                        </v-row>
                       </v-col>
                     </v-row>
 
                     <!-- --max-ram -->
-                    <v-row class="mt-6">
+                    <v-row class="mt-2">
                       <v-col cols="3">
                         <v-list-subheader>Max RAM</v-list-subheader>
                       </v-col>
@@ -1370,6 +1390,12 @@ export default {
 .search-settings-panel .search-required-fields .v-list-subheader {
   min-height: 30px;
 }
+.search-settings-panel .search-required-fields .search-files .v-row {
+  margin-bottom: 12px;
+}
+.search-settings-panel .search-required-fields .search-files .filename-col {
+  padding-left: 0px;
+}
 :deep(.search-settings-panel .v-field__input),
 :deep(.search-settings-panel .v-text-field__suffix) {
   padding-top: 4px !important;
@@ -1391,9 +1417,9 @@ export default {
 }
 .filename-chip {
   padding-left: 8px;
-  max-width: 400px; /* Adjust the width as needed */
   align-items: center;
-  overflow: hidden;
+  white-space: normal;
+  text-overflow: ellipsis;
 }
 
 /* UPLOAD REPORT TAB */
@@ -1440,5 +1466,9 @@ code {
 
 .v-col {
   padding-bottom: 0px;
+}
+.v-row {
+  margin-top: 0px;
+  margin-bottom: 0px;
 }
 </style>
