@@ -796,7 +796,7 @@ export default {
     },
     async uploadFile() {
       if (!this.file) {
-         this.triggerSnackbar(
+        this.triggerSnackbar(
           "No file selected.",
           "error",
           "warning",
@@ -819,7 +819,7 @@ export default {
         }
 
         // Set log message
-        this.backendOutput = "Report file was processed successfully.";
+        this.backendOutput = `Report file was processed successfully.\nFile path: ${this.file.path}`;
 
         setTimeout(() => {
           // Object storing info about completedJob
@@ -834,18 +834,19 @@ export default {
             kronaContent: this.processedResults.kronaContent, // null
           };
 
-          // Store completed job in local storage
-          console.log("sample completedjob", completedJob); // DEBUG
-          this.storeResults(completedJob);
-
           // Store latest job in local storage for results rendering
           localStorage.setItem(
             "processedResults",
             JSON.stringify(completedJob)
           );
 
+          // Store completed job in local storage
+          console.log("uploadfile completedjob", completedJob); // DEBUG
+          this.storeResults(completedJob);
+
           // Emit job-completed event: close loading dialog and expose results tab in navigation drawer
           this.$emit("job-completed", completedJob);
+
           // Trigger snackbar
           this.triggerSnackbar(
             "Upload successful. Check the results tab!",
@@ -914,12 +915,12 @@ export default {
           kronaContent: this.processedResults.kronaContent,
         };
 
+        // Store latest job in local storage for results rendering
+        localStorage.setItem("processedResults", JSON.stringify(completedJob));
+
         // Store completed job in local storage
         console.log("sample completedjob", completedJob); // DEBUG
         this.storeResults(completedJob);
-
-        // Store latest job in local storage for results rendering
-        localStorage.setItem("processedResults", JSON.stringify(completedJob));
 
         // Emit job-completed event: close loading dialog and expose results tab in navigation drawer
         this.$emit("job-completed", completedJob);
@@ -1231,13 +1232,13 @@ export default {
         resultsJSON: this.processedResults.jsonData.results,
         kronaContent: this.processedResults.kronaContent,
       };
-
-      // Store completed job in local storage
-      console.log("newrun completedJob:", completedJob); // DEBUG
       this.storeResults(completedJob);
 
       // Store latest job in local storage for results rendering
       localStorage.setItem("processedResults", JSON.stringify(completedJob));
+
+      // Store completed job in local storage
+      console.log("newrun completedJob:", completedJob); // DEBUG
 
       // Trigger snackbar
       this.triggerSnackbar(
@@ -1272,6 +1273,9 @@ export default {
       jobsHistory.push(jobEntry);
       // Trim and store latest 10
       jobsHistory = trimAndStoreJobsHistory(jobsHistory);
+
+      // Clear backendOutput
+      this.backendOutput = "";
     },
 
     handleJobError() {
