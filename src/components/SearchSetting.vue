@@ -383,6 +383,7 @@
                             rounded="lg"
                             density="compact"
                             color="primary"
+                            :placeholder="setting.extra?.file ? 'Select Directory' : none"
                             v-model="setting.value"
                             :prepend-icon="getAppendInnerIcon(setting)"
                             :rules="getValidationRules(setting.parameter)"
@@ -593,7 +594,7 @@ export default {
         value: "",
         type: "STRING",
         extra: {
-          appendIcon: "file",
+          appendIcon: "folder",
           file: true,
         },
       },
@@ -1405,6 +1406,7 @@ export default {
   padding-top: 4px !important;
   padding-bottom: 4px !important;
   min-height: 30px;
+  font-size: 12px;
 }
 
 .search-settings-panel::after {

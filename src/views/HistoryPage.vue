@@ -139,25 +139,16 @@
           v-if="selectedItems.length > 0"
           class="floating-action-box bg-white py-2 px-3 elevation-3 rounded-lg"
         >
-          <v-chip
-            variant="flat"
-            color="black"
-            size="small"
-            density="comfortable"
-            rounded="lg"
-            class="px-2"
-            >{{ selectedItems.length }}</v-chip
-          >
-          <v-chip variant="text">selected</v-chip>
+          <v-chip variant="text">{{ selectedItems.length }} selected</v-chip>
           <v-btn
             variant="outlined"
             color="error"
-            prepend-icon="$trash"
+            icon="$trash"
             size="small"
-            class="text-body-2 px-2"
-            style="border-color: #808080"
+            density="comfortable"
+            class="px-2"
             @click="deleteSelectedItems"
-            >Delete</v-btn
+            ></v-btn
           >
         </div>
       </v-fade-transition>
@@ -179,9 +170,7 @@
             >
             </v-btn>
           </v-card-title>
-          <!-- <v-card-subtitle
-            >Metabuli Classify Command Line Output</v-card-subtitle
-          > -->
+
           <v-card-text
             class="w-100 text-break"
             style="
