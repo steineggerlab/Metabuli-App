@@ -384,7 +384,7 @@
                             density="compact"
                             color="primary"
                             v-model="setting.value"
-                            :append-inner-icon="getAppendInnerIcon(setting)"
+                            :prepend-icon="getAppendInnerIcon(setting)"
                             :rules="getValidationRules(setting.parameter)"
                             :suffix="setting.extra?.suffix || ''"
                             v-on:click="
@@ -615,12 +615,8 @@ export default {
       },
     },
     validationRules: {
-      // 1. Input is required
+      // Input is required
       "--max-ram": (value) => {
-        // if (value === "" || value === null || value === undefined) {
-        //   return "Required field *";
-        // }
-        // 2. Input must be valid integer
         return (
           Number.isInteger(Number(value)) || "Input must be a valid integer"
         );
@@ -800,8 +796,12 @@ export default {
     },
     async uploadFile() {
       if (!this.file) {
-        // this.$emit("snackbar", "No file selected", "error");
-        this.$emit("error");
+         this.triggerSnackbar(
+          "No file selected.",
+          "error",
+          "warning",
+          "Dismiss"
+        );
         return;
       }
 
@@ -1418,7 +1418,8 @@ export default {
 .filename-chip {
   padding-left: 8px;
   align-items: center;
-  white-space: normal;
+  overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 
