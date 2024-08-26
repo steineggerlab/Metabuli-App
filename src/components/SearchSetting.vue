@@ -356,13 +356,13 @@
 
                 <!-- EXPANDABLE PANEL -->
                 <v-expand-transition>
-                  <div v-if="expandAdvancedSettings" class="w-66 pt-0 pb-2">
+                  <div v-if="expandAdvancedSettings" class="search-advanced-settings w-66 pt-0 pb-2">
                     <v-container fluid>
                       <v-row
                         v-for="(setting, key) in advancedSettings"
                         :key="key"
                       >
-                        <v-col cols="4">
+                        <v-col cols="4" class="search-advanced-settings-title">
                           <v-list-subheader class="pr-0">
                             <v-tooltip location="top">
                               <template v-slot:activator="{ props }">

@@ -93,7 +93,8 @@
 0.0004	2	0	genus	2732990	              Seongnamvirus
 0.0004	2	0	species	2734073	                Seongnamvirus ESSI2
 0.0004	2	2	no rank	947842	                  Cronobacter phage ESSI-2
-0.0002	1	0	genus	2948723	              Gegevirus
+0.0002	1	0	supergenus	2948722	Supergenus test
+0.0002	1	0	§	2948723	              Gegevirus
 0.0002	1	0	species	2955944	                Gegevirus ST437OXA245phi41
 0.0002	1	1	no rank	2510486	                  Klebsiella phage ST437-OXA245phi4.1
 0.0005	3	0	genus	1982104	            Decurrovirus
@@ -182,7 +183,9 @@
 3.4919	19327	0	clade	33154	      Opisthokonta
 3.4919	19327	0	kingdom	33208	        Metazoa
 3.4919	19327	0	clade	6072	          Eumetazoa
+3.4919	19327	0	subkingdom	6000	Subkingdom test
 3.4919	19327	0	clade	33213	            Bilateria
+3.4919	19327	0	superphylum	33214	Superphylum test
 3.4919	19327	0	clade	33511	              Deuterostomia
 3.4919	19327	0	phylum	7711	                Chordata
 3.4919	19327	0	subphylum	89593	                  Craniata
@@ -192,6 +195,7 @@
 3.4919	19327	0	clade	117571	                          Euteleostomi
 3.4919	19327	0	superclass	8287	                            Sarcopterygii
 3.4919	19327	0	clade	1338369	                              Dipnotetrapodomorpha
+3.4919	19327	0	subclass	6000	Subclass test
 3.4919	19327	0	clade	32523	                                Tetrapoda
 3.4919	19327	0	clade	32524	                                  Amniota
 3.4919	19327	0	class	40674	                                    Mammalia
@@ -206,5 +210,8 @@
 3.4919	19327	0	superfamily	314295	                                                      Hominoidea
 3.4919	19327	0	family	9604	                                                        Hominidae
 3.4919	19327	0	subfamily	207598	                                                          Homininae
+3.4919	19327	0	superfamily	207599	Superfamily test
 3.4919	19327	0	genus	9605	                                                            Homo
+3.4919	19327	19327	superspecies	9605	Superspecies test
 3.4919	19327	19327	species	9606	                                                              Homo sapiens
+3.4919	19327	19327	subspecies	9607	Subspecies test

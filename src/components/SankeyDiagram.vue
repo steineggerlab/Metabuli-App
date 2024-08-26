@@ -158,6 +158,8 @@ export default {
         "superorder",
         "order",
         "suborder",
+        "infraorder",
+        "parvorder",
         "superfamily",
         "family",
         "subfamily",
