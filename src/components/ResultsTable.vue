@@ -158,12 +158,12 @@ export default {
 				"clade",
 			],
 			autumnColors: [
-        // Superkingdom
-        "#B60300", 
+				// Superkingdom
+				"#B60300",
 				"#E63A06",
 				"#EE9595",
-        // Superphylum
-				"#FF6200", 
+				// Superphylum
+				"#FF6200",
 				"#FF9200",
 				"#F7B267",
 				// Superclass
@@ -188,9 +188,9 @@ export default {
 				"#FD4BB9",
 				"#F389F3",
 				"#FAB3E3",
-      // No rank
+				// No rank
 				"#8A9BA7",
-        // Clade
+				// Clade
 				"#696B73",
 			],
 		};
