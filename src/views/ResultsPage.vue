@@ -17,18 +17,32 @@
 				<v-tabs-window-item value="sankey" class="h-100">
 					<!-- TOOLBAR ABOVE SANKEY DIAGRAM -->
 					<div class="d-flex justify-space-around my-5 mx-2 gc-1">
-						<div class="d-flex align-center">Click on a node to see lineage and subtree.</div>
-
-						<v-text-field v-model="searchQuery" prepend-inner-icon="$magnify" density="compact" label="Search taxa" variant="outlined" rounded="lg" single-line color="indigo"></v-text-field>
+						<!-- SEARCH BAR -->
+						<div class="d-flex flex-column">
+							<v-text-field
+								v-model="searchQuery"
+								prepend-inner-icon="$magnify"
+								density="compact"
+								label="Search taxa"
+								variant="outlined"
+								rounded="lg"
+								single-line
+								color="indigo"
+								clearable
+							></v-text-field>
+							<div class="d-flex align-center">Click on a node to see lineage and subtree.</div>
+						</div>
 
 						<v-spacer></v-spacer>
 
+						<!-- SANKEY DOWNLOAD MENU -->
 						<SankeyDownloadMenu @format-selected="emitMainSankeyDownloadFormat">
 							<template v-slot:activator="{ props }">
 								<v-btn v-bind="props" append-icon="$download" variant="text" rounded> Download </v-btn>
 							</template>
 						</SankeyDownloadMenu>
 
+						<!-- CONFIGURE SANKEY MENU -->
 						<ConfigureSankeyMenu
 							:initialTaxaLimit="taxaLimit"
 							:maxTaxaLimit="roundedMaxTaxaLimit"

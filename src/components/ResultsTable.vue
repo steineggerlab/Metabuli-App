@@ -8,7 +8,7 @@
 				<v-spacer></v-spacer>
 
 				<!-- SEARCH BAR -->
-				<v-text-field v-model="searchQuery" prepend-inner-icon="$magnify" density="compact" label="Search results" variant="outlined" rounded="lg" single-line color="indigo"></v-text-field>
+				<v-text-field v-model="searchQuery" prepend-inner-icon="$magnify" density="compact" label="Search results" variant="outlined" rounded="lg" single-line color="indigo" clearable></v-text-field>
 			</div>
 		</template>
 
@@ -207,7 +207,7 @@ export default {
 				const matchesRank = this.filters.rank === null || this.filters.rank.length === 0 || this.filters.rank.includes(item.rank);
 				const matchesTaxonId = item.taxon_id.toString().toLowerCase().includes(this.filters.taxon_id.toLowerCase());
 				const matchesName = item.name.toString().toLowerCase().includes(this.filters.name.toLowerCase());
-				const matchesQuery = Object.values(item).some((value) => value.toString().toLowerCase().includes(this.searchQuery.toLowerCase()));
+				const matchesQuery = this.searchQuery ? Object.values(item).some((value) => value.toString().toLowerCase().includes(this.searchQuery.toLowerCase())) : true;
 
 				return matchesProportion && matchesCladeReads && matchesTaxonReads && matchesRank && matchesTaxonId && matchesName && matchesQuery;
 			});
