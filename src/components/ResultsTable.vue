@@ -87,7 +87,7 @@
 </template>
 
 <script>
-import { getRankColor } from '@/plugins/colorUtils';
+import { rankOrderFull, getRankColor } from "@/plugins/rankUtils";
 
 export default {
 	data() {
@@ -132,33 +132,7 @@ export default {
 				name: "",
 			},
 			searchQuery: "",
-			rankOrderFull: [
-				"superkingdom",
-				"kingdom",
-				"subkingdom",
-				"superphylum",
-				"phylum",
-				"subphylum",
-				"superclass",
-				"class",
-				"subclass",
-				"superorder",
-				"order",
-				"suborder",
-				"infraorder",
-				"parvorder",
-				"superfamily",
-				"family",
-				"subfamily",
-				"supergenus",
-				"genus",
-				"subgenus",
-				"superspecies",
-				"species",
-				"subspecies",
-				"no rank",
-				"clade",
-			],
+			rankOrderFull, // Imported from colorUtils
 		};
 	},
 	props: {

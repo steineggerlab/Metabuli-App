@@ -1,4 +1,4 @@
-const rankOrderFull = [
+export const rankOrderFull = [
 	"superkingdom",
 	"kingdom",
 	"subkingdom",
@@ -26,7 +26,7 @@ const rankOrderFull = [
 	"clade",
 ];
 
-const autumnColors = [
+const rankColors = [
 	// Superkingdom
 	"#57291F",
 	"#E63A06",
@@ -65,5 +65,5 @@ const autumnColors = [
 
 export function getRankColor(rank) {
 	const rankIndex = rankOrderFull.indexOf(rank);
-	return autumnColors[rankIndex % autumnColors.length];
+	return rankColors[rankIndex % rankColors.length];
 }

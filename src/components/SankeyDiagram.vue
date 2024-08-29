@@ -47,6 +47,7 @@
 <script>
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal, sankeyJustify } from "d3-sankey";
+import { rankOrderFull } from "@/plugins/rankUtils";
 
 export default {
 	name: "SankeyDiagram",
@@ -120,32 +121,7 @@ export default {
 			},
 
 			rankOrder: ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"],
-			rankOrderFull: [
-				"superkingdom",
-				"kingdom",
-				"subkingdom",
-				"superphylum",
-				"phylum",
-				"subphylum",
-				"superclass",
-				"class",
-				"subclass",
-				"superorder",
-				"order",
-				"suborder",
-				"infraorder",
-				"parvorder",
-				"superfamily",
-				"family",
-				"subfamily",
-				"supergenus",
-				"genus",
-				"subgenus",
-				"superspecies",
-				"species",
-				"subspecies",
-				"no rank",
-			],
+			rankOrderFull, // Imported from colorUtils
 			autumnColors: [
 				"#57291F",
 				"#C0413B",
@@ -269,7 +245,7 @@ export default {
 			this.allNodesByRank = {}; // Reset the nodes by rank
 
 			// Filter out clades from raw data
-			const nonClades = data.filter((entry) => this.rankOrderFull.includes(entry.rank));
+			const nonClades = data.filter((entry) => this.rankOrderFull.includes(entry.rank) && entry.rank !== "clade");
 			this.nonCladesRawData = nonClades;
 
 			// Store nodes by rank from full data (for calculation of maxTaxaLimit)

@@ -10,7 +10,7 @@
 				<!-- Taxon Name Title -->
 				<v-card-title class="font-weight-black mb-2">{{ nodeDetails.data.name }}</v-card-title>
 
-        <!-- <v-card-subtitle class="mb-0 opacity-100 font-weight-bold">Summary</v-card-subtitle> -->
+				<!-- <v-card-subtitle class="mb-0 opacity-100 font-weight-bold">Summary</v-card-subtitle> -->
 				<v-row>
 					<!-- Rank Column -->
 					<v-col>
@@ -130,7 +130,7 @@ import SankeyDiagram from "@/components/SankeyDiagram.vue";
 import SankeyDownloadMenu from "@/components/SankeyDownloadMenu.vue";
 import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
-import { getRankColor } from "@/plugins/colorUtils";
+import { getRankColor } from "@/plugins/rankUtils";
 
 export default {
 	name: "SankeyNodeDialog",
@@ -208,8 +208,8 @@ export default {
 			this.$emit("download-sankey", { sankeyId: this.sankeyId, format });
 		},
 
-    // Get color for rank chip
-    getRankColor, // Imported from colorUtils
+		// Get color for rank chip
+		getRankColor, // Imported from colorUtils
 	},
 
 	mounted() {
