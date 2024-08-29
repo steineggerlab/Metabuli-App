@@ -203,6 +203,7 @@
 <script>
 export default {
 	name: "NewSearchTab",
+	
 	data() {
 		return {
 			// Properties for Run New Search tab
@@ -326,11 +327,13 @@ export default {
 			errorHandled: false,
 		};
 	},
+
 	computed: {
 		computedHint() {
 			return `${this.jobDetails.jobid}_report.tsv`;
 		},
 	},
+
 	methods: {
 		// Functions for handling files
 		async selectFile(field, type) {
@@ -416,6 +419,7 @@ export default {
 					this.status = "INITIAL";
 				}
 				this.errorHandled = false; // Resets error handled tracking
+				this.backendOutput = ""; // Clear backendOutput
 			}
 		},
 
@@ -457,6 +461,9 @@ export default {
 				this.$emit("trigger-snackbar", "Sample data successfully loaded.", "success", "success", "View", () => {
 					this.$router.push({ name: "ResultsPage" });
 				});
+
+				// Clear backendOutput
+				this.backendOutput = "";
 			}, 2000); // Simulate a job taking 2 seconds
 		},
 
@@ -713,15 +720,14 @@ export default {
 
 			this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
 		},
-
 		handleTimeout() {
 			window.electron.cancelBackend();
 		},
 	},
 
-      mounted() {
-    this.errorHandled = false; // Flag to ensure errors are handled only once
-  },
+	mounted() {
+		this.errorHandled = false; // Flag to ensure errors are handled only once
+	},
 };
 </script>
 

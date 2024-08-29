@@ -1,0 +1,220 @@
+<template>
+	<v-container class="gr-2 upload-container" @drop="handleDrop" @dragover.prevent>
+		<!-- TITLE -->
+		<v-card flat>
+			<v-card-title class="text-button font-weight-bold">Upload Previous Report</v-card-title>
+			<v-card-text>Upload report.tsv file directly to see visualization.</v-card-text>
+		</v-card>
+
+		<v-sheet class="d-flex flex-column w-66 gr-2 mb-2">
+			<!-- Upload Box -->
+			<div class="d-flex flex-column align-center dotted-border gr-3" @click="triggerFilePicker">
+				<v-file-input v-model="file" ref="fileInput" class="hidden-input" @change="handleFileSelect" accept=".tsv"></v-file-input>
+				<v-icon size="50" icon="$fileUpload" color="primary"></v-icon>
+				<p class="text-body-2">Drag & drop your file here or choose from files.</p>
+			</div>
+
+			<!-- Show Uploaded Files -->
+			<div v-if="file" class="uploaded-file">
+				<v-card-subtitle>Uploaded File</v-card-subtitle>
+				<v-card-text class="py-1">
+					<v-chip label closable prepend-icon="$file" color="primary" @click:close="removeFile">{{ file.name }}</v-chip>
+				</v-card-text>
+			</div>
+
+			<!-- Upload Button -->
+			<v-btn block color="primary" @click="uploadFile" :disabled="!file">Upload</v-btn>
+		</v-sheet>
+	</v-container>
+</template>
+
+<script>
+export default {
+	name: "UploadReportTab",
+	data() {
+		return {
+			file: null, // FIXME: rename to uploadedReportFile or Path
+			status: "INITIAL",
+			backendOutput: "",
+			processedResults: null,
+		};
+	},
+	methods: {
+		handleDrop(event) {
+			const file = event.dataTransfer.files[0];
+			if (file) {
+				this.file = file;
+			}
+		},
+		triggerFilePicker() {
+			this.$refs.fileInput.click();
+		},
+		handleFileSelect() {
+			this.file = this.$refs.fileInput.files[0];
+		},
+		removeFile() {
+			this.file = null;
+			this.$refs.fileInput.value = "";
+		},
+		async uploadFile() {
+			if (!this.file) {
+				this.$emit("trigger-snackbar", "No file selected.", "error", "warning", "Dismiss");
+				return;
+			}
+
+			try {
+				// Starting loading dialog
+				this.$emit("job-started", true); // FIXME: true sets isSample as true
+
+				// Process the file content
+				await this.processResults(false);
+				console.log("uploadreport processed:", this.processedResults); // DEBUG
+
+				// Throw error if invalid report.tsv file
+				if (!this.processedResults.jsonData) {
+					throw new Error("Invalid report file.");
+				}
+
+				// Set log message
+				this.backendOutput = `Report file was processed successfully.\nFile path: ${this.file.path}`;
+
+				setTimeout(() => {
+					// Object storing info about completedJob
+					const completedJob = {
+						outdir: null,
+						jobid: null,
+						isSample: false,
+						jobStatus: "Completed",
+						jobType: "uploadReport",
+						backendOutput: this.backendOutput,
+						resultsJSON: this.processedResults.jsonData.results,
+						kronaContent: this.processedResults.kronaContent, // null
+					};
+
+					// Store latest job in local storage for results rendering
+					localStorage.setItem("processedResults", JSON.stringify(completedJob));
+
+					// Store completed job in local storage
+					console.log("uploadfile completedjob", completedJob); // DEBUG
+					this.$emit("store-job", completedJob);
+
+					// Emit job-completed event: close loading dialog and expose results tab in navigation drawer
+					this.$emit("job-completed", completedJob);
+
+					// Trigger snackbar
+					this.$emit("trigger-snackbar", "Upload successful. Check the results tab!", "success", "success", "View", () => {
+						this.$router.push({ name: "ResultsPage" });
+					});
+				}, 2000);
+			} catch (error) {
+				console.error("Error processing file: ", error.message); // DEBUG
+
+				// Set log message
+				this.backendOutput = "Error processing file: " + error.message;
+				this.$emit("job-aborted");
+
+				this.status = "ERROR";
+				// Create failed job object to store in local storage
+				const failedJob = {
+					outdir: null,
+					jobid: null,
+					isSample: false,
+					jobStatus: "ERROR", // this.status
+					jobType: "uploadReport",
+					backendOutput: this.backendOutput,
+					resultsJSON: null,
+					kronaContent: null,
+				};
+				// Store completed job in local storage
+				this.$emit("store-job", failedJob);
+
+				// Trigger snackbar
+				this.$emit("trigger-snackbar", "Error processing file. Please check file and try again.", "error", "warning", "Dismiss");
+			} finally {
+				this.backendOutput = ""; // Clear backendOutput
+			}
+		},
+
+		// // Function for processing results (shared for both tabs)
+		async processResults(isSample) {
+			// Set file path for report directly
+			const reportFilePath = this.file.path;
+
+			// Read and process TSV and Krona HTML here
+			const tsvData = await this.readTSVFile(reportFilePath, isSample);
+			const jsonData = this.tsvToJSON(tsvData);
+
+			// Store in component for emission
+			this.processedResults = { jsonData, kronaContent: null };
+		},
+		// Helper functions for processing data
+		async readTSVFile(filePath, isSample) {
+			try {
+				const tsvContent = await window.electron.readFile(filePath, isSample); //FIXME: edit readFile preload function
+				return tsvContent;
+			} catch (error) {
+				console.error("Error reading TSV file:", error);
+			}
+		},
+		validateReportTSVData(records) {
+			// Validation criteria for report.tsv file format
+			const firstRecord = records[0];
+
+			// No parsed data
+			if (firstRecord === undefined) return false;
+
+			return (
+				(firstRecord.rank === "no rank" && firstRecord.taxon_id === "0" && firstRecord.name === "unclassified") ||
+				(firstRecord.rank === "no rank" && firstRecord.taxon_id === "1" && firstRecord.name === "root")
+			);
+		},
+		tsvToJSON(tsv) {
+			const headers = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "name"];
+			const records = tsv
+				.split("\n")
+				.map((line) => {
+					const data = line.split("\t").map((item) => item.trim()); // Strip leading and trailing whitespace
+					return Object.fromEntries(headers.map((header, index) => [header, data[index]]));
+				})
+				.filter((record) => !Object.values(record).every((field) => field === "" || field === undefined || field === null)); // Filter out empty rows
+
+			// Validate report.tsv file
+			if (this.validateReportTSVData(records)) {
+				return { results: records };
+			} else {
+				return null; // Return null if the row does not meet the criteria
+			}
+		},
+	},
+};
+</script>
+
+<style scoped>
+.upload-container {
+	display: flex;
+	flex-direction: column;
+}
+
+.hidden-input {
+	display: none;
+}
+
+.dotted-border {
+	border: 2px dashed #ccc;
+	border-width: 2px;
+	border-radius: 5px;
+	padding: 70px;
+	text-align: center;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.dotted-border:hover {
+	border: 2px dashed #1976d2;
+	background-color: rgba(21, 101, 192, 0.04);
+}
+
+.uploaded-file {
+	margin: 10px 0;
+}
+</style>
