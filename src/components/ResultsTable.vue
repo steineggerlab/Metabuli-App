@@ -87,6 +87,8 @@
 </template>
 
 <script>
+import { getRankColor } from '@/plugins/colorUtils';
+
 export default {
 	data() {
 		return {
@@ -157,42 +159,6 @@ export default {
 				"no rank",
 				"clade",
 			],
-			autumnColors: [
-				// Superkingdom
-				"#B60300",
-				"#E63A06",
-				"#EE9595",
-				// Superphylum
-				"#FF6200",
-				"#FF9200",
-				"#F7B267",
-				// Superclass
-				"#E8B600",
-				"#FFD000",
-				"#E6DB6A",
-				// Superorder
-				"#044036",
-				"#0A7A26",
-				"#46A74B",
-				"#86B614",
-				"#ABE188",
-				// Superfamily
-				"#0065A2",
-				"#00A5E3",
-				"#77D0D0",
-				// Supergenus
-				"#520073",
-				"#9C47B0",
-				"#C792C7",
-				// Superspecies
-				"#FD4BB9",
-				"#F389F3",
-				"#FAB3E3",
-				// No rank
-				"#8A9BA7",
-				// Clade
-				"#696B73",
-			],
 		};
 	},
 	props: {
@@ -236,6 +202,7 @@ export default {
 		},
 	},
 	methods: {
+		getRankColor, // Imported from colorUtils
 		rankSort(a, b) {
 			const rankA = this.rankOrderFull.indexOf(a);
 			const rankB = this.rankOrderFull.indexOf(b);
@@ -247,10 +214,6 @@ export default {
 			} else {
 				return 0;
 			}
-		},
-		getRankColor(rank) {
-			const rankIndex = this.rankOrderFull.indexOf(rank);
-			return this.autumnColors[rankIndex % this.autumnColors.length];
 		},
 		closeMenu() {
 			this.rankMenu = false;

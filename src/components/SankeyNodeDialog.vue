@@ -15,7 +15,7 @@
 					<!-- Rank Column -->
 					<v-col>
 						<v-card-subtitle>Rank</v-card-subtitle>
-						<v-chip density="compact" color="primary font-weight-bold" label>{{ nodeDetails.data.trueRank }}</v-chip>
+						<v-chip :color="getRankColor(nodeDetails.data.trueRank)" density="compact" class="font-weight-bold" label>{{ nodeDetails.data.trueRank }}</v-chip>
 					</v-col>
 
 					<!-- Proportion Column -->
@@ -130,6 +130,7 @@ import SankeyDiagram from "@/components/SankeyDiagram.vue";
 import SankeyDownloadMenu from "@/components/SankeyDownloadMenu.vue";
 import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
+import { getRankColor } from "@/plugins/colorUtils";
 
 export default {
 	name: "SankeyNodeDialog",
@@ -206,6 +207,9 @@ export default {
 		emitSubtreeDownloadFormat(format) {
 			this.$emit("download-sankey", { sankeyId: this.sankeyId, format });
 		},
+
+    // Get color for rank chip
+    getRankColor, // Imported from colorUtils
 	},
 
 	mounted() {
