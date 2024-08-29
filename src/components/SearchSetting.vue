@@ -462,7 +462,7 @@
                   <v-icon
                     size="50"
                     icon="$fileUpload"
-                    color="blue-accent-4"
+                    color="primary"
                   ></v-icon>
                   <p class="text-body-2">
                     Drag & drop your file here or choose from files.

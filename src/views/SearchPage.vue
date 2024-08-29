@@ -64,6 +64,7 @@
           <a
             href="https://www.nature.com/articles/s41592-024-02273-y"
             target="_blank"
+            class = "text-blue-accent-4"
           >
             Metabuli: sensitive and specific metagenomic classification via
             joint analysis of amino acid and DNA.
