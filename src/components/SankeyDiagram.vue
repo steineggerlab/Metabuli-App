@@ -183,7 +183,7 @@ export default {
 	},
 	watch: {
 		loading(newValue) {
-			console.log("Loading state changed:", newValue); // DEBUG
+			// console.log("Loading state changed:", newValue); // DEBUG
 			if (!newValue) {
 				this.$nextTick(() => {
 					// Ensure the DOM is updated before creating the Sankey diagram.
@@ -277,7 +277,6 @@ export default {
 			const nodesByRank = {}; // Store nodes by rank for filtering top 10
 
 			// Step 1: Create nodes and save lineage data for ALL NODES (excluding clade ranks)
-			console.log("Data:", data);
 			data.forEach((d) => {
 				let node = {
 					id: d.taxon_id,
@@ -452,8 +451,6 @@ export default {
 
 		// Function for updating configure menu value ranges based on data
 		updateConfigureMenu() {
-			console.log("allnodesbyrank: ", this.allNodesByRank);
-
 			let maxValues = 0;
 			for (let rank in this.allNodesByRank) {
 				const valuesCount = this.allNodesByRank[rank].length;
@@ -534,7 +531,6 @@ export default {
 			// Used only when isSubtree === false
 
 			const graph = this.getRawFullGraph();
-			console.log("fullGraph", graph); // DEBUG
 			const subtreeNodesTaxonIds = new Set();
 			const subtreeLinks = new Set();
 
@@ -558,7 +554,6 @@ export default {
 
 		// Main function for drawing Sankey
 		createSankey() {
-			console.log("this.graphData", this.graphData); // DEBUG
 			const { nodes, links } = this.graphData;
 
 			// Check if nodes and links are not empty

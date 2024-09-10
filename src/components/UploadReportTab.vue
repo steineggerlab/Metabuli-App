@@ -68,7 +68,7 @@ export default {
 
 				// Process the file content
 				await this.processResults(false);
-				console.log("uploadreport processed:", this.processedResults); // DEBUG
+				console.log("🚀 Upload Report Processed:", this.processedResults); // DEBUG
 
 				// Throw error if invalid report.tsv file
 				if (!this.processedResults.jsonData) {
@@ -95,7 +95,7 @@ export default {
 					localStorage.setItem("processedResults", JSON.stringify(completedJob));
 
 					// Store completed job in local storage
-					console.log("uploadfile completedjob", completedJob); // DEBUG
+					// console.log("uploadfile completedjob", completedJob); // DEBUG
 					this.$emit("store-job", completedJob);
 
 					// Emit job-completed event: close loading dialog and expose results tab in navigation drawer

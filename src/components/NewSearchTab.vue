@@ -451,7 +451,6 @@ export default {
 				localStorage.setItem("processedResults", JSON.stringify(completedJob));
 
 				// Store completed job in local storage
-				console.log("sample completedjob", completedJob); // DEBUG
 				this.$emit("store-job", completedJob);
 
 				// Emit job-completed event: close loading dialog and expose results tab in navigation drawer
@@ -505,8 +504,9 @@ export default {
 					params.push(setting.parameter, value);
 				}
 			}
-			console.log("params:", params); // DEBUG
+			console.log("🚀 Job requested:", params); // DEBUG
 
+			// TEST PARAMS
 			// params = [
 			//   "classify",
 			//   "--seq-mode",
@@ -525,8 +525,6 @@ export default {
 
 				// Real-time output
 				window.electron.onBackendRealtimeOutput((output) => {
-					console.log("Backend Real-time Output:", output); // DEBUG
-
 					this.backendOutput += output; // Append output in real-time
 					this.$emit("backend-realtime-output", this.backendOutput);
 					this.status = "RUNNING"; // Keep the status as RUNNING
@@ -534,8 +532,6 @@ export default {
 
 				window.electron.onBackendComplete((message) => {
 					if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
-
-					console.log("Backend Complete:", message); // DEBUG
 					this.backendOutput += message;
 					this.status = "COMPLETE"; // Signal job polling
 					resolve(); // Resolve the backend promise
@@ -563,7 +559,7 @@ export default {
 		// Function to track job status + process results + trigger snackbar
 		async pollJobStatus(interval = 500, timeout = Infinity) {
 			// FIXME: decide timeout duration
-			console.log("Running poll"); // DEBUG
+			console.log("🚀 Running job"); // DEBUG
 			const start = Date.now();
 			while (Date.now() - start < timeout) {
 				if (this.errorHandled || this.status === "COMPLETE") return true;
@@ -655,7 +651,8 @@ export default {
 			}
 		},
 		handleJobSuccess() {
-			console.log("Job polling completed successfully."); // DEBUG
+			console.log("🚀 Job completed successfully."); // DEBUG
+
 
 			// Object storing info about completedJob
 			const completedJob = {
@@ -674,7 +671,7 @@ export default {
 			localStorage.setItem("processedResults", JSON.stringify(completedJob));
 
 			// Store completed job in local storage
-			console.log("newrun completedJob:", completedJob); // DEBUG
+			// console.log("newrun completedJob:", completedJob); // DEBUG
 
 			// Trigger snackbar
 			this.$emit("trigger-snackbar", "Job successfully completed. Check the results tab.", "success", "success", "View", () => {

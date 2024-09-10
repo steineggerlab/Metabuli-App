@@ -126,7 +126,6 @@ export default {
 
 		// Functions managing snackbar
 		triggerSnackbar(message, color = "info", icon = "info", buttonText = "", action = null) {
-			console.log("Snackbar shown"); // DEBUG
 			if (this.snackbar.show) return; // If multiple snackbars are triggered, show the first one
 
 			this.snackbar.message = message;
@@ -136,11 +135,9 @@ export default {
 			this.snackbar.action = action;
 
 			this.snackbar.show = true;
-			console.log("snackbar executed"); // DEBUG
 		},
 		handleSnackbarAction() {
 			if (this.snackbar.action) {
-				console.log(this.snackbar.action);
 				this.snackbar.action();
 			}
 			this.snackbar.show = false;

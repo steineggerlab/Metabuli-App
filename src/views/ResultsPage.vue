@@ -263,11 +263,6 @@ export default {
 		// Function for rendering results
 		renderResults(processedResults) {
 			// Logic to render the table and Sankey diagram using the passed data
-			// console.log(
-			//   "render data",
-			//   processedResults.resultsJSON,
-			//   processedResults.kronaContent
-			// );
 			this.results = processedResults.resultsJSON;
 			this.kronaContent = processedResults.kronaContent;
 		},
@@ -294,7 +289,7 @@ export default {
 
 <style>
 .tab-fill-height {
-	height: 75vh; /* Adjust according to your header/footer height */
+	height: 75vh; 
 	overflow-y: auto; /* Enable vertical scrolling */
 	overflow-x: auto; /* Hide horizontal overflow */
 }
