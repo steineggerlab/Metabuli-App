@@ -1,14 +1,8 @@
+![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Mac%20%7C%20Windows-brightgreen)
+
 # Metabuli Desktop Application 
 
-This is the desktop application for Metabuli built with Vue.js and Electron, which enables development of cross-platform desktop apps using web technologies.
-
-## Features
-
-- Joint analysis of DNA and amino acid sequences.
-- Supports single-end, paired-end, and long-read modes.
-- Visualization of results through Krona charts.
-- Real-time backend output for efficient job tracking.
-- Easy-to-use interface for researchers without programming experience.
+This is the desktop application for Metabuli, a metagenomic classification that jointly analyzes both DNA and amino acid sequences. Built with Vue.js and Electron, it provides an intuitive interface for running metagenomic classification jobs and visualizing the results.
 
 For more details of Metabuli, please see
 [GitHub](https://github.com/steineggerlab/Metabuli),
@@ -36,8 +30,9 @@ For more details of Metabuli, please see
 The Metabuli App provides two modes for metagenomic classification: **New Search** and **Upload Report**. These modes are accessible via tabs in the **Search Settings** panel.
 
 ### New Search
-
 To run a **New Search** job, follow these steps:
+
+<img src="https://github.com/user-attachments/assets/e1b5dc80-5675-4c86-8068-89e043465ace" alt="New_Search_Demo_Image" height="400"/>
 
 1. **Required Fields**: 
    Complete the following mandatory fields:
@@ -69,8 +64,6 @@ To run a **New Search** job, follow these steps:
      - **Table**: View the raw classification data in a table format.
      - **Sankey Diagram**: A flow diagram representing the lineage information of the displayed taxa.
      - **Krona Chart**: A hierarchical interactive chart that visualizes classification results.
-
-
 ---
 
 ### Upload Report
@@ -82,3 +75,16 @@ To visualize results from a previously completed job:
 3. View the uploaded results directly in the **Results** tab. For this job type, results are provided in:
    - **Table**: The raw data in table format.
    - **Sankey Diagram**: A flow diagram representing the lineage paths for the displayed taxa (without the Krona chart).
+
+
+## Demos
+
+### New Search Job Demo
+Watch this demo to see how to run a new search on Metabuli:
+
+https://github.com/user-attachments/assets/fd5a9de2-97d8-4f9b-8993-55239bc2bbc5
+
+### Viewing Results
+Watch this demo to see how to view the results from a completed search:
+
+https://github.com/user-attachments/assets/c17a13bd-e1c6-4e4b-ad71-f47e5e56fdf5
