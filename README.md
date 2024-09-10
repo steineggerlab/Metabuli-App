@@ -1,4 +1,4 @@
-![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Mac%20%7C%20Windows-brightgreen)
+![Platform](https://img.shields.io/badge/platform-Mac%20%7C%20Windows%20%7C%20Linux-brightgreen)
 
 # Metabuli Desktop Application 
 
