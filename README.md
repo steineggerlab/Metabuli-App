@@ -82,7 +82,7 @@ To visualize results from a previously completed job:
 ### New Search Job Demo
 Watch this demo to see how to run a new search on Metabuli:
 
-https://github.com/user-attachments/assets/fd5a9de2-97d8-4f9b-8993-55239bc2bbc5
+https://github.com/user-attachments/assets/207b7f06-1ea8-4fc7-8300-facd281bb43b
 
 ### Viewing Results
 Watch this demo to see how to view the results from a completed search:
