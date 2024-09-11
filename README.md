@@ -87,4 +87,4 @@ https://github.com/user-attachments/assets/207b7f06-1ea8-4fc7-8300-facd281bb43b
 ### Viewing Results
 Watch this demo to see how to view the results from a completed search:
 
-https://github.com/user-attachments/assets/c17a13bd-e1c6-4e4b-ad71-f47e5e56fdf5
+https://github.com/user-attachments/assets/bb0dd7f5-1008-480c-b233-e94b107b21b0
