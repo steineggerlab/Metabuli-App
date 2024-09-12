@@ -15,7 +15,7 @@
 							<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" divided mandatory>
 								<v-btn value="single-end" height="30" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
 								<v-btn value="paired-end" height="30" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
-								<v-btn value="long-read" height="30" class="rounded-e-lg rounded-s-0 text-caption">Long-end</v-btn>
+								<v-btn value="long-read" height="30" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
 							</v-btn-toggle>
 						</v-col>
 					</v-row>
