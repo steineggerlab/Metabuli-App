@@ -39,7 +39,7 @@ To run a **New Search** job, follow these steps:
    - **Mode**: Select the analysis mode:
      - Single-end
      - Paired-end
-     - Long-end
+     - Long-read
    - **Job ID**: Enter a unique identifier for the job.
    - **Select Files**: Upload the necessary files and directories:
      - Read 1 File (and Read 2 File if Paired-end is selected)
