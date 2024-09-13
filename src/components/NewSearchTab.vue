@@ -152,6 +152,23 @@
 			<!-- EXPANDABLE PANEL -->
 			<v-expand-transition>
 				<div v-if="expandAdvancedSettings" class="search-advanced-settings w-66 pt-0 pb-2">
+					
+					<!-- Parameters for precision mode -->
+					<v-container class="py-0">
+						<v-card variant="outlined" color="primary">
+							<v-card-title class="text-subtitle-2 pb-0">Parameters for precision mode (Metabuli-P)</v-card-title>
+							<v-card-title class="text-caption">
+								<span v-if="jobDetails.mode === 'long-read'">
+									<strong>PacBio HiFi reads:</strong> --min-score 0.07 --min-sp-score 0.3<br />
+									<strong>PacBio Sequel II reads:</strong> --min-score 0.005<br />
+									<strong>ONT reads:</strong> --min-score 0.008
+								</span>
+								<span v-else> <strong>Illumina short reads:</strong> --min-score 0.15 --min-sp-score 0.5 </span>
+							</v-card-title>
+						</v-card>
+					</v-container>
+
+					<!-- Input fields -->
 					<v-container fluid>
 						<v-row v-for="(setting, key) in advancedSettings" :key="key">
 							<v-col cols="4">
@@ -203,7 +220,7 @@
 <script>
 export default {
 	name: "NewSearchTab",
-	
+
 	data() {
 		return {
 			// Properties for Run New Search tab
@@ -652,7 +669,6 @@ export default {
 		},
 		handleJobSuccess() {
 			console.log("🚀 Job completed successfully."); // DEBUG
-
 
 			// Object storing info about completedJob
 			const completedJob = {
