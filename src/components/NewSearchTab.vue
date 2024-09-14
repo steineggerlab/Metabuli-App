@@ -152,7 +152,6 @@
 			<!-- EXPANDABLE PANEL -->
 			<v-expand-transition>
 				<div v-if="expandAdvancedSettings" class="search-advanced-settings w-66 pt-0 pb-2">
-					
 					<!-- Parameters for precision mode -->
 					<v-container class="py-0">
 						<v-card variant="outlined" color="primary">
@@ -538,6 +537,13 @@ export default {
 
 			// Return a promise that resolves or rejects based on backend success or failure
 			return new Promise((resolve, reject) => {
+				// Remove any previously attached event listeners
+				window.electron.offBackendRealtimeOutput(); // Custom off method for the event
+				window.electron.offBackendComplete();
+				window.electron.offBackendError();
+				window.electron.offBackendCancelled();
+
+				// Run backend process
 				window.electron.runBackend(params);
 
 				// Real-time output
