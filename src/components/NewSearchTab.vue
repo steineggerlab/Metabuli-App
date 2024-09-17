@@ -84,7 +84,7 @@
 								<!-- Database Directory -->
 								<v-row>
 									<v-col cols="6">
-										<div class="d-flex align-center mb-0 gc-3">
+										<div class="d-flex flex-column align-center mb-0 gc-3">
 											<v-btn
 												@click="selectFile('database', 'directory')"
 												prepend-icon="$folder"
@@ -94,6 +94,19 @@
 												>Database</v-btn
 											>
 											<v-text-field v-model="jobDetails.database" :rules="[requiredRule]" style="display: none"></v-text-field>
+
+											<!-- Database Download Button -->
+											<v-btn
+												color="primary"
+												prepend-icon="$openInNew"
+												variant="text"
+												class="text-caption font-weight-medium"
+												size="small"
+												rounded="xl"
+												href="https://metabuli.steineggerlab.workers.dev/"
+												target="_blank"
+												>Database Download
+											</v-btn>
 										</div>
 									</v-col>
 
