@@ -91,7 +91,7 @@
 												density="comfortable"
 												size="default"
 												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-												>Database</v-btn
+												>Select Database</v-btn
 											>
 											<v-text-field v-model="jobDetails.database" :rules="[requiredRule]" style="display: none"></v-text-field>
 
