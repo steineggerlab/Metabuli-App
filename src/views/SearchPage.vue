@@ -56,7 +56,7 @@
     <!-- Footer: Reference to Paper -->
     <v-container class="pt-0">
       <v-card>
-        <v-toolbar class="custom-toolbar" density="compact"
+        <v-toolbar image='assets/toolbar_background.png' class="custom-toolbar" density="compact"
           >Reference</v-toolbar
         >
         <v-card-text>

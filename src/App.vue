@@ -178,7 +178,8 @@ export default {
 .custom-toolbar {
   color: white;
   font-size: 20px;
-  background-image: url("https://search.foldseek.com/e5408e4113ed61a79c6f.png");
+  background-repeat: repeat !important;
+  background-size: contain !important;
   padding-left: 20px;
 }
 

@@ -14,7 +14,7 @@
         hide-default-footer
       >
         <template v-slot:top>
-          <v-toolbar class="custom-toolbar py-3" density="compact">
+          <v-toolbar image='assets/toolbar_background.png' class="custom-toolbar py-3" density="compact">
             <div class="d-flex flex-column">
               <div>Job History</div>
               <v-list-item-subtitle

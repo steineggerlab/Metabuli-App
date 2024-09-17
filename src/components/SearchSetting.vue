@@ -4,7 +4,7 @@
 			<!-- SEARCH SETTINGS PANEL -->
 			<v-card class="mb-3 search-settings-panel">
 				<!-- HEADER TOOLBAR -->
-				<v-toolbar class="custom-toolbar" density="compact">
+				<v-toolbar image='assets/toolbar_background.png' class="custom-toolbar" density="compact">
 					Search Settings
 					<v-spacer></v-spacer>
 
