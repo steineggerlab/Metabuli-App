@@ -183,6 +183,10 @@ export default {
   padding-left: 20px;
 }
 
+.marv-metabuli-opaque {
+  opacity: 0.5;
+}
+
 /* Navigation Drawer Item */
 .no-underline {
   text-decoration: none;

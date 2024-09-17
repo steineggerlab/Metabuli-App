@@ -156,18 +156,6 @@ export default {
 	text-transform: uppercase;
 }
 
-.search-settings-panel::after {
-	content: "";
-	background: url("https://raw.githubusercontent.com/steineggerlab/Metabuli/master/.github/marv_metabuli_small.png") no-repeat;
-	background-size: 300px 300px;
-	opacity: 0.5;
-	position: absolute;
-	top: 140px;
-	right: 20px;
-	width: 300px;
-	height: 300px;
-}
-
 .v-col {
 	padding-bottom: 0px;
 }

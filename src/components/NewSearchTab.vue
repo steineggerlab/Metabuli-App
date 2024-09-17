@@ -3,144 +3,153 @@
 		<!-- Required Fields -->
 		<v-form ref="jobForm" v-model="isJobFormValid">
 			<v-card-title class="text-button font-weight-bold">Required Fields</v-card-title>
-			<div class="w-66 search-required-fields">
-				<v-container>
-					<!-- End Type (single-end, paired-end, long-read) -->
-					<v-row>
-						<v-col cols="3">
-							<v-list-subheader>Mode</v-list-subheader>
-						</v-col>
+			<div class="d-flex">
+				<div class="w-66 search-required-fields">
+					<v-container>
+						<!-- End Type (single-end, paired-end, long-read) -->
+						<v-row>
+							<v-col cols="3">
+								<v-list-subheader>Mode</v-list-subheader>
+							</v-col>
 
-						<v-col>
-							<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" divided mandatory>
-								<v-btn value="single-end" height="30" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
-								<v-btn value="paired-end" height="30" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
-								<v-btn value="long-read" height="30" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
-							</v-btn-toggle>
-						</v-col>
-					</v-row>
+							<v-col>
+								<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" divided mandatory>
+									<v-btn value="single-end" height="30" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
+									<v-btn value="paired-end" height="30" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
+									<v-btn value="long-read" height="30" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
+								</v-btn-toggle>
+							</v-col>
+						</v-row>
 
-					<!-- Job ID -->
-					<v-row>
-						<v-col cols="3">
-							<v-list-subheader>Job ID</v-list-subheader>
-						</v-col>
-						<v-col>
-							<v-text-field
-								v-model="jobDetails.jobid"
-								:rules="[requiredRule]"
-								:hint="computedHint"
-								persistent-hint
-								variant="outlined"
-								density="compact"
-								color="primary"
-								rounded="lg"
-								class="mb-2"
-							></v-text-field>
-						</v-col>
-					</v-row>
+						<!-- Job ID -->
+						<v-row>
+							<v-col cols="3">
+								<v-list-subheader>Job ID</v-list-subheader>
+							</v-col>
+							<v-col>
+								<v-text-field
+									v-model="jobDetails.jobid"
+									:rules="[requiredRule]"
+									:hint="computedHint"
+									persistent-hint
+									variant="outlined"
+									density="compact"
+									color="primary"
+									rounded="lg"
+									class="mb-2"
+								></v-text-field>
+							</v-col>
+						</v-row>
 
-					<!-- Select Files -->
-					<v-row>
-						<v-col cols="3">
-							<v-list-subheader class="pr-0">Select Files</v-list-subheader>
-						</v-col>
+						<!-- Select Files -->
+						<v-row>
+							<v-col cols="3">
+								<v-list-subheader class="pr-0">Select Files</v-list-subheader>
+							</v-col>
 
-						<v-col cols="9" class="search-files">
-							<!-- Q1 File -->
-							<v-row>
-								<v-col cols="6">
-									<v-btn @click="selectFile('q1', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-										>Read 1 File</v-btn
-									>
-									<v-text-field v-model="jobDetails.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
-								</v-col>
-								<v-col cols="6" class="filename-col">
-									<v-chip v-if="jobDetails.q1" label color="primary" density="comfortable" class="filename-chip">
-										<v-icon icon="$delete" @click="clearFile('q1')" class="mr-1"></v-icon>
-										{{ this.extractFilename(jobDetails.q1) }}</v-chip
-									>
-								</v-col>
-							</v-row>
+							<v-col cols="9" class="search-files">
+								<!-- Q1 File -->
+								<v-row>
+									<v-col cols="6">
+										<v-btn @click="selectFile('q1', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+											>Read 1 File</v-btn
+										>
+										<v-text-field v-model="jobDetails.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
+									</v-col>
+									<v-col cols="6" class="filename-col">
+										<v-chip v-if="jobDetails.q1" label color="primary" density="comfortable" class="filename-chip">
+											<v-icon icon="$delete" @click="clearFile('q1')" class="mr-1"></v-icon>
+											{{ this.extractFilename(jobDetails.q1) }}</v-chip
+										>
+									</v-col>
+								</v-row>
 
-							<!-- Q2 File -->
-							<v-row v-if="jobDetails.mode === 'paired-end'">
-								<v-col cols="6">
-									<v-btn @click="selectFile('q2', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-										>Read 2 File</v-btn
-									>
-									<v-text-field v-model="jobDetails.q2" :rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]" style="display: none"></v-text-field>
-								</v-col>
+								<!-- Q2 File -->
+								<v-row v-if="jobDetails.mode === 'paired-end'">
+									<v-col cols="6">
+										<v-btn @click="selectFile('q2', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+											>Read 2 File</v-btn
+										>
+										<v-text-field v-model="jobDetails.q2" :rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]" style="display: none"></v-text-field>
+									</v-col>
 
-								<v-col cols="6" class="filename-col">
-									<v-chip v-if="jobDetails.q2" label color="primary" density="comfortable" class="filename-chip">
-										<v-icon icon="$delete" @click="clearFile('q2')" class="mr-1"></v-icon>
-										{{ this.extractFilename(jobDetails.q2) }}</v-chip
-									>
-								</v-col>
-							</v-row>
+									<v-col cols="6" class="filename-col">
+										<v-chip v-if="jobDetails.q2" label color="primary" density="comfortable" class="filename-chip">
+											<v-icon icon="$delete" @click="clearFile('q2')" class="mr-1"></v-icon>
+											{{ this.extractFilename(jobDetails.q2) }}</v-chip
+										>
+									</v-col>
+								</v-row>
 
-							<!-- Database Directory -->
-							<v-row>
-								<v-col cols="6">
-									<div class="d-flex align-center mb-0 gc-3">
+								<!-- Database Directory -->
+								<v-row>
+									<v-col cols="6">
+										<div class="d-flex align-center mb-0 gc-3">
+											<v-btn
+												@click="selectFile('database', 'directory')"
+												prepend-icon="$folder"
+												density="comfortable"
+												size="default"
+												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+												>Database</v-btn
+											>
+											<v-text-field v-model="jobDetails.database" :rules="[requiredRule]" style="display: none"></v-text-field>
+										</div>
+									</v-col>
+
+									<v-col cols="6" class="filename-col">
+										<v-chip v-if="jobDetails.database" label color="primary" density="comfortable" class="filename-chip">
+											<v-icon icon="$delete" @click="clearFile('database')" class="mr-1"></v-icon>
+											{{ this.extractFilename(jobDetails.database) }}</v-chip
+										>
+									</v-col>
+								</v-row>
+
+								<!-- Output Directory -->
+								<v-row>
+									<v-col cols="6">
 										<v-btn
-											@click="selectFile('database', 'directory')"
+											@click="selectFile('outdir', 'directory')"
 											prepend-icon="$folder"
 											density="comfortable"
 											size="default"
 											class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-											>Database</v-btn
+											>Output Directory</v-btn
 										>
-										<v-text-field v-model="jobDetails.database" :rules="[requiredRule]" style="display: none"></v-text-field>
-									</div>
-								</v-col>
+										<v-text-field v-model="jobDetails.outdir" :rules="[requiredRule]" style="display: none"></v-text-field>
+									</v-col>
 
-								<v-col cols="6" class="filename-col">
-									<v-chip v-if="jobDetails.database" label color="primary" density="comfortable" class="filename-chip">
-										<v-icon icon="$delete" @click="clearFile('database')" class="mr-1"></v-icon>
-										{{ this.extractFilename(jobDetails.database) }}</v-chip
-									>
-								</v-col>
-							</v-row>
+									<v-col cols="6" class="filename-col">
+										<v-chip v-if="jobDetails.outdir" label color="primary" density="comfortable" class="filename-chip">
+											<v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
+											{{ this.extractFilename(jobDetails.outdir) }}</v-chip
+										>
+									</v-col>
+								</v-row>
+							</v-col>
+						</v-row>
 
-							<!-- Output Directory -->
-							<v-row>
-								<v-col cols="6">
-									<v-btn @click="selectFile('outdir', 'directory')" prepend-icon="$folder" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-										>Output Directory</v-btn
-									>
-									<v-text-field v-model="jobDetails.outdir" :rules="[requiredRule]" style="display: none"></v-text-field>
-								</v-col>
+						<!-- --max-ram -->
+						<v-row class="mt-2">
+							<v-col cols="3">
+								<v-list-subheader>Max RAM</v-list-subheader>
+							</v-col>
+							<v-col>
+								<v-text-field
+									v-model="jobDetails.maxram"
+									:rules="[...getValidationRules('--max-ram'), requiredRule]"
+									variant="outlined"
+									density="compact"
+									color="primary"
+									rounded="lg"
+									suffix="GiB"
+								></v-text-field>
+							</v-col>
+						</v-row>
+					</v-container>
+				</div>
 
-								<v-col cols="6" class="filename-col">
-									<v-chip v-if="jobDetails.outdir" label color="primary" density="comfortable" class="filename-chip">
-										<v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
-										{{ this.extractFilename(jobDetails.outdir) }}</v-chip
-									>
-								</v-col>
-							</v-row>
-						</v-col>
-					</v-row>
-
-					<!-- --max-ram -->
-					<v-row class="mt-2">
-						<v-col cols="3">
-							<v-list-subheader>Max RAM</v-list-subheader>
-						</v-col>
-						<v-col>
-							<v-text-field
-								v-model="jobDetails.maxram"
-								:rules="[...getValidationRules('--max-ram'), requiredRule]"
-								variant="outlined"
-								density="compact"
-								color="primary"
-								rounded="lg"
-								suffix="GiB"
-							></v-text-field>
-						</v-col>
-					</v-row>
-				</v-container>
+				<v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img>
 			</div>
 
 			<!-- ADVANCED SETTINGS -->

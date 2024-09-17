@@ -1,31 +1,35 @@
 <template>
-	<v-container class="gr-2 upload-container" @drop="handleDrop" @dragover.prevent>
-		<!-- TITLE -->
-		<v-card flat>
-			<v-card-title class="text-button font-weight-bold">Upload Previous Report</v-card-title>
-			<v-card-text>Upload report.tsv file directly to see visualization.</v-card-text>
-		</v-card>
-
-		<v-sheet class="d-flex flex-column w-66 gr-2 mb-2">
-			<!-- Upload Box -->
-			<div class="d-flex flex-column align-center dotted-border gr-3" @click="triggerFilePicker">
-				<v-file-input v-model="file" ref="fileInput" class="hidden-input" @change="handleFileSelect" accept=".tsv"></v-file-input>
-				<v-icon size="50" icon="$fileUpload" color="primary"></v-icon>
-				<p class="text-body-2">Drag & drop your file here or choose from files.</p>
-			</div>
-
-			<!-- Show Uploaded Files -->
-			<div v-if="file" class="uploaded-file">
-				<v-card-subtitle>Uploaded File</v-card-subtitle>
-				<v-card-text class="py-1">
-					<v-chip label closable prepend-icon="$file" color="primary" @click:close="removeFile">{{ file.name }}</v-chip>
-				</v-card-text>
-			</div>
-
-			<!-- Upload Button -->
-			<v-btn block color="primary" @click="uploadFile" :disabled="!file">Upload</v-btn>
-		</v-sheet>
-	</v-container>
+	<div class="d-flex">
+		<v-container class="w-66 gr-2 upload-container" @drop="handleDrop" @dragover.prevent>
+			<!-- TITLE -->
+			<v-card flat>
+				<v-card-title class="text-button font-weight-bold">Upload Previous Report</v-card-title>
+				<v-card-text>Upload report.tsv file directly to see visualization.</v-card-text>
+			</v-card>
+	
+			<v-sheet class="d-flex flex-column gr-2 mb-2">
+				<!-- Upload Box -->
+				<div class="d-flex flex-column align-center dotted-border gr-3" @click="triggerFilePicker">
+					<v-file-input v-model="file" ref="fileInput" class="hidden-input" @change="handleFileSelect" accept=".tsv"></v-file-input>
+					<v-icon size="50" icon="$fileUpload" color="primary"></v-icon>
+					<p class="text-body-2">Drag & drop your file here or choose from files.</p>
+				</div>
+	
+				<!-- Show Uploaded Files -->
+				<div v-if="file" class="uploaded-file">
+					<v-card-subtitle>Uploaded File</v-card-subtitle>
+					<v-card-text class="py-1">
+						<v-chip label closable prepend-icon="$file" color="primary" @click:close="removeFile">{{ file.name }}</v-chip>
+					</v-card-text>
+				</div>
+	
+				<!-- Upload Button -->
+				<v-btn block color="primary" @click="uploadFile" :disabled="!file">Upload</v-btn>
+			</v-sheet>
+		</v-container>
+	
+		<v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img>
+	</div>
 </template>
 
 <script>
