@@ -764,10 +764,26 @@ export default {
 		handleTimeout() {
 			window.electron.cancelBackend();
 		},
+
+		getCurrentDateTime() {
+			const now = new Date();
+
+			// Format the date and time (YYYY-MM-DD_HH-MM-SS)
+			const year = now.getFullYear();
+			const month = String(now.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+			const day = String(now.getDate()).padStart(2, "0");
+			const hours = String(now.getHours()).padStart(2, "0");
+			const minutes = String(now.getMinutes()).padStart(2, "0");
+			const seconds = String(now.getSeconds()).padStart(2, "0");
+
+			return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+		},
 	},
 
 	mounted() {
+		// On every page reload
 		this.errorHandled = false; // Flag to ensure errors are handled only once
+		this.jobDetails.jobid = this.getCurrentDateTime(); // Prefill Job ID with current timestamp
 	},
 };
 </script>
