@@ -783,6 +783,10 @@ export default {
 	mounted() {
 		// On every page reload
 		this.errorHandled = false; // Flag to ensure errors are handled only once
+
+		// Prefill Job Details
+		const totalRam = window.electron.getTotalRam(); // Get total RAM of current computer
+		this.jobDetails.maxram = totalRam; // Set maxram to total RAM in GB
 		this.jobDetails.jobid = this.getCurrentDateTime(); // Prefill Job ID with current timestamp
 	},
 };

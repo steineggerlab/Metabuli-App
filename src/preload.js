@@ -1,6 +1,7 @@
 const { contextBridge, ipcRenderer } = require("electron");
 const path = require("path");
 const fs = require("fs").promises;
+const os = require("os");
 
 contextBridge.exposeInMainWorld("electron", {
 	readFile: async (filePath, isRelativePath) => {
@@ -30,4 +31,11 @@ contextBridge.exposeInMainWorld("electron", {
 	offBackendComplete: () => ipcRenderer.removeAllListeners("backend-complete"),
 	offBackendError: () => ipcRenderer.removeAllListeners("backend-error"),
 	offBackendCancelled: () => ipcRenderer.removeAllListeners("backend-cancelled"),
+
+	// Method to retrieve total system memory in GB
+	getTotalRam: () => {
+		const totalRamInBytes = os.totalmem(); // Get total RAM in bytes
+		const totalRamInGB = Math.floor(totalRamInBytes / 1024 ** 3); // Convert to GB
+		return totalRamInGB;
+	},
 });
