@@ -106,9 +106,9 @@ export default {
 					this.$emit("job-completed", completedJob);
 
 					// Trigger snackbar
-					this.$emit("trigger-snackbar", "Upload successful. Check the results tab!", "success", "success", "View", () => {
-						this.$router.push({ name: "ResultsPage" });
-					});
+					// this.$emit("trigger-snackbar", "Upload successful. Check the results tab!", "success", "success", "View", () => {
+					// 	this.$router.push({ name: "ResultsPage" });
+					// });
 				}, 2000);
 			} catch (error) {
 				console.error("Error processing file: ", error.message); // DEBUG

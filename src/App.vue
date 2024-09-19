@@ -70,14 +70,14 @@
               @mouseleave="hover = ''"
               v-ripple
             >
-              <template v-slot:append>
+              <!-- <template v-slot:append>
                 <v-badge
                   v-if="!checkedResults"
                   dot
                   color="red"
                   class="badge-icon"
                 ></v-badge>
-              </template>
+              </template> -->
             </v-list-item>
           </router-link>
         </v-slide-y-transition>
@@ -128,7 +128,7 @@ export default {
 
     // Job completion handling
     jobCompleted: false,
-    checkedResults: false,
+    // checkedResults: false,
     jobType: "",
   }),
 
@@ -137,7 +137,7 @@ export default {
       if (to.path === "/results") {
         // Detect route changes to the results page regardless of how it's accessed
         // Remove red badge on nav drawer item
-        this.checkedResults = true;
+        // this.checkedResults = true;
       }
     },
   },
@@ -147,20 +147,26 @@ export default {
       // Expose Results Tab navigation drawer item
       this.jobCompleted = true;
       // Expose red badge
-      this.checkedResults = false;
+      // this.checkedResults = false;
 
       // Indicates jobType needed to show krona tab
       this.jobType = "runSearch";
+
+      // Automatically route to Results Page on job completion
+      this.$router.push({ name: "ResultsPage" });
     },
 
     handleReportUpload() {
       // Expose Results Tab navigation drawer item
       this.jobCompleted = true;
       // Expose red badge
-      this.checkedResults = false;
+      // this.checkedResults = false;
 
       // Indicates jobType needed to hide krona tab
       this.jobType = "uploadReport";
+
+      // Automatically route to Results Page on job completion
+      this.$router.push({ name: "ResultsPage" });
     },
     handleResultsClick(event) {
       event.preventDefault(); // Prevents default action interfering custom navigation logic

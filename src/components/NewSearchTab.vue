@@ -458,6 +458,12 @@ export default {
 				}
 				this.errorHandled = false; // Resets error handled tracking
 				this.backendOutput = ""; // Clear backendOutput
+
+				// Remove any previously attached event listeners
+				window.electron.offBackendRealtimeOutput(); // Custom off method for the event
+				window.electron.offBackendComplete();
+				window.electron.offBackendError();
+				window.electron.offBackendCancelled();
 			}
 		},
 
@@ -495,9 +501,9 @@ export default {
 				this.$emit("job-completed", completedJob);
 
 				// Trigger snackbar
-				this.$emit("trigger-snackbar", "Sample data successfully loaded.", "success", "success", "View", () => {
-					this.$router.push({ name: "ResultsPage" });
-				});
+				// this.$emit("trigger-snackbar", "Sample data successfully loaded.", "success", "success", "View", () => {
+				// 	this.$router.push({ name: "ResultsPage" });
+				// });
 
 				// Clear backendOutput
 				this.backendOutput = "";
@@ -559,12 +565,6 @@ export default {
 
 			// Return a promise that resolves or rejects based on backend success or failure
 			return new Promise((resolve, reject) => {
-				// Remove any previously attached event listeners
-				window.electron.offBackendRealtimeOutput(); // Custom off method for the event
-				window.electron.offBackendComplete();
-				window.electron.offBackendError();
-				window.electron.offBackendCancelled();
-
 				// Run backend process
 				window.electron.runBackend(params);
 
@@ -718,9 +718,9 @@ export default {
 			// console.log("newrun completedJob:", completedJob); // DEBUG
 
 			// Trigger snackbar
-			this.$emit("trigger-snackbar", "Job successfully completed. Check the results tab.", "success", "success", "View", () => {
-				this.$router.push({ name: "ResultsPage" });
-			});
+			// this.$emit("trigger-snackbar", "Job successfully completed. Check the results tab.", "success", "success", "View", () => {
+			// 	this.$router.push({ name: "ResultsPage" });
+			// });
 
 			// Emit job-completed event: close loading dialog and expose results tab in navigation drawer
 			this.$emit("job-completed", completedJob);
