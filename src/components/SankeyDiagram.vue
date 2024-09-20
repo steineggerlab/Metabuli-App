@@ -9,38 +9,7 @@
 		</div>
 
 		<!-- TOOLTIP ON NODE HOVER -->
-		<div ref="tooltip" class="tooltip" v-if="hoverDetails.visible">
-			<v-card class="rounded-lg text-white tooltip">
-				<v-col>
-					<v-row>
-						<div>
-							<p class="mb-n1" style="font-size: 0.6rem">#{{ hoverDetails.data.taxon_id }}</p>
-							<v-card-title class="opacity-100 text-subtitle-2 pt-0 pb-0 px-0 font-weight-bold">{{ hoverDetails.data.name }}</v-card-title>
-						</div>
-						<v-chip variant="tonal" color="orange-lighten-1 px-2 font-weight-bold" density="compact">{{ hoverDetails.data.trueRank }}</v-chip>
-					</v-row>
-
-					<v-row>
-						<v-divider class="my-2"></v-divider>
-					</v-row>
-
-					<v-row>
-						<v-card-subtitle>Proportion</v-card-subtitle>
-						<v-card-text>{{ hoverDetails.data.proportion }}%</v-card-text>
-					</v-row>
-
-					<v-row>
-						<v-card-subtitle>Clade Reads</v-card-subtitle>
-						<v-card-text>{{ hoverDetails.data.clade_reads }}</v-card-text>
-					</v-row>
-
-					<v-row>
-						<v-card-subtitle>Taxon Reads</v-card-subtitle>
-						<v-card-text>{{ hoverDetails.data.taxon_reads }}</v-card-text>
-					</v-row>
-				</v-col>
-			</v-card>
-		</div>
+		<SankeyTooltip :data="hoverDetails.data" :visible="hoverDetails.visible" :x="tooltipPosition.x" :y="tooltipPosition.y" />
 	</div>
 </template>
 
@@ -48,11 +17,12 @@
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal, sankeyJustify } from "d3-sankey";
 import { rankOrderFull } from "@/plugins/rankUtils";
+import SankeyTooltip from "@/components/SankeyTooltip.vue";
 
 export default {
 	name: "SankeyDiagram",
 	components: {
-		//
+		SankeyTooltip,
 	},
 	props: {
 		id: {
@@ -115,9 +85,15 @@ export default {
 			nonCladesRawData: null, // rawData with just clades filtered out
 			fullGraphData: { nodes: [], links: [] },
 			allNodesByRank: {},
+
+			// Data for tooltip
 			hoverDetails: {
 				visible: false,
 				data: {},
+			},
+			tooltipPosition: {
+				x: 0,
+				y: 0,
 			},
 
 			rankOrder: ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"],
@@ -515,6 +491,27 @@ export default {
 			svg.selectAll(".clade-reads").style("opacity", (d) => (this.searchQueryMatchNodes.has(d.id) ? 1 : 0.1));
 		},
 
+		// Functions handling tooltip
+		showTooltip(event, d) {
+			this.hoverDetails = {
+				visible: true,
+				data: d,
+			};
+			this.moveTooltip(event);
+		},
+		moveTooltip(event) {
+			const offsetX = this.isSubtree ? -12 : 12;
+			const offsetY = this.isSubtree ? -24 : 0;
+
+			this.tooltipPosition = {
+				x: event.pageX + offsetX, // Offset tooltip slightly
+				y: event.pageY + offsetY,
+			};
+		},
+		hideTooltip() {
+			this.hoverDetails.visible = false;
+		},
+
 		// Functions for node subtree dialog
 		showNodeDetails(event, d) {
 			const subtreeRawData = this.extractSubtreeRawData(d); // Extract subtree raw data for clicked node
@@ -690,40 +687,6 @@ export default {
 				.attr("stroke-width", (d) => Math.max(1, d.width))
 				.attr("clip-path", (d, i) => `url(#clip-path-${this.instanceId}-${i})`);
 
-			// Function to show tooltip
-			this.showTooltip = (event, d) => {
-				this.hoverDetails = {
-					visible: true,
-					data: d,
-				};
-				this.moveTooltip(event);
-			};
-
-			// Function to move tooltip
-			this.moveTooltip = (event) => {
-				requestAnimationFrame(() => {
-					const tooltip = this.$refs.tooltip;
-					const offsetX = this.isSubtree ? -12 : 12;
-					const offsetY = this.isSubtree ? -24 : 0;
-
-					if (tooltip) {
-						tooltip.style.left = `${event.pageX + offsetX}px`;
-						tooltip.style.top = `${event.clientY + offsetY}px`;
-					}
-				});
-			};
-
-			// Throttled mousemove function
-			const tooltipDelay = 50; // Throttle delay in ms
-			const throttledMouseMove = this.throttle((event) => {
-				this.moveTooltip(event);
-			}, tooltipDelay);
-
-			// Function to hide tooltip
-			this.hideTooltip = () => {
-				this.hoverDetails.visible = false;
-			};
-
 			// Create node group (node + labels) and add mouse events
 			const nodeGroup = svg
 				.append("g")
@@ -741,7 +704,9 @@ export default {
 					}
 				})
 				.on("mousemove", (event) => {
-					throttledMouseMove(event);
+					// Throttled mousemove function
+					const tooltipDelay = 50; // Throttle delay in ms
+					this.throttle(this.moveTooltip(event), tooltipDelay);
 				})
 				.on("mouseout", () => {
 					if (!this.searchQuery) {
@@ -882,41 +847,5 @@ export default {
 }
 .node:active {
 	cursor: grabbing;
-}
-
-/* Node Hover Tooltip */
-.tooltip {
-	position: fixed;
-	background-color: rgba(38, 50, 56, 0.95);
-	pointer-events: none;
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-.tooltip .v-card {
-	padding-right: 16px;
-	padding-left: 16px;
-	padding-top: 10px;
-	padding-bottom: 8px;
-}
-.tooltip .v-row {
-	display: flex;
-	align-content: center;
-	align-items: center;
-	justify-content: space-between;
-	column-gap: 16px;
-}
-.tooltip .v-card-title {
-	max-width: 200px;
-	word-wrap: break-word;
-	white-space: normal; /* Ensure text wraps */
-}
-.tooltip .v-card-subtitle {
-	padding-left: 0px;
-}
-.tooltip .v-card-text {
-	padding-top: 4px;
-	padding-bottom: 4px;
-	padding-right: 0px;
-	padding-left: 0px;
-	text-align: end;
 }
 </style>
