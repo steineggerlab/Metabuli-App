@@ -25,6 +25,12 @@ For more details of Metabuli, please see
 - The application is pre-built for **macOS**, **Windows**, and **Linux**.
 - Simply download the executable for your platform from the Releases section.
 
+> **Note:** If you encounter a security warning when opening the app, follow the instructions below to bypass the warning:
+
+- **macOS**: Refer to [this guide](https://support.apple.com/en-gb/guide/mac-help/mh40616/15.0/mac/15.0) on how to open apps from unidentified developers.
+- **Windows**: Click 'More info' and then 'Run anyway' to continue.
+
+
 ## Usage
 
 The Metabuli App provides two modes for metagenomic classification: **New Search** and **Upload Report**. These modes are accessible via tabs in the **Search Settings** panel.
