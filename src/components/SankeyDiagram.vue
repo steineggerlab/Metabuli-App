@@ -1,9 +1,9 @@
 <template>
 	<div class="sankey-container d-flex flex-column flex-shrink-1">
-		<!-- DISPLAY ONCE SANKEY IS LOADED -->
+		<!-- SANKEY DIAGRAM (DISPLAY ONCE LOADING IS FINISHED) -->
 		<div v-if="!loading" key="sankey" ref="sankeyContainer" class="sankey-diagram"></div>
 
-		<!-- DISPLAY WHILE SANKEY IS LOADING -->
+		<!-- LOADING ANIMATION (WHILE LOADING) -->
 		<div class="d-flex flex-column align-center justify-center loading-container" v-else>
 			<v-progress-circular color="indigo" size="64" indeterminate></v-progress-circular>
 		</div>
@@ -27,7 +27,7 @@ export default {
 	props: {
 		id: {
 			type: String,
-			required: true, // Make sure this prop is required so you always provide it
+			required: true,
 		},
 		isSubtree: {
 			type: Boolean,
