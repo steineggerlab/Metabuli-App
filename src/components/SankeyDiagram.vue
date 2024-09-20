@@ -479,7 +479,7 @@ export default {
 
 			// Iterate over nodes to find those that match the query
 			svg.selectAll(".node-group").each((d) => {
-				if (d.name.toLowerCase().includes(query.toLowerCase())) {
+				if (d.name.toLowerCase().includes(query.toLowerCase()) || d.taxon_id.startsWith(query)) {
 					this.searchQueryMatchNodes.add(d.id);
 				}
 			});

@@ -23,7 +23,7 @@
 								v-model="searchQuery"
 								prepend-inner-icon="$magnify"
 								density="compact"
-								label="Search taxa"
+								label="Search Name or Taxon ID"
 								variant="outlined"
 								rounded="lg"
 								single-line
