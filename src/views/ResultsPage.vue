@@ -456,26 +456,26 @@ export default {
 		emitMainSankeyDownloadFormat(format) {
 			this.handleFormatSelected({ format, sankeyId: "sankey-svg" });
 		},
-		handleFormatSelected({ sankeyId, format }) {
+		handleFormatSelected({ sankeyId, format, filename = "sankey_diagram" }) {
 			switch (format) {
 				case "png":
-					this.downloadSankeyAsPng(sankeyId);
+					this.downloadSankeyAsPng(sankeyId, filename);
 					break;
 				case "jpg":
-					this.downloadSankeyAsJpg(sankeyId);
+					this.downloadSankeyAsJpg(sankeyId, filename);
 					break;
 				case "html":
-					this.downloadSankeyAsHtml(sankeyId);
+					this.downloadSankeyAsHtml(sankeyId, filename);
 					break;
 				default:
 					return;
 			}
 		},
-		downloadSankeyAsPng(sankeyId) {
+		downloadSankeyAsPng(sankeyId, filename) {
 			const sankeySvgElement = document.querySelector(`#${sankeyId}`); // Reference to the SVG ID
-			saveSvgAsPng(sankeySvgElement, "sankey-diagram.png");
+			saveSvgAsPng(sankeySvgElement, `${filename}.png`);
 		},
-		async downloadSankeyAsJpg(sankeyId) {
+		async downloadSankeyAsJpg(sankeyId, filename) {
 			// Get the SVG element
 			const sankeySvgElement = document.querySelector(`#${sankeyId}`); // Reference to the SVG ID
 			const svg = d3.select(sankeySvgElement);
@@ -510,14 +510,14 @@ export default {
 				// Create a download link and click it
 				const link = document.createElement("a");
 				link.href = jpgDataUrl;
-				link.download = "sankey_diagram.jpg";
+				link.download = `${filename}.jpg`;
 				document.body.appendChild(link);
 				link.click();
 				document.body.removeChild(link);
 			};
 			img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgString)));
 		},
-		downloadSankeyAsHtml(sankeyId) {
+		downloadSankeyAsHtml(sankeyId, filename) {
 			const svgElement = document.querySelector(`#${sankeyId}`); // Correctly reference the SVG ID
 			const svgData = new XMLSerializer().serializeToString(svgElement);
 			const svgBlob = new Blob([svgData], {
@@ -526,7 +526,7 @@ export default {
 			const url = URL.createObjectURL(svgBlob);
 			const link = document.createElement("a");
 			link.href = url;
-			link.download = "sankey-diagram.html";
+			link.download = `${filename}.html`;
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);

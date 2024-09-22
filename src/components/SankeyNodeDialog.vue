@@ -10,7 +10,6 @@
 				<!-- Taxon Name Title -->
 				<v-card-title class="font-weight-black mb-2">{{ nodeDetails.data.name }}</v-card-title>
 
-				<!-- <v-card-subtitle class="mb-0 opacity-100 font-weight-bold">Summary</v-card-subtitle> -->
 				<v-row>
 					<!-- Rank Column -->
 					<v-col>
@@ -99,11 +98,11 @@
 
 			<!-- Floating Action Button -->
 			<div v-if="nodeDetails.hasSourceLinks" class="fab-container d-flex align-center gc-1 mb-6">
-				<SankeyDownloadMenu :menuLocation="'top end'" @format-selected="emitSubtreeDownloadFormat">
+				<DetailsDialogDownloadMenu :taxonId="nodeDetails.data.taxon_id" @format-selected="emitSubtreeSankeyDownloadDetails">
 					<template v-slot:activator="{ props }">
 						<v-btn v-bind="props" icon="$download" size="x-small" rounded="circle"> </v-btn>
 					</template>
-				</SankeyDownloadMenu>
+				</DetailsDialogDownloadMenu>
 
 				<ConfigureSankeyMenu
 					:initialTaxaLimit="configureMenuSettings.taxaLimit"
@@ -127,7 +126,7 @@
 
 <script>
 import SankeyDiagram from "@/components/SankeyDiagram.vue";
-import SankeyDownloadMenu from "@/components/SankeyDownloadMenu.vue";
+import DetailsDialogDownloadMenu from "./DetailsDialogDownloadMenu.vue";
 import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
 import { getRankColor } from "@/plugins/rankUtils";
@@ -136,7 +135,7 @@ export default {
 	name: "SankeyNodeDialog",
 	components: {
 		SankeyDiagram,
-		SankeyDownloadMenu,
+		DetailsDialogDownloadMenu,
 		ConfigureSankeyMenu,
 	},
 	props: {
@@ -204,8 +203,9 @@ export default {
 		},
 
 		// Sankey Download Functions
-		emitSubtreeDownloadFormat(format) {
-			this.$emit("download-sankey", { sankeyId: this.sankeyId, format });
+		emitSubtreeSankeyDownloadDetails(downloadDetails) {
+			const { format, filename } = downloadDetails;
+			this.$emit("download-sankey", { sankeyId: this.sankeyId, format, filename });
 		},
 
 		// Get color for rank chip

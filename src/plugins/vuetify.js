@@ -26,6 +26,9 @@ import {
   mdiClipboardMultipleOutline,
   mdiFilterVariant,
   mdiGithub,
+  mdiImage,
+  mdiFileImage,
+  mdiCodeTags,
 } from "@mdi/js"; // Icon search: https://vuetifyjs.com/en/features/icon-fonts/#mdi-icon-search
 
 export default createVuetify({
@@ -79,6 +82,9 @@ export default createVuetify({
       clipboard: mdiClipboardMultipleOutline,
       filterVariant: mdiFilterVariant,
       github: mdiGithub,
+      image: mdiImage,
+      fileImage: mdiFileImage,
+      codeTags: mdiCodeTags,
     },
     sets: {
       mdi,
