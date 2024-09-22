@@ -106,6 +106,7 @@ export default {
 		storeJob(job) {
 			// Create a new job entry with additional details
 			const jobEntry = {
+				jobDetails: job.jobDetails,
 				jobId: job.jobid,
 				timestamp: new Date().toISOString(), // Timestamp of job completion
 				jobType: job.jobType,

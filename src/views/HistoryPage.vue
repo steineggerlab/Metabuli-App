@@ -231,7 +231,9 @@ export default {
   methods: {
     viewDetails(jobItem) {
       const completedJob = {
+        jobDetails: jobItem.jobDetails,
         jobType: "runSearch",
+        isSample: jobItem.isSample,
         resultsJSON: jobItem.results,
         kronaContent: jobItem.kronaContent,
       };
@@ -269,7 +271,7 @@ export default {
       navigator.clipboard
         .writeText(this.selectedBackendOutput)
         .then(() => {
-          this.showSnackbar("Copied to clipboard!"); // Optional: Show a snackbar or notification
+          this.showSnackbar("Copied to clipboard!"); 
         })
         .catch((err) => {
           console.error("Failed to copy text: ", err);

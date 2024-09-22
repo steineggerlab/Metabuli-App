@@ -85,6 +85,7 @@ export default {
 				setTimeout(() => {
 					// Object storing info about completedJob
 					const completedJob = {
+						jobDetails: null,
 						outdir: null,
 						jobid: null,
 						isSample: false,
@@ -120,6 +121,7 @@ export default {
 				this.status = "ERROR";
 				// Create failed job object to store in local storage
 				const failedJob = {
+					jobDetails: null,
 					outdir: null,
 					jobid: null,
 					isSample: false,

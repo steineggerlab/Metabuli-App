@@ -3,7 +3,15 @@ const path = require("path");
 const fs = require("fs").promises;
 const os = require("os");
 
+// Helper function to get full path based on environment and parameters
+const getBasePath = () => {
+	const basePath = process.env.NODE_ENV === "development" ? path.join(__dirname, "..", "public") : path.join(__dirname);
+	return basePath;
+};
+
 contextBridge.exposeInMainWorld("electron", {
+	getBasePath: () => getBasePath(),
+
 	readFile: async (filePath, isRelativePath) => {
 		// 'development' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/dist_electron
 		// 'production' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/build/mac-universal--arm64/Metabuli App.app/Contents/Resources/app.asar

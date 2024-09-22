@@ -481,6 +481,7 @@ export default {
 			setTimeout(() => {
 				// Object storing info about completedJob
 				const completedJob = {
+					jobDetails: this.jobDetailsSample,
 					outdir: this.jobDetailsSample.outdir,
 					jobid: this.jobDetailsSample.jobid,
 					isSample: true,
@@ -548,7 +549,6 @@ export default {
 					params.push(setting.parameter, value);
 				}
 			}
-			console.log("🚀 Job requested:", params); // DEBUG
 
 			// TEST PARAMS
 			// params = [
@@ -562,6 +562,8 @@ export default {
 			//   "--max-ram",
 			//   32,
 			// ];
+
+			console.log("🚀 Job requested:", params); // DEBUG
 
 			// Return a promise that resolves or rejects based on backend success or failure
 			return new Promise((resolve, reject) => {
@@ -700,6 +702,7 @@ export default {
 
 			// Object storing info about completedJob
 			const completedJob = {
+				jobDetails: this.jobDetails,
 				outdir: this.jobDetails.outdir,
 				jobid: this.jobDetails.jobid,
 				isSample: false,
@@ -732,6 +735,7 @@ export default {
 
 			// Create failed job object to store in local storage
 			const failedJob = {
+				jobDetails: this.jobDetails,
 				outdir: this.jobDetails.outdir,
 				jobid: this.jobDetails.jobid,
 				isSample: false,
