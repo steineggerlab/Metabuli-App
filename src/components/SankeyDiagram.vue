@@ -16,7 +16,7 @@
 <script>
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal, sankeyJustify } from "d3-sankey";
-import { rankOrderFull } from "@/plugins/rankUtils";
+import { rankOrderFull, sankeyRankColumns } from "@/plugins/rankUtils";
 import SankeyTooltip from "@/components/SankeyTooltip.vue";
 
 export default {
@@ -81,11 +81,6 @@ export default {
 			diagramWidth: window.innerWidth,
 			searchQueryMatchNodes: new Set(),
 
-			// Data for graph rendering
-			nonCladesRawData: null, // rawData with just clades filtered out
-			fullGraphData: { nodes: [], links: [] },
-			allNodesByRank: {},
-
 			// Data for tooltip
 			hoverDetails: {
 				visible: false,
@@ -96,8 +91,11 @@ export default {
 				y: 0,
 			},
 
-			rankOrder: ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"],
-			rankOrderFull, // Imported from colorUtils
+			// Data for graph rendering
+			nonCladesRawData: null, // rawData with just clades filtered out
+			allNodesByRank: {},
+			rankOrder: [...sankeyRankColumns, "no rank"],
+			rankOrderFull, // Imported from rankUtils
 			autumnColors: [
 				"#57291F",
 				"#C0413B",
@@ -205,17 +203,6 @@ export default {
 	},
 
 	methods: {
-		getRawFullGraph() {
-			const sankeyGenerator = sankey().nodeId((d) => d.id);
-
-			// Store full graph (used for drawing subtree upon node click)
-			const fullGraph = sankeyGenerator({
-				nodes: this.fullGraphData.nodes.map((d) => Object.assign({}, d)),
-				links: this.fullGraphData.links.map((d) => Object.assign({}, d)),
-			});
-
-			return fullGraph;
-		},
 		// Function for processing/parsing data
 		processRawData(data) {
 			this.allNodesByRank = {}; // Reset the nodes by rank
@@ -231,9 +218,6 @@ export default {
 				}
 				this.allNodesByRank[node.rank].push(node);
 			});
-
-			// Store full graph data from raw data
-			this.fullGraphData = this.parseData(this.nonCladesRawData, true);
 
 			// Update the configure menu with the maximum taxa per rank
 			this.updateConfigureMenu();
@@ -513,40 +497,8 @@ export default {
 		},
 
 		// Functions for node subtree dialog
-		showNodeDetails(event, d) {
-			const subtreeRawData = this.extractSubtreeRawData(d); // Extract subtree raw data for clicked node
-			const hasSourceLinks = subtreeRawData.length > 1 ? true : false; // Determine if the subtree has more than 1 node
-
-			this.$emit("node-click", {
-				type: "node",
-				data: d,
-				subtreeData: subtreeRawData,
-				hasSourceLinks: hasSourceLinks,
-			});
-		},
-		extractSubtreeRawData(node) {
-			// Used only when isSubtree === false
-
-			const graph = this.getRawFullGraph();
-			const subtreeNodesTaxonIds = new Set();
-			const subtreeLinks = new Set();
-
-			// Recursive function to get all descendant nodes and links
-			const getDescendants = (currentNode) => {
-				subtreeNodesTaxonIds.add(currentNode.taxon_id);
-				graph.links.forEach((link) => {
-					if (link.source.id === currentNode.id) {
-						subtreeLinks.add(link);
-						getDescendants(link.target);
-					}
-				});
-			};
-			// Get all descendants of the clicked node from total graph data
-			getDescendants(node);
-
-			// Filter data based on the subtree nodes taxon ids
-			const subtreeRawData = this.nonCladesRawData.filter((data) => subtreeNodesTaxonIds.has(data.taxon_id));
-			return subtreeRawData;
+		showNodeDetails(event, nodeData) {
+			this.$emit("node-click", nodeData);
 		},
 
 		// Main function for drawing Sankey

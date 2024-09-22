@@ -46,7 +46,7 @@
 		</template>
 
 		<template v-slot:item="{ item }">
-			<tr>
+			<tr class="table-row">
 				<!-- PROPORTION -->
 				<td>
 					<div class="proportion-cell">
@@ -81,13 +81,22 @@
 
 				<!-- NAME -->
 				<td>{{ item.name }}</td>
+
+				<!-- VIEW DETAILS BUTTON -->
+				<td>
+					<div class="d-flex justify-end">
+						<v-btn prepend-icon="$eye" variant="outlined" color="primary" size="small" class="text-body-2" v-if="sankeyRankColumns.includes(item.rank)" @click="$emit('row-click', item)">
+							View Details
+						</v-btn>
+					</div>
+				</td>
 			</tr>
 		</template>
 	</v-data-table>
 </template>
 
 <script>
-import { rankOrderFull, getRankColor } from "@/plugins/rankUtils";
+import { rankOrderFull, sankeyRankColumns, getRankColor } from "@/plugins/rankUtils";
 
 export default {
 	data() {
@@ -121,6 +130,7 @@ export default {
 				},
 				{ title: "Taxon ID", align: "start", key: "taxon_id", width: "140px" },
 				{ title: "Name", align: "start", key: "name" },
+				{ title: "", align: "center", key: "actions" },
 			],
 			rankMenu: false, // State for controlling visibility of rank filter dropdown
 			filters: {
@@ -132,7 +142,10 @@ export default {
 				name: "",
 			},
 			searchQuery: "",
-			rankOrderFull, // Imported from colorUtils
+
+			// Imported from rankUtils
+			rankOrderFull,
+			sankeyRankColumns,
 		};
 	},
 	props: {
@@ -197,6 +210,14 @@ export default {
 </script>
 
 <style scoped>
+/* Hover effect for table row */
+.table-row {
+	cursor: pointer;
+	transition: background-color 0.2s ease-in-out;
+}
+.table-row:hover {
+	background-color: #f5f8fc;
+}
 /* Proportional cell background fill */
 .proportion-cell,
 .clade-reads-cell,
