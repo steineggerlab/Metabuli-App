@@ -8,8 +8,9 @@
 			<v-expansion-panels v-model="activePanel" variant="accordion" class="my-1" mandatory>
 				<!-- Format Selection Panel -->
 				<v-expansion-panel>
-					<div class="pt-4 pb-2 px-6" style="font-size: 0.9375rem">File Format</div>
+					<div class="pt-4 pb-2 px-6" style="font-size: 0.9375rem">Download Sankey Diagram</div>
 					<v-expansion-panel-text>
+            <div class="text-caption mb-1">Select Format</div>
 						<v-btn-toggle v-model="format" variant="text" color="secondary" density="compact" mandatory>
 							<v-btn v-for="(item, i) in items" :key="i" :value="item.value" rounded="0">
 								<v-icon start :icon="item.icon" />
@@ -17,7 +18,7 @@
 							</v-btn>
 						</v-btn-toggle>
 
-						<v-btn class="mt-3" color="secondary" @click="downloadSankey" block flat> Download Sankey </v-btn>
+						<v-btn class="mt-3" color="secondary" @click="downloadSankey" block flat>Download</v-btn>
 					</v-expansion-panel-text>
 				</v-expansion-panel>
 			</v-expansion-panels>
