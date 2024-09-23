@@ -97,12 +97,18 @@
 			</v-card-item>
 
 			<!-- Floating Action Button -->
-			<div v-if="nodeDetails.hasSourceLinks" class="fab-container d-flex align-center gc-1 mb-6">
-				<DetailsDialogDownloadMenu :taxonId="nodeDetails.data.taxon_id" @format-selected="emitSubtreeSankeyDownloadDetails">
+			<div class="fab-container d-flex align-center gc-1 mb-6">
+				<SankeyDownloadMenu :taxonId="nodeDetails.data.taxon_id" :menuLocation="'top center'" @format-selected="emitSubtreeSankeyDownloadDetails" v-if="nodeDetails.hasSourceLinks">
 					<template v-slot:activator="{ props }">
-						<v-btn v-bind="props" icon="$download" color="secondary" size="x-small" rounded="circle"> </v-btn>
+						<v-btn v-bind="props" icon="$download" size="x-small" rounded="circle"> </v-btn>
 					</template>
-				</DetailsDialogDownloadMenu>
+				</SankeyDownloadMenu>
+
+				<ExtractReadsMenu :taxonId="nodeDetails.data.taxon_id" :menuLocation="'top center'" @format-selected="emitSubtreeSankeyDownloadDetails">
+					<template v-slot:activator="{ props }">
+						<v-btn v-bind="props" extended prepend-icon="$download" text="Extract" color="secondary" rounded> </v-btn>
+					</template>
+				</ExtractReadsMenu>
 
 				<ConfigureSankeyMenu
 					:initialTaxaLimit="configureMenuSettings.taxaLimit"
@@ -114,6 +120,7 @@
 					:initialLabelOption="configureMenuSettings.labelOption"
 					:menuLocation="'top end'"
 					@updateSettings="updateSettings"
+					v-if="nodeDetails.hasSourceLinks"
 				>
 					<template v-slot:activator="{ props }">
 						<v-btn v-bind="props" extended color="indigo" text="Configure" prepend-icon="$edit" rounded> </v-btn>
@@ -126,16 +133,18 @@
 
 <script>
 import SankeyDiagram from "@/components/SankeyDiagram.vue";
-import DetailsDialogDownloadMenu from "./DetailsDialogDownloadMenu.vue";
+import ExtractReadsMenu from "./ExtractReadsMenu.vue";
 import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
 import { getRankColor } from "@/plugins/rankUtils";
+import SankeyDownloadMenu from "./SankeyDownloadMenu.vue";
 
 export default {
 	name: "SankeyNodeDialog",
 	components: {
 		SankeyDiagram,
-		DetailsDialogDownloadMenu,
+		SankeyDownloadMenu,
+		ExtractReadsMenu,
 		ConfigureSankeyMenu,
 	},
 	props: {

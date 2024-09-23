@@ -39,7 +39,7 @@
 						<v-spacer></v-spacer>
 
 						<!-- SANKEY DOWNLOAD MENU -->
-						<SankeyDownloadMenu @format-selected="emitMainSankeyDownloadFormat">
+						<SankeyDownloadMenu :menuLocation="'bottom center'" @format-selected="emitMainSankeyDownloadFormat">
 							<template v-slot:activator="{ props }">
 								<v-btn v-bind="props" append-icon="$download" variant="text" rounded> Download </v-btn>
 							</template>
@@ -453,8 +453,9 @@ export default {
 		},
 
 		// Sankey Download Functions
-		emitMainSankeyDownloadFormat(format) {
-			this.handleFormatSelected({ format, sankeyId: "sankey-svg" });
+		emitMainSankeyDownloadFormat(downloadDetails) {
+			const { format, filename } = downloadDetails;
+			this.handleFormatSelected({ sankeyId: "sankey-svg", format, filename });
 		},
 		handleFormatSelected({ sankeyId, format, filename = "sankey_diagram" }) {
 			switch (format) {

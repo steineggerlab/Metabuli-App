@@ -1,27 +1,14 @@
 <template>
 	<div>
-		<v-menu v-model="downloadMenu" :close-on-content-click="false" :location="menuLocation" transition="slide-x-reverse-transition" width="320">
+		<v-menu v-model="downloadMenu" :close-on-content-click="false" :location="menuLocation" transition="slide-x-reverse-transition" width="340">
 			<template v-slot:activator="{ props }">
 				<slot name="activator" v-bind="{ props }"></slot>
 			</template>
 
 			<v-expansion-panels v-model="activePanel" variant="accordion" class="my-1">
-				<!-- Format Selection Panel -->
-				<v-expansion-panel title="Download Sankey">
-					<v-expansion-panel-text>
-						<v-btn-toggle v-model="format" variant="text" color="secondary" density="compact" mandatory>
-							<v-btn v-for="(item, i) in items" :key="i" :value="item.value" rounded="0">
-								<v-icon start :icon="item.icon" />
-								{{ item.text }}
-							</v-btn>
-						</v-btn-toggle>
-
-						<v-btn class="mt-3" color="secondary" @click="downloadSankey" block flat> Download Sankey </v-btn>
-					</v-expansion-panel-text>
-				</v-expansion-panel>
-
 				<!-- Download Reads Panel -->
-				<v-expansion-panel title="Extract Reads">
+				<v-expansion-panel>
+					<div class="pt-5 pb-3 px-6" style="font-size: 0.9375rem">Extract Reads</div>
 					<v-expansion-panel-text>
 						<div class="text-caption">
 							Extract reads for Tax ID: <strong>{{ taxonId }}</strong>
@@ -31,7 +18,7 @@
 						</div>
 
 						<v-form v-model="isFormValid" ref="extractForm">
-							<div class="text-caption mb-1">Read 1</div>
+							<div class="text-caption mb-1">Read 1 (FASTA/Q)</div>
 							<v-text-field
 								v-model="jobDetails.q1"
 								prepend-icon="$file"
@@ -44,7 +31,7 @@
 								@focus="scrollToEnd($event)"
 							></v-text-field>
 
-							<div class="text-caption mb-1" v-if="jobDetails.mode === 'paired-end'">Read 2</div>
+							<div class="text-caption mb-1" v-if="jobDetails.mode === 'paired-end'">Read 2 (FASTA/Q)</div>
 							<v-text-field
 								v-model="jobDetails.q2"
 								prepend-icon="$file"
@@ -58,7 +45,7 @@
 								v-if="jobDetails.mode === 'paired-end'"
 							></v-text-field>
 
-							<div class="text-caption mb-1">Classifications File</div>
+							<div class="text-caption mb-1">Classification File (JobID_classifications.tsv)</div>
 							<v-text-field
 								v-model="jobDetails.classifications"
 								prepend-icon="$file"
@@ -71,7 +58,7 @@
 								@focus="scrollToEnd($event)"
 							></v-text-field>
 
-							<div class="text-caption mb-1">Database</div>
+							<div class="text-caption mb-1">Database Directory</div>
 							<v-text-field
 								v-model="jobDetails.database"
 								prepend-icon="$folder"
@@ -160,17 +147,10 @@ export default {
 			required: true,
 		},
 	},
+
 	data: () => ({
 		downloadMenu: false, // Show/hide menu
 		activePanel: [0],
-
-		// Download Sankey
-		format: "png", // Default selected format png
-		items: [
-			{ text: "JPG", value: "jpg", icon: "$image" },
-			{ text: "PNG", value: "png", icon: "$fileImage" },
-			{ text: "HTML", value: "html", icon: "$codeTags" },
-		],
 
 		// Extract Reads
 		jobDetails: {
@@ -214,14 +194,7 @@ export default {
 	},
 
 	methods: {
-		// Button actions
-		downloadSankey() {
-			this.downloadMenu = false;
-			this.$emit("format-selected", {
-				format: this.format,
-				filename: `sankey_diagram_taxID_${this.taxonId}`,
-			});
-		},
+		// Button action
 		downloadReads() {
 			this.startJob();
 		},
