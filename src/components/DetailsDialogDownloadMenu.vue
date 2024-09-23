@@ -41,6 +41,7 @@
 								color="secondary"
 								:rules="[requiredRule]"
 								@click:prepend="selectFile('q1', 'file')"
+								@focus="scrollToEnd($event)"
 							></v-text-field>
 
 							<div class="text-caption mb-1" v-if="jobDetails.mode === 'paired-end'">Read 2</div>
@@ -53,6 +54,7 @@
 								color="secondary"
 								:rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]"
 								@click:prepend="selectFile('q2', 'file')"
+								@focus="scrollToEnd($event)"
 								v-if="jobDetails.mode === 'paired-end'"
 							></v-text-field>
 
@@ -66,6 +68,7 @@
 								color="secondary"
 								:rules="[requiredRule]"
 								@click:prepend="selectFile('classifications', 'file')"
+								@focus="scrollToEnd($event)"
 							></v-text-field>
 
 							<div class="text-caption mb-1">Database</div>
@@ -78,6 +81,7 @@
 								color="secondary"
 								:rules="[requiredRule]"
 								@click:prepend="selectFile('database', 'directory')"
+								@focus="scrollToEnd($event)"
 							></v-text-field>
 
 							<v-btn color="secondary" :disabled="!isFormValid || isExtractDisabled" @click="downloadReads" block flat> Extract Reads </v-btn>
@@ -271,6 +275,11 @@ export default {
 			// Return the modified path with the taxonId inserted
 			return `${baseName}_${taxonId}${extension}`;
 		},
+		scrollToEnd(event) {
+			// Scroll to the right end of textfield
+			const input = event.target;
+			input.scrollLeft = input.scrollWidth;
+		},
 
 		// Start backend job request
 		async startJob() {
@@ -294,7 +303,7 @@ export default {
 				}
 			} catch (error) {
 				console.error("Error:", error.message); // Single error handling point
-				
+
 				this.handleJobError(error);
 				this.hideDialog();
 			} finally {
