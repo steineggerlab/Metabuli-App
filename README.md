@@ -17,6 +17,14 @@ For more details of Metabuli, please see
 - Windows (`.exe`)
 - Linux (AppImage `.AppImage`)
 
+## Functionality
+- **Download** pre-built **databases**
+- Run new **taxonomic profiling**
+- **Upload and browse** taxonomic profiling results
+- **Extract reads** classified under a specific taxon
+- Explore results with customizable interactive **Sankey plots**
+- Explore results with interactive **Krona plots**
+
 ## Getting Started
 
 ### Installation
