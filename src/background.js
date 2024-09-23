@@ -33,22 +33,22 @@ async function createWindow() {
 
   // Create the browser window.
   const win = new BrowserWindow({
-    x: 0,
-    y: 0,
-    width: 1000,
-    height: height,
-    minWidth: 850,
-    minHeight: 650,
-    webPreferences: {
-      // Use pluginOptions.nodeIntegration, leave this alone
-      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      // nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      // contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-      nodeIntegration: true,
-      contextIsolation: true,
-      preload: join(__dirname, "preload.js"), // Ensure the preload script is specified
-    },
-  });
+		x: 0,
+		y: 0,
+		width: width * 0.75,
+		height: height,
+		minWidth: 850,
+		minHeight: 650,
+		webPreferences: {
+			// Use pluginOptions.nodeIntegration, leave this alone
+			// See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
+			// nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+			// contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+			nodeIntegration: true,
+			contextIsolation: true,
+			preload: join(__dirname, "preload.js"), // Ensure the preload script is specified
+		},
+	});
 
   // Intercepting new-window events to open external URLs in the default browser
   win.webContents.on("new-window", (event, url) => {
