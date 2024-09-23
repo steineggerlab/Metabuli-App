@@ -16,24 +16,72 @@
 							</v-btn>
 						</v-btn-toggle>
 
-						<v-btn class="mt-3" color="secondary" @click="downloadSankey" block flat> Download </v-btn>
+						<v-btn class="mt-3" color="secondary" @click="downloadSankey" block flat> Download Sankey </v-btn>
 					</v-expansion-panel-text>
 				</v-expansion-panel>
 
 				<!-- Download Reads Panel -->
-				<v-expansion-panel title="Extract Reads" v-if="!this.isSampleJob">
-					<v-expansion-panel-text> 
+				<v-expansion-panel title="Extract Reads">
+					<v-expansion-panel-text>
 						<div class="text-caption">
 							Extract reads for Tax ID: <strong>{{ taxonId }}</strong>
 						</div>
 						<div class="text-caption mb-3">
 							Classification mode: <strong>{{ jobDetails.mode }}</strong>
 						</div>
-						<div class="text-caption mb-3">Read 1: {{ jobDetails.q1 }}</div>
-						<div class="text-caption mb-3" v-if="jobDetails.q2">Read 2: {{ jobDetails.q2 }}</div>
-						<div class="text-caption mb-3">Classifications File: {{ jobDetails.outdir }}/{{ jobDetails.jobid }}_classifications.tsv</div>
-						<div class="text-caption mb-3">Database: {{ jobDetails.database }}</div>
-						<v-btn color="secondary" @click="downloadReads" block flat> Download Reads </v-btn>
+
+						<v-form v-model="isFormValid" ref="extractForm">
+							<div class="text-caption mb-1">Read 1</div>
+							<v-text-field
+								v-model="jobDetails.q1"
+								prepend-icon="$file"
+								type="text"
+								variant="outlined"
+								density="compact"
+								color="secondary"
+								:rules="[requiredRule]"
+								@click:prepend="selectFile('q1', 'file')"
+							></v-text-field>
+
+							<div class="text-caption mb-1" v-if="jobDetails.mode === 'paired-end'">Read 2</div>
+							<v-text-field
+								v-model="jobDetails.q2"
+								prepend-icon="$file"
+								type="text"
+								variant="outlined"
+								density="compact"
+								color="secondary"
+								:rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]"
+								@click:prepend="selectFile('q2', 'file')"
+								v-if="jobDetails.mode === 'paired-end'"
+							></v-text-field>
+
+							<div class="text-caption mb-1">Classifications File</div>
+							<v-text-field
+								v-model="jobDetails.classifications"
+								prepend-icon="$file"
+								type="text"
+								variant="outlined"
+								density="compact"
+								color="secondary"
+								:rules="[requiredRule]"
+								@click:prepend="selectFile('classifications', 'file')"
+							></v-text-field>
+
+							<div class="text-caption mb-1">Database</div>
+							<v-text-field
+								v-model="jobDetails.database"
+								prepend-icon="$folder"
+								type="text"
+								variant="outlined"
+								density="compact"
+								color="secondary"
+								:rules="[requiredRule]"
+								@click:prepend="selectFile('database', 'directory')"
+							></v-text-field>
+
+							<v-btn color="secondary" :disabled="!isFormValid || isExtractDisabled" @click="downloadReads" block flat> Extract Reads </v-btn>
+						</v-form>
 					</v-expansion-panel-text>
 				</v-expansion-panel>
 			</v-expansion-panels>
@@ -45,7 +93,7 @@
 				<v-list>
 					<!-- Title -->
 					<v-list-item class="font-weight-bold text-h6 py-0 pl-8 text-button">
-						<span>Extracting Reads...</span>
+						<span>{{ status === "RUNNING" ? "Extracting Reads..." : "Extract Reads Complete!" }}</span>
 						<template v-slot:append>
 							<v-img src="assets/marv_metabuli_animated.gif" width="60"></v-img>
 						</template>
@@ -75,12 +123,24 @@
 						<!-- Cancel Button -->
 						<v-card-actions>
 							<v-spacer></v-spacer>
-							<v-btn variant="plain" color="primary" @click="cancelBackend">Cancel</v-btn>
+							<v-btn v-if="status === 'COMPLETE'" variant="outlined" color="primary" @click="openItemInFolder">Open in Folder</v-btn>
+
+							<v-btn variant="text" color="grey" @click="cancelBackend">{{ status === "RUNNING" ? "Cancel" : "Close" }}</v-btn>
 						</v-card-actions>
 					</div>
 				</v-list>
 			</v-card>
 		</v-dialog>
+
+		<!-- Snackbar -->
+		<v-snackbar v-model="snackbar.show" :timeout="snackbar.timeout" location="top" color="white">
+			<v-icon :color="snackbar.color" :icon="`$${snackbar.icon}`"></v-icon>
+			{{ snackbar.message }}
+			<template v-slot:actions>
+				<v-btn v-if="snackbar.buttonText" :color="snackbar.color" variant="text" @click="handleSnackbarAction">{{ snackbar.buttonText }}</v-btn>
+				<v-btn v-else :color="snackbar.color" variant="text" @click="snackbar.show = false"> Close </v-btn>
+			</template>
+		</v-snackbar>
 	</div>
 </template>
 
@@ -109,7 +169,12 @@ export default {
 		],
 
 		// Extract Reads
-		jobDetails: {},
+		jobDetails: {
+			q1: "",
+			q2: "",
+			classifications: "",
+			database: "",
+		},
 		isSampleJob: null,
 		// // Properties for backend job processing status, backend output, error tracking
 		status: "INITIAL",
@@ -117,8 +182,35 @@ export default {
 		errorHandled: false,
 		// // Extract Job Processing Dialog
 		loadingDialog: false,
+		// // Form Validation (all input fields must be non-empty)
+		isFormValid: false, // This tracks the overall form validity
+		requiredRule: (v) => !!v || "This field is required", // Simple required rule
+		isExtractDisabled: false, // Tracks button state for any other custom conditions
+
+		// Snackbar
+		snackbar: {
+			show: false,
+			message: "",
+			color: "",
+			icon: "",
+			buttonText: "",
+			action: null,
+			timeout: 4000,
+		},
 	}),
+
+	watch: {
+		// Watch changes to the form fields if you need to toggle button states
+		jobDetails: {
+			deep: true,
+			handler() {
+				this.isExtractDisabled = !this.jobDetails.q1 || !this.jobDetails.classifications || !this.jobDetails.database || (this.jobDetails.mode === "paired-end" && !this.jobDetails.q2);
+			},
+		},
+	},
+
 	methods: {
+		// Button actions
 		downloadSankey() {
 			this.downloadMenu = false;
 			this.$emit("format-selected", {
@@ -130,12 +222,61 @@ export default {
 			this.startJob();
 		},
 
+		// Functions for handling files
+		async selectFile(field, type) {
+			if (window.electron) {
+				try {
+					const options = {
+						properties: type === "file" ? ["openFile"] : ["openDirectory"],
+					};
+					const filePaths = await window.electron.openFileDialog(options);
+					if (filePaths && filePaths.length > 0) {
+						if (!field) {
+							return filePaths[0];
+						}
+						this.jobDetails[field] = filePaths[0];
+					}
+				} catch (error) {
+					console.error("Error selecting file:", error); // DEBUG
+					this.$emit("trigger-snackbar", `File selection error: ${error}`, "error", "fileAlert", "Dismiss");
+				}
+			} else {
+				console.error("File dialog is not supported in the web environment."); // DEBUG
+				this.$emit("trigger-snackbar", "File dialog is not supported in the web environment.", "error", "warning", "Dismiss");
+			}
+		},
+		openItemInFolder() {
+			// Call Electron shell to open the file/folder in file manager
+			const outputRead1FilePath = this.insertTaxonIdBeforeExtension(this.jobDetails.q1, this.taxonId);
+			if (window.electron) {
+				window.electron.openItemInFolder(outputRead1FilePath);
+			}
+		},
+		insertTaxonIdBeforeExtension(filePath, taxonId) {
+			// Extract the base name and extension
+			const extensionIndex = filePath.lastIndexOf(".");
+
+			if (extensionIndex === -1) {
+				// If there's no extension, just append the taxonId
+				// return `${filePath}_${taxonId}`;
+
+				// Backup: open output directory
+				return this.jobDetails.outdir;
+			}
+
+			// Insert the taxonId before the extension
+			const baseName = filePath.slice(0, extensionIndex);
+			const extension = filePath.slice(extensionIndex);
+
+			// Return the modified path with the taxonId inserted
+			return `${baseName}_${taxonId}${extension}`;
+		},
+
 		// Start backend job request
 		async startJob() {
 			try {
 				// Start loading dialog
 				this.status = "RUNNING";
-				// this.$emit("job-started", false);
 				this.showDialog();
 
 				// Start backend request and job polling simultaneously
@@ -149,22 +290,18 @@ export default {
 				if (this.status === "COMPLETE") {
 					console.log("🚀 Extract job completed successfully."); // DEBUG
 
-					// await this.processResults(false); // Make sure this is called after backend completion
-					// this.handleJobSuccess();
-					this.hideDialog();
+					// this.handleJobSuccess(); // FIXME: add to job history
 				}
 			} catch (error) {
 				console.error("Error:", error.message); // Single error handling point
-
-				// this.handleJobError(error);
-			} finally {
+				
+				this.handleJobError(error);
 				this.hideDialog();
-
+			} finally {
 				if (this.status !== "COMPLETE") {
 					this.status = "INITIAL";
 				}
 				this.errorHandled = false; // Resets error handled tracking
-				this.backendOutput = ""; // Clear backendOutput
 
 				// Remove any previously attached event listeners
 				window.electron.offBackendRealtimeOutput(); // Custom off method for the event
@@ -186,8 +323,7 @@ export default {
 			}
 
 			// Add Classification file path
-			const classificationFilePath = `${this.jobDetails.outdir}/${this.jobDetails.jobid}_classifications.tsv`;
-			params.push(classificationFilePath);
+			params.push(this.jobDetails.classifications);
 
 			// Add Database path
 			params.push(this.jobDetails.database);
@@ -215,8 +351,12 @@ export default {
 				// Real-time output
 				window.electron.onBackendRealtimeOutput((output) => {
 					this.backendOutput += output; // Append output in real-time
-					console.log(output); // DELETE
-					// this.$emit("backend-realtime-output", this.backendOutput);
+					this.$nextTick(() => {
+						// Scroll to the bottom
+						const textarea = this.$refs.outputTextarea.$el.querySelector("textarea");
+						textarea.scrollTop = textarea.scrollHeight;
+					});
+
 					this.status = "RUNNING"; // Keep the status as RUNNING
 				});
 
@@ -263,6 +403,45 @@ export default {
 				throw new Error("Polling timed out");
 			}
 		},
+		handleJobError() {
+			this.errorHandled = true; // Ensure flag is set to prevent further handling
+
+			// Additional error handling logic (save failed job to local storage, trigger snackbar)
+
+			// Trigger snackbar corresponding to case
+			if (this.status === "TIMEOUT") {
+				this.cancelBackend();
+
+				this.triggerSnackbar("Job execution timed out.", "warning", "timer", "Retry", this.startJob);
+			} else if (this.status === "CANCELLED") {
+				this.triggerSnackbar("Job was cancelled.", "info", "cancel", "Dismiss");
+			} else if (this.status === "ERROR") {
+				this.triggerSnackbar("Invalid request. Check your query and try again.", "error", "warning", "Dismiss");
+			} else {
+				this.triggerSnackbar("An unexpected error occurred. Please try again.", "error", "warning", "Dismiss");
+			}
+
+			this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
+		},
+
+		// Functions managing snackbar
+		triggerSnackbar(message, color = "info", icon = "info", buttonText = "", action = null) {
+			if (this.snackbar.show) return; // If multiple snackbars are triggered, show the first one
+
+			this.snackbar.message = message;
+			this.snackbar.color = color;
+			this.snackbar.icon = icon;
+			this.snackbar.buttonText = buttonText;
+			this.snackbar.action = action;
+
+			this.snackbar.show = true;
+		},
+		handleSnackbarAction() {
+			if (this.snackbar.action) {
+				this.snackbar.action();
+			}
+			this.snackbar.show = false;
+		},
 
 		// Dialog
 		showDialog() {
@@ -270,6 +449,7 @@ export default {
 		},
 		hideDialog() {
 			this.loadingDialog = false;
+			this.backendOutput = ""; // Clear backend output
 		},
 		cancelBackend() {
 			this.hideDialog();
@@ -277,20 +457,30 @@ export default {
 		},
 	},
 
-	mounted() {
+	async mounted() {
 		const processedResults = JSON.parse(localStorage.getItem("processedResults"));
 		if (processedResults) {
 			this.jobDetails = processedResults.jobDetails;
 			this.isSampleJob = processedResults.isSample;
 
-			// if (processedResults.isSample) {
-			// 	this.jobDetails.outdir = window.electron.getBasePath();
-			// 	this.jobDetails.q1 = `${this.jobDetails.outdir}/${this.jobDetails.q1}`
-			// 	if (this.jobDetails.q2) {
-			// 		this.jobDetails.q2 = `${this.jobDetails.outdir}/${this.jobDetails.q2}`
-			// 	}
-			// 	this.jobDetails.database = `${this.jobDetails.outdir}/${this.jobDetails.database}`;
-			// }
+			// Resolve file paths for sample data
+			if (this.isSampleJob) {
+				this.jobDetails.outdir = window.electron.getBasePath();
+				this.jobDetails.q1 = `${this.jobDetails.outdir}/${this.jobDetails.q1}`;
+				this.jobDetails.q2 = `${this.jobDetails.outdir}/${this.jobDetails.q2}`;
+				this.jobDetails.database = `${this.jobDetails.outdir}/${this.jobDetails.database}`;
+			}
+			// Resolve file path for classifications file
+			this.jobDetails.classifications = `${this.jobDetails.outdir}/${this.jobDetails.jobid}_classifications.tsv`;
+
+			// Loop over each path and check if the file exists
+			const paths = ["q1", "q2", "classifications", "database"]; // Array of file paths to check
+			for (const key of paths) {
+				const fileExists = await window.electron.fileExists(this.jobDetails[key]);
+				if (!fileExists) {
+					this.jobDetails[key] = ""; // Set to empty string if the file doesn't exist
+				}
+			}
 		}
 	},
 };
@@ -304,5 +494,14 @@ export default {
 	font-size: 12px;
 	margin-top: 16px;
 	/* -webkit-mask-image: none; */
+}
+
+/* Filepath textfield */
+:deep(.v-field__input),
+:deep(.v-text-field__suffix) {
+	padding-top: 4px !important;
+	padding-bottom: 4px !important;
+	min-height: 30px;
+	font-size: 12px;
 }
 </style>

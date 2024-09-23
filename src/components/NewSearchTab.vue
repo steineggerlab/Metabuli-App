@@ -258,6 +258,7 @@ export default {
 			},
 			jobDetailsSample: {
 				// Sample job details
+				mode: "paired-end",
 				q1: "SRR14484345_1.fq",
 				q2: "SRR14484345_2.fq",
 				database: "refseq_virus",

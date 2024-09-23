@@ -100,7 +100,7 @@
 			<div v-if="nodeDetails.hasSourceLinks" class="fab-container d-flex align-center gc-1 mb-6">
 				<DetailsDialogDownloadMenu :taxonId="nodeDetails.data.taxon_id" @format-selected="emitSubtreeSankeyDownloadDetails">
 					<template v-slot:activator="{ props }">
-						<v-btn v-bind="props" icon="$download" size="x-small" rounded="circle"> </v-btn>
+						<v-btn v-bind="props" icon="$download" color="secondary" size="x-small" rounded="circle"> </v-btn>
 					</template>
 				</DetailsDialogDownloadMenu>
 

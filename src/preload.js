@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer, shell } = require("electron");
 const path = require("path");
 const fs = require("fs").promises;
 const os = require("os");
@@ -11,8 +11,18 @@ const getBasePath = () => {
 
 contextBridge.exposeInMainWorld("electron", {
 	getBasePath: () => getBasePath(),
+	openItemInFolder: (filePath) => shell.showItemInFolder(filePath),
+	// Function to check if file exists
+	fileExists: async (filePath) => {
+		try {
+			await fs.access(filePath);
+			return true; // File exists
+		} catch (error) {
+			return false; // File does not exist
+		}
+	},
 
-	readFile: async (filePath, isRelativePath) => {
+	readFile: async (filePath, isRelativePath) => { // FIXME: use getBasePath
 		// 'development' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/dist_electron
 		// 'production' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/build/mac-universal--arm64/Metabuli App.app/Contents/Resources/app.asar
 		const basePath = process.env.NODE_ENV === "development" ? path.join(__dirname, "..", "public") : path.join(__dirname);
