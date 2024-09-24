@@ -1,96 +1,118 @@
 <template>
 	<div>
-		<v-menu v-model="downloadMenu" :close-on-content-click="false" :location="menuLocation" transition="slide-x-reverse-transition" width="340">
+		<v-dialog v-model="downloadMenu" :close-on-content-click="false" persistent :location="menuLocation" width="700">
 			<template v-slot:activator="{ props }">
 				<slot name="activator" v-bind="{ props }"></slot>
 			</template>
 
-			<v-expansion-panels v-model="activePanel" variant="accordion" class="my-1">
-				<!-- Download Reads Panel -->
-				<v-expansion-panel>
-					<div class="pt-5 pb-3 px-6" style="font-size: 0.9375rem">Extract Reads</div>
-					<v-expansion-panel-text>
-						<div class="text-caption">
-							Extract reads for Tax ID: <strong>{{ taxonId }}</strong>
-						</div>
-						<div class="text-caption mb-3">
-							Classification mode: <strong>{{ jobDetails.mode }}</strong>
-						</div>
+			<!-- Confirm File Paths Panel -->
+			<v-card v-if="!processingExtract" class="mx-auto w-100">
+				<v-card-title class="font-weight-bold text-h6 px-6 pt-6 text-button">Extract Reads</v-card-title>
+				<v-form v-model="isFormValid" ref="extractForm">
+					<v-card-text class="pb-6">
+						<v-row>
+							<v-col>
+								<v-card color="secondary" variant="tonal">
+									<v-card-text class="text-medium-emphasis text-caption">
+										Extract reads for Tax ID: <strong>{{ taxonId }}</strong>
+										<br />
+										Classification mode: <strong>{{ jobDetails.mode }}</strong>
+									</v-card-text>
+								</v-card>
+							</v-col>
+						</v-row>
 
-						<v-form v-model="isFormValid" ref="extractForm">
-							<div class="text-caption mb-1">Read 1 (FASTA/Q)</div>
-							<v-text-field
-								v-model="jobDetails.q1"
-								prepend-icon="$file"
-								type="text"
-								variant="outlined"
-								density="compact"
-								color="secondary"
-								:rules="[requiredRule]"
-								@click:prepend="selectFile('q1', 'file')"
-								@focus="scrollToEnd($event)"
-							></v-text-field>
+						<v-card-text class="filepath-textfields">
+							<v-row>
+								<v-col cols="6">
+									<div class="text-caption mb-1">Read 1 (FASTA/Q)</div>
+									<v-text-field
+										v-model="jobDetails.q1"
+										append-icon="$file"
+										type="text"
+										variant="outlined"
+										density="compact"
+										color="secondary"
+										:rules="[requiredRule]"
+										@click:append="selectFile('q1', 'file')"
+										@focus="scrollToEnd($event)"
+									></v-text-field>
+								</v-col>
 
-							<div class="text-caption mb-1" v-if="jobDetails.mode === 'paired-end'">Read 2 (FASTA/Q)</div>
-							<v-text-field
-								v-model="jobDetails.q2"
-								prepend-icon="$file"
-								type="text"
-								variant="outlined"
-								density="compact"
-								color="secondary"
-								:rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]"
-								@click:prepend="selectFile('q2', 'file')"
-								@focus="scrollToEnd($event)"
-								v-if="jobDetails.mode === 'paired-end'"
-							></v-text-field>
+								<v-col cols="6">
+									<div class="text-caption mb-1" v-if="jobDetails.mode === 'paired-end'">Read 2 (FASTA/Q)</div>
+									<v-text-field
+										v-model="jobDetails.q2"
+										append-icon="$file"
+										type="text"
+										variant="outlined"
+										density="compact"
+										color="secondary"
+										:rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]"
+										@click:append="selectFile('q2', 'file')"
+										@focus="scrollToEnd($event)"
+										v-if="jobDetails.mode === 'paired-end'"
+									></v-text-field>
+								</v-col>
+							</v-row>
 
-							<div class="text-caption mb-1">Classification File (JobID_classifications.tsv)</div>
-							<v-text-field
-								v-model="jobDetails.classifications"
-								prepend-icon="$file"
-								type="text"
-								variant="outlined"
-								density="compact"
-								color="secondary"
-								:rules="[requiredRule]"
-								@click:prepend="selectFile('classifications', 'file')"
-								@focus="scrollToEnd($event)"
-							></v-text-field>
+							<v-row>
+								<v-col>
+									<div class="text-caption mb-1">Classification File (JobID_classifications.tsv)</div>
+									<v-text-field
+										v-model="jobDetails.classifications"
+										append-icon="$file"
+										type="text"
+										variant="outlined"
+										density="compact"
+										color="secondary"
+										:rules="[requiredRule]"
+										@click:append="selectFile('classifications', 'file')"
+										@focus="scrollToEnd($event)"
+									></v-text-field>
+								</v-col>
+							</v-row>
 
-							<div class="text-caption mb-1">Database Directory</div>
-							<v-text-field
-								v-model="jobDetails.database"
-								prepend-icon="$folder"
-								type="text"
-								variant="outlined"
-								density="compact"
-								color="secondary"
-								:rules="[requiredRule]"
-								@click:prepend="selectFile('database', 'directory')"
-								@focus="scrollToEnd($event)"
-							></v-text-field>
+							<v-row>
+								<v-col>
+									<div class="text-caption mb-1">Database Directory</div>
+									<v-text-field
+										v-model="jobDetails.database"
+										append-icon="$folder"
+										type="text"
+										variant="outlined"
+										density="compact"
+										color="secondary"
+										:rules="[requiredRule]"
+										@click:append="selectFile('database', 'directory')"
+										@focus="scrollToEnd($event)"
+									></v-text-field>
+								</v-col>
+							</v-row>
 
-							<v-btn color="secondary" :disabled="!isFormValid || isExtractDisabled" @click="downloadReads" block flat> Extract Reads </v-btn>
-						</v-form>
-					</v-expansion-panel-text>
-				</v-expansion-panel>
-			</v-expansion-panels>
-		</v-menu>
+							<v-row>
+								<v-col>
+									<v-btn color="secondary" :disabled="!isFormValid || isExtractDisabled" @click="downloadReads" block flat>Extract Reads</v-btn>
+								</v-col>
 
-		<!-- Loading Dialog -->
-		<v-dialog v-model="loadingDialog" persistent>
-			<v-card class="mx-auto" width="700">
+								<v-col>
+									<v-btn color="grey" variant="outlined" @click="downloadMenu = false" block flat>Cancel</v-btn>
+								</v-col>
+							</v-row>
+						</v-card-text>
+					</v-card-text>
+				</v-form>
+			</v-card>
+
+			<!-- Processing Extract Job Panel -->
+			<v-card v-else>
 				<v-list>
-					<!-- Title -->
 					<v-list-item class="font-weight-bold text-h6 py-0 pl-8 text-button">
 						<span>{{ status === "RUNNING" ? "Extracting Reads..." : "Extract Reads Complete!" }}</span>
 						<template v-slot:append>
 							<v-img src="assets/marv_metabuli_animated.gif" width="60"></v-img>
 						</template>
 					</v-list-item>
-
-					<!-- Hide Log Output + Cancel Button on Load Sample -->
 					<div>
 						<!-- Display Real-time Output -->
 						<v-list-item class="pt-1">
@@ -112,12 +134,16 @@
 						</v-list-item>
 
 						<!-- Cancel Button -->
-						<v-card-actions>
-							<v-spacer></v-spacer>
-							<v-btn v-if="status === 'COMPLETE'" variant="outlined" color="primary" @click="openItemInFolder">Open in Folder</v-btn>
-
-							<v-btn variant="text" color="grey" @click="cancelBackend">{{ status === "RUNNING" ? "Cancel" : "Close" }}</v-btn>
-						</v-card-actions>
+						<v-card-text>
+							<v-row>
+								<v-col>
+									<v-btn v-if="status === 'COMPLETE'" variant="tonal" color="primary" @click="openItemInFolder" block>Open in Folder</v-btn>
+								</v-col>
+								<v-col>
+									<v-btn variant="outlined" color="grey" @click="cancelBackend" block>{{ status === "RUNNING" ? "Cancel" : "Close" }}</v-btn>
+								</v-col>
+							</v-row>
+						</v-card-text>
 					</div>
 				</v-list>
 			</v-card>
@@ -160,12 +186,13 @@ export default {
 			database: "",
 		},
 		isSampleJob: null,
+		invalidPaths: [], // This will store keys with invalid paths
 		// // Properties for backend job processing status, backend output, error tracking
 		status: "INITIAL",
 		backendOutput: "",
 		errorHandled: false,
 		// // Extract Job Processing Dialog
-		loadingDialog: false,
+		processingExtract: false,
 		// // Form Validation (all input fields must be non-empty)
 		isFormValid: false, // This tracks the overall form validity
 		requiredRule: (v) => !!v || "This field is required", // Simple required rule
@@ -259,7 +286,7 @@ export default {
 			try {
 				// Start loading dialog
 				this.status = "RUNNING";
-				this.showDialog();
+				this.showProcessingExtractPanel();
 
 				// Start backend request and job polling simultaneously
 				const backendPromise = this.runBackend();
@@ -426,11 +453,12 @@ export default {
 		},
 
 		// Dialog
-		showDialog() {
-			this.loadingDialog = true;
+		showProcessingExtractPanel() {
+			this.processingExtract = true;
 		},
 		hideDialog() {
-			this.loadingDialog = false;
+			this.downloadMenu = false;
+			this.processingExtract = false;
 			this.backendOutput = ""; // Clear backend output
 		},
 		cancelBackend() {
@@ -469,6 +497,10 @@ export default {
 </script>
 
 <style scoped>
+.filepath-textfields .v-col {
+	padding-bottom: 8px;
+}
+
 /* Log textarea */
 :deep(.v-textarea .v-field__input) {
 	font-family: Roboto;

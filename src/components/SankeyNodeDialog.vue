@@ -104,11 +104,11 @@
 					</template>
 				</SankeyDownloadMenu>
 
-				<ExtractReadsMenu :taxonId="nodeDetails.data.taxon_id" :menuLocation="'top center'" @format-selected="emitSubtreeSankeyDownloadDetails">
+				<ExtractReadsDialog :taxonId="nodeDetails.data.taxon_id" :menuLocation="'top center'" @format-selected="emitSubtreeSankeyDownloadDetails">
 					<template v-slot:activator="{ props }">
 						<v-btn v-bind="props" extended prepend-icon="$fileExport" text="Extract" color="secondary" rounded> </v-btn>
 					</template>
-				</ExtractReadsMenu>
+				</ExtractReadsDialog>
 
 				<ConfigureSankeyMenu
 					:initialTaxaLimit="configureMenuSettings.taxaLimit"
@@ -133,7 +133,7 @@
 
 <script>
 import SankeyDiagram from "@/components/SankeyDiagram.vue";
-import ExtractReadsMenu from "./ExtractReadsMenu.vue";
+import ExtractReadsDialog from "./ExtractReadsDialog.vue";
 import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
 import { getRankColor } from "@/plugins/rankUtils";
@@ -144,7 +144,7 @@ export default {
 	components: {
 		SankeyDiagram,
 		SankeyDownloadMenu,
-		ExtractReadsMenu,
+		ExtractReadsDialog,
 		ConfigureSankeyMenu,
 	},
 	props: {
