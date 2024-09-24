@@ -1,3 +1,4 @@
+const webpack = require("webpack");
 const { defineConfig } = require("@vue/cli-service");
 const path = require("path");
 const fs = require("fs");
@@ -6,6 +7,16 @@ module.exports = defineConfig({
 	transpileDependencies: true,
 
 	outputDir: path.resolve(__dirname, "build"),
+
+	configureWebpack: {
+		plugins: [
+			new webpack.DefinePlugin({
+				__VUE_OPTIONS_API__: true, // Enable Options API
+				__VUE_PROD_DEVTOOLS__: false, // Disable Vue DevTools in production
+				__VUE_PROD_HYDRATION_MISMATCH_DETAILS__: false, // Hide hydration mismatch details in production
+			}),
+		],
+	},
 
 	pluginOptions: {
 		vuetify: {
