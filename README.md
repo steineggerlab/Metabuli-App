@@ -45,8 +45,7 @@ The Metabuli App provides two modes for metagenomic classification: **New Search
 
 ### New Search
 To run a **New Search** job, follow these steps:
-
-<img src="https://github.com/user-attachments/assets/e1b5dc80-5675-4c86-8068-89e043465ace" alt="New_Search_Demo_Image" height="400"/>
+<img alt="SearchPage_Demo_Image" src="https://github.com/user-attachments/assets/9ab5a86c-5603-4dc7-be3b-baf2ed490ef0" style="max-height: 600px; width: auto;">
 
 1. **Required Fields**: 
    Complete the following mandatory fields:
@@ -96,17 +95,17 @@ To visualize results from a previously completed job:
 ### New Search Job Demo
 Watch this demo to see how to run a new search on Metabuli:
 
-https://github.com/user-attachments/assets/207b7f06-1ea8-4fc7-8300-facd281bb43b
+https://github.com/user-attachments/assets/6c8b848b-77b8-49b1-b01e-069b872ea740
 
 ### Viewing Results
 Watch this demo to see how to view the results from a completed search:
 
-https://github.com/user-attachments/assets/bb0dd7f5-1008-480c-b233-e94b107b21b0
+https://github.com/user-attachments/assets/1284c669-cdbb-48c5-ba53-accb9ad62fea
 
 ## Acknowledgments
 The development of the Metabuli Desktop Application has been inspired by and leverages the following tools:
 
-- **Pavian**: Elements of the table layouts and visualizations in Metabuli were inspired by the Pavian R package for metagenomic data analysis. ([Pavian GitHub Repository](https://github.com/fbreitwieser/pavian)).
+- **Pavian**: Elements of the table layouts and visualizations in Metabuli were inspired by Pavian for metagenomic data analysis. ([Pavian GitHub Repository](https://github.com/fbreitwieser/pavian)).
   
 - **Krona**: The Krona tool is embedded in the results page for hierarchical data visualization. ([Krona Github Repository](https://github.com/marbl/Krona/wiki)).
 
