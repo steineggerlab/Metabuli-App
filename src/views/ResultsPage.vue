@@ -9,7 +9,7 @@
 		<v-card-text class="d-flex flex-column h-100 pb-0">
 			<v-tabs-window v-model="tab" class="h-100">
 				<!-- NODE DETAILS DIALOG (SHARED BY TABLE & SANKEY) -->
-				<SankeyNodeDialog v-model="isDialogVisible" :nodeDetails="dialogData" @close-dialog="hideDialog" @download-sankey="handleFormatSelected" class="align-top" />
+				<SankeyNodeDialog v-if="dialogData" v-model="isDialogVisible" :nodeDetails="dialogData" @close-dialog="hideDialog" @download-sankey="handleFormatSelected" class="align-top" />
 
 				<!-- TABLE TAB -->
 				<v-tabs-window-item value="table" class="h-100">
