@@ -91,12 +91,18 @@
 							</v-row>
 
 							<v-row>
+								<v-col class="pt-0">
+									<small class="text-caption text-medium-emphasis">*Missing files will appear as empty fields. Please select the correct file.</small>
+								</v-col>
+							</v-row>
+
+							<v-row>
 								<v-col>
 									<v-btn color="secondary" :disabled="!isFormValid || isExtractDisabled" @click="downloadReads" block flat>Extract Reads</v-btn>
 								</v-col>
 
 								<v-col>
-									<v-btn color="grey" variant="outlined" @click="downloadMenu = false" block flat>Cancel</v-btn>
+									<v-btn color="grey" variant="outlined" @click="hideDialog" block flat>Cancel</v-btn>
 								</v-col>
 							</v-row>
 						</v-card-text>
@@ -186,7 +192,6 @@ export default {
 			database: "",
 		},
 		isSampleJob: null,
-		invalidPaths: [], // This will store keys with invalid paths
 		// // Properties for backend job processing status, backend output, error tracking
 		status: "INITIAL",
 		backendOutput: "",
@@ -298,14 +303,11 @@ export default {
 				// If backend completes successfully and polling hasn't timed out
 				if (this.status === "COMPLETE") {
 					console.log("🚀 Extract job completed successfully."); // DEBUG
-
-					// this.handleJobSuccess(); // FIXME: add to job history
 				}
 			} catch (error) {
 				console.error("Error:", error.message); // Single error handling point
 
 				this.handleJobError(error);
-				this.hideDialog();
 			} finally {
 				if (this.status !== "COMPLETE") {
 					this.status = "INITIAL";
@@ -414,8 +416,8 @@ export default {
 		},
 		handleJobError() {
 			this.errorHandled = true; // Ensure flag is set to prevent further handling
-
-			// Additional error handling logic (save failed job to local storage, trigger snackbar)
+			this.processingExtract = false;
+			this.backendOutput = "";
 
 			// Trigger snackbar corresponding to case
 			if (this.status === "TIMEOUT") {
