@@ -13,16 +13,24 @@
 						<v-row>
 							<v-col>
 								<v-card color="secondary" variant="tonal">
-									<v-card-text class="text-medium-emphasis text-caption">
+									<v-card-text class="text-caption">
 										Extract reads for Tax ID: <strong>{{ taxonId }}</strong>
-										<br />
-										Classification mode: <strong>{{ jobDetails.mode }}</strong>
 									</v-card-text>
 								</v-card>
 							</v-col>
 						</v-row>
 
 						<v-card-text class="filepath-textfields">
+							<v-row>
+								<v-col class="pb-0">
+									<div class="text-caption mb-1">Classification Mode</div>
+									<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="secondary" divided mandatory>
+										<v-btn value="single-end" height="30" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
+										<v-btn value="paired-end" height="30" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
+										<v-btn value="long-read" height="30" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
+									</v-btn-toggle>
+								</v-col>
+							</v-row>
 							<v-row>
 								<v-col cols="6">
 									<div class="text-caption mb-1">Read 1 (FASTA/Q)</div>
@@ -186,10 +194,13 @@ export default {
 
 		// Extract Reads
 		jobDetails: {
+			mode: "",
+			jobid: "",
 			q1: "",
 			q2: "",
-			classifications: "",
 			database: "",
+			outdir: "",
+			classifications: "",
 		},
 		isSampleJob: null,
 		// // Properties for backend job processing status, backend output, error tracking
@@ -220,7 +231,12 @@ export default {
 		jobDetails: {
 			deep: true,
 			handler() {
-				this.isExtractDisabled = !this.jobDetails.q1 || !this.jobDetails.classifications || !this.jobDetails.database || (this.jobDetails.mode === "paired-end" && !this.jobDetails.q2);
+				this.isExtractDisabled =
+					!["single-end", "paired-end", "long-read"].includes(this.jobDetails.mode) ||
+					!this.jobDetails.q1 ||
+					!this.jobDetails.classifications ||
+					!this.jobDetails.database ||
+					(this.jobDetails.mode === "paired-end" && !this.jobDetails.q2);
 			},
 		},
 	},
@@ -472,10 +488,10 @@ export default {
 	async mounted() {
 		const processedResults = JSON.parse(localStorage.getItem("processedResults"));
 		if (processedResults) {
-			this.jobDetails = processedResults.jobDetails;
+			this.jobDetails = processedResults.jobDetails ? processedResults.jobDetails : this.jobDetails; // Leave as default empty filepaths for Upload Result jobs
 			this.isSampleJob = processedResults.isSample;
 
-			// Resolve file paths for sample data
+			// Resolve file paths for Load Sample Data
 			if (this.isSampleJob) {
 				this.jobDetails.outdir = window.electron.getBasePath();
 				this.jobDetails.q1 = `${this.jobDetails.outdir}/${this.jobDetails.q1}`;
