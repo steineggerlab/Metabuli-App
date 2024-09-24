@@ -4,7 +4,7 @@
 			<!-- SEARCH SETTINGS PANEL -->
 			<v-card class="mb-3 search-settings-panel">
 				<!-- HEADER TOOLBAR -->
-				<v-toolbar image='assets/toolbar_background.png' class="custom-toolbar" density="compact">
+				<v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">
 					Search Settings
 					<v-spacer></v-spacer>
 
@@ -32,13 +32,7 @@
 
 					<!-- UPLOAD REPORT TAB-->
 					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[1].value">
-						<UploadReportTab 
-            @job-started="emitJobStarted" 
-            @job-completed="emitJobCompleted" 
-            @job-aborted="emitJobAborted" 
-            @trigger-snackbar="triggerSnackbar" 
-            @store-job="storeJob"
-            ></UploadReportTab>
+						<UploadReportTab @job-started="emitJobStarted" @job-completed="emitJobCompleted" @job-aborted="emitJobAborted" @trigger-snackbar="triggerSnackbar" @store-job="storeJob"></UploadReportTab>
 					</v-tabs-window-item>
 				</v-tabs-window>
 			</v-card>
@@ -59,7 +53,7 @@
 <script>
 import NewSearchTab from "@/components/NewSearchTab.vue";
 import UploadReportTab from "@/components/UploadReportTab.vue";
-import { trimAndStoreJobsHistory } from "@/plugins/storageUtils.js";
+import { trimAndStoreJobsHistory, loadJobsHistory } from "@/plugins/storageUtils.js";
 
 export default {
 	name: "SearchSetting",
@@ -103,26 +97,36 @@ export default {
 		},
 
 		// Function managing job history storage
-		storeJob(job) {
+		async storeJob(job) {
+			// Deep clone the jobDetails and results to avoid storing reactive proxies
+			const plainJobDetails = JSON.parse(JSON.stringify(job.jobDetails));
+			const plainResults = JSON.parse(JSON.stringify(job.resultsJSON));
+
 			// Create a new job entry with additional details
 			const jobEntry = {
-				jobDetails: job.jobDetails,
+				jobDetails: plainJobDetails,
 				jobId: job.jobid,
 				timestamp: new Date().toISOString(), // Timestamp of job completion
 				jobType: job.jobType,
 				isSample: job.isSample,
 				jobStatus: job.jobStatus,
 				backendOutput: job.backendOutput,
-				results: job.resultsJSON,
+				results: plainResults,
 				kronaContent: job.kronaContent,
 			};
 
-			// Retrieve existing jobs from localStorage
-			let jobsHistory = JSON.parse(localStorage.getItem("jobsHistory") || "[]");
-			// Add the new job to the history array
-			jobsHistory.push(jobEntry);
-			// Trim and store latest 10
-			jobsHistory = trimAndStoreJobsHistory(jobsHistory);
+			try {
+				// Load existing jobs from file using Electron API
+				let jobsHistory = await loadJobsHistory();
+
+				// Add the new job to the history array
+				jobsHistory.push(jobEntry);
+
+				// Trim and store the latest 10 jobs in the file
+				await trimAndStoreJobsHistory(jobsHistory);
+			} catch (error) {
+				console.error("Error storing job:", error);
+			}
 		},
 
 		// Functions managing snackbar
