@@ -6,7 +6,7 @@
 				<v-card-title class="text-button font-weight-bold">Upload Previous Report</v-card-title>
 				<v-card-text>Upload report.tsv file directly to see visualization.</v-card-text>
 			</v-card>
-	
+
 			<v-sheet class="d-flex flex-column gr-2 mb-2">
 				<!-- Upload Box -->
 				<div class="d-flex flex-column align-center dotted-border gr-3" @click="triggerFilePicker">
@@ -14,7 +14,7 @@
 					<v-icon size="50" icon="$fileUpload" color="primary"></v-icon>
 					<p class="text-body-2">Drag & drop your file here or choose from files.</p>
 				</div>
-	
+
 				<!-- Show Uploaded Files -->
 				<div v-if="file" class="uploaded-file">
 					<v-card-subtitle>Uploaded File</v-card-subtitle>
@@ -22,12 +22,12 @@
 						<v-chip label closable prepend-icon="$file" color="primary" @click:close="removeFile">{{ file.name }}</v-chip>
 					</v-card-text>
 				</div>
-	
+
 				<!-- Upload Button -->
 				<v-btn block color="primary" @click="uploadFile" :disabled="!file">Upload</v-btn>
 			</v-sheet>
 		</v-container>
-	
+
 		<v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img>
 	</div>
 </template>
@@ -183,6 +183,13 @@ export default {
 					return Object.fromEntries(headers.map((header, index) => [header, data[index]]));
 				})
 				.filter((record) => !Object.values(record).every((field) => field === "" || field === undefined || field === null)); // Filter out empty rows
+
+			// After filtering out empty rows, assign 'no rank' to the 'rank' field if it's empty
+			records.forEach((record) => {
+				if (!record.rank) {
+					record.rank = "no rank";
+				}
+			});
 
 			// Validate report.tsv file
 			if (this.validateReportTSVData(records)) {
