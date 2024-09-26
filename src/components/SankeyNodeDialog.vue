@@ -104,7 +104,7 @@
 					</template>
 				</SankeyDownloadMenu>
 
-				<ExtractReadsDialog :taxonId="nodeDetails.data.taxon_id" :menuLocation="'top center'" @format-selected="emitSubtreeSankeyDownloadDetails">
+				<ExtractReadsDialog :taxonId="nodeDetails.data.taxon_id" :menuLocation="'top center'">
 					<template v-slot:activator="{ props }">
 						<v-btn v-bind="props" extended prepend-icon="$fileExport" text="Extract" color="secondary" rounded> </v-btn>
 					</template>
