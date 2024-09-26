@@ -82,12 +82,26 @@
 				<!-- NAME -->
 				<td>{{ item.name }}</td>
 
-				<!-- VIEW DETAILS BUTTON -->
+				<!-- ACTION BUTTONS -->
 				<td>
-					<div class="d-flex justify-end">
-						<v-btn prepend-icon="$eye" variant="outlined" color="primary" size="small" class="text-body-2" v-if="sankeyRankColumns.includes(item.rank)" @click="$emit('row-click', item)">
-							View Details
-						</v-btn>
+					<!-- VIEW DETAILS BUTTON -->
+					<div class="d-flex gc-2 justify-end">
+						<v-btn
+							text="Details"
+							prepend-icon="$eye"
+							variant="tonal"
+							color="primary"
+							size="small"
+							class="text-body-2"
+							v-if="sankeyRankColumns.includes(item.rank)"
+							@click="$emit('row-click', item)"
+						/>
+						<!-- EXTRACT READS BUTTON -->
+						<ExtractReadsDialog :taxonId="item.taxon_id" :menuLocation="'top center'">
+							<template v-slot:activator="{ props }">
+								<v-btn v-bind="props" text="Extract" prepend-icon="$fileExport" variant="tonal" color="secondary" size="small" class="text-body-2"/>
+							</template>
+						</ExtractReadsDialog>
 					</div>
 				</td>
 			</tr>
@@ -97,8 +111,13 @@
 
 <script>
 import { rankOrderFull, sankeyRankColumns, getRankColor } from "@/plugins/rankUtils";
+import ExtractReadsDialog from "./ExtractReadsDialog.vue";
 
 export default {
+	components: {
+		ExtractReadsDialog,
+	},
+
 	data() {
 		return {
 			headers: [
