@@ -14,7 +14,7 @@
 					<!-- Rank Column -->
 					<v-col>
 						<v-card-subtitle>Rank</v-card-subtitle>
-						<v-chip :color="getRankColor(nodeDetails.data.trueRank)" density="compact" class="font-weight-bold" label>{{ nodeDetails.data.trueRank }}</v-chip>
+						<v-chip :color="getRankColor(nodeDetails.data.trueRank)" rounded="xl" variant="outlined" density="compact" class="font-weight-bold" label>{{ nodeDetails.data.trueRank }}</v-chip>
 					</v-col>
 
 					<!-- Proportion Column -->

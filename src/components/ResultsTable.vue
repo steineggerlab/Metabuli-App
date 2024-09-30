@@ -73,7 +73,7 @@
 
 				<!-- RANK -->
 				<td>
-					<v-chip :color="getRankColor(item.rank)" density="comfortable" rounded="lg">{{ item.rank }}</v-chip>
+					<v-chip :color="getRankColor(item.rank)" variant="outlined" density="comfortable" rounded="xl">{{ item.rank }}</v-chip>
 				</td>
 
 				<!-- TAXON ID -->
