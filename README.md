@@ -100,7 +100,7 @@ https://github.com/user-attachments/assets/6c8b848b-77b8-49b1-b01e-069b872ea740
 ### Viewing Results
 Watch this demo to see how to view the results from a completed search:
 
-https://github.com/user-attachments/assets/1284c669-cdbb-48c5-ba53-accb9ad62fea
+https://github.com/user-attachments/assets/8cda1132-201f-4f8d-9f09-95ccafb9e685
 
 ## Acknowledgments
 The development of the Metabuli Desktop Application has been inspired by and leverages the following tools:
