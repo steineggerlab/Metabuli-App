@@ -11,6 +11,10 @@ For more details of Metabuli, please see
 [bioRxiv](https://www.biorxiv.org/content/10.1101/2023.05.31.543018v2), or [ISMB 2023 talk](https://www.youtube.com/watch?v=vz2fuRcVwyk).
 <p align="center"><img src="https://raw.githubusercontent.com/steineggerlab/Metabuli/master/.github/marv_metabuli_small.png" height="350" /></p>
 
+## NOTE
+The `NCBI` and `Assemblies` buttons in the Sankey subtree view do not work when searching against a GTDB-based database. 
+We will make a button for GTDB soon.
+
 ## Platforms Supported
 
 - macOS (Universal `.dmg`)
