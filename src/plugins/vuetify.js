@@ -30,6 +30,7 @@ import {
   mdiFileImage,
   mdiCodeTags,
   mdiFileExport,
+  mdiDatabase,
 } from "@mdi/js"; // Icon search: https://vuetifyjs.com/en/features/icon-fonts/#mdi-icon-search
 
 export default createVuetify({
@@ -87,6 +88,7 @@ export default createVuetify({
       fileImage: mdiFileImage,
       codeTags: mdiCodeTags,
       fileExport: mdiFileExport,
+      database: mdiDatabase,
     },
     sets: {
       mdi,
