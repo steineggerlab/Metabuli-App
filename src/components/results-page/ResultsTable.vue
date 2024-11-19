@@ -111,7 +111,7 @@
 
 <script>
 import { rankOrderFull, sankeyRankColumns, getRankColor } from "@/plugins/rankUtils";
-import ExtractReadsDialog from "./ExtractReadsDialog.vue";
+import ExtractReadsDialog from "@/components/results-page/ExtractReadsDialog.vue";
 
 export default {
 	components: {

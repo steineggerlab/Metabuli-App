@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import SearchSetting from "@/components/SearchSetting.vue";
+import SearchSetting from "@/components/search-page/SearchSetting.vue";
 
 export default {
 	name: "SearchPage",

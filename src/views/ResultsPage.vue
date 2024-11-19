@@ -94,11 +94,11 @@
 </template>
 
 <script>
-import SankeyDiagram from "@/components/SankeyDiagram.vue";
-import ResultsTable from "@/components/ResultsTable.vue";
-import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
-import SankeyDownloadMenu from "@/components/SankeyDownloadMenu.vue";
-import SankeyNodeDialog from "@/components/SankeyNodeDialog.vue";
+import SankeyDiagram from "@/components/results-page/SankeyDiagram.vue";
+import ResultsTable from "@/components/results-page/ResultsTable.vue";
+import ConfigureSankeyMenu from "@/components/results-page/ConfigureSankeyMenu.vue";
+import SankeyDownloadMenu from "@/components/results-page/SankeyDownloadMenu.vue";
+import SankeyNodeDialog from "@/components/results-page/SankeyNodeDialog.vue";
 import { saveSvgAsPng } from "save-svg-as-png";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from "uuid";

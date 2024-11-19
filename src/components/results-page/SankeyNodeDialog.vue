@@ -132,9 +132,9 @@
 </template>
 
 <script>
-import SankeyDiagram from "@/components/SankeyDiagram.vue";
-import ExtractReadsDialog from "./ExtractReadsDialog.vue";
-import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
+import SankeyDiagram from "@/components/results-page/SankeyDiagram.vue";
+import ExtractReadsDialog from "@/components/results-page/ExtractReadsDialog.vue";
+import ConfigureSankeyMenu from "@/components/results-page/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
 import { getRankColor } from "@/plugins/rankUtils";
 import SankeyDownloadMenu from "./SankeyDownloadMenu.vue";
