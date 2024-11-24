@@ -137,7 +137,7 @@ import ExtractReadsDialog from "@/components/results-page/ExtractReadsDialog.vue
 import ConfigureSankeyMenu from "@/components/results-page/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
 import { getRankColor } from "@/plugins/rankUtils";
-import SankeyDownloadMenu from "./SankeyDownloadMenu.vue";
+import SankeyDownloadMenu from "@/components/results-page/SankeyDownloadMenu.vue";
 
 export default {
 	name: "SankeyNodeDialog",
