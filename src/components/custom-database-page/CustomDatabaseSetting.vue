@@ -12,26 +12,39 @@
 					<v-form ref="jobForm" v-model="isJobFormValid">
 						<v-card-title class="text-button font-weight-bold">Required Fields</v-card-title>
 						<div class="d-flex">
-							<div class="w-66 search-required-fields">
+							<div class="w-100 search-required-fields">
 								<v-container>
 									<!-- DB Directory -->
 									<v-row>
-										<v-col cols="4">
-											<v-list-subheader class="pr-0">Database Directory</v-list-subheader>
+										<v-col cols="3">
+											<v-list-subheader class="pr-0">
+												<v-tooltip location="top">
+													<template v-slot:activator="{ props }">
+														<v-icon v-bind="props" icon="$helpCircle"></v-icon>
+													</template>
+													Sequences will be stored in 'DBDIR/library'.
+												</v-tooltip>
+												Database Directory
+											</v-list-subheader>
 										</v-col>
-										<v-col cols="8" class="search-files">
-											<!-- Q1 File -->
+
+										<v-col cols="9" class="search-files">
 											<v-row>
-												<v-col cols="6">
-													<v-btn @click="selectFile('q1', 'file')" prepend-icon="$folder" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+												<v-col cols="4">
+													<v-btn
+														@click="selectFile('dbdir', 'directory')"
+														prepend-icon="$folder"
+														density="comfortable"
+														size="default"
+														class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
 														>Select Directory</v-btn
 													>
-													<v-text-field v-model="jobDetails.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
+													<v-text-field v-model="jobDetails.dbdir" :rules="[requiredRule]" style="display: none"></v-text-field>
 												</v-col>
-												<v-col cols="6" class="filename-col">
-													<v-chip v-if="jobDetails.q1" label color="primary" density="comfortable" class="filename-chip">
-														<v-icon icon="$delete" @click="clearFile('q1')" class="mr-1"></v-icon>
-														{{ this.extractFilename(jobDetails.q1) }}</v-chip
+												<v-col cols="8" class="filename-col">
+													<v-chip v-if="jobDetails.dbdir" label color="primary" density="comfortable" class="filename-chip">
+														<v-icon icon="$delete" @click="clearFile('dbdir')" class="mr-1"></v-icon>
+														{{ this.extractFilename(jobDetails.dbdir) }}</v-chip
 													>
 												</v-col>
 											</v-row>
@@ -40,22 +53,35 @@
 
 									<!-- Library File -->
 									<v-row>
-										<v-col cols="4">
-											<v-list-subheader class="pr-0">Library File</v-list-subheader>
+										<v-col cols="3">
+											<v-list-subheader class="pr-0">
+												<v-tooltip location="top">
+													<template v-slot:activator="{ props }">
+														<v-icon v-bind="props" icon="$helpCircle"></v-icon>
+													</template>
+													A file containing absolute paths of the FASTA files in DBDIR/library (library-files.txt)
+												</v-tooltip>
+												Library File
+											</v-list-subheader>
 										</v-col>
 
-										<v-col cols="8" class="search-files">
+										<v-col cols="9" class="search-files">
 											<v-row>
-												<v-col cols="6">
-													<v-btn @click="selectFile('q1', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+												<v-col cols="4">
+													<v-btn
+														@click="selectFile('libfiles', 'file')"
+														prepend-icon="$file"
+														density="comfortable"
+														size="default"
+														class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
 														>Select File</v-btn
 													>
-													<v-text-field v-model="jobDetails.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
+													<v-text-field v-model="jobDetails.libfiles" :rules="[requiredRule]" style="display: none"></v-text-field>
 												</v-col>
-												<v-col cols="6" class="filename-col">
-													<v-chip v-if="jobDetails.q1" label color="primary" density="comfortable" class="filename-chip">
-														<v-icon icon="$delete" @click="clearFile('q1')" class="mr-1"></v-icon>
-														{{ this.extractFilename(jobDetails.q1) }}</v-chip
+												<v-col cols="8" class="filename-col">
+													<v-chip v-if="jobDetails.libfiles" label color="primary" density="comfortable" class="filename-chip">
+														<v-icon icon="$delete" @click="clearFile('libfiles')" class="mr-1"></v-icon>
+														{{ this.extractFilename(jobDetails.libfiles) }}</v-chip
 													>
 												</v-col>
 											</v-row>
@@ -64,23 +90,35 @@
 
 									<!-- <accession2taxid> -->
 									<v-row>
-										<v-col cols="4">
-											<v-list-subheader class="pr-0">Accession 2 Tax Id</v-list-subheader>
+										<v-col cols="3">
+											<v-list-subheader class="pr-0">
+												<v-tooltip location="top">
+													<template v-slot:activator="{ props }">
+														<v-icon v-bind="props" icon="$helpCircle"></v-icon>
+													</template>
+													A path to NCBI-style accession2taxid.
+												</v-tooltip>
+												Accession 2 Tax Id
+											</v-list-subheader>
 										</v-col>
 
-										<v-col cols="8" class="search-files">
-											<!-- Q1 File -->
+										<v-col cols="9" class="search-files">
 											<v-row>
-												<v-col cols="6">
-													<v-btn @click="selectFile('q1', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+												<v-col cols="4">
+													<v-btn
+														@click="selectFile('accession2taxid', 'file')"
+														prepend-icon="$file"
+														density="comfortable"
+														size="default"
+														class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
 														>Select File</v-btn
 													>
-													<v-text-field v-model="jobDetails.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
+													<v-text-field v-model="jobDetails.accession2taxid" :rules="[requiredRule]" style="display: none"></v-text-field>
 												</v-col>
-												<v-col cols="6" class="filename-col">
-													<v-chip v-if="jobDetails.q1" label color="primary" density="comfortable" class="filename-chip">
-														<v-icon icon="$delete" @click="clearFile('q1')" class="mr-1"></v-icon>
-														{{ this.extractFilename(jobDetails.q1) }}</v-chip
+												<v-col cols="8" class="filename-col">
+													<v-chip v-if="jobDetails.accession2taxid" label color="primary" density="comfortable" class="filename-chip">
+														<v-icon icon="$delete" @click="clearFile('accession2taxid')" class="mr-1"></v-icon>
+														{{ this.extractFilename(jobDetails.accession2taxid) }}</v-chip
 													>
 												</v-col>
 											</v-row>
@@ -88,8 +126,6 @@
 									</v-row>
 								</v-container>
 							</div>
-
-							<!-- <v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img> -->
 						</div>
 
 						<!-- OPTIONAL FIELDS -->
@@ -204,23 +240,9 @@ export default {
 		isJobFormValid: false,
 		jobDetails: {
 			// Store job details including file paths
-			mode: "single-end",
-			q1: "",
-			q2: "",
-			database: "",
-			outdir: "",
-			jobid: "",
-			maxram: "",
-		},
-		jobDetailsSample: {
-			// Sample job details
-			mode: "paired-end",
-			q1: "SRR14484345_1.fq",
-			q2: "SRR14484345_2.fq",
-			database: "refseq_virus",
-			jobid: "sample_data",
-			outdir: "/sample_data",
-			maxram: 128,
+			dbdir: "", // directory path
+			libfiles: "", // file path
+			accession2taxid: "", // file path
 		},
 		expandAdvancedSettings: false,
 		advancedSettings: {
@@ -231,20 +253,6 @@ export default {
 				value: "",
 				type: "INTEGER",
 			},
-			// minScore: {
-			// 	title: "Min Score",
-			// 	description: "The minimum score to be classified",
-			// 	parameter: "--min-score",
-			// 	value: "",
-			// 	type: "FLOAT",
-			// },
-			// minSpScore: {
-			// 	title: "Min SP Score",
-			// 	description: "The minimum score to be classified at or below species rank.",
-			// 	parameter: "--min-sp-score",
-			// 	value: "",
-			// 	type: "FLOAT",
-			// },
 			taxonomyPath: {
 				title: "Taxonomy Path",
 				description: "Directory where the taxonomy dump files are stored. (DBDIR/taxonomy by default)",
@@ -256,14 +264,6 @@ export default {
 					file: true,
 				},
 			},
-			// reducedAA: {
-			//   title: "Reduced AA",
-			//   description:
-			//     "0. Use 20 alphabets or 1. Use 15 alphabets to encode amino acids. Give the same value used for DB creation.",
-			//   parameter: "--reduced-aa", // FIXME: 엥 왜 안돼
-			//   value: "",
-			//   type: "INTEGER",
-			// },
 			accessionLevel: {
 				title: "Accession Level",
 				description: "Set 1 to use accession level classification (0 by default).",
@@ -283,27 +283,6 @@ export default {
 					return true;
 				}
 				return Number.isInteger(Number(value)) || "Input must be a valid integer";
-			},
-			"--min-score": (value) => {
-				// Input must be valid float
-				if (value === "" || value === null || value === undefined) {
-					return true;
-				}
-				return (!isNaN(value) && parseFloat(value) === Number(value)) || "Input must be a valid float";
-			},
-			"--min-sp-score": (value) => {
-				// Input must be valid float
-				if (value === "" || value === null || value === undefined) {
-					return true;
-				}
-				return (!isNaN(value) && parseFloat(value) === Number(value)) || "Input must be a valid float";
-			},
-			"--reduced-aa": (value) => {
-				// Input can be empty, or either numerical 0 or 1
-				const isEmpty = value === "" || value === null || value === undefined;
-				const validInputs = ["0", "1"];
-
-				return isEmpty || validInputs.includes(value) || "Value must be 0 or 1";
 			},
 			"--accession-level": (value) => {
 				// Input can be empty, or either numerical 0 or 1

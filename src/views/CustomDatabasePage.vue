@@ -58,15 +58,13 @@ export default {
 	data() {
 		return {
 			loadingDialog: false,
-			isSampleJob: false,
 			backendOutput: "", // Data property to store real-time output
 		};
 	},
 	methods: {
 		// Show/hide dialog
-		showDialog(isSample) {
+		showDialog() {
 			this.loadingDialog = true;
-			this.isSampleJob = isSample;
 		},
 		hideDialog() {
 			this.loadingDialog = false;
