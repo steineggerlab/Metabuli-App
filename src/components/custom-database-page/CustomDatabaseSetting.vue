@@ -193,8 +193,28 @@
 											</v-row>
 										</v-col>
 									</v-row>
+
+									<!-- --max-ram -->
+									<v-row>
+										<v-col cols="3">
+											<v-list-subheader>Max RAM</v-list-subheader>
+										</v-col>
+										<v-col cols="6">
+											<v-text-field
+												v-model="jobDetails.maxram"
+												:rules="[...getValidationRules('--max-ram'), requiredRule]"
+												variant="outlined"
+												density="compact"
+												color="primary"
+												rounded="lg"
+												suffix="GiB"
+											></v-text-field>
+										</v-col>
+									</v-row>
 								</v-container>
 							</div>
+
+							<!-- <v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img> -->
 						</div>
 
 						<!-- OPTIONAL FIELDS -->
@@ -313,6 +333,7 @@ export default {
 			libfiles: "", // file path
 			accession2taxid: "", // file path
 			taxonomyPath: "", // directory path
+			maxram: "",
 		},
 		expandAdvancedSettings: false,
 		advancedSettings: {
@@ -832,19 +853,19 @@ export default {
 			window.electron.cancelBackend();
 		},
 
-		getCurrentDateTime() {
-			const now = new Date();
+		// getCurrentDateTime() {
+		// 	const now = new Date();
 
-			// Format the date and time (YYYY-MM-DD_HH-MM-SS)
-			const year = now.getFullYear();
-			const month = String(now.getMonth() + 1).padStart(2, "0"); // Months are 0-based
-			const day = String(now.getDate()).padStart(2, "0");
-			const hours = String(now.getHours()).padStart(2, "0");
-			const minutes = String(now.getMinutes()).padStart(2, "0");
-			const seconds = String(now.getSeconds()).padStart(2, "0");
+		// 	// Format the date and time (YYYY-MM-DD_HH-MM-SS)
+		// 	const year = now.getFullYear();
+		// 	const month = String(now.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+		// 	const day = String(now.getDate()).padStart(2, "0");
+		// 	const hours = String(now.getHours()).padStart(2, "0");
+		// 	const minutes = String(now.getMinutes()).padStart(2, "0");
+		// 	const seconds = String(now.getSeconds()).padStart(2, "0");
 
-			return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
-		},
+		// 	return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+		// },
 	},
 
 	mounted() {
@@ -854,7 +875,7 @@ export default {
 		// Prefill Job Details
 		const totalRam = window.electron.getTotalRam(); // Get total RAM of current computer
 		this.jobDetails.maxram = totalRam; // Set maxram to total RAM in GB
-		this.jobDetails.jobid = this.getCurrentDateTime(); // Prefill Job ID with current timestamp
+		// this.jobDetails.jobid = this.getCurrentDateTime(); // Prefill Job ID with current timestamp
 	},
 };
 </script>
