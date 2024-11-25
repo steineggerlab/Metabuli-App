@@ -51,6 +51,43 @@
 										</v-col>
 									</v-row>
 
+									<!-- Taxonomy Path -->
+									<v-row>
+										<v-col cols="3">
+											<v-list-subheader class="pr-0">
+												<v-tooltip location="top">
+													<template v-slot:activator="{ props }">
+														<v-icon v-bind="props" icon="$helpCircle"></v-icon>
+													</template>
+													Directory where the taxonomy dump files are stored. (DBDIR/taxonomy by default)
+												</v-tooltip>
+												Taxonomy Path
+											</v-list-subheader>
+										</v-col>
+
+										<v-col cols="9" class="search-files">
+											<v-row>
+												<v-col cols="4">
+													<v-btn
+														@click="selectFile('taxonomyPath', 'directory')"
+														prepend-icon="$folder"
+														density="comfortable"
+														size="default"
+														class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+														>Select Directory</v-btn
+													>
+													<v-text-field v-model="jobDetails.taxonomyPath" :rules="[requiredRule]" style="display: none"></v-text-field>
+												</v-col>
+												<v-col cols="8" class="filename-col">
+													<v-chip v-if="jobDetails.taxonomyPath" label color="primary" density="comfortable" class="filename-chip">
+														<v-icon icon="$delete" @click="clearFile('taxonomyPath')" class="mr-1"></v-icon>
+														{{ this.extractFilename(jobDetails.taxonomyPath) }}</v-chip
+													>
+												</v-col>
+											</v-row>
+										</v-col>
+									</v-row>
+
 									<!-- Library File -->
 									<v-row>
 										<v-col cols="3">
@@ -243,6 +280,7 @@ export default {
 			dbdir: "", // directory path
 			libfiles: "", // file path
 			accession2taxid: "", // file path
+			taxonomyPath: "", // directory path
 		},
 		expandAdvancedSettings: false,
 		advancedSettings: {
@@ -252,17 +290,6 @@ export default {
 				parameter: "--threads",
 				value: "",
 				type: "INTEGER",
-			},
-			taxonomyPath: {
-				title: "Taxonomy Path",
-				description: "Directory where the taxonomy dump files are stored. (DBDIR/taxonomy by default)",
-				parameter: "--taxonomy-path",
-				value: "",
-				type: "STRING",
-				extra: {
-					appendIcon: "folder",
-					file: true,
-				},
 			},
 			accessionLevel: {
 				title: "Accession Level",
