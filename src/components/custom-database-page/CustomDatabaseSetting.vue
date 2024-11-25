@@ -68,15 +68,31 @@
 										<v-col cols="9" class="search-files">
 											<v-row>
 												<v-col cols="4">
-													<v-btn
-														@click="selectFile('taxonomyPath', 'directory')"
-														prepend-icon="$folder"
-														density="comfortable"
-														size="default"
-														class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-														>Select Directory</v-btn
-													>
-													<v-text-field v-model="jobDetails.taxonomyPath" :rules="[requiredRule]" style="display: none"></v-text-field>
+													<div class="d-flex flex-column align-center mb-0 gc-3">
+														<!-- Select Directory Button -->
+														<v-btn
+															@click="selectFile('taxonomyPath', 'directory')"
+															prepend-icon="$folder"
+															density="comfortable"
+															size="default"
+															class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+															>Select Directory</v-btn
+														>
+														<v-text-field v-model="jobDetails.taxonomyPath" :rules="[requiredRule]" style="display: none"></v-text-field>
+
+														<!-- Download Data Button -->
+														<v-btn
+															color="primary"
+															prepend-icon="$openInNew"
+															variant="text"
+															class="text-caption font-weight-medium"
+															size="small"
+															rounded="xl"
+															href="https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/"
+															target="_blank"
+															>Download Data
+														</v-btn>
+													</div>
 												</v-col>
 												<v-col cols="8" class="filename-col">
 													<v-chip v-if="jobDetails.taxonomyPath" label color="primary" density="comfortable" class="filename-chip">
@@ -142,15 +158,31 @@
 										<v-col cols="9" class="search-files">
 											<v-row>
 												<v-col cols="4">
-													<v-btn
-														@click="selectFile('accession2taxid', 'file')"
-														prepend-icon="$file"
-														density="comfortable"
-														size="default"
-														class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-														>Select File</v-btn
-													>
-													<v-text-field v-model="jobDetails.accession2taxid" :rules="[requiredRule]" style="display: none"></v-text-field>
+													<div class="d-flex flex-column align-center mb-0 gc-3">
+														<!-- Select File Button -->
+														<v-btn
+															@click="selectFile('accession2taxid', 'file')"
+															prepend-icon="$file"
+															density="comfortable"
+															size="default"
+															class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+															>Select File</v-btn
+														>
+														<v-text-field v-model="jobDetails.accession2taxid" :rules="[requiredRule]" style="display: none"></v-text-field>
+
+														<!-- Download Data Button -->
+														<v-btn
+															color="primary"
+															prepend-icon="$openInNew"
+															variant="text"
+															class="text-caption font-weight-medium"
+															size="small"
+															rounded="xl"
+															href="https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/"
+															target="_blank"
+															>Download Data
+														</v-btn>
+													</div>
 												</v-col>
 												<v-col cols="8" class="filename-col">
 													<v-chip v-if="jobDetails.accession2taxid" label color="primary" density="comfortable" class="filename-chip">
