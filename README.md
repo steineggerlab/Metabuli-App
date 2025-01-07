@@ -1,3 +1,7 @@
+<a href="https://doi.org/10.5281/zenodo.14603649" target="_blank">
+  <img src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.14603649-blue" alt="DOI">
+</a>
+
 ![Platform](https://img.shields.io/badge/platform-Mac%20%7C%20Windows%20%7C%20Linux-brightgreen)
 
 # Metabuli App 
