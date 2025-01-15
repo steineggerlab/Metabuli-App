@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<SearchSetting @job-started="showDialog" @job-aborted="hideDialog" @job-timed-out="handleJobTimeOut" @job-completed="handleJobComplete" @backend-realtime-output="updateRealtimeOutput" />
+		<CustomDatabaseSetting @job-started="showDialog" @job-aborted="hideDialog" @job-timed-out="handleJobTimeOut" @job-completed="handleJobComplete" @backend-realtime-output="updateRealtimeOutput" />
 
 		<!-- Loading Dialog -->
 		<v-dialog v-model="loadingDialog" persistent>
@@ -44,43 +44,27 @@
 				</v-list>
 			</v-card>
 		</v-dialog>
-
-		<!-- Footer: Reference to Paper -->
-		<v-container class="pt-0">
-			<v-card>
-				<v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">Reference</v-toolbar>
-				<v-card-text>
-					Kim J, Steinegger M.
-					<a href="https://www.nature.com/articles/s41592-024-02273-y" target="_blank" class="text-blue-accent-4">
-						Metabuli: sensitive and specific metagenomic classification via joint analysis of amino acid and DNA.
-					</a>
-					Nature Methods (2024).
-				</v-card-text>
-			</v-card>
-		</v-container>
 	</div>
 </template>
 
 <script>
-import SearchSetting from "@/components/search-page/SearchSetting.vue";
+import CustomDatabaseSetting from "@/components/custom-database-page/CustomDatabaseSetting.vue";
 
 export default {
-	name: "SearchPage",
+	name: "CustomDatabasePage",
 	components: {
-		SearchSetting,
+		CustomDatabaseSetting,
 	},
 	data() {
 		return {
 			loadingDialog: false,
-			isSampleJob: false,
 			backendOutput: "", // Data property to store real-time output
 		};
 	},
 	methods: {
 		// Show/hide dialog
-		showDialog(isSample) {
+		showDialog() {
 			this.loadingDialog = true;
-			this.isSampleJob = isSample;
 		},
 		hideDialog() {
 			this.loadingDialog = false;

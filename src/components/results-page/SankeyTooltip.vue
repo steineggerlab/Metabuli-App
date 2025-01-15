@@ -7,7 +7,7 @@
 						<p class="mb-n1" style="font-size: 0.6rem">#{{ data.taxon_id }}</p>
 						<v-card-title class="opacity-100 text-subtitle-2 pt-0 pb-0 px-0 font-weight-bold">{{ data.name }}</v-card-title>
 					</div>
-					<v-chip variant="tonal" color="orange-lighten-1 px-2 font-weight-bold" density="compact">{{ data.trueRank }}</v-chip>
+					<v-chip variant="tonal" color="orange-lighten-1 px-2 font-weight-bold" density="compact">{{ data.rankDisplayName }}</v-chip>
 				</v-row>
 
 				<v-row>

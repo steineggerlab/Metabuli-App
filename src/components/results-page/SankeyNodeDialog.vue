@@ -14,7 +14,7 @@
 					<!-- Rank Column -->
 					<v-col>
 						<v-card-subtitle>Rank</v-card-subtitle>
-						<v-chip :color="getRankColor(nodeDetails.data.trueRank)" rounded="xl" variant="outlined" density="compact" class="font-weight-bold" label>{{ nodeDetails.data.trueRank }}</v-chip>
+						<v-chip :color="getRankColor(nodeDetails.data.rankDisplayName)" rounded="xl" variant="outlined" density="compact" class="font-weight-bold" label>{{ nodeDetails.data.rankDisplayName }}</v-chip>
 					</v-col>
 
 					<!-- Proportion Column -->
@@ -132,12 +132,12 @@
 </template>
 
 <script>
-import SankeyDiagram from "@/components/SankeyDiagram.vue";
-import ExtractReadsDialog from "./ExtractReadsDialog.vue";
-import ConfigureSankeyMenu from "@/components/ConfigureSankeyMenu.vue";
+import SankeyDiagram from "@/components/results-page/SankeyDiagram.vue";
+import ExtractReadsDialog from "@/components/results-page/ExtractReadsDialog.vue";
+import ConfigureSankeyMenu from "@/components/results-page/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
 import { getRankColor } from "@/plugins/rankUtils";
-import SankeyDownloadMenu from "./SankeyDownloadMenu.vue";
+import SankeyDownloadMenu from "@/components/results-page/SankeyDownloadMenu.vue";
 
 export default {
 	name: "SankeyNodeDialog",

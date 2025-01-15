@@ -1,4 +1,4 @@
-/** Full rank order used for sorting/ordering of hierarchy */
+/** Full rank order used un result table for sorting/ordering of hierarchy */
 export const rankOrderFull = [
 	"superkingdom",
 	"kingdom",
@@ -29,8 +29,9 @@ export const rankOrderFull = [
 
 /** Ranks displays as levels/columns on sankey diagram
  * Include 'no rank' for nodes displayed on sankey */
-export const sankeyRankColumns = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
+export const sankeyRankColumns = ["root", "superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
 
+/** Colors used in getRankColor function below */
 const rankColors = [
 	// Superkingdom
 	"#57291F",

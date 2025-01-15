@@ -31,40 +31,45 @@
 					></v-list-item>
 				</router-link>
 
+				<!-- CUSTOM DATABASE NAVIGATION ITEM -->
+				<router-link :to="items[1].path" class="no-underline">
+					<v-list-item
+						class="nav-item"
+						:title="items[1].title"
+						:prepend-icon="`$${items[1].icon}`"
+						:class="{ active: $route.path === items[1].path }"
+						@mouseover="hover = items[1].path"
+						@mouseleave="hover = ''"
+						v-ripple
+					></v-list-item>
+				</router-link>
+
 				<!-- RESULTS NAVIGATION ITEM -->
 				<v-slide-y-transition>
-					<router-link v-if="jobCompleted" :to="items[1].path" class="no-underline">
+					<router-link v-if="jobCompleted" :to="items[2].path" class="no-underline">
 						<v-list-item
 							class="nav-item"
-							:title="items[1].title"
-							:prepend-icon="`$${items[1].icon}`"
-							:class="{ active: $route.path === items[1].path }"
+							:title="items[2].title"
+							:prepend-icon="`$${items[2].icon}`"
+							:class="{ active: $route.path === items[2].path }"
 							@click="handleResultsClick"
-							@mouseover="hover = items[1].path"
+							@mouseover="hover = items[2].path"
 							@mouseleave="hover = ''"
 							v-ripple
 						>
-							<!-- <template v-slot:append>
-                <v-badge
-                  v-if="!checkedResults"
-                  dot
-                  color="red"
-                  class="badge-icon"
-                ></v-badge>
-              </template> -->
 						</v-list-item>
 					</router-link>
 				</v-slide-y-transition>
 
 				<v-divider></v-divider>
 				<!-- JOB HISTORY NAVIGATION ITEM -->
-				<router-link :to="items[2].path" class="no-underline">
+				<router-link :to="items[3].path" class="no-underline">
 					<v-list-item
 						class="nav-item"
-						:title="items[2].title"
-						:prepend-icon="`$${items[2].icon}`"
-						:class="{ active: $route.path === items[2].path }"
-						@mouseover="hover = items[2].path"
+						:title="items[3].title"
+						:prepend-icon="`$${items[3].icon}`"
+						:class="{ active: $route.path === items[3].path }"
+						@mouseover="hover = items[3].path"
 						@mouseleave="hover = ''"
 						v-ripple
 					></v-list-item>
@@ -92,6 +97,7 @@ export default {
 		hover: "",
 		items: [
 			{ title: "Data Input", path: "/search", icon: "upload" },
+			{ title: "Custom Database", path: "/custom-database", icon: "database" },
 			{ title: "Results", path: "/results", icon: "chartBar" },
 			{ title: "History", path: "/history", icon: "history" },
 		],

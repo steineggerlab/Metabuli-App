@@ -51,8 +51,8 @@
 </template>
 
 <script>
-import NewSearchTab from "@/components/NewSearchTab.vue";
-import UploadReportTab from "@/components/UploadReportTab.vue";
+import NewSearchTab from "@/components/search-page/NewSearchTab.vue";
+import UploadReportTab from "@/components/search-page/UploadReportTab.vue";
 import { trimAndStoreJobsHistory, loadJobsHistory } from "@/plugins/storageUtils.js";
 
 export default {

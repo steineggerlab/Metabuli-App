@@ -671,12 +671,23 @@ export default {
 		tsvToJSON(tsv) {
 			const headers = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "name"];
 			const records = tsv
-				.split("\n")
-				.map((line) => {
-					const data = line.split("\t").map((item) => item.trim()); // Strip leading and trailing whitespace
-					return Object.fromEntries(headers.map((header, index) => [header, data[index]]));
-				})
-				.filter((record) => !Object.values(record).every((field) => field === "" || field === undefined || field === null)); // Filter out empty rows
+			.split("\n")
+			.map((line) => {
+				const data = line.split("\t"); // Strip leading and trailing whitespace
+				
+				let record = Object.fromEntries(headers.map((header, index) => [header, data[index]]));
+				
+				if (data[5]) {
+					// Skip empty rows or rows with only whitespace
+					const leadingSpacesInName = (data[5].match(/^\s+/) || [""])[0].length; // Count leading spaces in name
+					const depth = Math.floor(leadingSpacesInName / 2); // Assuming 2 spaces per depth level
+					record.depth = depth;
+					record.name = record.name.trim(); // Remove leading and trailing whitespace after counting leading spaces
+				}
+
+				return record;
+			})
+			.filter((record) => !Object.values(record).every((field) => field === "" || field === undefined || field === null)); // Filter out empty rows
 
 			// Validate report.tsv file
 			if (this.validateReportTSVData(records)) {
