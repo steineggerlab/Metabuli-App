@@ -218,7 +218,7 @@ export default {
 					taxon_id: d.taxon_id,
 					name: d.name,
 					rank: d.rank,
-					trueRank: d.rank,
+					rankDisplayName: d.rank,
 					proportion: parseFloat(d.proportion),
 					clade_reads: parseFloat(d.clade_reads),
 					taxon_reads: d.taxon_reads,
