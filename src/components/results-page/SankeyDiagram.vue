@@ -253,6 +253,7 @@ export default {
 			let currentLineage = [];
 
 			let rootNode = null;
+			let unclassifiedNode = null;
 
 			/*
 			Step 1: Create nodes and save lineage data for all nodes
@@ -273,17 +274,37 @@ export default {
 				};
 
 				// Add node to its corresponding rank collection
+				// Consider root node and unclassified node separately
 				if (this.sankeyRankColumns.includes(d.rank)) {
 					if (!nodesByRank[d.rank]) {
 						nodesByRank[d.rank] = [];
 					}
 					nodesByRank[d.rank].push(node);
-				} else if (this.isRootNode(node)) {
-					nodesByRank["root"] = [node];
+				} else if (this.isUnclassifiedNode(node)) {
+					// FIXME: figure out which rank to put unclassified node in
+					if (!nodesByRank["root"]) {
+						nodesByRank["root"] = [];
+					}
+					// nodesByRank["root"].push(node); // FIXME: overlapping issue with root node when i put this in
+					
+					// Reassign some attributes specific to unclassified node
 					node.rank = "root";
-					node.rankDisplayName = "root";
+					node.rankDisplayName = node.name;
+					node.isUnclassifiedNode = true;
+					
+					unclassifiedNode = node;
+				} else if (this.isRootNode(node)) {
+					if (!nodesByRank["root"]) {
+						nodesByRank["root"] = [];
+					}
+					nodesByRank["root"].push(node);
+
+					// Reassign some attributes specific to root node
+					node.rank = "root"; // FIXME: remove this after fixing logic to leave it as "no rank", same as taxonomyreport
+					node.rankDisplayName = node.name;
+					
 					rootNode = node;
-				}
+				} 
 				
 				// Store lineage for each node
 				let lastLineageNode = currentLineage[currentLineage.length - 1];
@@ -357,54 +378,27 @@ export default {
 			/* 
 			Step 4: Create node for Unclassified Sequences linked to the root node
 			*/
-			if (rootNode) {
-				let totalClassifiedCladeReads = 0;
-				let totalClassifiedProportion = 0;
-
-				// Count total classified clade reads and proportion
-				selectedLinks.filter((link) => link.source === rootNode.id).forEach((link) => { // FIXME: should calculate based on allLinks (but causes error atm)
-					const targetNode = selectedNodes.find((node) => node.id === link.target);
-					totalClassifiedCladeReads = totalClassifiedCladeReads + targetNode.clade_reads;
-					totalClassifiedProportion = totalClassifiedProportion + targetNode.proportion;
-				});
-
-				const totalUnclassifiedCladeReads = rootNode.clade_reads - totalClassifiedCladeReads;
-				if (totalUnclassifiedCladeReads > 0) {
-					const unclassifiedNode = {
-						id: "", // FIXME: check
-						taxon_id: "", // FIXME: check
-						name: "Unclassified sequences",
-						rank: this.sankeyRankColumns[this.sankeyRankColumns.indexOf(rootNode.rank)+1],
-						rankDisplayName: "unclassified",
-						hierarchy: rootNode.hierarchy + 1,
-						proportion: rootNode.proportion - totalClassifiedProportion,
-						clade_reads: totalUnclassifiedCladeReads,
-						taxon_reads: 0,
-						lineage: [rootNode],
-						isUnclassifiedNode: true,
-					};
-					unclassifiedNode.lineage.push(unclassifiedNode); 
-
+			if (unclassifiedNode && rootNode) { // FIXME: remove rootNode if unneeded
 					// Add to selected and all nodes (always present, excluded from taxa limit)
 					selectedNodes.push(unclassifiedNode);
 					allNodes.push(unclassifiedNode);
 
 					// Add link from root node to unclassified node
-					selectedLinks.push({
-						sourceName: rootNode.name,
-						source: rootNode.id,
-						targetName: unclassifiedNode.name,
-						target: unclassifiedNode.id,
-						value: totalUnclassifiedCladeReads,
-					});
-					allLinks.push({
-						sourceName: rootNode.name,
-						source: rootNode.id,
-						targetName: unclassifiedNode.name,
-						target: unclassifiedNode.id,
-						value: totalUnclassifiedCladeReads,
-					});
-				}
+					// selectedLinks.push({
+					// 	sourceName: rootNode.name,
+					// 	source: rootNode.id,
+					// 	targetName: unclassifiedNode.name,
+					// 	target: unclassifiedNode.id,
+					// 	value: totalUnclassifiedCladeReads,
+					// });
+					// allLinks.push({
+					// 	sourceName: rootNode.name,
+					// 	source: rootNode.id,
+					// 	targetName: unclassifiedNode.name,
+					// 	target: unclassifiedNode.id,
+					// 	value: totalUnclassifiedCladeReads,
+					// });
+				// }
 			}
 
 			return { nodes: selectedNodes, links: selectedLinks };
@@ -413,7 +407,10 @@ export default {
 			// Check if the node is the root node
 			return parseInt(node.taxon_id) === 1;
 		},
-
+		isUnclassifiedNode(node) {
+			// Check if the node is the unclassified node
+			return parseInt(node.taxon_id) === 0;
+		},
 		// Function for updating configure menu value ranges based on data
 		updateConfigureMenu() {
 			let maxValues = 0;
