@@ -15,7 +15,7 @@ const historyFilePath = path.join(os.homedir(), "metabuli_job_history.json");
 contextBridge.exposeInMainWorld("electron", {
 	getBasePath: () => getBasePath(),
 	openItemInFolder: (filePath) => shell.showItemInFolder(filePath),
-	
+
 	// Function to check if file exists
 	fileExists: async (filePath) => {
 		try {
@@ -74,6 +74,14 @@ contextBridge.exposeInMainWorld("electron", {
 			throw new Error(`Failed to read file: ${error.message}`);
 		}
 	},
+	writeFile: async (filePath, content) => {
+        try {
+            await fs.writeFile(filePath, content, "utf8");
+        } catch (error) {
+            throw error;
+        }
+    },
+
 	openFileDialog: (options) => ipcRenderer.invoke("open-file-dialog", options),
 	openKrona: (filePath) => ipcRenderer.invoke("open-krona", filePath),
 
