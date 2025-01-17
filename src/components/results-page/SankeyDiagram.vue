@@ -266,7 +266,7 @@ export default {
 					rankDisplayName: d.rank,
 					hierarchy: parseInt(d.depth),
 					proportion: parseFloat(d.proportion),
-					clade_reads: parseFloat(d.clade_reads),
+					clade_reads: parseInt(d.clade_reads),
 					taxon_reads: d.taxon_reads,
 					lineage: null,
 					isUnclassifiedNode: false,
@@ -492,7 +492,17 @@ export default {
 		},
 
 		// Functions for node subtree dialog
-		showNodeDetails(event, nodeData) {
+		showNodeDetails(event, node) {
+			const nodeData = {
+				proportion: node.proportion,
+				clade_reads: node.clade_reads,
+				taxon_reads: node.taxon_reads,
+				taxon_id: node.taxon_id,
+				name: node.name,
+				rank: node.rank,
+				hierarchy: node.hierarchy,
+				lineage: node.lineage
+			};
 			this.$emit("node-click", nodeData);
 		},
 
@@ -835,7 +845,7 @@ export default {
 		},
 		async compareTSVContents(regeneratedReportContent, originalReportFile) {
 			try {
-				console.log(originalReportFile);
+				// console.log(originalReportFile);
 				// Read the TSV file content from the original report file
 				const originalReportContent = await window.electron.readFile(originalReportFile, false);
 

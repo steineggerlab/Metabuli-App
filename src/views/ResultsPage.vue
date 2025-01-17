@@ -138,6 +138,7 @@ export default {
 			dialogData: null,
 			// // Data for sankey in dialog
 			nonCladesRawData: null, // rawData with just clades filtered out
+			nodes: [],
 			fullGraphData: { nodes: [], links: [] },
 			allNodesByRank: {},
 			rankOrder: ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"],
@@ -148,7 +149,9 @@ export default {
 		results: {
 			immediate: true, // Called immediately upon component creation
 			handler(newResults) {
-				this.processRawData(newResults);
+				console.log(newResults);
+				this.parseData(newResults);
+				// this.processRawData(newResults);
 			},
 		},
 	},
@@ -163,7 +166,7 @@ export default {
 	methods: {
 		// Functions handling Details Dialog (shared between Table and Sankey tab)
 		// // Data processing functions for Subtree Sankey
-		getRawFullGraph() {
+		getRawFullGraph() { // FIXME: remove
 			const sankeyGenerator = sankey().nodeId((d) => d.id);
 
 			// Store full graph (used for drawing subtree upon node click)
@@ -382,39 +385,60 @@ export default {
 			}
 			return true;
 		},
-		extractSubtreeRawData(nodeData) {
+		extractSubtreeRawData(selectedNode) {
 			// Used only when isSubtree === false
+			let startIdx = -1;
+			let endIdx = -1;
+			let startedAdding = false;
+			const selectedNodeHierarchy = selectedNode.hierarchy;
 
-			const graph = this.getRawFullGraph();
-			const subtreeNodesTaxonIds = new Set();
-			const subtreeLinks = new Set();
+			for (let i = 0; i < this.results.length; i++) {
+				const comparingNode = this.results[i];
+				if (comparingNode.taxon_id === selectedNode.taxon_id) {
+					// Found the selected node; mark the start of the subtree
+					startIdx = i;
+					startedAdding = true;
+					continue; // Move to the next iteration
+				}
 
-			// Recursive function to get all descendant nodes and links
-			const getDescendants = (currentNode) => {
-				subtreeNodesTaxonIds.add(currentNode.taxon_id);
-				graph.links.forEach((link) => {
-					if (link.source.id === currentNode.id) {
-						subtreeLinks.add(link);
-						getDescendants(link.target);
+				if (startedAdding) {
+					const comparingNodeDepth = comparingNode.depth;
+					if (comparingNodeDepth > selectedNodeHierarchy) {
+						endIdx = i;
+					} else {
+						// Stop when we encounter a node at the same or higher rank
+						break;
 					}
-				});
-			};
+				}
+			}
 
-			// Get all descendants of the clicked node from total graph data
-			getDescendants(nodeData);
-
-			// Filter data based on the subtree nodes taxon ids
-			const subtreeRawData = this.nonCladesRawData.filter((data) => subtreeNodesTaxonIds.has(data.taxon_id));
+			const subtreeRawData = this.results.slice(startIdx, endIdx + 1);
 			return subtreeRawData;
 		},
 		// // Event handling to show/hide Details Dialog
 		handleRowClick(rowData) {
-			const graph = this.getRawFullGraph();
-			const nodeData = graph.nodes.find((node) => node.taxon_id === rowData.taxon_id);
+			// console.log("rowdata", rowData);
+			// const graph = this.getRawFullGraph();
+			// const nodeData = graph.nodes.find((node) => node.taxon_id === rowData.taxon_id);
+			const nodeData = {
+				proportion: parseFloat(rowData.proportion),
+				clade_reads: parseInt(rowData.clade_reads),
+				taxon_reads: parseInt(rowData.taxon_reads),
+				taxon_id: rowData.taxon_id,
+				name: rowData.name,
+				rank: rowData.rank,
+				hierarchy: rowData.depth,
+				lineage: [] // FIXME:
+			};
 
 			this.showDialog(nodeData);
 		},
-		showDialog(nodeData) {
+		showDialog({ proportion, clade_reads, taxon_reads, taxon_id, name, rank, hierarchy, lineage } = {}) {
+			if (proportion === undefined || clade_reads === undefined || taxon_id === undefined || rank === undefined || hierarchy === undefined ) {
+				throw new Error("Missing required properties: proportion, clade_reads, or taxon_id");
+			}
+			const nodeData = { proportion, clade_reads, taxon_reads, taxon_id, name, rank, hierarchy, lineage };
+			console.log(nodeData);
 			const subtreeRawData = this.extractSubtreeRawData(nodeData); // Extract subtree raw data for clicked node
 			const hasSourceLinks = subtreeRawData.length > 1 ? true : false; // Determine if the subtree has more than 1 node
 
