@@ -102,6 +102,7 @@ import { saveSvgAsPng } from "save-svg-as-png";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import { sankeyRankColumns } from "@/plugins/rankUtils";
+import { extractTaxonomyArray, compareTSVContents, saveTSVFile } from "@/plugins/sankeyUtils";
 
 export default {
 	name: "ResultsPage",
@@ -291,6 +292,9 @@ export default {
 					// });
 				// }
 			}
+
+			// Verify sankey
+			this.verifySankey();
 		},
 		isRootNode(node) {
 			// Check if the node is the root node
@@ -365,6 +369,29 @@ export default {
 		},
 		hideDialog() {
 			this.isDialogVisible = false;
+		},
+
+		// Sankey Verification
+		async verifySankey() {
+			const extractedTaxonomyArray = extractTaxonomyArray(this.nodesByDepth);
+
+			const properties = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "nameWithIndentation"];
+			
+			// Regenerate taxonomy report from the sankey data
+			const regeneratedReport = extractedTaxonomyArray
+				.map(node => properties.map(property => node[property] !== undefined && node[property] !== null 
+					? node[property] 
+					: "").join("\t"))
+				.join("\n");
+				
+			// Compare original taxonomy report and regenerated taxonomy report
+			const originalReport = sessionStorage.getItem("reportFilePath");
+			// const originalReport = "/Users/sunnylee/Documents/SteineggerLab/Metabuli-App/MetabuliTests/Test1/demo_outdir/2025-01-09_20-29-29_report.tsv"
+			
+			const compareSuccessful = await compareTSVContents(regeneratedReport, originalReport);
+			if (!compareSuccessful) {
+				await saveTSVFile(regeneratedReport, "/Users/sunnylee/Desktop/test_regenerated_reportfile.tsv"); // FIXME: remove
+			}
 		},
 
 		// Sankey Diagram Configuration Settings

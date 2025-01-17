@@ -753,9 +753,6 @@ export default {
 
 			// Highlight nodes matching search query
 			this.highlightNodes(this.searchQuery);
-
-			// Verify sankey
-			this.verifySankey();
 		},
 
 		// Functions for rerendering/updating Sankey
