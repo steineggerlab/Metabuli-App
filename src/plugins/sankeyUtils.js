@@ -51,8 +51,8 @@ export async function compareTSVContents(regeneratedReportContent, originalRepor
 
         // Compare line counts
         if (regeneratedReportEntries.length !== originalReportEntries.length) {
-            console.log("The number of lines in the reports do not match.");
-            console.log(`Regenerated report: ${regeneratedReportEntries.length}, Original report: ${originalReportEntries.length}`);
+            // console.log("The number of lines in the reports do not match.");
+            // console.log(`Regenerated report: ${regeneratedReportEntries.length}, Original report: ${originalReportEntries.length}`);
             return false;
         }
 
@@ -63,8 +63,8 @@ export async function compareTSVContents(regeneratedReportContent, originalRepor
 
             if (regeneratedEntryColumns.length !== originalEntryColumns.length) {
                 console.log(`Difference in column count on line ${i + 1}:`);
-                console.log(`Generated: ${regeneratedReportEntries[i]}`);
-                console.log(`File: ${originalReportEntries[i]}`);
+                // console.log(`Generated: ${regeneratedReportEntries[i]}`);
+                // console.log(`File: ${originalReportEntries[i]}`);
                 return false;
             }
 
@@ -82,22 +82,22 @@ export async function compareTSVContents(regeneratedReportContent, originalRepor
                     // Compare numeric values with a precision threshold
                     const precisionThreshold = 0.0001;
                     if (Math.abs(generatedNumber - fileNumber) > precisionThreshold) {
-                        console.log(`Numeric difference found on line ${i + 1}, column ${j + 1}:`);
-                        console.log(`Generated: ${generatedStringValue}`);
-                        console.log(`File: ${fileStringValue}`);
+                        // console.log(`Numeric difference found on line ${i + 1}, column ${j + 1}:`);
+                        // console.log(`Generated: ${generatedStringValue}`);
+                        // console.log(`File: ${fileStringValue}`);
                         return false;
                     }
                 } else if (generatedStringValue !== fileStringValue) {
                     // Compare as strings for non-numeric values
-                    console.log(`String difference found on line ${i + 1}, column ${j + 1}:`);
-                    console.log(`Generated: ${generatedStringValue}`);
-                    console.log(`File: ${fileStringValue}`);
+                    // console.log(`String difference found on line ${i + 1}, column ${j + 1}:`);
+                    // console.log(`Generated: ${generatedStringValue}`);
+                    // console.log(`File: ${fileStringValue}`);
                     return false;
                 }
             }
         }
 
-        console.log("The TSV contents are identical.");
+        // console.log("The TSV contents are identical.");
         return true;
     } catch (error) {
         console.error(`Error comparing TSV contents: ${error.message}`);
@@ -108,8 +108,8 @@ export async function compareTSVContents(regeneratedReportContent, originalRepor
 export async function saveTSVFile(content, filePath) {
 	// FIXME: remove
 	try {
-		await window.electron.writeFile(filePath, content); // Ensure `writeFile` is implemented in preload.js
-		console.log("File saved successfully:", filePath);
+		await window.electron.writeFile(filePath, content);
+		// console.log("File saved successfully:", filePath);
 	} catch (error) {
 		console.error("Error saving file:", error);
 	}

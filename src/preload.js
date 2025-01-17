@@ -31,7 +31,7 @@ contextBridge.exposeInMainWorld("electron", {
 		try {
 			const data = JSON.stringify(jobsHistory, null, 2);
 			await fs.writeFile(historyFilePath, data, "utf-8");
-			console.log("🚀 Job history saved successfully.");
+			// console.log("🚀 Job history saved successfully.");
 		} catch (error) {
 			console.error("Failed to save job history:", error);
 			throw new Error("Failed to save job history: " + error.message);
@@ -48,7 +48,7 @@ contextBridge.exposeInMainWorld("electron", {
 			}
 
 			const jobsHistory = JSON.parse(data); // Parse the JSON data
-			console.log("🚀 Job history loaded successfully.");
+			// console.log("🚀 Job history loaded successfully.");
 			return jobsHistory;
 		} catch (error) {
 			// If the file does not exist, return an empty array (initial state)

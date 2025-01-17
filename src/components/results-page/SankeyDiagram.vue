@@ -190,7 +190,7 @@ export default {
 			}
 		},
 		rawData: {
-			immediate: true, // Called immediately upon component creation
+			immediate: true, // FIXME: Called immediately upon component creation
 			handler(newValue) {
 				this.processRawData(newValue);
 			},
