@@ -13,7 +13,7 @@
 
 				<!-- TABLE TAB -->
 				<v-tabs-window-item value="table" class="h-100">
-					<ResultsTable :data="results" class="h-100" @row-click="handleRowClick" />
+					<ResultsTable :data="results" :taxonomyVerification="taxonomyVerification" class="h-100" @row-click="handleRowClick" />
 				</v-tabs-window-item>
 
 				<!-- SANKEY TAB-->
@@ -102,7 +102,7 @@ import { saveSvgAsPng } from "save-svg-as-png";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
 import { sankeyRankColumns } from "@/plugins/rankUtils";
-import { extractTaxonomyArray, compareTSVContents, saveTSVFile } from "@/plugins/sankeyUtils";
+import { extractTaxonomyArray, compareTSVContents } from "@/plugins/sankeyUtils";
 
 export default {
 	name: "ResultsPage",
@@ -121,6 +121,7 @@ export default {
 			results: [],
 			kronaContent: null,
 			isSample: null,
+			taxonomyVerification: null,
 
 			// Sankey Diagram
 			uniqueInstanceId: "",
@@ -145,7 +146,6 @@ export default {
 
 	watch: {
 		results: {
-			immediate: true, // Called immediately upon component creation
 			handler(newResults) {
 				this.parseData(newResults);
 			},
@@ -294,7 +294,14 @@ export default {
 			}
 
 			// Verify sankey
-			this.verifySankey();
+			this.verifySankey().then((result) => {
+				this.taxonomyVerification = result;
+				if (this.taxonomyVerification) {
+					console.log("🟩 Taxonomy verification succeeded.");
+				} else {
+					console.log("🟥 Taxonomy verification failed.");
+				}
+			});
 		},
 		isRootNode(node) {
 			// Check if the node is the root node
@@ -383,15 +390,19 @@ export default {
 					? node[property] 
 					: "").join("\t"))
 				.join("\n");
-				
+
 			// Compare original taxonomy report and regenerated taxonomy report
 			const originalReport = sessionStorage.getItem("reportFilePath");
-			// const originalReport = "/Users/sunnylee/Documents/SteineggerLab/Metabuli-App/MetabuliTests/Test1/demo_outdir/2025-01-09_20-29-29_report.tsv"
+			if (!originalReport) {
+				console.warn("Original report file path not found. Skipping TSV comparison.");
+				return;
+			}
 			
 			const compareSuccessful = await compareTSVContents(regeneratedReport, originalReport);
-			if (!compareSuccessful) {
-				await saveTSVFile(regeneratedReport, "/Users/sunnylee/Desktop/test_regenerated_reportfile.tsv"); // FIXME: remove
-			}
+			// if (!compareSuccessful) {
+			// 	await saveTSVFile(regeneratedReport, "/Users/sunnylee/Desktop/test_regenerated_reportfile.tsv"); // FIXME: remove
+			// }
+			return compareSuccessful;
 		},
 
 		// Sankey Diagram Configuration Settings
