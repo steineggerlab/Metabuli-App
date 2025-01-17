@@ -29,7 +29,7 @@ export const rankOrderFull = [
 
 /** Ranks displays as levels/columns on sankey diagram
  * Include 'no rank' for nodes displayed on sankey */
-export const sankeyRankColumns = ["root", "superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
+export const sankeyRankColumns = ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
 
 /** Colors used in getRankColor function below */
 const rankColors = [
@@ -72,5 +72,11 @@ const rankColors = [
 /** Function to retrieve color corresponding to rank */
 export function getRankColor(rank) {
 	const rankIndex = rankOrderFull.indexOf(rank);
-	return rankColors[rankIndex % rankColors.length];
+	// If rank is found in rankOrderFull, return the corresponding color
+	if (rankIndex !== -1) {
+		return rankColors[rankIndex % rankColors.length];
+	}
+
+	// If rank is not found, return the last color in rankColors
+	return rankColors[rankColors.length - 1];
 }
