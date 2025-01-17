@@ -845,7 +845,6 @@ export default {
 		},
 		async compareTSVContents(regeneratedReportContent, originalReportFile) {
 			try {
-				// console.log(originalReportFile);
 				// Read the TSV file content from the original report file
 				const originalReportContent = await window.electron.readFile(originalReportFile, false);
 

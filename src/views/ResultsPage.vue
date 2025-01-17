@@ -347,11 +347,10 @@ export default {
 			this.showDialog(nodeData);
 		},
 		showDialog({ proportion, clade_reads, taxon_reads, taxon_id, name, rank, hierarchy, lineage } = {}) {
-			if (proportion === undefined || clade_reads === undefined || taxon_id === undefined || rank === undefined || hierarchy === undefined ) {
-				throw new Error("Missing required properties: proportion, clade_reads, or taxon_id");
-			}
+			// if (proportion === undefined || clade_reads === undefined || taxon_id === undefined || rank === undefined || hierarchy === undefined ) {
+			// 	throw new Error("Missing required properties: proportion, clade_reads, or taxon_id");
+			// }
 			const nodeData = { proportion, clade_reads, taxon_reads, taxon_id, name, rank, hierarchy, lineage };
-			console.log(nodeData);
 			const subtreeRawData = this.extractSubtreeRawData(nodeData); // Extract subtree raw data for clicked node
 			const hasSourceLinks = subtreeRawData.length > 1 ? true : false; // Determine if the subtree has more than 1 node
 
