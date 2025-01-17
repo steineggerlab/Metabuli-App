@@ -33,6 +33,8 @@
 </template>
 
 <script>
+import TSVParser from "@/plugins/tsvParser";
+
 export default {
 	name: "UploadReportTab",
 	data() {
@@ -146,57 +148,15 @@ export default {
 			// Set file path for report directly
 			const reportFilePath = this.file.path;
 
+			// Store report file path in session storage for later use (taxonomy verification)
+			sessionStorage.setItem("reportFilePath", reportFilePath);
+
 			// Read and process TSV and Krona HTML here
-			const tsvData = await this.readTSVFile(reportFilePath, isSample);
-			const jsonData = this.tsvToJSON(tsvData);
+			const tsvData = await TSVParser.readTSVFile(reportFilePath, isSample);
+			const jsonData = TSVParser.tsvToJSON(tsvData);
 
 			// Store in component for emission
 			this.processedResults = { jsonData, kronaContent: null };
-		},
-		// Helper functions for processing data
-		async readTSVFile(filePath, isSample) {
-			try {
-				const tsvContent = await window.electron.readFile(filePath, isSample); //FIXME: edit readFile preload function
-				return tsvContent;
-			} catch (error) {
-				console.error("Error reading TSV file:", error);
-			}
-		},
-		validateReportTSVData(records) {
-			// Validation criteria for report.tsv file format
-			const firstRecord = records[0];
-
-			// No parsed data
-			if (firstRecord === undefined) return false;
-
-			return (
-				(firstRecord.rank === "no rank" && firstRecord.taxon_id === "0" && firstRecord.name === "unclassified") ||
-				(firstRecord.rank === "no rank" && firstRecord.taxon_id === "1" && firstRecord.name === "root")
-			);
-		},
-		tsvToJSON(tsv) {
-			const headers = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "name"];
-			const records = tsv
-				.split("\n")
-				.map((line) => {
-					const data = line.split("\t").map((item) => item.trim()); // Strip leading and trailing whitespace
-					return Object.fromEntries(headers.map((header, index) => [header, data[index]]));
-				})
-				.filter((record) => !Object.values(record).every((field) => field === "" || field === undefined || field === null)); // Filter out empty rows
-
-			// After filtering out empty rows, assign 'no rank' to the 'rank' field if it's empty
-			records.forEach((record) => {
-				if (!record.rank) {
-					record.rank = "no rank";
-				}
-			});
-
-			// Validate report.tsv file
-			if (this.validateReportTSVData(records)) {
-				return { results: records };
-			} else {
-				return null; // Return null if the row does not meet the criteria
-			}
 		},
 	},
 };

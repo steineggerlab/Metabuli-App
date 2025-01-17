@@ -13,7 +13,7 @@
 
 				<!-- TABLE TAB -->
 				<v-tabs-window-item value="table" class="h-100">
-					<ResultsTable :data="results" class="h-100" @row-click="handleRowClick" />
+					<ResultsTable :data="results" :taxonomyVerification="taxonomyVerification" class="h-100" @row-click="handleRowClick" />
 				</v-tabs-window-item>
 
 				<!-- SANKEY TAB-->
@@ -51,7 +51,7 @@
 							:maxTaxaLimit="roundedMaxTaxaLimit"
 							:initialMinCladeReadsMode="minCladeReadsMode"
 							:initialMinCladeReads="minCladeReads"
-							:initialShowUnclassified="showUnclassified"
+
 							:initialFigureHeight="figureHeight"
 							:initialLabelOption="labelOption"
 							:menuLocation="'bottom end'"
@@ -73,7 +73,6 @@
 						:taxaLimit="taxaLimit"
 						:minCladeReadsMode="minCladeReadsMode"
 						:minReads="minCladeReads"
-						:showUnclassified="showUnclassified"
 						:figureHeight="figureHeight"
 						:labelOption="labelOption"
 						:showAll="showAll"
@@ -102,8 +101,8 @@ import SankeyNodeDialog from "@/components/results-page/SankeyNodeDialog.vue";
 import { saveSvgAsPng } from "save-svg-as-png";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from "uuid";
-import { sankey } from "d3-sankey";
-import { rankOrderFull } from "@/plugins/rankUtils";
+import { sankeyRankColumns } from "@/plugins/rankUtils";
+import { extractTaxonomyArray, compareTSVContents } from "@/plugins/sankeyUtils";
 
 export default {
 	name: "ResultsPage",
@@ -122,6 +121,7 @@ export default {
 			results: [],
 			kronaContent: null,
 			isSample: null,
+			taxonomyVerification: null,
 
 			// Sankey Diagram
 			uniqueInstanceId: "",
@@ -129,7 +129,6 @@ export default {
 			maxTaxaLimit: 100,
 			minCladeReadsMode: "%",
 			minCladeReads: 0.01,
-			showUnclassified: true,
 			figureHeight: 500,
 			labelOption: "proportion",
 			showAll: false,
@@ -138,19 +137,17 @@ export default {
 			// Sankey Node Dialog
 			isDialogVisible: false,
 			dialogData: null,
-			// // Data for sankey in dialog
-			nonCladesRawData: null, // rawData with just clades filtered out
-			fullGraphData: { nodes: [], links: [] },
-			allNodesByRank: {},
-			rankOrder: ["superkingdom", "kingdom", "phylum", "class", "order", "family", "genus", "species", "no rank"],
+
+			// Data for sankey in dialog
+			nodes: [],
+			nodesByDepth: {},
 		};
 	},
 
 	watch: {
 		results: {
-			immediate: true, // Called immediately upon component creation
 			handler(newResults) {
-				this.processRawData(newResults);
+				this.parseData(newResults);
 			},
 		},
 	},
@@ -164,258 +161,207 @@ export default {
 
 	methods: {
 		// Functions handling Details Dialog (shared between Table and Sankey tab)
-		// // Data processing functions for Subtree Sankey
-		getRawFullGraph() {
-			const sankeyGenerator = sankey().nodeId((d) => d.id);
-
-			// Store full graph (used for drawing subtree upon node click)
-			const fullGraph = sankeyGenerator({
-				nodes: this.fullGraphData.nodes.map((d) => Object.assign({}, d)),
-				links: this.fullGraphData.links.map((d) => Object.assign({}, d)),
-			});
-
-			return fullGraph;
-		},
-		processRawData(data) {
-			this.allNodesByRank = {}; // Reset the nodes by rank
-
-			// Filter out clades from raw data
-			const nonClades = data.filter((entry) => rankOrderFull.includes(entry.rank) && entry.rank !== "clade");
-			this.nonCladesRawData = nonClades;
-
-			// Store nodes by rank from full data (for calculation of maxTaxaLimit)
-			nonClades.forEach((node) => {
-				if (!this.allNodesByRank[node.rank]) {
-					this.allNodesByRank[node.rank] = [];
-				}
-				this.allNodesByRank[node.rank].push(node);
-			});
-
-			// Store full graph data from raw data
-			this.fullGraphData = this.parseData(this.nonCladesRawData, true);
-
-			// Update the configure menu with the maximum taxa per rank
-			// this.updateConfigureMenu();
-		},
-		parseData(data, isFullGraph = false) {
-			const nodes = [];
-			const unclassifiedNodes = [];
-			const allNodes = [];
-			const links = [];
-			const allLinks = [];
-
-			const rankHierarchyFull = rankOrderFull.reduce((acc, rank, index) => {
-				acc[rank] = index;
-				return acc;
-			}, {});
+		// Data processing functions for Subtree Sankey
+		parseData(data) {
+			const nodesByRank = {}; 
 			let currentLineage = [];
-			const nodesByRank = {}; // Store nodes by rank for filtering top 10
+			this.nodesByDepth = {};
+			
+			let rootNode = null;
+			let unclassifiedNode = null;
 
-			// Step 1: Create nodes and save lineage data for ALL NODES (excluding clade ranks)
+			/*
+			Step 1: Create nodes and save lineage data for all nodes
+			*/
 			data.forEach((d) => {
 				let node = {
 					id: d.taxon_id,
 					taxon_id: d.taxon_id,
 					name: d.name,
+					nameWithIndentation: d.nameWithIndentation,
 					rank: d.rank,
 					rankDisplayName: d.rank,
+					hierarchy: parseInt(d.depth),
 					proportion: parseFloat(d.proportion),
-					clade_reads: parseFloat(d.clade_reads),
+					clade_reads: parseInt(d.clade_reads),
 					taxon_reads: d.taxon_reads,
-					lineage: [...currentLineage, { id: d.taxon_id, name: d.name, rank: d.rank }], // Copy current lineage
-					type: "",
+					lineage: null,
+					isUnclassifiedNode: false,
+					children: [], // FIXME: change to null?
 				};
 
-				if (d.rank !== "no rank" && !this.isUnclassifiedTaxa(d)) {
-					// Declare type as 'classified'
-					node.type = "classified";
+				// Add node to its corresponding depth collection
+				if (!Object.keys(this.nodesByDepth).map(Number).includes(node.hierarchy)) {
+					this.nodesByDepth[node.hierarchy] = [];
+				}
+				this.nodesByDepth[node.hierarchy].push(node);
 
-					// Add classified node to its corresponding rank collection
+				// Add node to its corresponding rank collection
+				// Consider root node and unclassified node separately
+				if (sankeyRankColumns.includes(d.rank)) {
 					if (!nodesByRank[d.rank]) {
 						nodesByRank[d.rank] = [];
 					}
 					nodesByRank[d.rank].push(node);
-
-					// Include all ranks for lineage tracking
-					if (node.rank !== "clade") {
-						let lastLineageNode = currentLineage[currentLineage.length - 1];
-
-						if (lastLineageNode) {
-							while (lastLineageNode && rankHierarchyFull[node.rank] <= rankHierarchyFull[lastLineageNode.rank]) {
-								currentLineage.pop();
-								lastLineageNode = currentLineage[currentLineage.length - 1];
-							}
-						}
-
-						// Append current node to currentLineage array + store lineage data
-						currentLineage.push(node);
-						node.lineage = [...currentLineage];
+				} else if (this.isUnclassifiedNode(node)) {
+					// FIXME: figure out which rank to put unclassified node in
+					if (!nodesByRank["no rank"]) {
+						nodesByRank["no rank"] = [];
 					}
-				} else if (this.isUnclassifiedTaxa(d)) {
-					// lineage tracking for unclassified taxa
-					let currentLineageCopy = [...currentLineage];
-					const parentName = d.name.replace("unclassified ", "");
-					let lastLineageNode = currentLineageCopy[currentLineageCopy.length - 1];
-
-					if (lastLineageNode) {
-						while (lastLineageNode && lastLineageNode.name !== parentName) {
-							currentLineageCopy.pop();
-							lastLineageNode = currentLineageCopy[currentLineageCopy.length - 1];
-						}
+					// nodesByRank["root"].push(node); // FIXME: overlapping issue with root node when i put this in
+					
+					// Reassign some attributes specific to unclassified node
+					node.rank = "no rank";
+					node.rankDisplayName = node.name;
+					node.isUnclassifiedNode = true;
+					
+					unclassifiedNode = node;
+				} else if (this.isRootNode(node)) {
+					if (!nodesByRank["no rank"]) {
+						nodesByRank["no rank"] = [];
 					}
+					nodesByRank["no rank"].push(node);
 
-					// Find the previous node in the lineage that is in rankOrder
-					const parentNode = currentLineageCopy.find((n) => n.name === parentName);
-					if (parentNode && parentNode === lastLineageNode) {
-						const lineage = currentLineageCopy;
+					// Reassign some attributes specific to root node
+					node.rank = "no rank"; // FIXME: remove this after fixing logic to leave it as "no rank", same as taxonomyreport
+					node.rankDisplayName = node.name;
+					
+					rootNode = node;
+					this.nodes.push(rootNode);
+				} 
 
-						let previousNode = null;
-						for (let i = lineage.length - 1; i >= 0; i--) {
-							// Start from the last item
-							if (this.rankOrder.includes(lineage[i].rank)) {
-								previousNode = lineage[i];
-								break;
-							}
+				// Store lineage for each node
+				let lastLineageNode = currentLineage[currentLineage.length - 1];
+				if (lastLineageNode) {
+					let currentDepth = node.hierarchy;
+					let lastDepth = lastLineageNode.hierarchy; 
+					
+					while (lastLineageNode && currentDepth <= lastDepth) {
+						currentLineage.pop();
+						
+						lastLineageNode = currentLineage[currentLineage.length - 1];
+						if (!lastLineageNode) {
+							break; // Exit the loop if no more nodes in the lineage (i.e. traced back to root node)
 						}
-
-						// Determine the rank immediately to the right of this node
-						const parentRankIndex = this.rankOrder.indexOf(previousNode.rank);
-
-						// Edit properties for unclassified taxa
-						const nextRank = this.rankOrder[parentRankIndex + 1];
-
-						node.id = `dummy-${d.taxon_id}`;
-						node.rank = nextRank;
-						node.type = "unclassified";
-
-						// Add unclassified node to currentLineage and save lineage data
-						currentLineageCopy.push(node);
-						node.lineage = [...currentLineageCopy];
-
-						unclassifiedNodes.push(node);
+						
+						lastDepth = lastLineageNode.hierarchy; // Update lastRank for the next iteration comparison
 					}
+				}
+				// Append current node to currentLineage array + store lineage data
+				currentLineage.push(node);
+				node.lineage = [...currentLineage];
+				
+				// Store current node to parent's children collection (for sankey verification taxonomyreport regeneration)
+				const parent = node.lineage[node.lineage.length - 2];
+				if (parent) {
+					parent.children.push(node);
 				}
 			});
 
-			// Step 2: Filter top 10 nodes by clade_reads for each rank in rankOrder
-			// + Add filtered rank nodes & unclassified nodes to sankey diagram
-			this.rankOrder.forEach((rank) => {
+			/* 
+			Step 2: Store all nodes and store rank-filtered nodes separately
+			*/
+			sankeyRankColumns.forEach((rank) => {
 				if (nodesByRank[rank]) {
 					// Store all nodes
-					allNodes.push(...nodesByRank[rank]);
-
-					// Sort nodes by clade_reads in descending order and select the top nodes based on slider value
-					const topNodes = nodesByRank[rank].sort((a, b) => b.clade_reads - a.clade_reads).slice(0, isFullGraph ? nodesByRank[rank].length : this.taxaLimit); // Don't apply taxaLimit when parsing fullGraphData
-					nodes.push(...topNodes);
+					this.nodes.push(...nodesByRank[rank]);
 				}
 			});
 
-			unclassifiedNodes.forEach((node) => {
-				// Store in all nodes
-				allNodes.push(node);
+			/*
+			Step 4: Create node for Unclassified Sequences linked to the root node
+			*/
+			if (unclassifiedNode && rootNode) { // FIXME: remove rootNode if unneeded
+					// Add to selected and all nodes (always present, excluded from taxa limit)
+					this.nodes.push(unclassifiedNode);
 
-				// Add unclassified nodes to sankey
-				nodes.push(node);
-			});
-
-			// Step 3: Create links based on filtered nodes' lineage
-			nodes.forEach((node) => {
-				// Find the previous node in the lineage that is in rankOrder
-				const lineage = node.lineage;
-				let previousNode = null;
-
-				for (let i = lineage.length - 2; i >= 0; i--) {
-					// Start from the second last item
-					if (this.rankOrder.includes(lineage[i].rank) && nodes.includes(lineage[i])) {
-						previousNode = lineage[i];
-						break;
-					}
-				}
-
-				if (previousNode) {
-					links.push({
-						source: previousNode.id,
-						target: node.id,
-						value: node.clade_reads,
-					});
-				}
-			});
-
-			// Store links for all nodes
-			allNodes.forEach((node) => {
-				// Find the previous node in the lineage that is in rankOrder
-				const lineage = node.lineage;
-				let previousNode = null;
-
-				for (let i = lineage.length - 2; i >= 0; i--) {
-					// Start from the second last item
-					if (this.rankOrder.includes(lineage[i].rank) && allNodes.includes(lineage[i])) {
-						previousNode = lineage[i];
-						break;
-					}
-				}
-
-				if (previousNode) {
-					allLinks.push({
-						source: previousNode.id,
-						target: node.id,
-						value: node.clade_reads,
-					});
-				}
-			});
-
-			return { nodes, links };
-		},
-		isUnclassifiedTaxa(d) {
-			const name = d.name;
-
-			// Check if the name starts with "unclassified"
-			if (!name.includes("unclassified")) {
-				return false;
+					// Add link from root node to unclassified node
+					// selectedLinks.push({
+					// 	sourceName: rootNode.name,
+					// 	source: rootNode.id,
+					// 	targetName: unclassifiedNode.name,
+					// 	target: unclassifiedNode.id,
+					// 	value: totalUnclassifiedCladeReads,
+					// });
+					// allLinks.push({
+					// 	sourceName: rootNode.name,
+					// 	source: rootNode.id,
+					// 	targetName: unclassifiedNode.name,
+					// 	target: unclassifiedNode.id,
+					// 	value: totalUnclassifiedCladeReads,
+					// });
+				// }
 			}
 
-			// Split the name into words
-			const words = name.trim().split(/\s+/);
-
-			// Check if there are at least two words
-			if (words.length < 2) {
-				return false;
-			}
-			return true;
+			// Verify sankey
+			this.verifySankey().then((result) => {
+				this.taxonomyVerification = result;
+				if (this.taxonomyVerification) {
+					console.log("🟩 Taxonomy verification succeeded.");
+				} else {
+					console.log("🟥 Taxonomy verification failed.");
+				}
+			});
 		},
-		extractSubtreeRawData(nodeData) {
+		isRootNode(node) {
+			// Check if the node is the root node
+			return parseInt(node.taxon_id) === 1;
+		},
+		isUnclassifiedNode(node) {
+			// Check if the node is the unclassified node
+			return parseInt(node.taxon_id) === 0;
+		},
+		extractSubtreeRawData(selectedNode) {
 			// Used only when isSubtree === false
+			let startIdx = -1;
+			let endIdx = -1;
+			let startedAdding = false;
+			const selectedNodeHierarchy = selectedNode.hierarchy;
 
-			const graph = this.getRawFullGraph();
-			const subtreeNodesTaxonIds = new Set();
-			const subtreeLinks = new Set();
+			for (let i = 0; i < this.results.length; i++) {
+				const comparingNode = this.results[i];
+				if (comparingNode.taxon_id === selectedNode.taxon_id) {
+					// Found the selected node; mark the start of the subtree
+					startIdx = i;
+					startedAdding = true;
+					continue; // Move to the next iteration
+				}
 
-			// Recursive function to get all descendant nodes and links
-			const getDescendants = (currentNode) => {
-				subtreeNodesTaxonIds.add(currentNode.taxon_id);
-				graph.links.forEach((link) => {
-					if (link.source.id === currentNode.id) {
-						subtreeLinks.add(link);
-						getDescendants(link.target);
+				if (startedAdding) {
+					const comparingNodeDepth = comparingNode.depth;
+					if (comparingNodeDepth > selectedNodeHierarchy) {
+						endIdx = i;
+					} else {
+						// Stop when we encounter a node at the same or higher rank
+						break;
 					}
-				});
-			};
+				}
+			}
 
-			// Get all descendants of the clicked node from total graph data
-			getDescendants(nodeData);
-
-			// Filter data based on the subtree nodes taxon ids
-			const subtreeRawData = this.nonCladesRawData.filter((data) => subtreeNodesTaxonIds.has(data.taxon_id));
+			const subtreeRawData = this.results.slice(startIdx, endIdx + 1);
 			return subtreeRawData;
 		},
 		// // Event handling to show/hide Details Dialog
 		handleRowClick(rowData) {
-			const graph = this.getRawFullGraph();
-			const nodeData = graph.nodes.find((node) => node.taxon_id === rowData.taxon_id);
+			const node = this.nodes.find((node) => node.taxon_id === rowData.taxon_id);
+			const nodeData = {
+				proportion: node.proportion,
+				clade_reads: node.clade_reads,
+				taxon_reads: node.taxon_reads,
+				taxon_id: node.taxon_id,
+				name: node.name,
+				rank: node.rank,
+				hierarchy: node.hierarchy,
+				lineage: node.lineage
+			};
 
 			this.showDialog(nodeData);
 		},
-		showDialog(nodeData) {
+		showDialog({ proportion, clade_reads, taxon_reads, taxon_id, name, rank, hierarchy, lineage } = {}) {
+			// if (proportion === undefined || clade_reads === undefined || taxon_id === undefined || rank === undefined || hierarchy === undefined ) {
+			// 	throw new Error("Missing required properties: proportion, clade_reads, or taxon_id");
+			// }
+			const nodeData = { proportion, clade_reads, taxon_reads, taxon_id, name, rank, hierarchy, lineage };
 			const subtreeRawData = this.extractSubtreeRawData(nodeData); // Extract subtree raw data for clicked node
 			const hasSourceLinks = subtreeRawData.length > 1 ? true : false; // Determine if the subtree has more than 1 node
 
@@ -432,6 +378,33 @@ export default {
 			this.isDialogVisible = false;
 		},
 
+		// Sankey Verification
+		async verifySankey() {
+			const extractedTaxonomyArray = extractTaxonomyArray(this.nodesByDepth);
+
+			const properties = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "nameWithIndentation"];
+			
+			// Regenerate taxonomy report from the sankey data
+			const regeneratedReport = extractedTaxonomyArray
+				.map(node => properties.map(property => node[property] !== undefined && node[property] !== null 
+					? node[property] 
+					: "").join("\t"))
+				.join("\n");
+
+			// Compare original taxonomy report and regenerated taxonomy report
+			const originalReport = sessionStorage.getItem("reportFilePath");
+			if (!originalReport) {
+				console.warn("Original report file path not found. Skipping TSV comparison.");
+				return;
+			}
+			
+			const compareSuccessful = await compareTSVContents(regeneratedReport, originalReport);
+			// if (!compareSuccessful) {
+			// 	await saveTSVFile(regeneratedReport, "/Users/sunnylee/Desktop/test_regenerated_reportfile.tsv"); // FIXME: remove
+			// }
+			return compareSuccessful;
+		},
+
 		// Sankey Diagram Configuration Settings
 		updateSettings(settings) {
 			this.showAll = settings.showAll;
@@ -440,12 +413,10 @@ export default {
 				this.taxaLimit = this.maxTaxaLimit;
 				this.minCladeReadsMode = "#";
 				this.minCladeReads = 0;
-				this.showUnclassified = true;
 			} else {
 				this.taxaLimit = settings.taxaLimit;
 				this.minCladeReadsMode = settings.minCladeReadsMode;
 				this.minCladeReads = settings.minCladeReads;
-				this.showUnclassified = settings.showUnclassified;
 			}
 
 			this.figureHeight = settings.figureHeight;

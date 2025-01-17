@@ -39,21 +39,6 @@
             <v-expansion-panel title="Node Settings">
               <!-- GRAPH SETTINGS -->
               <v-expansion-panel-text>
-                <!-- SWITCH (Show/Hide Unclassified Nodes) -->
-                <v-list-item>
-                  <v-container class="pt-1">
-                    <div class="d-flex align-center gc-2">
-                      <v-switch
-                        v-model="tempShowUnclassified"
-                        color="indigo"
-                        hide-details
-                        :disabled="showAll"
-                      ></v-switch>
-                      <div class="text-caption">Show unclassified taxa</div>
-                    </div>
-                  </v-container>
-                </v-list-item>
-
                 <!-- DROPDOWN AND INPUT (Minimum Clade Reads) -->
                 <v-list-item>
                   <div class="text-caption">
@@ -230,10 +215,6 @@ export default {
       type: Number,
       default: 0.01,
     },
-    initialShowUnclassified: {
-      type: Boolean,
-      default: true,
-    },
     initialFigureHeight: {
       type: Number,
       default: 300,
@@ -257,14 +238,12 @@ export default {
       taxaLimit: this.initialTaxaLimit,
       cladeReadsMode: this.initialMinCladeReadsMode,
       cladeReadsValue: this.initialMinCladeReads,
-      showUnclassified: this.initialShowUnclassified,
       figureHeight: this.initialFigureHeight,
       labelOption: this.initialLabelOption,
 
       tempTaxaLimit: 10,
       tempCladeReadsMode: "%",
       tempCladeReadsValue: 0.01,
-      tempShowUnclassified: false,
       tempFigureHeight: 550,
       tempLabelOption: "cladeReads",
     };
@@ -337,13 +316,11 @@ export default {
         this.taxaLimit = this.tempTaxaLimit;
         this.cladeReadsMode = this.tempCladeReadsMode;
         this.cladeReadsValue = this.tempCladeReadsValue;
-        this.showUnclassified = this.tempShowUnclassified;
       } else {
         // Reset the temporary values to the current actual values
         this.tempTaxaLimit = this.taxaLimit;
         this.tempCladeReadsMode = this.cladeReadsMode;
         this.tempCladeReadsValue = this.cladeReadsValue;
-        this.tempShowUnclassified = this.showUnclassified;
       }
       this.figureHeight = this.tempFigureHeight;
       this.labelOption = this.tempLabelOption;
@@ -357,7 +334,6 @@ export default {
         taxaLimit: this.taxaLimit,
         minCladeReadsMode: this.cladeReadsMode,
         minCladeReads: parseFloat(this.cladeReadsValue),
-        showUnclassified: this.showUnclassified,
         figureHeight: this.figureHeight,
         labelOption: this.labelOption,
       });
@@ -367,7 +343,6 @@ export default {
       this.tempTaxaLimit = this.taxaLimit;
       this.tempCladeReadsMode = this.cladeReadsMode;
       this.tempCladeReadsValue = this.cladeReadsValue;
-      this.tempShowUnclassified = this.showUnclassified;
       this.tempFigureHeight = this.figureHeight;
       this.tempLabelOption = this.labelOption;
 
@@ -380,7 +355,6 @@ export default {
     this.tempTaxaLimit = this.taxaLimit;
     this.tempCladeReadsMode = this.cladeReadsMode;
     this.tempCladeReadsValue = this.cladeReadsValue;
-    this.tempShowUnclassified = this.showUnclassified;
     this.tempFigureHeight = this.figureHeight;
     this.tempLabelOption = this.labelOption;
   },
