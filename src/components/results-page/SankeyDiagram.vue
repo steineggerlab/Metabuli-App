@@ -82,10 +82,6 @@ export default {
 			type: Number,
 			required: true,
 		},
-		showUnclassified: {
-			type: Boolean,
-			required: true,
-		},
 		figureHeight: {
 			type: Number,
 			required: true,
@@ -208,9 +204,6 @@ export default {
 			this.updateSankey();
 		},
 		minReads() {
-			this.updateSankey();
-		},
-		showUnclassified() {
 			this.updateSankey();
 		},
 		figureHeight() {

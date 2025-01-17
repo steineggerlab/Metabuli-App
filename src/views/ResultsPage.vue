@@ -51,7 +51,7 @@
 							:maxTaxaLimit="roundedMaxTaxaLimit"
 							:initialMinCladeReadsMode="minCladeReadsMode"
 							:initialMinCladeReads="minCladeReads"
-							:initialShowUnclassified="showUnclassified"
+
 							:initialFigureHeight="figureHeight"
 							:initialLabelOption="labelOption"
 							:menuLocation="'bottom end'"
@@ -73,7 +73,6 @@
 						:taxaLimit="taxaLimit"
 						:minCladeReadsMode="minCladeReadsMode"
 						:minReads="minCladeReads"
-						:showUnclassified="showUnclassified"
 						:figureHeight="figureHeight"
 						:labelOption="labelOption"
 						:showAll="showAll"
@@ -129,7 +128,6 @@ export default {
 			maxTaxaLimit: 100,
 			minCladeReadsMode: "%",
 			minCladeReads: 0.01,
-			showUnclassified: true,
 			figureHeight: 500,
 			labelOption: "proportion",
 			showAll: false,
@@ -441,12 +439,10 @@ export default {
 				this.taxaLimit = this.maxTaxaLimit;
 				this.minCladeReadsMode = "#";
 				this.minCladeReads = 0;
-				this.showUnclassified = true;
 			} else {
 				this.taxaLimit = settings.taxaLimit;
 				this.minCladeReadsMode = settings.minCladeReadsMode;
 				this.minCladeReads = settings.minCladeReads;
-				this.showUnclassified = settings.showUnclassified;
 			}
 
 			this.figureHeight = settings.figureHeight;

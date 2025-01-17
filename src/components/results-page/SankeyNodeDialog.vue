@@ -88,7 +88,7 @@
 					:taxaLimit="configureMenuSettings.taxaLimit"
 					:minCladeReadsMode="configureMenuSettings.minCladeReadsMode"
 					:minReads="configureMenuSettings.minCladeReads"
-					:showUnclassified="configureMenuSettings.showUnclassified"
+
 					:figureHeight="configureMenuSettings.figureHeight"
 					:labelOption="configureMenuSettings.labelOption"
 					:showAll="configureMenuSettings.showAll"
@@ -115,7 +115,7 @@
 					:maxTaxaLimit="configureMenuSettings.maxTaxaLimit"
 					:initialMinCladeReadsMode="configureMenuSettings.minCladeReadsMode"
 					:initialMinCladeReads="configureMenuSettings.minCladeReads"
-					:initialShowUnclassified="configureMenuSettings.showUnclassified"
+
 					:initialFigureHeight="configureMenuSettings.figureHeight"
 					:initialLabelOption="configureMenuSettings.labelOption"
 					:menuLocation="'top end'"
@@ -163,7 +163,6 @@ export default {
 				maxTaxaLimit: 100,
 				minCladeReadsMode: "%",
 				minCladeReads: 0.0,
-				showUnclassified: true,
 				figureHeight: 500,
 				labelOption: "proportion",
 				showAll: false,
@@ -199,12 +198,10 @@ export default {
 				this.configureMenuSettings.taxaLimit = this.configureMenuSettings.maxTaxaLimit;
 				this.configureMenuSettings.minCladeReadsMode = "#";
 				this.configureMenuSettings.minCladeReads = 0;
-				this.configureMenuSettings.showUnclassified = true;
 			} else {
 				this.configureMenuSettings.taxaLimit = settings.taxaLimit;
 				this.configureMenuSettings.minCladeReadsMode = settings.minCladeReadsMode;
 				this.configureMenuSettings.minCladeReads = settings.minCladeReads;
-				this.configureMenuSettings.showUnclassified = settings.showUnclassified;
 			}
 
 			this.configureMenuSettings.figureHeight = settings.figureHeight;
