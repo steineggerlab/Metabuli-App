@@ -43,6 +43,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal, sankeyJustify } from "d3-sankey";
 import { sankeyRankColumns } from "@/plugins/rankUtils";
@@ -122,7 +123,10 @@ export default {
 
 			// Data for graph rendering
 			allNodesByRank: {},
+			nodesByDepth: {},
+			
 			sankeyRankColumns,
+			sankeyRankColumnsWithRoot: ["no rank", ...sankeyRankColumns],
 			autumnColors: [
 				"#57291F",
 				"#C0413B",
@@ -251,6 +255,7 @@ export default {
 
 			const nodesByRank = {}; // Store nodes by rank
 			let currentLineage = [];
+			this.nodesByDepth = {};
 
 			let rootNode = null;
 			let unclassifiedNode = null;
@@ -263,15 +268,23 @@ export default {
 					id: d.taxon_id,
 					taxon_id: d.taxon_id,
 					name: d.name,
+					nameWithIndentation: d.nameWithIndentation,
 					rank: d.rank,
 					rankDisplayName: d.rank,
-					hierarchy: d.depth,
+					hierarchy: parseInt(d.depth),
 					proportion: parseFloat(d.proportion),
 					clade_reads: parseFloat(d.clade_reads),
 					taxon_reads: d.taxon_reads,
 					lineage: null,
 					isUnclassifiedNode: false,
+					children: [], // FIXME: change to null?
 				};
+
+				// Add node to its corresponding depth collection
+				if (!Object.keys(this.nodesByDepth).map(Number).includes(node.hierarchy)) {
+					this.nodesByDepth[node.hierarchy] = [];
+				}
+				this.nodesByDepth[node.hierarchy].push(node);
 
 				// Add node to its corresponding rank collection
 				// Consider root node and unclassified node separately
@@ -282,28 +295,30 @@ export default {
 					nodesByRank[d.rank].push(node);
 				} else if (this.isUnclassifiedNode(node)) {
 					// FIXME: figure out which rank to put unclassified node in
-					if (!nodesByRank["root"]) {
-						nodesByRank["root"] = [];
+					if (!nodesByRank["no rank"]) {
+						nodesByRank["no rank"] = [];
 					}
 					// nodesByRank["root"].push(node); // FIXME: overlapping issue with root node when i put this in
 					
 					// Reassign some attributes specific to unclassified node
-					node.rank = "root";
+					node.rank = "no rank";
 					node.rankDisplayName = node.name;
 					node.isUnclassifiedNode = true;
 					
 					unclassifiedNode = node;
 				} else if (this.isRootNode(node)) {
-					if (!nodesByRank["root"]) {
-						nodesByRank["root"] = [];
+					if (!nodesByRank["no rank"]) {
+						nodesByRank["no rank"] = [];
 					}
-					nodesByRank["root"].push(node);
+					nodesByRank["no rank"].push(node);
 
 					// Reassign some attributes specific to root node
-					node.rank = "root"; // FIXME: remove this after fixing logic to leave it as "no rank", same as taxonomyreport
+					node.rank = "no rank"; // FIXME: remove this after fixing logic to leave it as "no rank", same as taxonomyreport
 					node.rankDisplayName = node.name;
 					
 					rootNode = node;
+					allNodes.push(rootNode);
+					selectedNodes.push(rootNode);
 				} 
 				
 				// Store lineage for each node
@@ -326,6 +341,12 @@ export default {
 				// Append current node to currentLineage array + store lineage data
 				currentLineage.push(node);
 				node.lineage = [...currentLineage];
+				
+				// Store current node to parent's children collection (for sankey verification taxonomyreport regeneration)
+				const parent = node.lineage[node.lineage.length - 2];
+				if (parent) {
+					parent.children.push(node);
+				}
 			});
 
 			/* 
@@ -343,7 +364,7 @@ export default {
 			});
 
 			/* 
-			Step 3: Create links 
+			Step 3: Create links and store each node to its parent's children collection
 			*/ 
 			// Define function to add links
 			function generateLinks(nodes, targetArray, sankeyRankColumns) {
@@ -372,8 +393,8 @@ export default {
 			}
 
 			// Call function to generate links for selected and all nodes
-			generateLinks(selectedNodes, selectedLinks, this.sankeyRankColumns);
-			generateLinks(allNodes, allLinks, this.sankeyRankColumns);
+			generateLinks(selectedNodes, selectedLinks, this.sankeyRankColumnsWithRoot);
+			generateLinks(allNodes, allLinks, this.sankeyRankColumnsWithRoot);
 
 			/* 
 			Step 4: Create node for Unclassified Sequences linked to the root node
@@ -534,8 +555,8 @@ export default {
 			const unclassifiedLabelColor = "#696B7E";
 
 			// Manually adjust nodes position to align by rank
-			const columnWidth = (width - marginRight) / this.sankeyRankColumns.length;
-			const columnMap = this.sankeyRankColumns.reduce((acc, rank, index) => {
+			const columnWidth = (width - marginRight) / this.sankeyRankColumnsWithRoot.length;
+			const columnMap = this.sankeyRankColumnsWithRoot.reduce((acc, rank, index) => {
 				const leftMargin = 10;
 				acc[rank] = index * columnWidth + leftMargin;
 				return acc;
@@ -561,7 +582,7 @@ export default {
 			svg
 				.append("g")
 				.selectAll("text")
-				.data(this.sankeyRankColumns)
+				.data(this.sankeyRankColumnsWithRoot)
 				.enter()
 				.append("text")
 				.attr("x", (rank) => columnMap[rank] + sankeyGenerator.nodeWidth() / 2)
@@ -729,6 +750,9 @@ export default {
 
 			// Highlight nodes matching search query
 			this.highlightNodes(this.searchQuery);
+
+			// Verify sankey
+			this.verifySankey();
 		},
 
 		// Functions for rerendering/updating Sankey
@@ -754,7 +778,139 @@ export default {
 				}, 50); // Immediate execution after fetching data
 			});
 		},
+		async verifySankey() {
+			const extractedTaxonomyArray = this.extractTaxonomyArray();
 
+			const properties = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "nameWithIndentation"];
+			
+			// Regenerate taxonomy report from the sankey data
+			const regeneratedReport = extractedTaxonomyArray
+				.map(node => properties.map(property => node[property] || "").join("\t"))
+				.join("\n");
+			await this.saveTSVFile(regeneratedReport, "/Users/sunnylee/Desktop/test_regenerated_reportfile.tsv"); // FIXME: remove
+
+			// Compare original taxonomy report and regenerated taxonomy report
+			const originalReport = sessionStorage.getItem("reportFilePath");
+			// const originalReport = "/Users/sunnylee/Documents/SteineggerLab/Metabuli-App/MetabuliTests/Test1/demo_outdir/2025-01-09_20-29-29_report.tsv"
+
+			this.compareTSVContents(regeneratedReport, originalReport);
+		},
+		async saveTSVFile(content, filePath) { // FIXME: remove
+			try {
+				await window.electron.writeFile(filePath, content); // Ensure `writeFile` is implemented in preload.js
+				console.log("File saved successfully:", filePath);
+			} catch (error) {
+				console.error("Error saving file:", error);
+			}
+		},
+		extractTaxonomyArray() {
+			const taxonomyReport = [];
+			const depthDict = this.nodesByDepth;
+
+			// Sort nodes in each depth in descending order of clade_reads
+			Object.keys(depthDict).forEach((depth) => {
+				depthDict[depth].sort((a, b) => b.clade_reads - a.clade_reads);
+			});
+
+			Object.keys(depthDict)
+				.map(Number)
+				.sort((a, b) => a - b) // sort depthDict in ascending order of depth
+				.forEach((depth) => {
+					// Insert parent-child relationships into taxonomy report
+				   if (depth > 0) {
+					   depthDict[depth - 1]?.forEach((parentNode) => {
+						   // Insert parent and its children into taxonomy report
+						   const parentIndex = taxonomyReport.findIndex(
+							   (n) => n.taxon_id === parentNode.taxon_id
+						   );
+	   
+						   if (parentIndex !== -1) {
+							   taxonomyReport.splice(parentIndex + 1, 0, ...parentNode.children);
+							} else {
+								console.warn(`Parent node ${parentNode.name} not found in taxonomyReport.`);
+							}
+						});
+				   } else {
+						// For root nodes (depth 0), add to taxonomy report directly
+						depthDict[depth].sort((a, b) => a.taxon_id - b.taxon_id);
+						taxonomyReport.push(...depthDict[depth]);
+				   }
+
+				})
+
+			return taxonomyReport;
+		},
+		async compareTSVContents(regeneratedReportContent, originalReportFile) {
+			try {
+				console.log(originalReportFile);
+				// Read the TSV file content from the original report file
+				const originalReportContent = await window.electron.readFile(originalReportFile, false);
+
+				// Split both contents into lines
+				const regeneratedReportEntries = regeneratedReportContent
+					.split("\n")
+					.map(line => line.trim()) 
+					.filter(line => line !== ""); // Remove empty lines
+				const originalReportEntries = originalReportContent
+					.split("\n")
+					.map(line => line.trim())
+					.filter(line => line !== ""); // Remove empty lines
+
+				// Compare line counts
+				if (regeneratedReportEntries.length !== originalReportEntries.length) {
+					console.log("The number of lines in the reports do not match.");
+					console.log(`Regenerated report: ${regeneratedReportEntries.length}, Original report: ${originalReportEntries.length}`);
+					return false;
+				}
+
+				// Compare each line
+				for (let i = 0; i < regeneratedReportEntries.length; i++) {
+ 					const regeneratedEntryColumns = regeneratedReportEntries[i].split("\t");
+					const originalEntryColumns = originalReportEntries[i].split("\t");
+
+					if (regeneratedEntryColumns.length !== originalEntryColumns.length) {
+						console.log(`Difference in column count on line ${i + 1}:`);
+						console.log(`Generated: ${regeneratedReportEntries[i]}`);
+						console.log(`File: ${originalReportEntries[i]}`);
+						return false;
+					}
+
+					for (let j = 0; j < regeneratedEntryColumns.length; j++) {
+						// Trim trailing whitespaces
+						const trimTrailing = (str) => str.replace(/\s+$/, '');
+						const generatedStringValue = trimTrailing(regeneratedEntryColumns[j]);
+    					const fileStringValue = trimTrailing(originalEntryColumns[j]);
+
+						// Attempt to parse as numbers
+						const generatedNumber = parseFloat(generatedStringValue);
+						const fileNumber = parseFloat(fileStringValue);
+
+						if (!isNaN(generatedNumber) && !isNaN(fileNumber)) {
+							// Compare numeric values with a precision threshold
+							const precisionThreshold = 0.0001;
+							if (Math.abs(generatedNumber - fileNumber) > precisionThreshold) {
+								console.log(`Numeric difference found on line ${i + 1}, column ${j + 1}:`);
+								console.log(`Generated: ${generatedStringValue}`);
+								console.log(`File: ${fileStringValue}`);
+								return false;
+							}
+						} else if (generatedStringValue !== fileStringValue) {
+							// Compare as strings for non-numeric values
+							console.log(`String difference found on line ${i + 1}, column ${j + 1}:`);
+							console.log(`Generated: ${generatedStringValue}`);
+							console.log(`File: ${fileStringValue}`);
+							return false;
+						}
+					}
+				}
+
+				console.log("The TSV contents are identical.");
+				return true;
+			} catch (error) {
+				console.error(`Error comparing TSV contents: ${error.message}`);
+				return false;
+			}
+		},
 		// Throttle function (used for improving performance during node hover)
 		throttle(func, delay) {
 			let lastCall = 0;

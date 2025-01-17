@@ -217,6 +217,7 @@ export default {
 					id: d.taxon_id,
 					taxon_id: d.taxon_id,
 					name: d.name,
+					nameWithIndentation: d.nameWithIndentation,
 					rank: d.rank,
 					rankDisplayName: d.rank,
 					proportion: parseFloat(d.proportion),
