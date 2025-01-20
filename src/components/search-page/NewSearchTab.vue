@@ -239,6 +239,8 @@
 </template>
 
 <script>
+import TSVParser from "@/plugins/tsvParser";
+
 export default {
 	name: "NewSearchTab",
 
@@ -639,62 +641,16 @@ export default {
 			reportFilePath = `${resolvedOutdirPath}/${jobId}_report.tsv`;
 			kronaFilePath = `${resolvedOutdirPath}/${jobId}_krona.html`;
 
+			// Store report file path in session storage for later use (taxonomy verification)
+			sessionStorage.setItem("reportFilePath", reportFilePath);
+
 			// Read and process TSV and Krona HTML here
-			const tsvData = await this.readTSVFile(reportFilePath, isSample);
-			const jsonData = this.tsvToJSON(tsvData);
+			const tsvData = await TSVParser.readTSVFile(reportFilePath, isSample);
+			const jsonData = TSVParser.tsvToJSON(tsvData);
 			const kronaContent = await this.readKronaHTML(kronaFilePath, isSample);
 
 			// Store in component for emission
 			this.processedResults = { jsonData, kronaContent };
-		},
-		// Helper functions for processing data
-		async readTSVFile(filePath, isSample) {
-			try {
-				const tsvContent = await window.electron.readFile(filePath, isSample); //FIXME: edit readFile preload function
-				return tsvContent;
-			} catch (error) {
-				console.error("Error reading TSV file:", error);
-			}
-		},
-		validateReportTSVData(records) {
-			// Validation criteria for report.tsv file format
-			const firstRecord = records[0];
-
-			// No parsed data
-			if (firstRecord === undefined) return false;
-
-			return (
-				(firstRecord.rank === "no rank" && firstRecord.taxon_id === "0" && firstRecord.name === "unclassified") ||
-				(firstRecord.rank === "no rank" && firstRecord.taxon_id === "1" && firstRecord.name === "root")
-			);
-		},
-		tsvToJSON(tsv) {
-			const headers = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "name"];
-			const records = tsv
-			.split("\n")
-			.map((line) => {
-				const data = line.split("\t"); // Strip leading and trailing whitespace
-				
-				let record = Object.fromEntries(headers.map((header, index) => [header, data[index]]));
-				
-				if (data[5]) {
-					// Skip empty rows or rows with only whitespace
-					const leadingSpacesInName = (data[5].match(/^\s+/) || [""])[0].length; // Count leading spaces in name
-					const depth = Math.floor(leadingSpacesInName / 2); // Assuming 2 spaces per depth level
-					record.depth = depth;
-					record.name = record.name.trim(); // Remove leading and trailing whitespace after counting leading spaces
-				}
-
-				return record;
-			})
-			.filter((record) => !Object.values(record).every((field) => field === "" || field === undefined || field === null)); // Filter out empty rows
-
-			// Validate report.tsv file
-			if (this.validateReportTSVData(records)) {
-				return { results: records };
-			} else {
-				return null; // Return null if the row does not meet the criteria
-			}
 		},
 		async readKronaHTML(filePath, isSample) {
 			if (!filePath) {

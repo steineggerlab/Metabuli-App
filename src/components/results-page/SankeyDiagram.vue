@@ -43,6 +43,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import * as d3 from "d3";
 import { sankey, sankeyLinkHorizontal, sankeyJustify } from "d3-sankey";
 import { sankeyRankColumns } from "@/plugins/rankUtils";
@@ -79,10 +80,6 @@ export default {
 		},
 		minReads: {
 			type: Number,
-			required: true,
-		},
-		showUnclassified: {
-			type: Boolean,
 			required: true,
 		},
 		figureHeight: {
@@ -122,7 +119,10 @@ export default {
 
 			// Data for graph rendering
 			allNodesByRank: {},
+			nodesByDepth: {},
+			
 			sankeyRankColumns,
+			sankeyRankColumnsWithRoot: ["no rank", ...sankeyRankColumns],
 			autumnColors: [
 				"#57291F",
 				"#C0413B",
@@ -190,7 +190,7 @@ export default {
 			}
 		},
 		rawData: {
-			immediate: true, // Called immediately upon component creation
+			immediate: true, // FIXME: Called immediately upon component creation
 			handler(newValue) {
 				this.processRawData(newValue);
 			},
@@ -204,9 +204,6 @@ export default {
 			this.updateSankey();
 		},
 		minReads() {
-			this.updateSankey();
-		},
-		showUnclassified() {
 			this.updateSankey();
 		},
 		figureHeight() {
@@ -251,8 +248,10 @@ export default {
 
 			const nodesByRank = {}; // Store nodes by rank
 			let currentLineage = [];
+			this.nodesByDepth = {};
 
 			let rootNode = null;
+			let unclassifiedNode = null;
 
 			/*
 			Step 1: Create nodes and save lineage data for all nodes
@@ -262,28 +261,58 @@ export default {
 					id: d.taxon_id,
 					taxon_id: d.taxon_id,
 					name: d.name,
+					nameWithIndentation: d.nameWithIndentation,
 					rank: d.rank,
 					rankDisplayName: d.rank,
-					hierarchy: d.depth,
+					hierarchy: parseInt(d.depth),
 					proportion: parseFloat(d.proportion),
-					clade_reads: parseFloat(d.clade_reads),
+					clade_reads: parseInt(d.clade_reads),
 					taxon_reads: d.taxon_reads,
 					lineage: null,
 					isUnclassifiedNode: false,
+					children: [], // FIXME: change to null?
 				};
 
+				// Add node to its corresponding depth collection
+				if (!Object.keys(this.nodesByDepth).map(Number).includes(node.hierarchy)) {
+					this.nodesByDepth[node.hierarchy] = [];
+				}
+				this.nodesByDepth[node.hierarchy].push(node);
+
 				// Add node to its corresponding rank collection
+				// Consider root node and unclassified node separately
 				if (this.sankeyRankColumns.includes(d.rank)) {
 					if (!nodesByRank[d.rank]) {
 						nodesByRank[d.rank] = [];
 					}
 					nodesByRank[d.rank].push(node);
+				} else if (this.isUnclassifiedNode(node)) {
+					// FIXME: figure out which rank to put unclassified node in
+					if (!nodesByRank["no rank"]) {
+						nodesByRank["no rank"] = [];
+					}
+					// nodesByRank["root"].push(node); // FIXME: overlapping issue with root node when i put this in
+					
+					// Reassign some attributes specific to unclassified node
+					node.rank = "no rank";
+					node.rankDisplayName = node.name;
+					node.isUnclassifiedNode = true;
+					
+					unclassifiedNode = node;
 				} else if (this.isRootNode(node)) {
-					nodesByRank["root"] = [node];
-					node.rank = "root";
-					node.rankDisplayName = "root";
+					if (!nodesByRank["no rank"]) {
+						nodesByRank["no rank"] = [];
+					}
+					nodesByRank["no rank"].push(node);
+
+					// Reassign some attributes specific to root node
+					node.rank = "no rank"; // FIXME: remove this after fixing logic to leave it as "no rank", same as taxonomyreport
+					node.rankDisplayName = node.name;
+					
 					rootNode = node;
-				}
+					allNodes.push(rootNode);
+					selectedNodes.push(rootNode);
+				} 
 				
 				// Store lineage for each node
 				let lastLineageNode = currentLineage[currentLineage.length - 1];
@@ -305,6 +334,12 @@ export default {
 				// Append current node to currentLineage array + store lineage data
 				currentLineage.push(node);
 				node.lineage = [...currentLineage];
+				
+				// Store current node to parent's children collection (for sankey verification taxonomyreport regeneration)
+				const parent = node.lineage[node.lineage.length - 2];
+				if (parent) {
+					parent.children.push(node);
+				}
 			});
 
 			/* 
@@ -322,7 +357,7 @@ export default {
 			});
 
 			/* 
-			Step 3: Create links 
+			Step 3: Create links and store each node to its parent's children collection
 			*/ 
 			// Define function to add links
 			function generateLinks(nodes, targetArray, sankeyRankColumns) {
@@ -351,60 +386,33 @@ export default {
 			}
 
 			// Call function to generate links for selected and all nodes
-			generateLinks(selectedNodes, selectedLinks, this.sankeyRankColumns);
-			generateLinks(allNodes, allLinks, this.sankeyRankColumns);
+			generateLinks(selectedNodes, selectedLinks, this.sankeyRankColumnsWithRoot);
+			generateLinks(allNodes, allLinks, this.sankeyRankColumnsWithRoot);
 
 			/* 
 			Step 4: Create node for Unclassified Sequences linked to the root node
 			*/
-			if (rootNode) {
-				let totalClassifiedCladeReads = 0;
-				let totalClassifiedProportion = 0;
-
-				// Count total classified clade reads and proportion
-				selectedLinks.filter((link) => link.source === rootNode.id).forEach((link) => { // FIXME: should calculate based on allLinks (but causes error atm)
-					const targetNode = selectedNodes.find((node) => node.id === link.target);
-					totalClassifiedCladeReads = totalClassifiedCladeReads + targetNode.clade_reads;
-					totalClassifiedProportion = totalClassifiedProportion + targetNode.proportion;
-				});
-
-				const totalUnclassifiedCladeReads = rootNode.clade_reads - totalClassifiedCladeReads;
-				if (totalUnclassifiedCladeReads > 0) {
-					const unclassifiedNode = {
-						id: "", // FIXME: check
-						taxon_id: "", // FIXME: check
-						name: "Unclassified sequences",
-						rank: this.sankeyRankColumns[this.sankeyRankColumns.indexOf(rootNode.rank)+1],
-						rankDisplayName: "unclassified",
-						hierarchy: rootNode.hierarchy + 1,
-						proportion: rootNode.proportion - totalClassifiedProportion,
-						clade_reads: totalUnclassifiedCladeReads,
-						taxon_reads: 0,
-						lineage: [rootNode],
-						isUnclassifiedNode: true,
-					};
-					unclassifiedNode.lineage.push(unclassifiedNode); 
-
+			if (unclassifiedNode && rootNode) { // FIXME: remove rootNode if unneeded
 					// Add to selected and all nodes (always present, excluded from taxa limit)
 					selectedNodes.push(unclassifiedNode);
 					allNodes.push(unclassifiedNode);
 
 					// Add link from root node to unclassified node
-					selectedLinks.push({
-						sourceName: rootNode.name,
-						source: rootNode.id,
-						targetName: unclassifiedNode.name,
-						target: unclassifiedNode.id,
-						value: totalUnclassifiedCladeReads,
-					});
-					allLinks.push({
-						sourceName: rootNode.name,
-						source: rootNode.id,
-						targetName: unclassifiedNode.name,
-						target: unclassifiedNode.id,
-						value: totalUnclassifiedCladeReads,
-					});
-				}
+					// selectedLinks.push({
+					// 	sourceName: rootNode.name,
+					// 	source: rootNode.id,
+					// 	targetName: unclassifiedNode.name,
+					// 	target: unclassifiedNode.id,
+					// 	value: totalUnclassifiedCladeReads,
+					// });
+					// allLinks.push({
+					// 	sourceName: rootNode.name,
+					// 	source: rootNode.id,
+					// 	targetName: unclassifiedNode.name,
+					// 	target: unclassifiedNode.id,
+					// 	value: totalUnclassifiedCladeReads,
+					// });
+				// }
 			}
 
 			return { nodes: selectedNodes, links: selectedLinks };
@@ -413,7 +421,10 @@ export default {
 			// Check if the node is the root node
 			return parseInt(node.taxon_id) === 1;
 		},
-
+		isUnclassifiedNode(node) {
+			// Check if the node is the unclassified node
+			return parseInt(node.taxon_id) === 0;
+		},
 		// Function for updating configure menu value ranges based on data
 		updateConfigureMenu() {
 			let maxValues = 0;
@@ -481,7 +492,17 @@ export default {
 		},
 
 		// Functions for node subtree dialog
-		showNodeDetails(event, nodeData) {
+		showNodeDetails(event, node) {
+			const nodeData = {
+				proportion: node.proportion,
+				clade_reads: node.clade_reads,
+				taxon_reads: node.taxon_reads,
+				taxon_id: node.taxon_id,
+				name: node.name,
+				rank: node.rank,
+				hierarchy: node.hierarchy,
+				lineage: node.lineage
+			};
 			this.$emit("node-click", nodeData);
 		},
 
@@ -537,8 +558,8 @@ export default {
 			const unclassifiedLabelColor = "#696B7E";
 
 			// Manually adjust nodes position to align by rank
-			const columnWidth = (width - marginRight) / this.sankeyRankColumns.length;
-			const columnMap = this.sankeyRankColumns.reduce((acc, rank, index) => {
+			const columnWidth = (width - marginRight) / this.sankeyRankColumnsWithRoot.length;
+			const columnMap = this.sankeyRankColumnsWithRoot.reduce((acc, rank, index) => {
 				const leftMargin = 10;
 				acc[rank] = index * columnWidth + leftMargin;
 				return acc;
@@ -564,7 +585,7 @@ export default {
 			svg
 				.append("g")
 				.selectAll("text")
-				.data(this.sankeyRankColumns)
+				.data(this.sankeyRankColumnsWithRoot)
 				.enter()
 				.append("text")
 				.attr("x", (rank) => columnMap[rank] + sankeyGenerator.nodeWidth() / 2)
