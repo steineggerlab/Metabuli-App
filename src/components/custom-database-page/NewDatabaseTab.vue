@@ -147,21 +147,6 @@
             <!-- EXPANDABLE PANEL -->
             <v-expand-transition>
                 <div v-if="expandAdvancedSettings" class="search-advanced-settings w-66 pt-0 pb-2">
-                    <!-- Parameters for precision mode -->
-                    <!-- <v-container class="py-0">
-                        <v-card variant="outlined" color="primary">
-                            <v-card-title class="text-subtitle-2 pb-0">Parameters for precision mode (Metabuli-P)</v-card-title>
-                            <v-card-title class="text-caption">
-                                <span v-if="jobDetails.mode === 'long-read'">
-                                    <strong>PacBio HiFi reads:</strong> --min-score 0.07 --min-sp-score 0.3<br />
-                                    <strong>PacBio Sequel II reads:</strong> --min-score 0.005<br />
-                                    <strong>ONT reads:</strong> --min-score 0.008
-                                </span>
-                                <span v-else> <strong>Illumina short reads:</strong> --min-score 0.15 --min-sp-score 0.5 </span>
-                            </v-card-title>
-                        </v-card>
-                    </v-container> -->
-
                     <!-- Input fields -->
                     <v-container fluid class="py-0">
                         <v-row v-for="(setting, key) in advancedSettings" :key="key">
@@ -205,13 +190,6 @@
                     </template>
                 </v-btn>
             </v-sheet>
-            <v-row>
-                <v-col class="pt-0">
-                    <small class="text-caption text-medium-emphasis"
-                        >This will generate diffIdx, info, split, and taxID_list and some other files. You can delete '*_diffIdx' and '*_info' if generated.</small
-                    >
-                </v-col>
-            </v-row>
         </v-form>
     </v-card-text>
 </template>
@@ -221,16 +199,6 @@ export default {
 	name: "NewDatabaseTab",
 
 	data: () => ({
-		snackbar: {
-			show: false,
-			message: "",
-			color: "",
-			icon: "",
-			buttonText: "",
-			action: null,
-			timeout: 4000,
-		},
-
 		// Properties for Run New Search tab
 		isJobFormValid: false,
 		jobDetails: {
@@ -238,8 +206,6 @@ export default {
 			dbdir: "", // directory path
 			fastafile: "", // file path
 			accession2taxid: "", // file path
-			// taxonomyPath: "", // directory path
-			// maxram: "",
 		},
 		expandAdvancedSettings: false,
 		advancedSettings: {
