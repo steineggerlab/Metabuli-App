@@ -221,11 +221,6 @@ export default {
 	name: "NewDatabaseTab",
 
 	data: () => ({
-		tab: "newDatabase",
-		tabItems: [
-			{ title: "New Database", value: "newDatabase" },
-			{ title: "Update Database", value: "updateDatabase" },
-		],
 		snackbar: {
 			show: false,
 			message: "",
@@ -334,42 +329,6 @@ export default {
 	}),
 
 	methods: {
-		// Cascade emit from tabs
-		emitJobStarted(bool) {
-			this.$emit("job-started", bool);
-		},
-		emitJobCompleted(completedJobObject) {
-			this.$emit("job-completed", completedJobObject);
-		},
-		emitBackendRealtimeOutput(string) {
-			this.$emit("backend-realtime-output", string);
-		},
-		emitJobTimedOut() {
-			this.$emit("job-timed-out");
-		},
-		emitJobAborted() {
-			this.$emit("job-aborted");
-		},
-
-		// Functions managing snackbar
-		triggerSnackbar(message, color = "info", icon = "info", buttonText = "", action = null) {
-			if (this.snackbar.show) return; // If multiple snackbars are triggered, show the first one
-
-			this.snackbar.message = message;
-			this.snackbar.color = color;
-			this.snackbar.icon = icon;
-			this.snackbar.buttonText = buttonText;
-			this.snackbar.action = action;
-
-			this.snackbar.show = true;
-		},
-		handleSnackbarAction() {
-			if (this.snackbar.action) {
-				this.snackbar.action();
-			}
-			this.snackbar.show = false;
-		},
-
 		// Functions for handling files
 		async selectFile(field, type) {
 			// FIXME: unify with UPLOAD REPORT TAB file selector function
@@ -501,7 +460,7 @@ export default {
 			//   "--max-ram",
 			//   32,
 			// ];
-            console.log("🚀 Build new database job requested:", params); // DEBUG
+            console.log("🚀 Build new database requested:", params); // DEBUG
 
 			// Return a promise that resolves or rejects based on backend success or failure
 			return new Promise((resolve, reject) => {
@@ -544,7 +503,7 @@ export default {
 		// Function to track job status + process results + trigger snackbar
 		async pollJobStatus(interval = 500, timeout = Infinity) {
 			// FIXME: decide timeout duration
-            console.log("🚀 Running build new database job"); // DEBUG
+            console.log("🚀 Build new database"); // DEBUG
 			const start = Date.now();
 			while (Date.now() - start < timeout) {
 				if (this.errorHandled || this.status === "COMPLETE") return true;
