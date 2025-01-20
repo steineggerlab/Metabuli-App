@@ -217,8 +217,6 @@
 </template>
 
 <script>
-import { trimAndStoreJobsHistory, loadJobsHistory } from "@/plugins/storageUtils.js";
-
 export default {
 	name: "NewDatabaseTab",
 
@@ -331,9 +329,7 @@ export default {
 
 		// Properties for job processing status, response, and results
 		status: "INITIAL",
-		results: "",
 		backendOutput: "",
-		processedResults: null,
 		errorHandled: false,
 	}),
 
@@ -353,39 +349,6 @@ export default {
 		},
 		emitJobAborted() {
 			this.$emit("job-aborted");
-		},
-
-		// Function managing job history storage
-		async storeJob(job) {
-			// Deep clone the jobDetails and results to avoid storing reactive proxies
-			const plainJobDetails = JSON.parse(JSON.stringify(job.jobDetails));
-			const plainResults = JSON.parse(JSON.stringify(job.resultsJSON));
-
-			// Create a new job entry with additional details
-			const jobEntry = {
-				jobDetails: plainJobDetails,
-				jobId: job.jobid,
-				timestamp: new Date().toISOString(), // Timestamp of job completion
-				jobType: job.jobType,
-				isSample: job.isSample,
-				jobStatus: job.jobStatus,
-				backendOutput: job.backendOutput,
-				results: plainResults,
-				kronaContent: job.kronaContent,
-			};
-
-			try {
-				// Load existing jobs from file using Electron API
-				let jobsHistory = await loadJobsHistory();
-
-				// Add the new job to the history array
-				jobsHistory.push(jobEntry);
-
-				// Trim and store the latest 10 jobs in the file
-				await trimAndStoreJobsHistory(jobsHistory);
-			} catch (error) {
-				console.error("Error storing job:", error);
-			}
 		},
 
 		// Functions managing snackbar
@@ -480,7 +443,7 @@ export default {
 
 				// If backend completes successfully and polling hasn't timed out
 				if (this.status === "COMPLETE") {
-					await this.processResults(false); // Make sure this is called after backend completion
+                    console.log("🚀 Build new database completed successfully."); // DEBUG
 					this.handleJobSuccess();
 				}
 			} catch (error) {

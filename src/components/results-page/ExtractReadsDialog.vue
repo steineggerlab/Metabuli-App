@@ -203,13 +203,13 @@ export default {
 			classifications: "",
 		},
 		isSampleJob: null,
-		// // Properties for backend job processing status, backend output, error tracking
+		// Properties for backend job processing status, backend output, error tracking
 		status: "INITIAL",
 		backendOutput: "",
 		errorHandled: false,
-		// // Extract Job Processing Dialog
+		// Extract Job Processing Dialog
 		processingExtract: false,
-		// // Form Validation (all input fields must be non-empty)
+		// Form Validation (all input fields must be non-empty)
 		isFormValid: false, // This tracks the overall form validity
 		requiredRule: (v) => !!v || "This field is required", // Simple required rule
 		isExtractDisabled: false, // Tracks button state for any other custom conditions
