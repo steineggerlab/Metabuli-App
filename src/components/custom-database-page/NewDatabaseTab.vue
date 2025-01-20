@@ -1,66 +1,227 @@
 <template>
-	<div>
-		<!-- SEARCH SETTINGS PANEL -->
-		<v-container>
-			<v-card>
-				<v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">
-					Custom Database
-					<v-spacer></v-spacer>
+    <v-card-text>
+        <!-- Required Fields -->
+        <v-form ref="jobForm" v-model="isJobFormValid">
+            <v-card-title class="text-button font-weight-bold">Required Fields</v-card-title>
+            <div class="d-flex">
+                <div class="w-100 search-required-fields">
+                    <v-container>
+                        <!-- DB Directory -->
+                        <v-row>
+                            <v-col cols="3">
+                                <v-list-subheader class="pr-0">
+                                    <v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
+                                        </template>
+                                        Sequences will be stored in 'DBDIR/library'.
+                                    </v-tooltip>
+                                    Database Directory
+                                </v-list-subheader>
+                            </v-col>
 
-					<!-- TABS -->
-					<template v-slot:extension>
-						<v-tabs v-model="tab">
-							<v-tab v-for="item in tabItems" :text="item.title" :key="item.value" :value="item.value"></v-tab>
-						</v-tabs>
-					</template>
-				</v-toolbar>
+                            <v-col cols="9" class="search-files">
+                                <v-row>
+                                    <v-col cols="4">
+                                        <v-btn
+                                            @click="selectFile('dbdir', 'directory')"
+                                            prepend-icon="$folder"
+                                            density="comfortable"
+                                            size="default"
+                                            class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+                                            >Select Directory</v-btn
+                                        >
+                                        <v-text-field v-model="jobDetails.dbdir" :rules="[requiredRule]" style="display: none"></v-text-field>
+                                    </v-col>
+                                    <v-col cols="8" class="filename-col">
+                                        <v-chip v-if="jobDetails.dbdir" label color="primary" density="comfortable" class="filename-chip">
+                                            <v-icon icon="$delete" @click="clearFile('dbdir')" class="mr-1"></v-icon>
+                                            {{ this.extractFilename(jobDetails.dbdir) }}</v-chip
+                                        >
+                                    </v-col>
+                                </v-row>
+                            </v-col>
+                        </v-row>
 
-				
-			<v-tabs-window v-model="tab">
-					<!-- NEW DATABASE TAB -->
-					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[0].value">
-						<NewDatabaseTab
-							@job-started="emitJobStarted"
-							@job-completed="emitJobCompleted"
-							@job-aborted="emitJobAborted"
-							@backend-realtime-output="emitBackendRealtimeOutput"
-							@job-timed-out="emitJobTimedOut"
-							@trigger-snackbar="triggerSnackbar"
-							@store-job="storeJob"
-						></NewDatabaseTab>
-					</v-tabs-window-item>
+                        <!-- Library File -->
+                        <v-row>
+                            <v-col cols="3">
+                                <v-list-subheader class="pr-0">
+                                    <v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
+                                        </template>
+                                        A file containing absolute paths of the FASTA files in DBDIR/library (library-files.txt)
+                                    </v-tooltip>
+                                    Library File
+                                </v-list-subheader>
+                            </v-col>
 
-					<!-- UPDATE DATABASE TAB-->
-					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[1].value">
-						<UpdateDatabaseTab @job-started="emitJobStarted" @job-completed="emitJobCompleted" @job-aborted="emitJobAborted" @trigger-snackbar="triggerSnackbar" @store-job="storeJob"></UpdateDatabaseTab>
-					</v-tabs-window-item>
-				</v-tabs-window>
-			</v-card>
-			
-			<!-- Snackbar -->
-			<v-snackbar v-model="snackbar.show" :timeout="snackbar.timeout" location="top" color="white">
-				<v-icon :color="snackbar.color" :icon="`$${snackbar.icon}`"></v-icon>
-				{{ snackbar.message }}
-				<template v-slot:actions>
-					<v-btn v-if="snackbar.buttonText" :color="snackbar.color" variant="text" @click="handleSnackbarAction">{{ snackbar.buttonText }}</v-btn>
-					<v-btn v-else :color="snackbar.color" variant="text" @click="snackbar.show = false"> Close </v-btn>
-				</template>
-			</v-snackbar>
-		</v-container>
-	</div>
+                            <v-col cols="9" class="search-files">
+                                <v-row>
+                                    <v-col cols="4">
+                                        <v-btn
+                                            @click="selectFile('libfiles', 'file')"
+                                            prepend-icon="$file"
+                                            density="comfortable"
+                                            size="default"
+                                            class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+                                            >Select File</v-btn
+                                        >
+                                        <v-text-field v-model="jobDetails.libfiles" :rules="[requiredRule]" style="display: none"></v-text-field>
+                                    </v-col>
+                                    <v-col cols="8" class="filename-col">
+                                        <v-chip v-if="jobDetails.libfiles" label color="primary" density="comfortable" class="filename-chip">
+                                            <v-icon icon="$delete" @click="clearFile('libfiles')" class="mr-1"></v-icon>
+                                            {{ this.extractFilename(jobDetails.libfiles) }}</v-chip
+                                        >
+                                    </v-col>
+                                </v-row>
+                            </v-col>
+                        </v-row>
+
+                        <!-- <accession2taxid> -->
+                        <v-row>
+                            <v-col cols="3">
+                                <v-list-subheader class="pr-0">
+                                    <v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
+                                        </template>
+                                        A path to NCBI-style accession2taxid.
+                                    </v-tooltip>
+                                    Accession 2 Tax Id
+                                </v-list-subheader>
+                            </v-col>
+
+                            <v-col cols="9" class="search-files">
+                                <v-row>
+                                    <v-col cols="4">
+                                        <div class="d-flex flex-column align-center mb-0 gc-3">
+                                            <!-- Select File Button -->
+                                            <v-btn
+                                                @click="selectFile('accession2taxid', 'file')"
+                                                prepend-icon="$file"
+                                                density="comfortable"
+                                                size="default"
+                                                class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+                                                >Select File</v-btn
+                                            >
+                                            <v-text-field v-model="jobDetails.accession2taxid" :rules="[requiredRule]" style="display: none"></v-text-field>
+
+                                            <!-- Download Data Button -->
+                                            <v-btn
+                                                color="primary"
+                                                prepend-icon="$openInNew"
+                                                variant="text"
+                                                class="text-caption font-weight-medium"
+                                                size="small"
+                                                rounded="xl"
+                                                href="https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/"
+                                                target="_blank"
+                                                >Download Data
+                                            </v-btn>
+                                        </div>
+                                    </v-col>
+                                    <v-col cols="8" class="filename-col">
+                                        <v-chip v-if="jobDetails.accession2taxid" label color="primary" density="comfortable" class="filename-chip">
+                                            <v-icon icon="$delete" @click="clearFile('accession2taxid')" class="mr-1"></v-icon>
+                                            {{ this.extractFilename(jobDetails.accession2taxid) }}</v-chip
+                                        >
+                                    </v-col>
+                                </v-row>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </div>
+
+                <!-- <v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img> -->
+            </div>
+
+            <!-- OPTIONAL FIELDS -->
+            <v-divider class="my-2"></v-divider>
+            <v-card-actions>
+                <v-btn text="Optional Fields" :append-icon="expandAdvancedSettings ? '$collapse' : '$expand'" @click="expandAdvancedSettings = !expandAdvancedSettings" class="font-weight-bold"></v-btn>
+            </v-card-actions>
+
+            <!-- EXPANDABLE PANEL -->
+            <v-expand-transition>
+                <div v-if="expandAdvancedSettings" class="search-advanced-settings w-66 pt-0 pb-2">
+                    <!-- Parameters for precision mode -->
+                    <!-- <v-container class="py-0">
+                        <v-card variant="outlined" color="primary">
+                            <v-card-title class="text-subtitle-2 pb-0">Parameters for precision mode (Metabuli-P)</v-card-title>
+                            <v-card-title class="text-caption">
+                                <span v-if="jobDetails.mode === 'long-read'">
+                                    <strong>PacBio HiFi reads:</strong> --min-score 0.07 --min-sp-score 0.3<br />
+                                    <strong>PacBio Sequel II reads:</strong> --min-score 0.005<br />
+                                    <strong>ONT reads:</strong> --min-score 0.008
+                                </span>
+                                <span v-else> <strong>Illumina short reads:</strong> --min-score 0.15 --min-sp-score 0.5 </span>
+                            </v-card-title>
+                        </v-card>
+                    </v-container> -->
+
+                    <!-- Input fields -->
+                    <v-container fluid class="py-0">
+                        <v-row v-for="(setting, key) in advancedSettings" :key="key">
+                            <v-col cols="4">
+                                <v-list-subheader class="pr-0">
+                                    <v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
+                                        </template>
+                                        {{ setting.description }}
+                                    </v-tooltip>
+                                    {{ setting.title }}
+                                </v-list-subheader>
+                            </v-col>
+
+                            <v-col>
+                                <v-text-field
+                                    variant="outlined"
+                                    rounded="lg"
+                                    density="compact"
+                                    color="primary"
+                                    :placeholder="setting.extra?.file ? 'Select Path' : none"
+                                    v-model="setting.value"
+                                    :prepend-icon="getAppendInnerIcon(setting)"
+                                    :rules="getValidationRules(setting.parameter)"
+                                    :suffix="setting.extra?.suffix || ''"
+                                    v-on:click="handleAdvancedSettingsTextFieldClick(setting)"
+                                ></v-text-field>
+                            </v-col>
+                        </v-row>
+                    </v-container>
+                </div>
+            </v-expand-transition>
+
+            <!-- BUTTON -->
+            <v-sheet class="d-flex align-center my-2">
+                <v-btn :disabled="!isJobFormValid" @click="startJob" color="primary">
+                    Build Database
+                    <template v-slot:loader>
+                        <v-progress-circular indeterminate></v-progress-circular>
+                    </template>
+                </v-btn>
+            </v-sheet>
+            <v-row>
+                <v-col class="pt-0">
+                    <small class="text-caption text-medium-emphasis"
+                        >This will generate diffIdx, info, split, and taxID_list and some other files. You can delete '*_diffIdx' and '*_info' if generated.</small
+                    >
+                </v-col>
+            </v-row>
+        </v-form>
+    </v-card-text>
 </template>
 
 <script>
 import { trimAndStoreJobsHistory, loadJobsHistory } from "@/plugins/storageUtils.js";
-import NewDatabaseTab from "./NewDatabaseTab.vue";
-import UpdateDatabaseTab from "./UpdateDatabaseTab.vue";
 
 export default {
-	name: "CustomDatabaseSetting",
-	components: {
-		NewDatabaseTab,
-		UpdateDatabaseTab
-	},
+	name: "NewDatabaseTab",
+
 	data: () => ({
 		tab: "newDatabase",
 		tabItems: [
@@ -84,8 +245,8 @@ export default {
 			dbdir: "", // directory path
 			libfiles: "", // file path
 			accession2taxid: "", // file path
-			taxonomyPath: "", // directory path
-			maxram: "",
+			// taxonomyPath: "", // directory path
+			// maxram: "",
 		},
 		expandAdvancedSettings: false,
 		advancedSettings: {
@@ -93,30 +254,73 @@ export default {
 				title: "Threads",
 				description: "The number of threads used (all by default)",
 				parameter: "--threads",
-				value: "",
+				value: "", // FIXME: should be 0 or int?
 				type: "INTEGER",
 			},
+            maxRam: {
+                title: "Max RAM",
+                description: "The maximum RAM usage. (128 GiB by default)",
+                parameter: "--max-ram",
+                value: 128,
+                type: "INTEGER"
+            },
+            taxonomyPath: {
+                title: "Taxonomy Path",
+                description: "Directory where the taxonomy dump files are stored. (DBDIR/taxonomy by default)",
+                parameter: "--taxonomy-path",
+                value: "",
+                type: "STRING",
+                extra: {
+                    appendIcon: "folder",
+                    file: true,
+                },
+            },
 			accessionLevel: {
 				title: "Accession Level",
 				description: "Set 1 to use accession level classification (0 by default).",
 				parameter: "--accession-level",
-				value: "",
+				value: "", // FIXME: should be 0 or int?
+				type: "INTEGER",
+			},
+            cdsInfo: {
+                title: "CDS Info",
+                description: "List of absolute paths to CDS files.",
+                parameter: "--cds-info",
+                value: "",
+                type: "STRING",
+                extra: {
+                    appendIcon: "file",
+                    file: true,
+                },
+            },
+            makeLibrary: {
+				title: "Make Library",
+				description: "Make species library for faster execution (1 by default).",
+				parameter: "--make-library",
+				value: "", // FIXME: should be 0 or int?
 				type: "INTEGER",
 			},
 		},
 		validationRules: {
+            "--threads": (value) => {
+                // Input must be valid integer
+                if (value === "" || value === null || value === undefined) {
+                    return true;
+                }
+                return Number.isInteger(Number(value)) || "Input must be a valid integer";
+            },
 			// Input is required
 			"--max-ram": (value) => {
 				return Number.isInteger(Number(value)) || "Input must be a valid integer";
 			},
-			"--threads": (value) => {
-				// Input must be valid integer
-				if (value === "" || value === null || value === undefined) {
-					return true;
-				}
-				return Number.isInteger(Number(value)) || "Input must be a valid integer";
-			},
 			"--accession-level": (value) => {
+				// Input can be empty, or either numerical 0 or 1
+				const isEmpty = value === "" || value === null || value === undefined;
+				const validInputs = ["0", "1"];
+
+				return isEmpty || validInputs.includes(value) || "Value must be 0 or 1";
+			},
+            "--make-library": (value) => {
 				// Input can be empty, or either numerical 0 or 1
 				const isEmpty = value === "" || value === null || value === undefined;
 				const validInputs = ["0", "1"];
