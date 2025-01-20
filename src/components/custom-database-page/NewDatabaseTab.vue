@@ -43,7 +43,7 @@
                             </v-col>
                         </v-row>
 
-                        <!-- Library File -->
+                        <!-- FASTA File -->
                         <v-row>
                             <v-col cols="3">
                                 <v-list-subheader class="pr-0">
@@ -53,7 +53,7 @@
                                         </template>
                                         A file containing absolute paths of the FASTA files in DBDIR/library (library-files.txt)
                                     </v-tooltip>
-                                    Library File
+                                    FASTA File
                                 </v-list-subheader>
                             </v-col>
 
@@ -61,19 +61,19 @@
                                 <v-row>
                                     <v-col cols="4">
                                         <v-btn
-                                            @click="selectFile('libfiles', 'file')"
+                                            @click="selectFile('fastafile', 'file')"
                                             prepend-icon="$file"
                                             density="comfortable"
                                             size="default"
                                             class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
                                             >Select File</v-btn
                                         >
-                                        <v-text-field v-model="jobDetails.libfiles" :rules="[requiredRule]" style="display: none"></v-text-field>
+                                        <v-text-field v-model="jobDetails.fastafile" :rules="[requiredRule]" style="display: none"></v-text-field>
                                     </v-col>
                                     <v-col cols="8" class="filename-col">
-                                        <v-chip v-if="jobDetails.libfiles" label color="primary" density="comfortable" class="filename-chip">
-                                            <v-icon icon="$delete" @click="clearFile('libfiles')" class="mr-1"></v-icon>
-                                            {{ this.extractFilename(jobDetails.libfiles) }}</v-chip
+                                        <v-chip v-if="jobDetails.fastafile" label color="primary" density="comfortable" class="filename-chip">
+                                            <v-icon icon="$delete" @click="clearFile('fastafile')" class="mr-1"></v-icon>
+                                            {{ this.extractFilename(jobDetails.fastafile) }}</v-chip
                                         >
                                     </v-col>
                                 </v-row>
@@ -243,7 +243,7 @@ export default {
 		jobDetails: {
 			// Store job details including file paths
 			dbdir: "", // directory path
-			libfiles: "", // file path
+			fastafile: "", // file path
 			accession2taxid: "", // file path
 			// taxonomyPath: "", // directory path
 			// maxram: "",
@@ -290,7 +290,7 @@ export default {
                 type: "STRING",
                 extra: {
                     appendIcon: "file",
-                    file: true,
+                    file: true, // FIXME: edit the select file path function to accomodate both file and directory
                 },
             },
             makeLibrary: {
@@ -336,12 +336,6 @@ export default {
 		processedResults: null,
 		errorHandled: false,
 	}),
-
-	computed: {
-		computedHint() {
-			return `${this.jobDetails.jobid}_report.tsv`;
-		},
-	},
 
 	methods: {
 		// Cascade emit from tabs
@@ -507,69 +501,11 @@ export default {
 			}
 		},
 
-		// Function for loading sample data report file
-		async loadSampleData() {
-			// Start loading dialog
-			this.$emit("job-started", true);
-
-			// Process report file
-			await this.processResults(true);
-
-			// Set log message
-			this.backendOutput = "Sample data was loaded successfully.";
-
-			setTimeout(() => {
-				// Object storing info about completedJob
-				const completedJob = {
-					jobDetails: this.jobDetailsSample,
-					outdir: this.jobDetailsSample.outdir,
-					jobid: this.jobDetailsSample.jobid,
-					isSample: true,
-					jobStatus: "Completed",
-					jobType: "runSearch",
-					backendOutput: this.backendOutput,
-					resultsJSON: this.processedResults.jsonData.results,
-					kronaContent: this.processedResults.kronaContent,
-				};
-
-				// Store latest job in local storage for results rendering
-				localStorage.setItem("processedResults", JSON.stringify(completedJob));
-
-				// Store completed job in local storage
-				this.$emit("store-job", completedJob);
-
-				// Emit job-completed event: close loading dialog and expose results tab in navigation drawer
-				this.$emit("job-completed", completedJob);
-
-				// Trigger snackbar
-				// this.$emit("trigger-snackbar", "Sample data successfully loaded.", "success", "success", "View", () => {
-				// 	this.$router.push({ name: "ResultsPage" });
-				// });
-
-				// Clear backendOutput
-				this.backendOutput = "";
-			}, 2000); // Simulate a job taking 2 seconds
-		},
-
 		async runBackend() {
-			let params = ["classify"];
+			let params = ["build"];
 
-			// Add input
-			if (this.jobDetails.mode === "single-end") {
-				params.push("--seq-mode", 1, this.jobDetails.q1);
-			} else if (this.jobDetails.mode === "paired-end") {
-				params.push(this.jobDetails.q1, this.jobDetails.q2);
-			} else if (this.jobDetails.mode === "long-read") {
-				params.push("--seq-mode", 3, this.jobDetails.q1);
-			}
-
-			// Add dbdir, outdir, jobid
-			params.push(this.jobDetails.database, this.jobDetails.outdir, this.jobDetails.jobid);
-
-			// Add max-ram
-			if (this.jobDetails.maxram !== "") {
-				params.push("--max-ram", parseInt(this.jobDetails.maxram));
-			}
+			// Add dbdir, fastafile, accession2taxid
+			params.push(this.jobDetails.dbdir, this.jobDetails.fastafile, this.jobDetails.accession2taxid);
 
 			// Add advanced settings
 			for (const key in this.advancedSettings) {
@@ -602,8 +538,7 @@ export default {
 			//   "--max-ram",
 			//   32,
 			// ];
-
-			console.log("🚀 Job requested:", params); // DEBUG
+            console.log("🚀 Build new database job requested:", params); // DEBUG
 
 			// Return a promise that resolves or rejects based on backend success or failure
 			return new Promise((resolve, reject) => {
@@ -646,7 +581,7 @@ export default {
 		// Function to track job status + process results + trigger snackbar
 		async pollJobStatus(interval = 500, timeout = Infinity) {
 			// FIXME: decide timeout duration
-			console.log("🚀 Running job"); // DEBUG
+            console.log("🚀 Running build new database job"); // DEBUG
 			const start = Date.now();
 			while (Date.now() - start < timeout) {
 				if (this.errorHandled || this.status === "COMPLETE") return true;
@@ -662,132 +597,8 @@ export default {
 			}
 		},
 
-		// Function for processing results (shared for both tabs)
-		async processResults(isSample) {
-			let reportFilePath;
-			let kronaFilePath;
-
-			// Resolve outdir path
-			let resolvedOutdirPath;
-			let jobId;
-
-			resolvedOutdirPath = isSample ? this.jobDetailsSample.outdir : this.jobDetails.outdir;
-			jobId = isSample ? this.jobDetailsSample.jobid : this.jobDetails.jobid;
-
-			// Set file paths for report and krona
-			reportFilePath = `${resolvedOutdirPath}/${jobId}_report.tsv`;
-			kronaFilePath = `${resolvedOutdirPath}/${jobId}_krona.html`;
-
-			// Read and process TSV and Krona HTML here
-			const tsvData = await this.readTSVFile(reportFilePath, isSample);
-			const jsonData = this.tsvToJSON(tsvData);
-			const kronaContent = await this.readKronaHTML(kronaFilePath, isSample);
-
-			// Store in component for emission
-			this.processedResults = { jsonData, kronaContent };
-		},
-		// Helper functions for processing data
-		async readTSVFile(filePath, isSample) {
-			try {
-				const tsvContent = await window.electron.readFile(filePath, isSample); //FIXME: edit readFile preload function
-				return tsvContent;
-			} catch (error) {
-				console.error("Error reading TSV file:", error);
-			}
-		},
-		validateReportTSVData(records) {
-			// Validation criteria for report.tsv file format
-			const firstRecord = records[0];
-
-			// No parsed data
-			if (firstRecord === undefined) return false;
-
-			return (
-				(firstRecord.rank === "no rank" && firstRecord.taxon_id === "0" && firstRecord.name === "unclassified") ||
-				(firstRecord.rank === "no rank" && firstRecord.taxon_id === "1" && firstRecord.name === "root")
-			);
-		},
-		tsvToJSON(tsv) {
-			const headers = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "name"];
-			const records = tsv
-				.split("\n")
-				.map((line) => {
-					const data = line.split("\t").map((item) => item.trim()); // Strip leading and trailing whitespace
-					return Object.fromEntries(headers.map((header, index) => [header, data[index]]));
-				})
-				.filter((record) => !Object.values(record).every((field) => field === "" || field === undefined || field === null)); // Filter out empty rows
-
-			// Validate report.tsv file
-			if (this.validateReportTSVData(records)) {
-				return { results: records };
-			} else {
-				return null; // Return null if the row does not meet the criteria
-			}
-		},
-		async readKronaHTML(filePath, isSample) {
-			if (!filePath) {
-				// Results tab will hide krona tab for null
-				return null;
-			}
-
-			try {
-				const kronaHtml = await window.electron.readFile(filePath, isSample); //FIXME: too messy, edit readFile preload function
-				return kronaHtml;
-			} catch (error) {
-				console.error("Error opening Krona viewer:", error);
-			}
-		},
-		handleJobSuccess() {
-			console.log("🚀 Job completed successfully."); // DEBUG
-
-			// Object storing info about completedJob
-			const completedJob = {
-				jobDetails: this.jobDetails,
-				outdir: this.jobDetails.outdir,
-				jobid: this.jobDetails.jobid,
-				isSample: false,
-				jobStatus: "Completed",
-				jobType: "runSearch",
-				backendOutput: this.backendOutput,
-				resultsJSON: this.processedResults.jsonData.results,
-				kronaContent: this.processedResults.kronaContent,
-			};
-			this.$emit("store-job", completedJob);
-
-			// Store latest job in local storage for results rendering
-			localStorage.setItem("processedResults", JSON.stringify(completedJob));
-
-			// Store completed job in local storage
-			// console.log("newrun completedJob:", completedJob); // DEBUG
-
-			// Trigger snackbar
-			// this.$emit("trigger-snackbar", "Job successfully completed. Check the results tab.", "success", "success", "View", () => {
-			// 	this.$router.push({ name: "ResultsPage" });
-			// });
-
-			// Emit job-completed event: close loading dialog and expose results tab in navigation drawer
-			this.$emit("job-completed", completedJob);
-		},
 		handleJobError() {
 			this.errorHandled = true; // Ensure flag is set to prevent further handling
-
-			// Additional error handling logic (save failed job to local storage, trigger snackbar)
-
-			// Create failed job object to store in local storage
-			const failedJob = {
-				jobDetails: this.jobDetails,
-				outdir: this.jobDetails.outdir,
-				jobid: this.jobDetails.jobid,
-				isSample: false,
-				jobStatus: this.status,
-				jobType: "runSearch",
-				backendOutput: this.backendOutput,
-				resultsJSON: null,
-				kronaContent: null,
-			};
-
-			// Store completed job in local storage
-			this.$emit("store-job", failedJob);
 
 			// Trigger snackbar corresponding to case
 			if (this.status === "TIMEOUT") {
@@ -808,20 +619,6 @@ export default {
 		handleTimeout() {
 			window.electron.cancelBackend();
 		},
-
-		// getCurrentDateTime() {
-		// 	const now = new Date();
-
-		// 	// Format the date and time (YYYY-MM-DD_HH-MM-SS)
-		// 	const year = now.getFullYear();
-		// 	const month = String(now.getMonth() + 1).padStart(2, "0"); // Months are 0-based
-		// 	const day = String(now.getDate()).padStart(2, "0");
-		// 	const hours = String(now.getHours()).padStart(2, "0");
-		// 	const minutes = String(now.getMinutes()).padStart(2, "0");
-		// 	const seconds = String(now.getSeconds()).padStart(2, "0");
-
-		// 	return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
-		// },
 	},
 
 	mounted() {
@@ -831,7 +628,6 @@ export default {
 		// Prefill Job Details
 		const totalRam = window.electron.getTotalRam(); // Get total RAM of current computer
 		this.jobDetails.maxram = totalRam; // Set maxram to total RAM in GB
-		// this.jobDetails.jobid = this.getCurrentDateTime(); // Prefill Job ID with current timestamp
 	},
 };
 </script>
