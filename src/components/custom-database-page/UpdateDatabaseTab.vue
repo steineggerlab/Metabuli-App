@@ -530,7 +530,7 @@ export default {
 
 		// Prefill Job Details
 		const totalRam = window.electron.getTotalRam(); // Get total RAM of current computer
-		this.jobDetails.maxram = totalRam; // Set maxram to total RAM in GB
+		this.advancedSettings.maxRam.value = totalRam; // Set maxram to total RAM in GB
 	},
 };
 </script>
