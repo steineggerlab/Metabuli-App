@@ -235,6 +235,13 @@ export default {
 		},
 		expandAdvancedSettings: false,
 		advancedSettings: {
+			maxRam: {
+				title: "Max RAM (GiB)",
+				description: "The maximum RAM usage. (128 GiB by default)",
+				parameter: "--max-ram",
+				value: 128,
+				type: "INTEGER"
+			},
 			thread: {
 				title: "Threads",
 				description: "The number of threads used (all by default)",
@@ -242,13 +249,6 @@ export default {
 				value: "", // FIXME: should be 0 or int?
 				type: "INTEGER",
 			},
-            maxRam: {
-                title: "Max RAM",
-                description: "The maximum RAM usage. (128 GiB by default)",
-                parameter: "--max-ram",
-                value: 128,
-                type: "INTEGER"
-            },
 			accessionLevel: {
 				title: "Accession Level",
 				description: "Set 1 to use accession level classification (0 by default).",

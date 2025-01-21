@@ -43,6 +43,59 @@
                             </v-col>
                         </v-row>
 
+						<!-- Taxonomy Path -->
+						<v-row>
+							<v-col cols="3">
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+										<template v-slot:activator="{ props }">
+											<v-icon v-bind="props" icon="$helpCircle"></v-icon>
+										</template>
+										Directory where the taxonomy dump files are stored. (DBDIR/taxonomy by default)
+									</v-tooltip>
+									Taxonomy Path
+								</v-list-subheader>
+							</v-col>
+
+							<v-col cols="9" class="search-files">
+								<v-row>
+									<v-col cols="4">
+										<div class="d-flex flex-column align-center mb-0 gc-3">
+											<!-- Select Directory Button -->
+											<v-btn
+												@click="selectFile('taxonomyPath', 'directory')"
+												prepend-icon="$folder"
+												density="comfortable"
+												size="default"
+												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+												>Select Directory</v-btn
+											>
+											<v-text-field v-model="jobDetails.taxonomyPath" :rules="[requiredRule]" style="display: none"></v-text-field>
+
+											<!-- Download Data Button -->
+											<v-btn
+												color="primary"
+												prepend-icon="$openInNew"
+												variant="text"
+												class="text-caption font-weight-medium"
+												size="small"
+												rounded="xl"
+												href="https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/"
+												target="_blank"
+												>Download Data
+											</v-btn>
+										</div>
+									</v-col>
+									<v-col cols="8" class="filename-col">
+										<v-chip v-if="jobDetails.taxonomyPath" label color="primary" density="comfortable" class="filename-chip">
+											<v-icon icon="$delete" @click="clearFile('taxonomyPath')" class="mr-1"></v-icon>
+											{{ this.extractFilename(jobDetails.taxonomyPath) }}</v-chip
+										>
+									</v-col>
+								</v-row>
+							</v-col>
+						</v-row>
+
                         <!-- FASTA File -->
                         <v-row>
                             <v-col cols="3">
@@ -190,6 +243,11 @@
                     </template>
                 </v-btn>
             </v-sheet>
+			<v-row>
+				<v-col class="pt-0">
+					<small class="text-caption text-medium-emphasis">This will generate diffIdx, info, split, and taxID_list and some other files. You can delete '*_diffIdx' and '*_info' if generated.</small>
+				</v-col>
+			</v-row>
         </v-form>
     </v-card-text>
 </template>
@@ -206,9 +264,17 @@ export default {
 			dbdir: "", // directory path
 			fastafile: "", // file path
 			accession2taxid: "", // file path
+			taxonomyPath: "", // taxonomy dump path 
 		},
 		expandAdvancedSettings: false,
 		advancedSettings: {
+			maxRam: {
+				title: "Max RAM (GiB)",
+				description: "The maximum RAM usage. (128 GiB by default)",
+				parameter: "--max-ram",
+				value: 128,
+				type: "INTEGER"
+			},
 			thread: {
 				title: "Threads",
 				description: "The number of threads used (all by default)",
@@ -216,24 +282,6 @@ export default {
 				value: "", // FIXME: should be 0 or int?
 				type: "INTEGER",
 			},
-            maxRam: {
-                title: "Max RAM",
-                description: "The maximum RAM usage. (128 GiB by default)",
-                parameter: "--max-ram",
-                value: 128,
-                type: "INTEGER"
-            },
-            taxonomyPath: {
-                title: "Taxonomy Path",
-                description: "Directory where the taxonomy dump files are stored. (DBDIR/taxonomy by default)",
-                parameter: "--taxonomy-path",
-                value: "",
-                type: "STRING",
-                extra: {
-                    appendIcon: "folder",
-                    file: true,
-                },
-            },
 			accessionLevel: {
 				title: "Accession Level",
 				description: "Set 1 to use accession level classification (0 by default).",
@@ -394,6 +442,9 @@ export default {
 
 			// Add dbdir, fastafile, accession2taxid
 			params.push(this.jobDetails.dbdir, this.jobDetails.fastafile, this.jobDetails.accession2taxid);
+
+			// Add Taxonomy Path
+			params.push("--taxonomy-path", this.jobDetails.taxonomyPath);
 
 			// Add advanced settings
 			for (const key in this.advancedSettings) {
