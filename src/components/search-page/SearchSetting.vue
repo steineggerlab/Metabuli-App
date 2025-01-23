@@ -113,6 +113,7 @@ export default {
 				backendOutput: job.backendOutput,
 				results: plainResults,
 				kronaContent: job.kronaContent,
+				reportFilePath: job.reportFilePath,
 			};
 
 			try {

@@ -37,7 +37,7 @@ export function extractTaxonomyArray(nodesByDepth) {
 export async function compareTSVContents(regeneratedReportContent, originalReportFile) {
     try {
         // Read the TSV file content from the original report file
-        const originalReportContent = await window.electron.readFile(originalReportFile, false);
+        const originalReportContent = await window.electron.readFile(originalReportFile);
 
         // Split both contents into lines
         const regeneratedReportEntries = regeneratedReportContent
