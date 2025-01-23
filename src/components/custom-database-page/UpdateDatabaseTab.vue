@@ -171,7 +171,7 @@
 
             <!-- EXPANDABLE PANEL -->
             <v-expand-transition>
-                <div v-if="expandAdvancedSettings" class="search-advanced-settings w-66 pt-0 pb-2">
+                <div v-if="expandAdvancedSettings" class="search-advanced-settings w-75 pt-0 pb-2">
                     <!-- Input fields -->
                     <v-container fluid class="py-0">
                         <v-row v-for="(setting, key) in advancedSettings" :key="key">
@@ -201,7 +201,27 @@
                                     v-on:click="handleAdvancedSettingsTextFieldClick(setting)"
                                 ></v-text-field>
                             </v-col>
+
+							<v-col>
+								<!-- Dialog for New Taxa -->
+								<CreateNewTaxaListDialog>
+									<template v-slot:activator="{ props }">
+										<v-btn
+											v-if="key === 'newTaxa'"
+											v-bind="props"
+											prepend-icon="$plusBox"
+											color="primary"
+											variant="text"
+											@click="openNewTaxaDialog"
+										>Create New Taxa</v-btn>
+									</template>
+								</CreateNewTaxaListDialog>
+
+							</v-col>
                         </v-row>
+
+						
+						
                     </v-container>
                 </div>
             </v-expand-transition>
@@ -220,9 +240,13 @@
 </template>
 
 <script>
+import CreateNewTaxaListDialog from './CreateNewTaxaListDialog.vue';
+
 export default {
 	name: "UpdateDatabaseTab",
-
+	components: {
+		CreateNewTaxaListDialog
+	},
 	data: () => ({
 		// Properties for Run New Search tab
 		isJobFormValid: false,
@@ -234,6 +258,7 @@ export default {
             olddbdir: "", // old db directory path
 		},
 		expandAdvancedSettings: false,
+		isNewTaxaDialogVisible: false,
 		advancedSettings: {
 			maxRam: {
 				title: "Max RAM (GiB)",
@@ -522,6 +547,11 @@ export default {
 		handleTimeout() {
 			window.electron.cancelBackend();
 		},
+
+		// Create new taxa dialog
+		openNewTaxaDialog() {
+            this.isNewTaxaDialogVisible = true;
+        },
 	},
 
 	mounted() {
