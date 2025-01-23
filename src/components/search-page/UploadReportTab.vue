@@ -96,6 +96,7 @@ export default {
 						backendOutput: this.backendOutput,
 						resultsJSON: this.processedResults.jsonData.results,
 						kronaContent: this.processedResults.kronaContent, // null
+						reportFilePath: this.file.path,
 					};
 
 					// Store latest job in local storage for results rendering
@@ -132,6 +133,7 @@ export default {
 					backendOutput: this.backendOutput,
 					resultsJSON: null,
 					kronaContent: null,
+					reportFilePath: null,
 				};
 				// Store completed job in local storage
 				this.$emit("store-job", failedJob);

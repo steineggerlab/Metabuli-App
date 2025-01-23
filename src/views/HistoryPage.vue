@@ -143,9 +143,20 @@ export default {
 				isSample: jobItem.isSample,
 				resultsJSON: jobItem.results,
 				kronaContent: jobItem.kronaContent,
+				reportFilePath: jobItem.reportFilePath,
 			};
 
 			localStorage.setItem("processedResults", JSON.stringify(completedJob));
+
+			// Store report file path in session storage for later use (taxonomy verification)
+			const reportFilePath = completedJob.reportFilePath;
+			if (reportFilePath) {
+				sessionStorage.setItem("reportFilePath", reportFilePath);
+			} else {
+				// Reset to an empty value
+				sessionStorage.removeItem("reportFilePath");
+			}
+
 			this.$router.push({ name: "ResultsPage" });
 		},
 

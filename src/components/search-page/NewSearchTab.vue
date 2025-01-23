@@ -481,6 +481,7 @@ export default {
 			// Set log message
 			this.backendOutput = "Sample data was loaded successfully.";
 
+			const sampleReportFilePath = await window.electron.resolveFilePath(`${this.jobDetailsSample.outdir}/${this.jobDetailsSample.jobid}_report.tsv`, true);
 			setTimeout(() => {
 				// Object storing info about completedJob
 				const completedJob = {
@@ -493,6 +494,7 @@ export default {
 					backendOutput: this.backendOutput,
 					resultsJSON: this.processedResults.jsonData.results,
 					kronaContent: this.processedResults.kronaContent,
+					reportFilePath: sampleReportFilePath,
 				};
 
 				// Store latest job in local storage for results rendering
@@ -638,28 +640,28 @@ export default {
 			jobId = isSample ? this.jobDetailsSample.jobid : this.jobDetails.jobid;
 
 			// Set file paths for report and krona
-			reportFilePath = `${resolvedOutdirPath}/${jobId}_report.tsv`;
-			kronaFilePath = `${resolvedOutdirPath}/${jobId}_krona.html`;
+			reportFilePath = await window.electron.resolveFilePath(`${resolvedOutdirPath}/${jobId}_report.tsv`, isSample);
+			kronaFilePath = await window.electron.resolveFilePath(`${resolvedOutdirPath}/${jobId}_krona.html`, isSample);
 
 			// Store report file path in session storage for later use (taxonomy verification)
 			sessionStorage.setItem("reportFilePath", reportFilePath);
 
 			// Read and process TSV and Krona HTML here
-			const tsvData = await TSVParser.readTSVFile(reportFilePath, isSample);
+			const tsvData = await TSVParser.readTSVFile(reportFilePath);
 			const jsonData = TSVParser.tsvToJSON(tsvData);
-			const kronaContent = await this.readKronaHTML(kronaFilePath, isSample);
+			const kronaContent = await this.readKronaHTML(kronaFilePath);
 
 			// Store in component for emission
 			this.processedResults = { jsonData, kronaContent };
 		},
-		async readKronaHTML(filePath, isSample) {
+		async readKronaHTML(filePath) {
 			if (!filePath) {
 				// Results tab will hide krona tab for null
 				return null;
 			}
 
 			try {
-				const kronaHtml = await window.electron.readFile(filePath, isSample); //FIXME: too messy, edit readFile preload function
+				const kronaHtml = await window.electron.readFile(filePath); //FIXME: too messy, edit readFile preload function
 				return kronaHtml;
 			} catch (error) {
 				console.error("Error opening Krona viewer:", error);
@@ -679,6 +681,7 @@ export default {
 				backendOutput: this.backendOutput,
 				resultsJSON: this.processedResults.jsonData.results,
 				kronaContent: this.processedResults.kronaContent,
+				reportFilePath: `${this.jobDetails.outdir}/${this.jobDetails.jobid}_report.tsv`
 			};
 			this.$emit("store-job", completedJob);
 
@@ -712,6 +715,7 @@ export default {
 				backendOutput: this.backendOutput,
 				resultsJSON: null,
 				kronaContent: null,
+				reportFilePath: null,
 			};
 
 			// Store completed job in local storage

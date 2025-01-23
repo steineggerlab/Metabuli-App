@@ -16,6 +16,15 @@ contextBridge.exposeInMainWorld("electron", {
 	getBasePath: () => getBasePath(),
 	openItemInFolder: (filePath) => shell.showItemInFolder(filePath),
 
+	// Function to resolve file path
+	resolveFilePath: (filePath, isRelativePath) => {
+		// Determine the base path based on the environment
+		// 'development' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/dist_electron
+		// 'production' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/build/mac-universal--arm64/Metabuli App.app/Contents/Resources/app.asar
+		const basePath = process.env.NODE_ENV === "development" ? path.join(__dirname, "..", "public") : path.join(__dirname);
+		return isRelativePath ? path.join(basePath, filePath) : filePath;
+	},
+
 	// Function to check if file exists
 	fileExists: async (filePath) => {
 		try {
@@ -62,25 +71,20 @@ contextBridge.exposeInMainWorld("electron", {
 		}
 	},
 
-	readFile: async (filePath, isRelativePath) => {
-		// FIXME: use getBasePath
-		// 'development' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/dist_electron
-		// 'production' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/build/mac-universal--arm64/Metabuli App.app/Contents/Resources/app.asar
-		const basePath = process.env.NODE_ENV === "development" ? path.join(__dirname, "..", "public") : path.join(__dirname);
-		const fullPath = isRelativePath ? path.join(basePath, filePath) : filePath;
+	readFile: async (filePath) => {
 		try {
-			return await fs.readFile(fullPath, "utf-8");
+			return await fs.readFile(filePath, "utf-8");
 		} catch (error) {
 			throw new Error(`Failed to read file: ${error.message}`);
 		}
 	},
 	writeFile: async (filePath, content) => {
-        try {
-            await fs.writeFile(filePath, content, "utf8");
-        } catch (error) {
-            throw error;
-        }
-    },
+		try {
+			await fs.writeFile(filePath, content, "utf8");
+		} catch (error) {
+			throw error;
+		}
+	},
 
 	openFileDialog: (options) => ipcRenderer.invoke("open-file-dialog", options),
 	openKrona: (filePath) => ipcRenderer.invoke("open-krona", filePath),
