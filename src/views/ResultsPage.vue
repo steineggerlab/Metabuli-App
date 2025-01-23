@@ -13,7 +13,7 @@
 
 				<!-- TABLE TAB -->
 				<v-tabs-window-item value="table" class="h-100">
-					<ResultsTable :data="results" :taxonomyVerification="taxonomyVerification" class="h-100" @row-click="handleRowClick" />
+					<ResultsTable :data="results" class="h-100" @row-click="handleRowClick" />
 				</v-tabs-window-item>
 
 				<!-- SANKEY TAB-->
@@ -35,6 +35,23 @@
 							></v-text-field>
 							<div class="d-flex align-center">Click on a node to see lineage and subtree.</div>
 						</div>
+
+						<!-- BUTTON TO OPEN ISSUE WHEN SANKEY VERIFICATION FAILS -->
+						<v-tooltip location="end">
+							<template #activator="{ props }">
+								<v-btn
+								v-if="!taxonomyVerification" 
+								v-bind="props"
+								icon="$alert"
+								color="amber-darken-2"
+								variant="text"
+								rounded="xl"
+								class="ml-2"
+								@click="openGithubIssue"
+								></v-btn>
+							</template>
+							Taxonomy report mismatch detected. Notify the developer!
+						</v-tooltip>
 
 						<v-spacer></v-spacer>
 
@@ -295,11 +312,15 @@ export default {
 
 			// Verify sankey
 			this.verifySankey().then((result) => {
-				this.taxonomyVerification = result;
-				if (this.taxonomyVerification) {
-					console.log("🟩 Taxonomy verification succeeded.");
-				} else {
+				if (result === null) {
+					console.warn("⚠️ Original report file not found. Taxonomy verification skipped.");
+					this.taxonomyVerification = null; // Use `null` for file-not-found case
+				} else if (result === false) {
 					console.log("🟥 Taxonomy verification failed.");
+					this.taxonomyVerification = false; // Use `false` for verification failure
+				} else if (result === true) {
+					console.log("🟩 Taxonomy verification succeeded.");
+					this.taxonomyVerification = true; // Use `true` for verification success
 				}
 			});
 		},
@@ -380,6 +401,13 @@ export default {
 
 		// Sankey Verification
 		async verifySankey() {
+			// Compare original taxonomy report and regenerated taxonomy report
+			const originalReportFilePath = sessionStorage.getItem("reportFilePath");
+			if (!originalReportFilePath) {
+				console.warn("Original report file path not found. Skipping TSV comparison.");
+				return null;  // Return `null` when file not found
+			}
+
 			const extractedTaxonomyArray = extractTaxonomyArray(this.nodesByDepth);
 
 			const properties = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "nameWithIndentation"];
@@ -390,19 +418,26 @@ export default {
 					? node[property] 
 					: "").join("\t"))
 				.join("\n");
-
-			// Compare original taxonomy report and regenerated taxonomy report
-			const originalReport = sessionStorage.getItem("reportFilePath");
-			if (!originalReport) {
-				console.warn("Original report file path not found. Skipping TSV comparison.");
-				return;
-			}
 			
-			const compareSuccessful = await compareTSVContents(regeneratedReport, originalReport);
-			// if (!compareSuccessful) {
-			// 	await saveTSVFile(regeneratedReport, "/Users/sunnylee/Desktop/test_regenerated_reportfile.tsv"); // FIXME: remove
-			// }
-			return compareSuccessful;
+			const compareSuccessful = await compareTSVContents(regeneratedReport, originalReportFilePath);
+			return compareSuccessful; // return true or false depending on verification result
+		},
+		openGithubIssue() {
+			const title = encodeURIComponent("Original Taxonomy Report Misalignment with Reverse-Generated Report");
+			const body = encodeURIComponent(
+  `> To help us investigate the issue, please share your 'report.tsv' file using one of the following methods:
+>
+>1. **File Sharing Service**:  
+>   Upload your 'report.tsv' file to a trusted file-sharing platform like Google Drive or Dropbox. Ensure the link is accessible to us, and include the link in this issue.
+>
+>2. **Email Submission**:  
+>   Alternatively, you can email the 'report.tsv' file to [snjlee58@snu.ac.kr]. Please include the issue number in the email subject (e.g., "Metabuli App Issue #123: Report File").
+>
+>This will help us review and resolve the issue more effectively. Let us know if you have any questions!`
+);
+
+			const url = `https://github.com/steineggerlab/Metabuli-App/issues/new?title=${title}&body=${body}`;
+			window.open(url, "_blank");
 		},
 
 		// Sankey Diagram Configuration Settings

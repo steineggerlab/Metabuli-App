@@ -1,8 +1,7 @@
 <template>
 	<div class="sankey-container d-flex flex-column flex-shrink-1">
 		<!-- SANKEY DIAGRAM (DISPLAY ONCE LOADING IS FINISHED) -->
-		<div v-if="!loading" key="sankey" ref="sankeyContainer" class="sankey-diagram hide"></div>
-		<!-- FIXME: change div to svg like in mmseqs -->
+		<svg v-if="!loading" ref="sankeyContainer" class="hide"></svg>  
 
 		<!-- LOADING ANIMATION (WHILE LOADING) -->
 		<div class="d-flex flex-column align-center justify-center loading-container" v-else>
@@ -532,7 +531,6 @@ export default {
 
 			const svg = d3
 				.select(container)
-				.append("svg")
 				.attr("viewBox", `0 0 ${width} ${height+marginBottom}`)
 				.attr("width", "100%")
 				.attr("height", height + marginBottom)

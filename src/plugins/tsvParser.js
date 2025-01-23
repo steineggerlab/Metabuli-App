@@ -1,8 +1,8 @@
 export default {
-	async readTSVFile(filePath, isSample) {
+	async readTSVFile(filePath) {
         // Read content from tsv file
 		try {
-			const tsvContent = await window.electron.readFile(filePath, isSample); //FIXME: edit readFile preload function
+			const tsvContent = await window.electron.readFile(filePath);
 			return tsvContent;
 		} catch (error) {
 			console.error("Error reading TSV file:", error);

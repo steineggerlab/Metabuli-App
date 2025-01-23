@@ -5,23 +5,6 @@
 				<!-- NUMBER OF DATA ITEMS -->
 				<div>Showing {{ totalItems }} entries</div>
 
-				<!-- BUTTON TO OPEN ISSUE WHEN SANKEY VERIFICATION FAILS -->
-				<!-- <v-tooltip location="end">
-				<template #activator="{ props }">
-					<v-btn
-					v-if="!taxonomyVerification" 
-					v-bind="props"
-					icon="$alert"
-					color="amber-darken-2"
-					variant="text"
-					rounded="xl"
-					class="ml-2"
-					@click="openGithubIssue"
-					></v-btn>
-				</template>
-				Taxonomy report mismatch detected. Notify the developer!
-				</v-tooltip> -->
-
 				<v-spacer></v-spacer>
 
 				<!-- SEARCH BAR -->
@@ -186,12 +169,6 @@ export default {
 	},
 	props: {
 		data: Array,
-		// taxonomyVerification: {
-		// 	// immediate: true,
-		// 	handler(newValue) {
-		// 		console.log(newValue);
-		// 	}
-		// },
 	},
 	computed: {
 		filteredTableResults() {
@@ -246,15 +223,6 @@ export default {
 		},
 		closeMenu() {
 			this.rankMenu = false;
-		},
-		openGithubIssue() {
-			const owner = "steineggerlab"; // Replace with your GitHub username or org name
-			const repo = "Metabuli-App"; // Replace with your repository name
-			const title = encodeURIComponent("Original Taxonomy Report Misalignment with Reverse-Generated Report");
-			const body = encodeURIComponent(`Upload your 'report.tsv' file so that we can investigate the misalignment between the original and reverse-generated taxonomy reports.`);
-
-			const url = `https://github.com/${owner}/${repo}/issues/new?title=${title}&body=${body}`;
-			window.open(url, "_blank");
 		},
 	},
 };
