@@ -27,25 +27,55 @@ We will make a button for GTDB soon.
 - Run new **taxonomic profiling**
 - **Upload and browse** taxonomic profiling results
 - **Extract reads** classified under a specific taxon
-- Explore results with customizable interactive **Sankey plots**
-- Explore results with interactive **Krona plots**
+- Explore results with customizable **Sankey plots** and interactive **Krona plots**.
+- **Database Management:** Create or update databases directly in the app.
 
-## Getting Started
+---
 
-### Installation
+## Changelog
+
+### v1.0.1
+- Introduced the `Custom Database` page, enabling users to:
+    - Create new databases.
+    - Add new sequences to existing databases.
+- Enhanced `Sankey visualization`:
+    - Implemented Sankey plot verification for ensuring accuracy of visualized results.
+    - Resolved a bug in lineage extraction from raw data that previously caused inaccuracies in lineage representation on the Sankey plot.
+
+### v1.0.0
+- Initial release of Metabuli App.
+
+---
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](#usage)
+    - [Classification](#classification)
+        - [New Search](#new-search)
+        - [Upload Report](#upload-report)
+    - [Database Management](#database-management)
+        - [Creating a New Database](#create-new-database)
+        - [Adding New Sequences to An Existing Database](#add-new-sequences-to-an-existing-database)
+        - [Creating a New Taxa List](#create-new-taxa-list)
+- [Demos](#demos)
+- [Acknowledgments](#acknowledgments)
+
+## Installation
 
 - Visit the [GitHub Releases](https://github.com/steineggerlab/Metabuli-App/releases) page for the latest builds.
 - The application is pre-built for **macOS**, **Windows**, and **Linux**.
 - Simply download the executable for your platform from the Releases section.
 
 > **Note:** If you encounter a security warning when opening the app, follow the instructions below to bypass the warning:
+>- **macOS**: Refer to [this guide](https://support.apple.com/en-gb/guide/mac-help/mh40616/15.0/mac/15.0) on how to open apps from unidentified developers.
+>- **Windows**: Click 'More info' and then 'Run anyway' to continue.
 
-- **macOS**: Refer to [this guide](https://support.apple.com/en-gb/guide/mac-help/mh40616/15.0/mac/15.0) on how to open apps from unidentified developers.
-- **Windows**: Click 'More info' and then 'Run anyway' to continue.
-
+---
 
 ## Usage
 
+## Classification
 The Metabuli App provides two modes for metagenomic classification: **New Search** and **Upload Report**. These modes are accessible via tabs in the **Search Settings** panel.
 
 ### New Search
@@ -82,7 +112,6 @@ To run a **New Search** job, follow these steps:
      - **Table**: View the raw classification data in a table format.
      - **Sankey Diagram**: A flow diagram representing the lineage information of the displayed taxa.
      - **Krona Chart**: A hierarchical interactive chart that visualizes classification results.
----
 
 ### Upload Report
 
@@ -94,6 +123,33 @@ To visualize results from a previously completed job:
    - **Table**: The raw data in table format.
    - **Sankey Diagram**: A flow diagram representing the lineage paths for the displayed taxa (without the Krona chart).
 
+---
+
+## Database Management
+
+### Create New Database
+To create a new database, you need to provide the following 4 inputs:
+1. **Database Directory:** The directory where the database will be generated.
+2. **FASTA List:** A file containing absolute paths to FASTA files.
+3. **Accession2TaxId:** A path to NCBI-style accession2taxid.
+4. **Taxonomy Path:** Directory where the taxonomy dump files are stored (DBDIR/taxonomy by default).
+
+### Add New Sequences to An Existing Database
+To add new sequences to an existing database, you need to provide the following:
+1. **New Database Directory:** The directory where the updated database will be generated.
+2. **FASTA List:** A file of paths to the FASTA file to be added.
+3. **Accession2taxid:** A path to NCBI-style accession2taxid.
+4. **Old Database Directory:** The directory containing the old database to be updated.
+
+#### Create New Taxa List
+To create a new taxa list, click the `New Taxa List` button beside the Taxa List parameter and input the following:
+1. **Database Directory:** The directory containing the old database.
+2. **FASTA List:** A file of paths to the FASTA file to be added.
+3. **New Taxonomy Path:** The directory where the new taxonomy dump files are stored.
+4. **Accession2taxid:** A path to NCBI-style accession2taxid.
+5. **Output Directory:** The directory where the new taxa list will be generated.
+
+---
 
 ## Demos
 
