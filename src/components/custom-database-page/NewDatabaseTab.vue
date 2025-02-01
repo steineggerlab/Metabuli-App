@@ -3,9 +3,9 @@
         <!-- Required Fields -->
         <v-form ref="jobForm" v-model="isJobFormValid">
             <v-card-title class="text-button font-weight-bold">Required Fields</v-card-title>
-            <div class="d-flex">
+			<div class="d-flex">
                 <div class="w-100 search-required-fields">
-                    <v-container>
+                    <v-container class="pb-2">
                         <!-- DB Directory -->
                         <v-row>
                             <v-col cols="3">
@@ -37,6 +37,96 @@
                                         <v-chip v-if="jobDetails.dbdir" label color="primary" density="comfortable" class="filename-chip">
                                             <v-icon icon="$delete" @click="clearFile('dbdir')" class="mr-1"></v-icon>
                                             {{ this.extractFilename(jobDetails.dbdir) }}</v-chip
+                                        >
+                                    </v-col>
+                                </v-row>
+                            </v-col>
+                        </v-row>
+
+                        <!-- FASTA List -->
+                        <v-row>
+                            <v-col cols="3">
+                                <v-list-subheader class="pr-0">
+                                    <v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
+                                        </template>
+                                        A file containing absolute paths of the FASTA files in DBDIR/library (library-files.txt)
+                                    </v-tooltip>
+                                    FASTA List
+                                </v-list-subheader>
+                            </v-col>
+
+                            <v-col cols="9" class="search-files">
+                                <v-row>
+                                    <v-col cols="4">
+                                        <v-btn
+                                            @click="selectFile('fastaList', 'file')"
+                                            prepend-icon="$file"
+                                            density="comfortable"
+                                            size="default"
+                                            class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+                                            >Select File</v-btn
+                                        >
+                                        <v-text-field v-model="jobDetails.fastaList" :rules="[requiredRule]" style="display: none"></v-text-field>
+                                    </v-col>
+                                    <v-col cols="8" class="filename-col">
+                                        <v-chip v-if="jobDetails.fastaList" label color="primary" density="comfortable" class="filename-chip">
+                                            <v-icon icon="$delete" @click="clearFile('fastaList')" class="mr-1"></v-icon>
+                                            {{ this.extractFilename(jobDetails.fastaList) }}</v-chip
+                                        >
+                                    </v-col>
+                                </v-row>
+                            </v-col>
+                        </v-row>
+
+                        <!-- <accession2taxid> -->
+                        <v-row>
+                            <v-col cols="3">
+                                <v-list-subheader class="pr-0">
+                                    <v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
+                                        </template>
+                                        A path to NCBI-style accession2taxid.
+                                    </v-tooltip>
+                                    Accession 2 Tax Id
+                                </v-list-subheader>
+                            </v-col>
+
+                            <v-col cols="9" class="search-files">
+                                <v-row>
+                                    <v-col cols="4">
+                                        <div class="d-flex flex-column align-center mb-0 gc-3">
+                                            <!-- Select File Button -->
+                                            <v-btn
+                                                @click="selectFile('accession2taxid', 'file')"
+                                                prepend-icon="$file"
+                                                density="comfortable"
+                                                size="default"
+                                                class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+                                                >Select File</v-btn
+                                            >
+                                            <v-text-field v-model="jobDetails.accession2taxid" :rules="[requiredRule]" style="display: none"></v-text-field>
+
+                                            <!-- Download Data Button -->
+                                            <v-btn
+                                                color="primary"
+                                                prepend-icon="$openInNew"
+                                                variant="text"
+                                                class="text-caption font-weight-medium"
+                                                size="small"
+                                                rounded="xl"
+                                                href="https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/"
+                                                target="_blank"
+                                                >Download Data
+                                            </v-btn>
+                                        </div>
+                                    </v-col>
+                                    <v-col cols="8" class="filename-col">
+                                        <v-chip v-if="jobDetails.accession2taxid" label color="primary" density="comfortable" class="filename-chip">
+                                            <v-icon icon="$delete" @click="clearFile('accession2taxid')" class="mr-1"></v-icon>
+                                            {{ this.extractFilename(jobDetails.accession2taxid) }}</v-chip
                                         >
                                     </v-col>
                                 </v-row>
@@ -96,97 +186,21 @@
 							</v-col>
 						</v-row>
 
-                        <!-- FASTA File -->
-                        <v-row>
-                            <v-col cols="3">
-                                <v-list-subheader class="pr-0">
-                                    <v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
-                                        </template>
-                                        A file containing absolute paths of the FASTA files in DBDIR/library (library-files.txt)
-                                    </v-tooltip>
-                                    FASTA File
-                                </v-list-subheader>
-                            </v-col>
-
-                            <v-col cols="9" class="search-files">
-                                <v-row>
-                                    <v-col cols="4">
-                                        <v-btn
-                                            @click="selectFile('fastafile', 'file')"
-                                            prepend-icon="$file"
-                                            density="comfortable"
-                                            size="default"
-                                            class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-                                            >Select File</v-btn
-                                        >
-                                        <v-text-field v-model="jobDetails.fastafile" :rules="[requiredRule]" style="display: none"></v-text-field>
-                                    </v-col>
-                                    <v-col cols="8" class="filename-col">
-                                        <v-chip v-if="jobDetails.fastafile" label color="primary" density="comfortable" class="filename-chip">
-                                            <v-icon icon="$delete" @click="clearFile('fastafile')" class="mr-1"></v-icon>
-                                            {{ this.extractFilename(jobDetails.fastafile) }}</v-chip
-                                        >
-                                    </v-col>
-                                </v-row>
-                            </v-col>
-                        </v-row>
-
-                        <!-- <accession2taxid> -->
-                        <v-row>
-                            <v-col cols="3">
-                                <v-list-subheader class="pr-0">
-                                    <v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
-                                        </template>
-                                        A path to NCBI-style accession2taxid.
-                                    </v-tooltip>
-                                    Accession 2 Tax Id
-                                </v-list-subheader>
-                            </v-col>
-
-                            <v-col cols="9" class="search-files">
-                                <v-row>
-                                    <v-col cols="4">
-                                        <div class="d-flex flex-column align-center mb-0 gc-3">
-                                            <!-- Select File Button -->
-                                            <v-btn
-                                                @click="selectFile('accession2taxid', 'file')"
-                                                prepend-icon="$file"
-                                                density="comfortable"
-                                                size="default"
-                                                class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-                                                >Select File</v-btn
-                                            >
-                                            <v-text-field v-model="jobDetails.accession2taxid" :rules="[requiredRule]" style="display: none"></v-text-field>
-
-                                            <!-- Download Data Button -->
-                                            <v-btn
-                                                color="primary"
-                                                prepend-icon="$openInNew"
-                                                variant="text"
-                                                class="text-caption font-weight-medium"
-                                                size="small"
-                                                rounded="xl"
-                                                href="https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/"
-                                                target="_blank"
-                                                >Download Data
-                                            </v-btn>
-                                        </div>
-                                    </v-col>
-                                    <v-col cols="8" class="filename-col">
-                                        <v-chip v-if="jobDetails.accession2taxid" label color="primary" density="comfortable" class="filename-chip">
-                                            <v-icon icon="$delete" @click="clearFile('accession2taxid')" class="mr-1"></v-icon>
-                                            {{ this.extractFilename(jobDetails.accession2taxid) }}</v-chip
-                                        >
-                                    </v-col>
-                                </v-row>
-                            </v-col>
-                        </v-row>
+						<!-- GTDB-Based Checkbox -->
+							<v-row>
+								<v-col cols="3" class="d-flex align-center">
+									<v-list-subheader class="pr-0">
+										GTDB-Based
+									</v-list-subheader>
+								</v-col>
+	
+								<v-col cols="9">
+									<v-checkbox v-model="jobDetails.gtdbBased" color="primary" hide-details></v-checkbox>
+								</v-col>
+							</v-row>
                     </v-container>
                 </div>
+
 
                 <!-- <v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img> -->
             </div>
@@ -262,9 +276,10 @@ export default {
 		jobDetails: {
 			// Store job details including file paths
 			dbdir: "", // directory path
-			fastafile: "", // file path
+			fastaList: "", // file path
 			accession2taxid: "", // file path
 			taxonomyPath: "", // taxonomy dump path 
+			gtdbBased: false, // gtdb option
 		},
 		expandAdvancedSettings: false,
 		advancedSettings: {
@@ -440,11 +455,18 @@ export default {
 		async runBackend() {
 			let params = ["build"];
 
-			// Add dbdir, fastafile, accession2taxid
-			params.push(this.jobDetails.dbdir, this.jobDetails.fastafile, this.jobDetails.accession2taxid);
+			// const taxdumpFilePath = this.jobDetails.taxonomyPath + "/taxid.map";
 
-			// Add Taxonomy Path
+			// Add dbdir, fastaList, accession2taxid
+			params.push(this.jobDetails.dbdir, this.jobDetails.fastaList, this.jobDetails.accession2taxid);
+			
+			// Add Taxonomy Path (--taxonomy-path)
 			params.push("--taxonomy-path", this.jobDetails.taxonomyPath);
+
+			// GTDB-Based option (--gtdb)
+			if (this.jobDetails.gtdbBased) {
+				params.push("--gtdb", 1);
+			}
 
 			// Add advanced settings
 			for (const key in this.advancedSettings) {
