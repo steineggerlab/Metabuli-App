@@ -71,33 +71,33 @@ export default {
 		// Configuration Options
 		taxaLimit: {
 			type: Number,
-			default: 10,
-			required: false,
+			required: true,
+
 		},
 		minCladeReadsMode: {
-			type: Number,
-			default: 1,
-			required: false,
+			type: String,
+			required: true,
+
 		},
 		minReads: {
 			type: Number,
-			default: 0.001,
-			required: false,
+			required: true,
+
 		},
 		figureHeight: {
 			type: Number,
-			default: 700,
-			required: false,
+			required: true,
+
 		},
 		labelOption: {
-			type: Number,
-			default: 1,
-			required: false,
+			type: String,
+			required: true,
+
 		},
 		showAll: {
 			type: Boolean,
-			default: false,
-			required: false,
+			required: true,
+
 		},
 
 		// Search
