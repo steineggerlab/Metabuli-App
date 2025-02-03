@@ -5,108 +5,102 @@
 				<slot name="activator" v-bind="{ props }"></slot>
 			</template>
 
-			<!-- Confirm File Paths Panel -->
-			<v-card v-if="!processingExtract" class="mx-auto w-100">
-				<v-card-title class="font-weight-bold text-h6 px-6 pt-6 text-button">Extract Reads</v-card-title>
+			<!-- Form -->
+			<v-card v-if="!processingJob" class="mx-auto w-100">
+				<v-card-title class="font-weight-bold text-h6 px-6 pt-6 text-button">Create New Taxa List</v-card-title>
 				<v-form v-model="isFormValid" ref="extractForm">
 					<v-card-text class="pb-6">
-						<v-row>
-							<v-col>
-								<v-card color="secondary" variant="tonal">
-									<v-card-text class="text-caption">
-										Extract reads for Tax ID: <strong>{{ taxonId }}</strong>
-									</v-card-text>
-								</v-card>
-							</v-col>
-						</v-row>
 
 						<v-card-text class="filepath-textfields">
-							<v-row>
-								<v-col class="pb-0">
-									<div class="text-caption mb-1">Classification Mode</div>
-									<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="secondary" divided mandatory>
-										<v-btn value="single-end" height="30" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
-										<v-btn value="paired-end" height="30" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
-										<v-btn value="long-read" height="30" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
-									</v-btn-toggle>
-								</v-col>
-							</v-row>
-							<v-row>
-								<v-col cols="6">
-									<div class="text-caption mb-1">Read 1 (FASTA/Q)</div>
-									<v-text-field
-										v-model="jobDetails.q1"
-										append-icon="$file"
-										type="text"
-										variant="outlined"
-										density="compact"
-										color="secondary"
-										:rules="[requiredRule]"
-										@click:append="selectFile('q1', 'file')"
-										@focus="scrollToEnd($event)"
-									></v-text-field>
-								</v-col>
-
-								<v-col cols="6">
-									<div class="text-caption mb-1" v-if="jobDetails.mode === 'paired-end'">Read 2 (FASTA/Q)</div>
-									<v-text-field
-										v-model="jobDetails.q2"
-										append-icon="$file"
-										type="text"
-										variant="outlined"
-										density="compact"
-										color="secondary"
-										:rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]"
-										@click:append="selectFile('q2', 'file')"
-										@focus="scrollToEnd($event)"
-										v-if="jobDetails.mode === 'paired-end'"
-									></v-text-field>
-								</v-col>
-							</v-row>
-
+							
 							<v-row>
 								<v-col>
-									<div class="text-caption mb-1">Classification File (JobID_classifications.tsv)</div>
+									<div class="text-caption mb-1">Old Database Directory</div>
 									<v-text-field
-										v-model="jobDetails.classifications"
-										append-icon="$file"
-										type="text"
-										variant="outlined"
-										density="compact"
-										color="secondary"
-										:rules="[requiredRule]"
-										@click:append="selectFile('classifications', 'file')"
-										@focus="scrollToEnd($event)"
-									></v-text-field>
-								</v-col>
-							</v-row>
-
-							<v-row>
-								<v-col>
-									<div class="text-caption mb-1">Database Directory</div>
-									<v-text-field
-										v-model="jobDetails.database"
+										v-model="jobDetails.oldDBDir"
 										append-icon="$folder"
 										type="text"
 										variant="outlined"
 										density="compact"
 										color="secondary"
 										:rules="[requiredRule]"
-										@click:append="selectFile('database', 'directory')"
+										@click:append="selectFile('oldDBDir', 'directory')"
 										@focus="scrollToEnd($event)"
 									></v-text-field>
 								</v-col>
 							</v-row>
 
 							<v-row>
-								<v-col class="pt-0">
-									<small class="text-caption text-medium-emphasis">*Missing files will appear as empty fields. Please select the correct file.</small>
+								<v-col>
+									<div class="text-caption mb-1">FASTA List</div>
+									<v-text-field
+										v-model="jobDetails.fastaList"
+										append-icon="$file"
+										type="text"
+										variant="outlined"
+										density="compact"
+										color="secondary"
+										:rules="[requiredRule]"
+										@click:append="selectFile('fastaList', 'file')"
+										@focus="scrollToEnd($event)"
+									></v-text-field>
+								</v-col>
+							</v-row>
+
+                            <v-row>
+								<v-col>
+									<div class="text-caption mb-1">New Taxonomy Path</div>
+									<v-text-field
+										v-model="jobDetails.newTaxonomyPath"
+										append-icon="$folder"
+										type="text"
+										variant="outlined"
+										density="compact"
+										color="secondary"
+										:rules="[requiredRule]"
+										@click:append="selectFile('newTaxonomyPath', 'directory')"
+										@focus="scrollToEnd($event)"
+									></v-text-field>
+								</v-col>
+							</v-row>
+
+                            <v-row>
+								<v-col>
+									<div class="text-caption mb-1">Accession 2 Tax Id</div>
+									<v-text-field
+										v-model="jobDetails.accession2TaxId"
+										append-icon="$file"
+										type="text"
+										variant="outlined"
+										density="compact"
+										color="secondary"
+										:rules="[requiredRule]"
+										@click:append="selectFile('accession2TaxId', 'file')"
+										@focus="scrollToEnd($event)"
+									></v-text-field>
 								</v-col>
 							</v-row>
 
 							<v-row>
 								<v-col>
-									<v-btn color="secondary" :disabled="!isFormValid || isExtractDisabled" @click="downloadReads" block flat>Extract Reads</v-btn>
+									<div class="text-caption mb-1">Output Directory</div>
+									<v-text-field
+										v-model="jobDetails.outdir"
+										append-icon="$folder"
+										type="text"
+										variant="outlined"
+										density="compact"
+										color="secondary"
+										:rules="[requiredRule]"
+										@click:append="selectFile('outdir', 'directory')"
+										@focus="scrollToEnd($event)"
+									></v-text-field>
+								</v-col>
+							</v-row>
+
+							<v-row>
+								<v-col>
+									<v-btn color="secondary" :disabled="!isFormValid || isSubmitButtonDisabled" @click="downloadReads" block flat>Create Taxa List</v-btn>
 								</v-col>
 
 								<v-col>
@@ -122,7 +116,7 @@
 			<v-card v-else>
 				<v-list>
 					<v-list-item class="font-weight-bold text-h6 py-0 pl-8 text-button">
-						<span>{{ status === "RUNNING" ? "Extracting Reads..." : "Extract Reads Complete!" }}</span>
+						<span>{{ status === "RUNNING" ? "Creating New Taxa List..." : "New Taxa List Created Successfully!" }}</span>
 						<template v-slot:append>
 							<v-img src="assets/marv_metabuli_animated.gif" width="60"></v-img>
 						</template>
@@ -182,10 +176,6 @@ export default {
 			type: String,
 			default: "bottom end",
 		},
-		taxonId: {
-			type: String,
-			required: true,
-		},
 	},
 
 	data: () => ({
@@ -194,25 +184,23 @@ export default {
 
 		// Extract Reads
 		jobDetails: {
-			mode: "",
-			jobid: "",
-			q1: "",
-			q2: "",
-			database: "",
+			oldDBDir: "",
+			fastaList: "",
+			newTaxonomyPath: "",
+			accession2TaxId: "",
 			outdir: "",
-			classifications: "",
 		},
-		isSampleJob: null,
+		// isSampleJob: null,
 		// Properties for backend job processing status, backend output, error tracking
 		status: "INITIAL",
 		backendOutput: "",
 		errorHandled: false,
 		// Extract Job Processing Dialog
-		processingExtract: false,
+		processingJob: false,
 		// Form Validation (all input fields must be non-empty)
 		isFormValid: false, // This tracks the overall form validity
 		requiredRule: (v) => !!v || "This field is required", // Simple required rule
-		isExtractDisabled: false, // Tracks button state for any other custom conditions
+		isSubmitButtonDisabled: false, // Tracks button state for any other custom conditions
 
 		// Snackbar
 		snackbar: {
@@ -231,12 +219,12 @@ export default {
 		jobDetails: {
 			deep: true,
 			handler() {
-				this.isExtractDisabled =
-					!["single-end", "paired-end", "long-read"].includes(this.jobDetails.mode) ||
-					!this.jobDetails.q1 ||
-					!this.jobDetails.classifications ||
-					!this.jobDetails.database ||
-					(this.jobDetails.mode === "paired-end" && !this.jobDetails.q2);
+				this.isSubmitButtonDisabled =
+					!this.jobDetails.oldDBDir ||
+					!this.jobDetails.fastaList ||
+					!this.jobDetails.newTaxonomyPath ||
+					!this.jobDetails.accession2TaxId ||
+					!this.jobDetails.outdir;
 			},
 		},
 	},
@@ -272,29 +260,9 @@ export default {
 		},
 		openItemInFolder() {
 			// Call Electron shell to open the file/folder in file manager
-			const outputRead1FilePath = this.insertTaxonIdBeforeExtension(this.jobDetails.q1, this.taxonId);
 			if (window.electron) {
-				window.electron.openItemInFolder(outputRead1FilePath);
+				window.electron.openItemInFolder(this.jobDetails.outdir);
 			}
-		},
-		insertTaxonIdBeforeExtension(filePath, taxonId) {
-			// Extract the base name and extension
-			const extensionIndex = filePath.lastIndexOf(".");
-
-			if (extensionIndex === -1) {
-				// If there's no extension, just append the taxonId
-				// return `${filePath}_${taxonId}`;
-
-				// Backup: open output directory
-				return this.jobDetails.outdir;
-			}
-
-			// Insert the taxonId before the extension
-			const baseName = filePath.slice(0, extensionIndex);
-			const extension = filePath.slice(extensionIndex);
-
-			// Return the modified path with the taxonId inserted
-			return `${baseName}_${taxonId}${extension}`;
 		},
 		scrollToEnd(event) {
 			// Scroll to the right end of textfield
@@ -318,7 +286,7 @@ export default {
 
 				// If backend completes successfully and polling hasn't timed out
 				if (this.status === "COMPLETE") {
-					console.log("🚀 Extract job completed successfully."); // DEBUG
+					console.log("🚀 New taxa list created successfully."); // DEBUG
 				}
 			} catch (error) {
 				console.error("Error:", error.message); // Single error handling point
@@ -338,25 +306,10 @@ export default {
 			}
 		},
 		async runBackend() {
-			let params = ["extract"];
+			let params = ["createnewtaxalist"];
 
-			// Add FASTA/Q file path(s)
-			if (this.jobDetails.mode === "single-end") {
-				params.push("--seq-mode", 1, this.jobDetails.q1);
-			} else if (this.jobDetails.mode === "paired-end") {
-				params.push(this.jobDetails.q1, this.jobDetails.q2);
-			} else if (this.jobDetails.mode === "long-read") {
-				params.push("--seq-mode", 3, this.jobDetails.q1);
-			}
-
-			// Add Classification file path
-			params.push(this.jobDetails.classifications);
-
-			// Add Database path
-			params.push(this.jobDetails.database);
-
-			// Add Tax ID
-			params.push("--tax-id", parseInt(this.taxonId));
+			// Add parameters
+			params.push(this.jobDetails.oldDBDir, this.jobDetails.fastaList, this.jobDetails.newTaxonomyPath, this.jobDetails.accession2TaxId, this.jobDetails.outdir);
 
 			// params = [
 			// 	"extract",
@@ -368,7 +321,7 @@ export default {
 			// 	10239,
 			// ];
 
-			console.log("🚀 Extractreads job requested:", params); // DEBUG
+			console.log("🚀 createnewtaxalist job requested:", params); // DEBUG
 
 			// Return a promise that resolves or rejects based on backend success or failure
 			return new Promise((resolve, reject) => {
@@ -432,7 +385,7 @@ export default {
 		},
 		handleJobError() {
 			this.errorHandled = true; // Ensure flag is set to prevent further handling
-			this.processingExtract = false;
+			this.processingJob = false;
 			this.backendOutput = "";
 
 			// Trigger snackbar corresponding to case
@@ -472,11 +425,11 @@ export default {
 
 		// Dialog
 		showProcessingExtractPanel() {
-			this.processingExtract = true;
+			this.processingJob = true;
 		},
 		hideDialog() {
 			this.downloadMenu = false;
-			this.processingExtract = false;
+			this.processingJob = false;
 			this.backendOutput = ""; // Clear backend output
 		},
 		cancelBackend() {
@@ -486,30 +439,6 @@ export default {
 	},
 
 	async mounted() {
-		const processedResults = JSON.parse(localStorage.getItem("processedResults"));
-		if (processedResults) {
-			this.jobDetails = processedResults.jobDetails ? processedResults.jobDetails : this.jobDetails; // Leave as default empty filepaths for Upload Result jobs
-			this.isSampleJob = processedResults.isSample;
-
-			// Resolve file paths for Load Sample Data
-			if (this.isSampleJob) {
-				this.jobDetails.outdir = window.electron.getBasePath();
-				this.jobDetails.q1 = `${this.jobDetails.outdir}/${this.jobDetails.q1}`;
-				this.jobDetails.q2 = `${this.jobDetails.outdir}/${this.jobDetails.q2}`;
-				this.jobDetails.database = `${this.jobDetails.outdir}/${this.jobDetails.database}`;
-			}
-			// Resolve file path for classifications file
-			this.jobDetails.classifications = `${this.jobDetails.outdir}/${this.jobDetails.jobid}_classifications.tsv`;
-
-			// Loop over each path and check if the file exists
-			const paths = ["q1", "q2", "classifications", "database"]; // Array of file paths to check
-			for (const key of paths) {
-				const fileExists = await window.electron.fileExists(this.jobDetails[key]);
-				if (!fileExists) {
-					this.jobDetails[key] = ""; // Set to empty string if the file doesn't exist
-				}
-			}
-		}
 	},
 };
 </script>
