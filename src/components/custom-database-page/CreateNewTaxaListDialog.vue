@@ -176,10 +176,6 @@ export default {
 			type: String,
 			default: "bottom end",
 		},
-		taxonId: {
-			type: String,
-			required: true,
-		},
 	},
 
 	data: () => ({

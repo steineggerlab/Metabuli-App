@@ -160,6 +160,7 @@ ipcMain.on("run-backend", async (event, args) => {
 
 		// Handle real-time stdout stream
 		childProcess.stdout.on("data", (data) => {
+			// console.log(`Backend stdout: ${data.toString()}`); // DEBUG
 			event.reply("backend-realtime-output", data.toString());
 		});
 

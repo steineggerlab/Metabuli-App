@@ -90,7 +90,7 @@
                                         </template>
                                         A path to NCBI-style accession2taxid.
                                     </v-tooltip>
-                                    Accession 2 Tax Id
+                                    Tax Id Map
                                 </v-list-subheader>
                             </v-col>
 
