@@ -8,9 +8,17 @@
 			<!-- Form -->
 			<v-card v-if="!processingJob" class="mx-auto w-100">
 				<v-card-title class="font-weight-bold text-h6 px-6 pt-6 text-button">Create New Taxa List</v-card-title>
+				<v-container class="pb-4 px-6">
+						<v-card variant="outlined" color="primary">
+							<v-card-text class="text-caption">
+								It generates <strong>newtaxa.tsv</strong> for "New Taxa" option and <strong>newtaxa.accession2taxid</strong> for "Accession 2 Tax Id" field. <br />
+								<strong>accession2taxid</strong> and <strong>taxonomy dump</strong> files of the new sequences are required. <br />
+								If you don't have them, please manually prepare a new taxa list following <a href="https://github.com/steineggerlab/Metabuli?tab=readme-ov-file#add-sequences-of-new-taxa" target="_blank">this</a>. 	
+							</v-card-text>
+						</v-card>
+				</v-container>
 				<v-form v-model="isFormValid" ref="extractForm">
-					<v-card-text class="pb-6">
-
+					<v-card-text class="pt-0 pb-6">
 						<v-card-text class="filepath-textfields">
 							
 							<v-row>

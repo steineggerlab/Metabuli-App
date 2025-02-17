@@ -2,7 +2,13 @@
     <v-card-text>
         <!-- Required Fields -->
         <v-form ref="jobForm" v-model="isJobFormValid">
-            <v-card-title class="text-button font-weight-bold">Required Fields</v-card-title>
+			<v-container>
+				<v-card variant="outlined" color="primary">
+					<v-card-title class="text-subtitle-2">You can add new sequences to an existing database. Adding new taxa is also possible with 'New Taxa' option.</v-card-title>
+				</v-card>
+			</v-container>
+            
+			<v-card-title class="text-button font-weight-bold">Required Fields</v-card-title>
             <div class="d-flex">
                 <div class="w-100 search-required-fields">
                     <v-container>
@@ -219,6 +225,15 @@
 
 							</v-col>
                         </v-row>
+						<v-container class="pt-0 px-0">
+						<v-card variant="outlined" color="primary">
+							<v-card-text class="text-caption">
+								NOTE: Mixing taxonomies within the same domain is not recommended. 
+								For example, adding prokaryotes to a GTDB database using NCBI taxonomy will cause issues, 
+								but adding eukaryotes or viruses is fine since GTDB does not cover them.
+							</v-card-text>
+						</v-card>
+				</v-container>
 
 						
 						
@@ -290,7 +305,7 @@ export default {
 			},
             newTaxa: {
                 title: "New Taxa",
-                description: "List of new taxa to be added.",
+                description: "List of new taxa. Please check GitHub for the format.",
                 parameter: "--new-taxa",
                 value: "",
                 type: "STRING",
@@ -387,7 +402,7 @@ export default {
 		},
 		async handleAdvancedSettingsTextFieldClick(setting) {
 			if (setting.extra?.file) {
-				const filePath = await this.selectFile(null, "directory");
+				const filePath = await this.selectFile(null, "file");
 				setting.value = filePath;
 			}
 		},
