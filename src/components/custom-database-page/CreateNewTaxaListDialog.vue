@@ -8,7 +8,7 @@
 			<!-- Form -->
 			<v-card v-if="!processingJob" class="mx-auto w-100">
 				<v-card-title class="font-weight-bold text-h6 px-6 pt-6 text-button">Create New Taxa List</v-card-title>
-				<v-container class="py-0">
+				<v-container class="pb-4 px-6">
 						<v-card variant="outlined" color="primary">
 							<v-card-text class="text-caption">
 								It generates <strong>newtaxa.tsv</strong> for "New Taxa" option and <strong>newtaxa.accession2taxid</strong> for "Accession 2 Tax Id" field. <br />
@@ -18,8 +18,7 @@
 						</v-card>
 				</v-container>
 				<v-form v-model="isFormValid" ref="extractForm">
-					<v-card-text class="pb-6">
-
+					<v-card-text class="pt-0 pb-6">
 						<v-card-text class="filepath-textfields">
 							
 							<v-row>
