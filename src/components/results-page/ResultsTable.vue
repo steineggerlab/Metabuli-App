@@ -1,5 +1,5 @@
 <template>
-	<v-data-table :headers="headers" :items="filteredTableResults" height="550px" density="comfortable" items-per-page="20" multi-sort sticky>
+	<v-data-table :headers="headers" :items="filteredTableResults" height="550px" density="comfortable" items-per-page="20" multi-sort sticky style="table-layout: fixed; width: 100%;">
 		<template v-slot:top>
 			<div class="d-flex align-center">
 				<!-- NUMBER OF DATA ITEMS -->
@@ -77,7 +77,7 @@
 				</td>
 
 				<!-- TAXON ID -->
-				<td>{{ item.taxon_id }}</td>
+				<!-- <td>{{ item.taxon_id }}</td> -->
 
 				<!-- NAME -->
 				<td>{{ item.name }}</td>
@@ -88,7 +88,7 @@
 					<div class="d-flex gc-2 justify-end">
 						<v-btn
 							text="Details"
-							prepend-icon="$eye"
+
 							variant="tonal"
 							color="primary"
 							size="small"
@@ -99,7 +99,7 @@
 						<!-- EXTRACT READS BUTTON -->
 						<ExtractReadsDialog :taxonId="item.taxon_id" :menuLocation="'top center'">
 							<template v-slot:activator="{ props }">
-								<v-btn v-bind="props" text="Extract" prepend-icon="$fileExport" variant="tonal" color="secondary" size="small" class="text-body-2"/>
+								<v-btn v-bind="props" text="Extract"  variant="tonal" color="secondary" size="small" class="text-body-2"/>
 							</template>
 						</ExtractReadsDialog>
 					</div>
@@ -122,33 +122,33 @@ export default {
 		return {
 			headers: [
 				{
-					title: "Proportion (%)",
+					title: "Proportion",
 					align: "center",
 					key: "proportion",
-					width: "160px",
+					width: "70px",
 				},
 				{
 					title: "Clade Reads",
 					align: "center",
 					key: "clade_reads",
-					width: "140px",
+					width: "70px",
 				},
 				{
 					title: "Taxon Reads",
 					align: "center",
 					key: "taxon_reads",
-					width: "140px",
+					width: "70px",
 				},
 				{
 					title: "Rank",
 					align: "start",
 					key: "rank",
-					width: "140px",
+					width: "100px",
 					sortable: false,
 					// sortRaw: (a, b) => this.rankSort(a.rank, b.rank),
 				},
-				{ title: "Taxon ID", align: "start", key: "taxon_id", width: "140px" },
-				{ title: "Name", align: "start", key: "name" },
+				// { title: "Taxon ID", align: "start", key: "taxon_id", width: "140px" },
+				{ title: "Name", align: "start", key: "name", width: "60px" },
 				{ title: "", align: "center", key: "actions" },
 			],
 			rankMenu: false, // State for controlling visibility of rank filter dropdown

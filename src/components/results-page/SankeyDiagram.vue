@@ -585,7 +585,7 @@ export default {
 			sankeyGenerator.update(graph);
 
 			// Add rank column labels
-			const rankLabels = [" ", "D", "K", "P", "C", "O", "F", "G", "S"];
+			const rankLabels = [" ", "D", "P", "C", "O", "F", "G", "S"];
 			svg
 				.append("g")
 				.selectAll("text")
@@ -735,7 +735,7 @@ export default {
 				.attr("dy", "0.35em")
 				.attr("text-anchor", "start")
 				.text((d) => d.name)
-				.style("font-size", "10px")
+				.style("font-size", "13px")
 				.style("font-weight", "normal")
 				.style("fill", (d) => (d.isUnclassifiedNode ? unclassifiedLabelColor : "black"))
 				.style("cursor", "pointer");

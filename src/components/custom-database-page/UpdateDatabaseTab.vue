@@ -2,16 +2,17 @@
     <v-card-text>
         <!-- Required Fields -->
         <v-form ref="jobForm" v-model="isJobFormValid">
-			<v-container>
-				<v-card variant="outlined" color="primary">
-					<v-card-title class="text-subtitle-2">You can add new sequences to an existing database. Adding new taxa is also possible with 'New Taxa' option.</v-card-title>
+			<v-container class="py-0">
+				<v-card variant="outlined" color="primary" class="w-50 ">
+					<v-card-title class="text-subtitle-2 py-1 px-2">You can add new sequences to an existing database. <br />
+					Adding new taxa is also possible with 'New Taxa' option.</v-card-title>
 				</v-card>
 			</v-container>
             
 			<v-card-title class="text-button font-weight-bold">Required Fields</v-card-title>
             <div class="d-flex">
                 <div class="w-100 search-required-fields">
-                    <v-container>
+                    <v-container class="pt-0">
                         <!-- Old DB Directory -->
                         <v-row>
                             <v-col cols="3">
@@ -29,7 +30,7 @@
                                             density="comfortable"
                                             size="default"
                                             class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-                                            >Select Directory</v-btn
+                                            >Select Dir</v-btn
                                         >
                                         <v-text-field v-model="jobDetails.olddbdir" :rules="[requiredRule]" style="display: none"></v-text-field>
                                     </v-col>
@@ -60,7 +61,7 @@
                                             density="comfortable"
                                             size="default"
                                             class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-                                            >Select Directory</v-btn
+                                            >Select Dir</v-btn
                                         >
                                         <v-text-field v-model="jobDetails.newdbdir" :rules="[requiredRule]" style="display: none"></v-text-field>
                                     </v-col>

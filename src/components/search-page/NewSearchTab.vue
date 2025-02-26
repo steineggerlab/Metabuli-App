@@ -2,7 +2,7 @@
 	<v-container>
 		<!-- Required Fields -->
 		<v-form ref="jobForm" v-model="isJobFormValid">
-			<v-card-title class="text-button font-weight-bold">Required Fields</v-card-title>
+			<v-card-title class="text-button font-weight-bold py-0">Required Fields</v-card-title>
 			<div class="d-flex">
 				<div class="w-66 search-required-fields">
 					<v-container>
