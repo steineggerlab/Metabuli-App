@@ -9,7 +9,7 @@
 			<v-card v-if="!processingJob" class="mx-auto w-100">
 				<v-card-title class="font-weight-bold text-h6 px-6 pt-6 text-button">Create New Taxa List</v-card-title>
 				<v-container class="pb-4 px-6">
-						<v-card variant="outlined" color="primary">
+						<v-card variant="outlined" color="secondary">
 							<v-card-text class="text-caption">
 								It generates <strong>newtaxa.tsv</strong> for "New Taxa" option and <strong>newtaxa.accession2taxid</strong> for "Accession 2 Tax Id" field. <br />
 								<strong>accession2taxid</strong> and <strong>taxonomy dump</strong> files of the new sequences are required. <br />
@@ -108,7 +108,7 @@
 
 							<v-row>
 								<v-col>
-									<v-btn color="secondary" :disabled="!isFormValid || isSubmitButtonDisabled" @click="downloadReads" block flat>Create Taxa List</v-btn>
+									<v-btn color="secondary" :disabled="!isFormValid || isSubmitButtonDisabled" @click="startJob" block flat>Create Taxa List</v-btn>
 								</v-col>
 
 								<v-col>
@@ -238,11 +238,6 @@ export default {
 	},
 
 	methods: {
-		// Button action
-		downloadReads() {
-			this.startJob();
-		},
-
 		// Functions for handling files
 		async selectFile(field, type) {
 			if (window.electron) {
@@ -314,6 +309,9 @@ export default {
 			}
 		},
 		async runBackend() {
+			const workingDir = this.jobDetails.oldDBDir.substring(0, this.jobDetails.oldDBDir.lastIndexOf("/"));
+			
+			// Add command
 			let params = ["createnewtaxalist"];
 
 			// Add parameters
@@ -334,7 +332,7 @@ export default {
 			// Return a promise that resolves or rejects based on backend success or failure
 			return new Promise((resolve, reject) => {
 				// Run backend process
-				window.electron.runBackend(params);
+				window.electron.runBackend(params, workingDir);
 
 				// Real-time output
 				window.electron.onBackendRealtimeOutput((output) => {
@@ -452,6 +450,15 @@ export default {
 </script>
 
 <style scoped>
+/* hyperlink */
+.v-card-text a {
+  color: inherit;
+}
+
+.v-card-text a:hover {
+  text-decoration: none;
+}
+
 .filepath-textfields .v-col {
 	padding-bottom: 8px;
 }

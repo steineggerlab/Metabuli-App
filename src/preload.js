@@ -89,7 +89,7 @@ contextBridge.exposeInMainWorld("electron", {
 	openFileDialog: (options) => ipcRenderer.invoke("open-file-dialog", options),
 	openKrona: (filePath) => ipcRenderer.invoke("open-krona", filePath),
 
-	runBackend: (args) => ipcRenderer.send("run-backend", args),
+	runBackend: (params, workingDir) => ipcRenderer.send("run-backend", { params, workingDir }),
 	cancelBackend: () => ipcRenderer.send("cancel-backend"),
 
 	onBackendRealtimeOutput: (callback) => ipcRenderer.on("backend-realtime-output", (event, output) => callback(output)),

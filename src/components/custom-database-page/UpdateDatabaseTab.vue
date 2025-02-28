@@ -445,6 +445,9 @@ export default {
 		},
 
 		async runBackend() {
+			const workingDir = this.jobDetails.olddbdir.substring(0, this.jobDetails.olddbdir.lastIndexOf("/"));
+			
+			// Add command
 			let params = ["updateDB"];
 
 			// Add dbdir, fastafile, accession2taxid
@@ -486,7 +489,7 @@ export default {
 			// Return a promise that resolves or rejects based on backend success or failure
 			return new Promise((resolve, reject) => {
 				// Run backend process
-				window.electron.runBackend(params);
+				window.electron.runBackend(params, workingDir);
 
 				// Real-time output
 				window.electron.onBackendRealtimeOutput((output) => {
