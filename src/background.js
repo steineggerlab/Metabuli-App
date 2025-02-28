@@ -169,8 +169,6 @@ ipcMain.on("run-backend", async (event, args) => {
 		// Run the backend process with params and set working directory
 		childProcess = spawn(backendBinary, [...params], { cwd: workingDir });
 
-		// childProcess = spawn(backendBinary, args);
-
 		// Handle real-time stdout stream
 		childProcess.stdout.on("data", (data) => {
 			// console.log(`Backend stdout: ${data.toString()}`); // DEBUG
