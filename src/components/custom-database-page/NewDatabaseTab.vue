@@ -201,7 +201,6 @@
                     </v-container>
                 </div>
 
-
                 <!-- <v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img> -->
             </div>
 
@@ -267,6 +266,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 export default {
 	name: "NewDatabaseTab",
 
@@ -355,6 +355,9 @@ export default {
 		status: "INITIAL",
 		backendOutput: "",
 		errorHandled: false,
+
+		// DEBUG
+		fastTest: false,
 	}),
 
 	methods: {
@@ -432,7 +435,7 @@ export default {
 				// If backend completes successfully and polling hasn't timed out
 				if (this.status === "COMPLETE") {
                     console.log("🚀 Build new database completed successfully."); // DEBUG
-					this.handleJobSuccess();
+					this.$emit("job-completed");
 				}
 			} catch (error) {
 				console.error("Error:", error.message); // Single error handling point
@@ -453,11 +456,25 @@ export default {
 		},
 
 		async runBackend() {
+			// DEBUG: “fast test” mode
+			// Skip actually calling the backend; simulate immediate success
+			if (this.fastTest) {
+				return new Promise((resolve) => {
+				console.log("Fast test mode: Simulating backend complete after 2s...");
+				setTimeout(() => {
+					this.status = "COMPLETE";
+					resolve();
+				}, 2000);
+				});
+			}
+
+  			// Otherwise, do the real backend call
+			const workingDir = this.jobDetails.dbdir.substring(0, this.jobDetails.dbdir.lastIndexOf("/"));
+			
+			// Add command
 			let params = ["build"];
 
-			// const taxdumpFilePath = this.jobDetails.taxonomyPath + "/taxid.map";
-
-			// Add dbdir, fastaList, accession2taxid
+			// Add parameters (dbdir, fastaList, accession2taxid)
 			params.push(this.jobDetails.dbdir, this.jobDetails.fastaList, this.jobDetails.accession2taxid);
 			
 			// Add Taxonomy Path (--taxonomy-path)
@@ -487,24 +504,12 @@ export default {
 				}
 			}
 
-			// TEST PARAMS
-			// params = [
-			//   "classify",
-			//   "--seq-mode",
-			//   1,
-			//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq",
-			//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/refseq_virus",
-			//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example",
-			//   "",
-			//   "--max-ram",
-			//   32,
-			// ];
             console.log("🚀 Build new database requested:", params); // DEBUG
 
 			// Return a promise that resolves or rejects based on backend success or failure
 			return new Promise((resolve, reject) => {
 				// Run backend process
-				window.electron.runBackend(params);
+				window.electron.runBackend(params, workingDir);
 
 				// Real-time output
 				window.electron.onBackendRealtimeOutput((output) => {

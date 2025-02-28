@@ -8,7 +8,7 @@
 				<v-list>
 					<!-- Title -->
 					<v-list-item class="font-weight-bold text-h6 py-0 pl-8 text-button">
-						<span>Processing Job...</span>
+						<span>{{ statusComplete ? "Job Complete!" : "Processing Job..." }}</span>
 						<template v-slot:append>
 							<v-img src="assets/marv_metabuli_animated.gif" width="60"></v-img>
 						</template>
@@ -38,7 +38,8 @@
 						<!-- Cancel Button -->
 						<v-card-actions>
 							<v-spacer></v-spacer>
-							<v-btn variant="plain" color="primary" @click="cancelBackend">Cancel</v-btn>
+							<v-btn v-if="statusComplete" color="primary" @click="hideDialog">Close</v-btn>
+							<v-btn v-else variant="plain" color="primary" @click="cancelBackend">Cancel</v-btn>
 						</v-card-actions>
 					</div>
 				</v-list>
@@ -48,6 +49,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import CustomDatabaseSetting from "@/components/custom-database-page/CustomDatabaseSetting.vue";
 
 export default {
@@ -57,6 +59,7 @@ export default {
 	},
 	data() {
 		return {
+			statusComplete: false,
 			loadingDialog: false,
 			backendOutput: "", // Data property to store real-time output
 		};
@@ -68,6 +71,8 @@ export default {
 		},
 		hideDialog() {
 			this.loadingDialog = false;
+			this.statusComplete = false;
+			this.backendOutput = ""; // Clear backend output
 		},
 
 		// Loading dialog log textarea
@@ -81,17 +86,8 @@ export default {
 		},
 
 		// Job handling
-		handleJobComplete(completedJob) {
-			// Close loading dialog
-			this.hideDialog();
-
-			// Show results tab & badge in navigation drawer
-			// Show/hide krona tab depending on jobType
-			if (completedJob.jobType === "runSearch") {
-				this.$emit("job-complete");
-			} else if (completedJob.jobType === "uploadReport") {
-				this.$emit("report-uploaded");
-			}
+		handleJobComplete() {
+			this.statusComplete = true;
 		},
 		handleJobTimeOut() {
 			this.cancelBackend();

@@ -156,7 +156,18 @@ const backendBinary = join(binPath, "metabuli" + (platform == "win32" ? ".bat" :
 ipcMain.on("run-backend", async (event, args) => {
 	try {
 		backendCancelled = false;
-		childProcess = spawn(backendBinary, args);
+
+		// Extract params array and working directory
+		const { params, workingDir = process.cwd() } = args;
+		
+		// Ensure params is an array before spreading
+		if (!Array.isArray(params)) {
+			throw new Error("Params must be an array");
+		}
+
+		// Set working directory before spawning the process
+		// Run the backend process with params and set working directory
+		childProcess = spawn(backendBinary, [...params], { cwd: workingDir });
 
 		// Handle real-time stdout stream
 		childProcess.stdout.on("data", (data) => {
