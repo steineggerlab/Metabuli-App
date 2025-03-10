@@ -153,7 +153,7 @@
 						<v-card-text>
 							<v-row>
 								<v-col>
-									<v-btn v-if="status === 'COMPLETE'" variant="tonal" color="primary" @click="openItemInFolder" block>Open in Folder</v-btn>
+									<v-btn v-if="status === 'COMPLETE'" variant="tonal" color="secondary" @click="openItemInFolder" block>Open in Folder</v-btn>
 								</v-col>
 								<v-col>
 									<v-btn variant="outlined" color="grey" @click="cancelBackend" block>{{ status === "RUNNING" ? "Cancel" : "Close" }}</v-btn>
@@ -220,6 +220,9 @@ export default {
 			action: null,
 			timeout: 4000,
 		},
+
+		// DEBUG
+		fastTest: false,
 	}),
 
 	watch: {
@@ -309,6 +312,18 @@ export default {
 			}
 		},
 		async runBackend() {
+			// DEBUG: “fast test” mode
+			// Skip actually calling the backend; simulate immediate success
+			if (this.fastTest) {
+				return new Promise((resolve) => {
+				console.log("Fast test mode: Simulating backend complete after 2s...");
+				setTimeout(() => {
+					this.status = "COMPLETE";
+					resolve();
+				}, 2000);
+				});
+			}
+
 			const workingDir = this.jobDetails.oldDBDir.substring(0, this.jobDetails.oldDBDir.lastIndexOf("/"));
 			
 			// Add command

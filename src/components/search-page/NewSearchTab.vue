@@ -192,16 +192,13 @@
 					<!-- Input fields -->
 					<v-container fluid>
 						<v-row v-for="(setting, key) in advancedSettings" :key="key">
-							<v-col cols="4">
-								<v-list-subheader class="pr-0">
-									<v-tooltip location="top">
-										<template v-slot:activator="{ props }">
-											<v-icon v-bind="props" icon="$helpCircle"></v-icon>
-										</template>
-										{{ setting.description }}
-									</v-tooltip>
+							<v-col cols="7">
+								<v-list-subheader class="pr-0 text-high-emphasis font-weight-medium">
 									{{ setting.title }}
 								</v-list-subheader>
+								<small class="search-advanced-settings text-caption text-medium-emphasis pr-0" >
+									{{ setting.description }}
+								</small>
 							</v-col>
 
 							<v-col>
@@ -314,7 +311,7 @@ export default {
 					title: "Accession Level",
 					description: "Set 1 to use accession level classification (0 by default). It is available when the DB is also built with accession level taxonomy.",
 					parameter: "--accession-level",
-					value: "",
+					value: "0",
 					type: "INTEGER",
 				},
 			},
@@ -803,5 +800,9 @@ export default {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
+}
+
+.search-advanced-settings .v-list-subheader {
+	min-height: 0px;
 }
 </style>
