@@ -360,6 +360,9 @@ export default {
 		status: "INITIAL",
 		backendOutput: "",
 		errorHandled: false,
+
+		// DEBUG
+		fastTest: false,
 	}),
 
 	methods: {
@@ -437,7 +440,7 @@ export default {
 				// If backend completes successfully and polling hasn't timed out
 				if (this.status === "COMPLETE") {
                     console.log("🚀 Build new database completed successfully."); // DEBUG
-					this.handleJobSuccess();
+					this.$emit("job-completed");
 				}
 			} catch (error) {
 				console.error("Error:", error.message); // Single error handling point
@@ -463,6 +466,18 @@ export default {
 		},
 
 		async runBackend() {
+			// DEBUG: “fast test” mode
+			// Skip actually calling the backend; simulate immediate success
+			if (this.fastTest) {
+				return new Promise((resolve) => {
+				console.log("Fast test mode: Simulating backend complete after 2s...");
+				setTimeout(() => {
+					this.status = "COMPLETE";
+					resolve();
+				}, 2000);
+				});
+			}
+
 			const workingDir = this.jobDetails.olddbdir.substring(0, this.jobDetails.olddbdir.lastIndexOf("/"));
 			
 			// Add command

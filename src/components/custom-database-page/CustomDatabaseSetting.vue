@@ -36,7 +36,8 @@
 						@job-completed="emitJobCompleted" 
 						@job-aborted="emitJobAborted" 
 						@backend-realtime-output="emitBackendRealtimeOutput"
-						@trigger-snackbar="triggerSnackbar"></UpdateDatabaseTab>
+						@trigger-snackbar="triggerSnackbar">
+					</UpdateDatabaseTab>
 					</v-tabs-window-item>
 				</v-tabs-window>
 			</v-card>
