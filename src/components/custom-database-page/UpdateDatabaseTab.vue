@@ -4,14 +4,29 @@
         <v-form ref="jobForm" v-model="isJobFormValid">
 			<v-container>
 				<v-card variant="outlined" color="primary">
-					<v-card-title class="text-subtitle-2">You can add new sequences to an existing database. Adding new taxa is also possible with 'New Taxa' option.</v-card-title>
+					<v-card-title class="text-subtitle-2">
+						Please refer to the <a href="https://github.com/steineggerlab/Metabuli" target="_blank">Metabuli documentation</a> for more information on how to update a database.<br/>
+						You can add new sequences to an existing database. Adding new taxa is also possible with 'New Taxa' option.</v-card-title>
 				</v-card>
 			</v-container>
             
 			<v-card-title class="text-button font-weight-bold">Required Fields</v-card-title>
             <div class="d-flex">
                 <div class="w-100 search-required-fields">
-                    <v-container>
+                    <v-container class="py-2">
+						<!-- GTDB-Based Checkbox -->
+						<v-row>
+							<v-col cols="3" class="d-flex align-center">
+								<v-list-subheader class="pr-0">
+									GTDB-Based
+								</v-list-subheader>
+							</v-col>
+
+							<v-col cols="9">
+								<v-checkbox v-model="jobDetails.gtdbBased" color="primary" hide-details></v-checkbox>
+							</v-col>
+						</v-row>
+
                         <!-- Old DB Directory -->
                         <v-row>
                             <v-col cols="3">
@@ -82,7 +97,7 @@
                                         <template v-slot:activator="{ props }">
                                             <v-icon v-bind="props" icon="$helpCircle"></v-icon>
                                         </template>
-                                        A file containing absolute paths of the FASTA files in DBDIR/library (library-files.txt)
+										File of reference genome absolute paths.
                                     </v-tooltip>
                                     FASTA File
                                 </v-list-subheader>
@@ -119,9 +134,9 @@
                                         <template v-slot:activator="{ props }">
                                             <v-icon v-bind="props" icon="$helpCircle"></v-icon>
                                         </template>
-                                        A path to NCBI-style accession2taxid.
+                                        {{ jobDetails.gtdbBased ? 'Directory where the taxonomy dump files are stored.' : 'A path to NCBI-style accession2taxid.' }}
                                     </v-tooltip>
-                                    Accession 2 Tax Id
+									{{ jobDetails.gtdbBased ? "Taxonomy Path" : " Accession 2 Tax Id" }}
                                 </v-list-subheader>
                             </v-col>
 
@@ -148,9 +163,9 @@
                                                 class="text-caption font-weight-medium"
                                                 size="small"
                                                 rounded="xl"
-                                                href="https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/"
+                                                :href="jobDetails.gtdbBased ? 'https://github.com/shenwei356/gtdb-taxdump/releases' : 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/'"
                                                 target="_blank"
-                                                >Download Data
+                                                >Download {{ jobDetails.gtdbBased ? "GTDB" : "NCBI" }}
                                             </v-btn>
                                         </div>
                                     </v-col>
@@ -181,16 +196,13 @@
                     <!-- Input fields -->
                     <v-container fluid class="py-0">
                         <v-row v-for="(setting, key) in advancedSettings" :key="key">
-                            <v-col cols="4">
-                                <v-list-subheader class="pr-0">
-                                    <v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
-                                        </template>
-                                        {{ setting.description }}
-                                    </v-tooltip>
+                            <v-col cols="6">
+                                <v-list-subheader class="pr-0 text-high-emphasis font-weight-medium">
                                     {{ setting.title }}
                                 </v-list-subheader>
+								<small class="text-caption text-medium-emphasis pr-0" >
+									{{ setting.description }}
+								</small>
                             </v-col>
 
                             <v-col>
@@ -225,7 +237,7 @@
 
 							</v-col>
                         </v-row>
-						<v-container class="pt-0 px-0">
+						<v-container class=" px-0">
 						<v-card variant="outlined" color="primary">
 							<v-card-text class="text-caption">
 								NOTE: Mixing taxonomies within the same domain is not recommended. 
@@ -271,13 +283,14 @@ export default {
 			fastafile: "", // file path
 			accession2taxid: "", // file path
             olddbdir: "", // old db directory path
+			gtdbBased: false, // gtdb option
 		},
 		expandAdvancedSettings: false,
 		isNewTaxaDialogVisible: false,
 		advancedSettings: {
 			maxRam: {
 				title: "Max RAM (GiB)",
-				description: "The maximum RAM usage. (128 GiB by default)",
+				description: "The maximum RAM usage.",
 				parameter: "--max-ram",
 				value: 128,
 				type: "INTEGER"
@@ -291,16 +304,16 @@ export default {
 			},
 			accessionLevel: {
 				title: "Accession Level",
-				description: "Set 1 to use accession level classification (0 by default).",
+				description: "Set 1 to create a DB for accession level classification.",
 				parameter: "--accession-level",
-				value: "", // FIXME: should be 0 or int?
+				value: "0", // FIXME: should be 0 or int?
 				type: "INTEGER",
 			},
             makeLibrary: {
                 title: "Make Library",
-				description: "Make species library for faster execution (1 by default).",
+				description: "Make species library for faster execution.",
 				parameter: "--make-library",
-				value: "", // FIXME: should be 0 or int?
+				value: "0", // FIXME: should be 0 or int?
 				type: "INTEGER",
 			},
             newTaxa: {
@@ -434,6 +447,11 @@ export default {
 					this.status = "INITIAL";
 				}
 				this.errorHandled = false; // Resets error handled tracking
+
+				// Save backendOutput to a log file before clearing it
+				if (this.backendOutput) {
+					window.electron.writeFile(this.jobDetails.newdbdir + "/updateDB_log.txt", this.backendOutput).catch(console.error);
+				}
 				this.backendOutput = ""; // Clear backendOutput
 
 				// Remove any previously attached event listeners
@@ -639,5 +657,18 @@ export default {
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
+}
+
+.search-advanced-settings .v-list-subheader {
+	min-height: 0px;
+}
+
+/* hyperlink */
+.v-card-text a {
+  color: inherit;
+}
+
+.v-card-text a:hover {
+  text-decoration: none;
 }
 </style>
