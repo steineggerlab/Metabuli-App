@@ -486,6 +486,11 @@ export default {
 			// Add dbdir, fastafile, accession2taxid
 			params.push(this.jobDetails.newdbdir, this.jobDetails.fastafile, this.jobDetails.accession2taxid, this.jobDetails.olddbdir);
 
+			// GTDB-Based option (--gtdb)
+			if (this.jobDetails.gtdbBased) {
+				params.push("--gtdb", 1);
+			}
+
 			// Add advanced settings
 			for (const key in this.advancedSettings) {
 				let value;
