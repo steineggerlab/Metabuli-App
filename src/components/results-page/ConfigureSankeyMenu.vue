@@ -19,7 +19,7 @@
             <v-container class="pt-1">
               <div class="d-flex align-center gc-2">
                 <v-switch
-                  v-model="showAll"
+                  v-model="tempShowAll"
                   color="indigo"
                   hide-details
                   @update:modelValue="validateRange"
@@ -49,7 +49,7 @@
                     <v-btn-toggle
                       v-model="tempCladeReadsMode"
                       @change="setDefaultValue"
-                      :disabled="showAll"
+                      :disabled="tempShowAll"
                       variant="outlined"
                       color="indigo"
                       divided
@@ -82,7 +82,7 @@
                       class="flex-grow-1"
                       :rules="[valueRangeRule]"
                       @input="validateRange"
-                      :disabled="showAll"
+                      :disabled="tempShowAll"
                     ></v-text-field>
                   </v-container>
                 </v-list-item>
@@ -100,7 +100,7 @@
                       :min="1"
                       :max="maxTaxaLimit"
                       tick-size="1"
-                      :disabled="showAll"
+                      :disabled="tempShowAll"
                       @change="validateRange"
                     >
                       <template v-slot:append>
@@ -199,13 +199,18 @@
 export default {
   name: "ConfigureSankeyMenu",
   props: {
-    initialTaxaLimit: {
-      type: Number,
-      default: 10,
-    },
     maxTaxaLimit: {
       type: Number,
       default: 100,
+    },
+
+    initialShowAll: {
+      type: Boolean,
+      default: false,
+    },
+    initialTaxaLimit: {
+      type: Number,
+      default: 10,
     },
     initialMinCladeReadsMode: {
       type: String,
@@ -223,6 +228,7 @@ export default {
       type: String,
       default: "cladeReads",
     },
+
     menuLocation: {
       type: String,
       default: "bottom end", // Default position is bottom
@@ -234,13 +240,14 @@ export default {
       activePanel: [0],
       isFormValid: true,
 
-      showAll: false,
+      showAll: this.initialShowAll,
       taxaLimit: this.initialTaxaLimit,
       cladeReadsMode: this.initialMinCladeReadsMode,
       cladeReadsValue: this.initialMinCladeReads,
       figureHeight: this.initialFigureHeight,
       labelOption: this.initialLabelOption,
 
+      tempShowAll: false,
       tempTaxaLimit: 10,
       tempCladeReadsMode: "%",
       tempCladeReadsValue: 0.01,
@@ -260,7 +267,7 @@ export default {
         }
 
         // Check if the value is within the valid range
-        if (this.showAll || (value >= min && value <= max)) {
+        if (this.tempShowAll || (value >= min && value <= max)) {
           this.isFormValid = true;
           return true;
         } else {
@@ -277,6 +284,32 @@ export default {
   watch: {
     tempCladeReadsMode() {
       this.setDefaultValue();
+    },
+
+    // Watch for changes in the initial values
+    initialShowAll(newVal) {
+      this.showAll = newVal;
+      this.tempShowAll = newVal;
+    },
+    initialTaxaLimit(newVal) {
+      this.taxaLimit = newVal;
+      this.tempTaxaLimit = newVal;
+    },
+    initialMinCladeReadsMode(newVal) {
+      this.cladeReadsMode = newVal;
+      this.tempCladeReadsMode = newVal;
+    },
+    initialMinCladeReads(newVal) {
+      this.cladeReadsValue = newVal;
+      this.tempCladeReadsValue = newVal;
+    },
+    initialFigureHeight(newVal) {
+      this.figureHeight = newVal;
+      this.tempFigureHeight = newVal;
+    },
+    initialLabelOption(newVal) {
+      this.labelOption = newVal;
+      this.tempLabelOption = newVal;
     },
   },
   methods: {
@@ -297,7 +330,7 @@ export default {
       }
 
       // Check if the value is within the valid range
-      if (this.showAll || (value >= min && value <= max)) {
+      if (this.tempShowAll || (value >= min && value <= max)) {
         this.isFormValid = true;
         return true;
       } else {
@@ -312,7 +345,7 @@ export default {
     },
     applyChanges() {
       // Apply the temporary values to the actual data
-      if (!this.showAll) {
+      if (!this.tempShowAll) {
         this.taxaLimit = this.tempTaxaLimit;
         this.cladeReadsMode = this.tempCladeReadsMode;
         this.cladeReadsValue = this.tempCladeReadsValue;
@@ -322,6 +355,7 @@ export default {
         this.tempCladeReadsMode = this.cladeReadsMode;
         this.tempCladeReadsValue = this.cladeReadsValue;
       }
+      this.showAll = this.tempShowAll;
       this.figureHeight = this.tempFigureHeight;
       this.labelOption = this.tempLabelOption;
 
@@ -340,6 +374,7 @@ export default {
     },
     cancelChanges() {
       // Reset the temporary values to the current actual values
+      this.tempShowAll = this.showAll;
       this.tempTaxaLimit = this.taxaLimit;
       this.tempCladeReadsMode = this.cladeReadsMode;
       this.tempCladeReadsValue = this.cladeReadsValue;
@@ -352,6 +387,7 @@ export default {
 
   mounted() {
     // Initialize the temporary values
+    this.tempShowAll = this.showAll;
     this.tempTaxaLimit = this.taxaLimit;
     this.tempCladeReadsMode = this.cladeReadsMode;
     this.tempCladeReadsValue = this.cladeReadsValue;

@@ -88,7 +88,6 @@
 					:taxaLimit="configureMenuSettings.taxaLimit"
 					:minCladeReadsMode="configureMenuSettings.minCladeReadsMode"
 					:minReads="configureMenuSettings.minCladeReads"
-
 					:figureHeight="configureMenuSettings.figureHeight"
 					:labelOption="configureMenuSettings.labelOption"
 					:showAll="configureMenuSettings.showAll"
@@ -111,11 +110,11 @@
 				</ExtractReadsDialog>
 
 				<ConfigureSankeyMenu
+					:maxTaxaLimit="maxTaxaLimit"
+					:initialShowAll="configureMenuSettings.showAll"
 					:initialTaxaLimit="configureMenuSettings.taxaLimit"
-					:maxTaxaLimit="configureMenuSettings.maxTaxaLimit"
 					:initialMinCladeReadsMode="configureMenuSettings.minCladeReadsMode"
 					:initialMinCladeReads="configureMenuSettings.minCladeReads"
-
 					:initialFigureHeight="configureMenuSettings.figureHeight"
 					:initialLabelOption="configureMenuSettings.labelOption"
 					:menuLocation="'top end'"
@@ -152,27 +151,31 @@ export default {
 			type: Object,
 			required: true,
 		},
+		configureMenuSettings: {
+			type: Object,
+			required: true,
+			default: () => ({
+				showAll: false,
+				taxaLimit: 20,
+				minCladeReadsMode: "%",
+				minCladeReads: 0.01,
+				figureHeight: 500,
+				labelOption: "proportion",
+			}),
+		},
 	},
 	data() {
 		return {
 			sankeyId: "subtree-sankey-svg",
 			uniqueInstanceId: "",
 
-			configureMenuSettings: {
-				taxaLimit: 20,
-				maxTaxaLimit: 100,
-				minCladeReadsMode: "%",
-				minCladeReads: 0.01,
-				figureHeight: 500,
-				labelOption: "proportion",
-				showAll: false,
-			},
+			maxTaxaLimit: 100,
 		};
 	},
 	computed: {
 		roundedMaxTaxaLimit() {
 			// Round up maxTaxaLimit to the nearest increment of 5
-			return Math.ceil(this.configureMenuSettings.maxTaxaLimit / 5) * 5;
+			return Math.ceil(this.maxTaxaLimit / 5) * 5;
 		},
 		lineageHtml() {
 			return this.nodeDetails.data.lineage
@@ -187,25 +190,15 @@ export default {
 		// Configuration Menu
 		updateConfigureMenu(sankeyData) {
 			if (sankeyData) {
-				this.configureMenuSettings.maxTaxaLimit = Math.ceil(sankeyData.maxTaxaPerRank / 5) * 5;
+				this.maxTaxaLimit = Math.ceil(sankeyData.maxTaxaPerRank / 5) * 5;
 			}
 		},
 
 		// Sankey Diagram
-		updateSettings(settings) {
-			this.configureMenuSettings.showAll = settings.showAll;
-			if (settings.showAll) {
-				this.configureMenuSettings.taxaLimit = this.configureMenuSettings.maxTaxaLimit;
-				this.configureMenuSettings.minCladeReadsMode = "#";
-				this.configureMenuSettings.minCladeReads = 0;
-			} else {
-				this.configureMenuSettings.taxaLimit = settings.taxaLimit;
-				this.configureMenuSettings.minCladeReadsMode = settings.minCladeReadsMode;
-				this.configureMenuSettings.minCladeReads = settings.minCladeReads;
-			}
-
-			this.configureMenuSettings.figureHeight = settings.figureHeight;
-			this.configureMenuSettings.labelOption = settings.labelOption;
+		updateSettings(newSettings) {
+			this.$emit('update-config', { 
+				...newSettings 
+			});
 		},
 
 		// Sankey Download Functions

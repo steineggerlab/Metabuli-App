@@ -9,7 +9,15 @@
 		<v-card-text class="d-flex flex-column h-100 pb-0">
 			<v-tabs-window v-model="tab" class="h-100">
 				<!-- NODE DETAILS DIALOG (SHARED BY TABLE & SANKEY) -->
-				<SankeyNodeDialog v-if="dialogData" v-model="isDialogVisible" :nodeDetails="dialogData" @close-dialog="hideDialog" @download-sankey="handleFormatSelected" class="align-top" />
+				<SankeyNodeDialog 
+				v-if="dialogData" 
+				v-model="isDialogVisible" 
+				:nodeDetails="dialogData" 
+				:configureMenuSettings="sankeyConfigurationSettings"
+				@update-config="handleUpdateConfig"
+				@close-dialog="hideDialog" 
+				@download-sankey="handleFormatSelected" 
+				class="align-top" />
 
 				<!-- TABLE TAB -->
 				<v-tabs-window-item value="table" class="h-100">
@@ -64,15 +72,15 @@
 
 						<!-- CONFIGURE SANKEY MENU -->
 						<ConfigureSankeyMenu
-							:initialTaxaLimit="taxaLimit"
 							:maxTaxaLimit="roundedMaxTaxaLimit"
+							:initialShowAll="showAll"
+							:initialTaxaLimit="taxaLimit"
 							:initialMinCladeReadsMode="minCladeReadsMode"
 							:initialMinCladeReads="minCladeReads"
-
 							:initialFigureHeight="figureHeight"
 							:initialLabelOption="labelOption"
 							:menuLocation="'bottom end'"
-							@updateSettings="updateSettings"
+							@updateSettings="handleUpdateConfig"
 						>
 							<template v-slot:activator="{ props }">
 								<v-btn color="indigo" rounded="xl" v-bind="props">Configure Diagram</v-btn>
@@ -142,13 +150,15 @@ export default {
 
 			// Sankey Diagram
 			uniqueInstanceId: "",
-			taxaLimit: 20, // FIXME: refactor, make this into dictionary storing info about configuration
 			maxTaxaLimit: 100,
+
+			showAll: false,
+			taxaLimit: 20, // FIXME: refactor, make this into dictionary storing info about configuration
 			minCladeReadsMode: "%",
 			minCladeReads: 0.01,
 			figureHeight: 500,
 			labelOption: "proportion",
-			showAll: false,
+			
 			searchQuery: "",
 
 			// Sankey Node Dialog
@@ -173,6 +183,17 @@ export default {
 		roundedMaxTaxaLimit() {
 			// Round up maxTaxaLimit to the nearest increment of 5
 			return Math.ceil(this.maxTaxaLimit / 5) * 5;
+		},
+		sankeyConfigurationSettings() {
+			// Automatically recalculates when any fields change
+			return {
+				showAll: this.showAll,
+				taxaLimit: this.taxaLimit,
+				minCladeReadsMode: this.minCladeReadsMode,
+				minCladeReads: this.minCladeReads,
+				figureHeight: this.figureHeight,
+				labelOption: this.labelOption,
+			}
 		},
 	},
 
@@ -441,7 +462,7 @@ export default {
 		},
 
 		// Sankey Diagram Configuration Settings
-		updateSettings(settings) {
+		handleUpdateConfig(settings) {
 			this.showAll = settings.showAll;
 
 			if (settings.showAll) {
