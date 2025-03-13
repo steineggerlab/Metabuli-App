@@ -92,6 +92,12 @@ export async function compareTSVContents(regeneratedReportContent, originalRepor
                     // console.log(`String difference found on line ${i + 1}, column ${j + 1}:`);
                     // console.log(`Generated: ${generatedStringValue}`);
                     // console.log(`File: ${fileStringValue}`);
+
+                    // Ignore differences between "superkingdom" and "domain" ranks
+                    if (["superkingdom", "domain"].includes(generatedStringValue) && ["superkingdom", "domain"].includes(fileStringValue)) {
+                        continue;
+                    }
+
                     return false;
                 }
             }

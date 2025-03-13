@@ -37,6 +37,7 @@ export default {
 					record.depth = depth; // Depth based on indentation in front of scientific name in taxonomy report
 					record.nameWithIndentation = record.name; // Store name with indentation from taxonomy report
 					record.name = record.name.trim(); // Remove leading and trailing whitespace after counting leading spaces
+					record.rank = ["superkingdom", "domain"].includes(record.rank) ? "superkingdom" : record.rank; // Replace domain with superkingdom
 				}
 
 				return record;
