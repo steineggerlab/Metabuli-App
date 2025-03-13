@@ -470,7 +470,7 @@ export default {
 
 		// High nodes matching search query
 		highlightNodes(query) {
-			const svg = d3.select(this.$refs.sankeyContainer).select("svg");
+			const svg = d3.select(this.$refs.sankeyContainer);
 			this.searchQueryMatchNodes.clear(); // Clear previous matches
 
 			// If the query is empty, reset all nodes and links to full opacity
