@@ -7,17 +7,31 @@
 				<div class="w-66 search-required-fields">
 					<v-container>
 						<!-- End Type (single-end, paired-end, long-read) -->
-						<v-row>
+						<v-row align="center">
 							<v-col cols="3">
 								<v-list-subheader>Mode</v-list-subheader>
 							</v-col>
 
 							<v-col>
-								<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" divided mandatory>
-									<v-btn value="single-end" height="30" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
-									<v-btn value="paired-end" height="30" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
-									<v-btn value="long-read" height="30" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
+								<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" density="compact" divided mandatory>
+									<v-btn value="single-end" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
+									<v-btn value="paired-end" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
+									<v-btn value="long-read" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
 								</v-btn-toggle>
+							</v-col>
+						</v-row>
+
+						<!-- Fastp Toggle Switch -->
+						<v-row align="center">
+							<v-col cols="3">
+								<v-list-subheader>Enable Fastp</v-list-subheader>
+							</v-col>
+
+							<v-col cols="1">
+								<v-switch v-model="jobDetails.fastp" color="primary" hide-details="true"></v-switch>
+							</v-col>
+							<v-col>
+								<v-btn variant="text" size="small" prepend-icon="$tune" color="primary" :disabled="!jobDetails.fastp">Settings</v-btn>
 							</v-col>
 						</v-row>
 
@@ -248,6 +262,7 @@ export default {
 			jobDetails: {
 				// Store job details including file paths
 				mode: "single-end",
+				fastp: false,
 				q1: "",
 				q2: "",
 				database: "",
@@ -786,6 +801,7 @@ export default {
 .search-required-fields .search-files .filename-col {
 	padding-left: 0px;
 }
+
 :deep(.v-field__input),
 :deep(.v-text-field__suffix) {
 	padding-top: 4px !important;
