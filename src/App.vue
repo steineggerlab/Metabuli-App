@@ -91,10 +91,8 @@
 		
 		<v-bottom-sheet v-model="showReadme">
 			<v-card>
-				<v-card-title class="text-h6">How to Use Metabuli App</v-card-title>
-				<v-card-text style="max-height: 70vh; overflow-y: auto;">
-					<!-- TODO: Inject README -->
-					<p>Instructions go here. Describe how to load files, run jobs, select databases, interpret Sankey plots, etc.</p>
+				<v-card-text style="max-height: 90vh; overflow-y: auto;">
+					<div v-html="readmeHtml"></div>
 				</v-card-text>
 				<v-card-actions>
 					<v-spacer></v-spacer>
@@ -110,6 +108,8 @@
 </template>
 
 <script>
+import { marked } from "marked";
+
 export default {
 	name: "App",
 
@@ -128,6 +128,7 @@ export default {
 			{ title: "History", path: "/history", icon: "history" },
 		],
 		showReadme: false,
+		readmeHtml: "",
 
 		// Job completion handling
 		jobCompleted: false,
@@ -176,6 +177,31 @@ export default {
 
 			this.$router.push({ name: "ResultsPage" });
 		},
+	},
+	async mounted() {
+		try {
+			// Load README.md file
+			const isProd = process.env.NODE_ENV === "production";
+
+			const readmePath = isProd
+				? window.electron.resolveFilePath("README.md", true)
+				: window.electron.resolveFilePath("../README.md", true);
+
+			const readmeContent = await window.electron.readFile(readmePath);
+			this.readmeHtml = marked(readmeContent);
+		} catch (err) {
+			console.error("Failed to load README.md:", err);
+			// Fallback content
+			this.readmeHtml = `
+				<p>
+					⚠️ Ran into an error while loading the instructions.<br>
+					You can still view them at
+					<a href="https://github.com/steineggerlab/Metabuli-App" target="_blank" style="text-decoration: underline;">
+						steineggerlab/Metabuli-App</a>
+				</p>
+			`;
+
+		}
 	},
 };
 </script>

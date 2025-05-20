@@ -20,8 +20,8 @@ contextBridge.exposeInMainWorld("electron", {
 	resolveFilePath: (filePath, isRelativePath) => {
 		// Determine the base path based on the environment
 		// 'development' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/dist_electron
-		// 'production' __dirname: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/build/mac-universal--arm64/Metabuli App.app/Contents/Resources/app.asar
-		const basePath = process.env.NODE_ENV === "development" ? path.join(__dirname, "..", "public") : path.join(__dirname);
+		// 'production' basePath: /Users/sunnylee/Documents/Steinegger Lab/Metabuli-App/metabuli-app/build/mac-universal--arm64/Metabuli App.app/Contents/Resources
+		const basePath = process.env.NODE_ENV === "development" ? path.join(__dirname, "..", "public") : process.resourcesPath;
 		return isRelativePath ? path.join(basePath, filePath) : filePath;
 	},
 
