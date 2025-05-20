@@ -176,7 +176,15 @@
 					</v-container>
 				</div>
 
-				<v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img>
+				<v-divider vertical></v-divider>
+
+				<!-- Output Format -->
+				<v-card class="w-33" variant="text" >
+					<v-card-title class="text-button font-weight-bold">Output Format</v-card-title>
+					<v-card-subtitle>Lorem ipsum</v-card-subtitle>
+				</v-card>
+
+				<!-- <v-img class="w-33 marv-metabuli-opaque" :width="200" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img> -->
 			</div>
 
 			<!-- ADVANCED SETTINGS -->
