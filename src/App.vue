@@ -132,26 +132,17 @@ export default {
 
 		// Job completion handling
 		jobCompleted: false,
-		// checkedResults: false,
 		jobType: "",
 	}),
 
 	watch: {
-		$route(to) {
-			if (to.path === "/results") {
-				// Detect route changes to the results page regardless of how it's accessed
-				// Remove red badge on nav drawer item
-				// this.checkedResults = true;
-			}
-		},
+		//
 	},
 
 	methods: {
 		handleJobComplete() {
 			// Expose Results Tab navigation drawer item
 			this.jobCompleted = true;
-			// Expose red badge
-			// this.checkedResults = false;
 
 			// Indicates jobType needed to show krona tab
 			this.jobType = "runSearch";
@@ -163,8 +154,6 @@ export default {
 		handleReportUpload() {
 			// Expose Results Tab navigation drawer item
 			this.jobCompleted = true;
-			// Expose red badge
-			// this.checkedResults = false;
 
 			// Indicates jobType needed to hide krona tab
 			this.jobType = "uploadReport";
@@ -200,7 +189,6 @@ export default {
 						steineggerlab/Metabuli-App</a>
 				</p>
 			`;
-
 		}
 	},
 };
