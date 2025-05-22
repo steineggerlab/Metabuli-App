@@ -31,6 +31,19 @@
 							v-ripple
 						></v-list-item>
 					</router-link>
+
+						<!-- QUALITY CONTROL NAVIGATION ITEM -->
+						<router-link :to="items[4].path" class="no-underline">
+						<v-list-item
+							class="nav-item"
+							:title="items[4].title"
+							:prepend-icon="`$${items[4].icon}`"
+							:class="{ active: $route.path === items[4].path }"
+							@mouseover="hover = items[4].path"
+							@mouseleave="hover = ''"
+							v-ripple
+						></v-list-item>
+					</router-link>
 	
 					<!-- CUSTOM DATABASE NAVIGATION ITEM -->
 					<router-link :to="items[1].path" class="no-underline">
@@ -126,6 +139,7 @@ export default {
 			{ title: "Custom Database", path: "/custom-database", icon: "database" },
 			{ title: "Results", path: "/results", icon: "chartBar" },
 			{ title: "History", path: "/history", icon: "history" },
+			{ title: "Quality Control", path: "/quality-control", icon: "filter" },
 		],
 		showReadme: false,
 		readmeHtml: "",
