@@ -24,7 +24,7 @@
 						<!-- Fastp Toggle Switch -->
 						<v-row align="center">
 							<v-col cols="3">
-								<v-list-subheader>Enable Fastp</v-list-subheader>
+								<v-list-subheader>Enable Quality Control</v-list-subheader>
 							</v-col>
 
 							<v-col cols="1">

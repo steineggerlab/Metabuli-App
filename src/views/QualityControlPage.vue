@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-card class="mb-3">
+    <v-card >
       <!-- HEADER TOOLBAR -->
       <v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">
         Quality Control
@@ -8,11 +8,11 @@
       </v-toolbar>
 
       <v-form ref="jobForm" v-model="isJobFormValid">
-        <div class="d-flex search-required-fields">
+        <div class="search-required-fields">
 
           <v-container>
             <!-- End Type (single-end, paired-end, long-read) -->
-            <v-row align="center">
+            <v-row align="center" class="mt-2">
               <v-col cols="2">
                 <v-list-subheader>Mode</v-list-subheader>
               </v-col>
@@ -27,11 +27,11 @@
             </v-row>
     
             <!-- Output Filename Suffix -->
-              <v-row>
+              <v-row >
                 <v-col cols="2">
                   <v-list-subheader>Output File Suffix</v-list-subheader>
                 </v-col>
-                <v-col cols="4">
+                <v-col cols="5">
                   <v-text-field
                     v-model="jobDetails.outFileSuffix"
                     :rules="[requiredRule]"
@@ -41,7 +41,7 @@
                     density="compact"
                     color="primary"
                     rounded="lg"
-                    class="mb-2"
+
                   ></v-text-field>
                 </v-col>
               </v-row>
@@ -72,54 +72,64 @@
               </v-row>
 
               <!-- Select Files -->
-              <v-row>
+               <v-row class="mt-0">
                 <v-col cols="2">
-                  <v-list-subheader class="pr-0">Upload Files</v-list-subheader>
+                  <v-list-subheader>Upload Read Files</v-list-subheader>
                 </v-col>
-
-                <v-col cols="10" class="search-files">
-                  <v-row>
-                    <!-- Read 1 File -->
+                <v-col>
+                  <v-row v-for="(entry, index) in jobDetails.entries" :key="index">
+                    <!-- Read 1 -->
                     <v-col cols="3">
-                      <v-btn @click="selectFile('q1', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-                        >Read 1 File</v-btn
-                      >
-                      <v-text-field v-model="jobDetails.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
+                      <div v-if="!entry.q1">
+                        <v-btn @click="selectDynamicFile(index, 'q1')" prepend-icon="$file" density="comfortable" size="default"
+                          class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
+                          Read 1 File
+                        </v-btn>
+                      </div>
+                      <v-chip v-else label color="primary" density="comfortable" class="filename-chip">
+                        <v-icon icon="$delete" @click="clearDynamicFile(index, 'q1')" class="mr-1"></v-icon>
+                        {{ extractFilename(entry.q1) }}
+                      </v-chip>
                     </v-col>
-                      <!-- <v-col cols="6" class="filename-col">
-                      <v-chip v-if="jobDetails.q1" label color="primary" density="comfortable" class="filename-chip">
-                        <v-icon icon="$delete" @click="clearFile('q1')" class="mr-1"></v-icon>
-                        {{ this.extractFilename(jobDetails.q1) }}</v-chip
-                      >
-                      </v-col> -->
-
-                    <!-- Read 2 File -->
+    
+                    <!-- Read 2 -->
                     <v-col cols="3" v-if="jobDetails.mode === 'paired-end'">
-                      <v-btn @click="selectFile('q2', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-                        >Read 2 File</v-btn
-                      >
-                      <v-text-field v-model="jobDetails.q2" :rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]" style="display: none"></v-text-field>
+                      <div v-if="!entry.q2">
+                        <v-btn @click="selectDynamicFile(index, 'q2')" prepend-icon="$file" density="comfortable" size="default"
+                          class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
+                          Read 2 File
+                        </v-btn>
+                      </div>
+                      <v-chip v-else label color="primary" density="comfortable" class="filename-chip">
+                        <v-icon icon="$delete" @click="clearDynamicFile(index, 'q2')" class="mr-1"></v-icon>
+                        {{ extractFilename(entry.q2) }}
+                      </v-chip>
                     </v-col>
 
-									<!-- <v-col cols="6" class="filename-col">
-										<v-chip v-if="jobDetails.q2" label color="primary" density="comfortable" class="filename-chip">
-											<v-icon icon="$delete" @click="clearFile('q2')" class="mr-1"></v-icon>
-											{{ this.extractFilename(jobDetails.q2) }}</v-chip
-										>
-									</v-col> -->
-								</v-row>
-							</v-col>            
-						</v-row>
+                    <!-- Remove Row Button -->
+                    <v-col cols="1" v-if="index > 0">
+                      <v-btn
+                        variant="text"
+                        icon="$checkboxIndeterminate"
+                        size="small"
+                        density="compact"
+                        @click="removeEntry(index)"
+                      >
+                      </v-btn>
+                    </v-col>
+                  </v-row>
 
+                  <!-- Add Entry Button -->
+                  <v-row>
+                    <v-col cols="12">
+                      <v-btn variant="text" prepend-icon="$plusBox" @click="addEntry">Add Entry</v-btn>
+                    </v-col>
+                  </v-row>
+                </v-col>
+               </v-row>
 
-
-
-
-
-          </v-container>
-
-
-        </div>
+            </v-container>
+          </div>
       </v-form>
     </v-card>
   </v-container>
@@ -136,8 +146,9 @@ export default {
         // Store job details
         mode: "single-end",
         outFileSuffix: "_out",
-        q1: "",
-        q2: "",
+        entries: [
+        { q1: "", q2: "" }
+      ],
         database: "",
         outdir: "",
         maxram: "",
@@ -156,6 +167,25 @@ export default {
 	},
 	methods: {
     // Functions for handling files
+    addEntry() {
+      this.jobDetails.entries.push({ q1: "", q2: "" });
+    },
+    selectDynamicFile(index, field) {
+      this.selectFile(null, "file").then((filePath) => {
+        if (filePath) {
+          this.jobDetails.entries[index][field] = filePath;
+        }
+      });
+    },
+    clearDynamicFile(index, field) {
+      this.jobDetails.entries[index][field] = "";
+    },
+    removeEntry(index) {
+      if (this.jobDetails.entries.length > 1) {
+        this.jobDetails.entries.splice(index, 1);
+      }
+    },
+
 		async selectFile(field, type) {
 			// FIXME: unify with UPLOAD REPORT TAB file selector function
 			if (window.electron) {
@@ -195,8 +225,6 @@ export default {
       return true;
     },
 
-
-
 		showSnackbar(message) {
 			this.snackbarMessage = message;
 			this.snackbar = true;
@@ -206,5 +234,12 @@ export default {
 </script>
 
 <style scoped>
-
+.v-col {
+	padding-bottom: 0px;
+  padding-top: 0px;
+}
+.v-row {
+	margin-bottom: 0px;
+  margin-top: 12px;
+}
 </style>
