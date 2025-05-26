@@ -146,12 +146,15 @@ const mapPlatform = (platform) => {
 	}
 };
 
+// Determine the base path for binaries
+const binPath = app.isPackaged
+	? join(process.resourcesPath, "bin") 
+	: join(appRootDir.get(), "resources", mapPlatform(platform), os.arch());
+
+// METABULI BACKEND BINARY
+const backendBinary = join(binPath, "metabuli" + (platform == "win32" ? ".bat" : ""));
 let childProcess;
 let backendCancelled = false;
-const binPath = app.isPackaged
-	? join(process.resourcesPath, "bin") // 'production' process.resourcesPath=metabuli-app/build/mac-universal--x64/Metabuli App.app/Contents/Resources
-	: join(appRootDir.get(), "resources", mapPlatform(platform), os.arch());
-const backendBinary = join(binPath, "metabuli" + (platform == "win32" ? ".bat" : ""));
 
 ipcMain.on("run-backend", async (event, args) => {
 	try {
@@ -171,13 +174,11 @@ ipcMain.on("run-backend", async (event, args) => {
 
 		// Handle real-time stdout stream
 		childProcess.stdout.on("data", (data) => {
-			// console.log(`Backend stdout: ${data.toString()}`); // DEBUG
 			event.reply("backend-realtime-output", data.toString());
 		});
 
 		// Handle real-time stderr stream
 		childProcess.stderr.on("data", (data) => {
-			console.error(`Backend stderr: ${data.toString()}`);
 			event.reply("backend-error", data.toString());
 		});
 
@@ -203,4 +204,57 @@ ipcMain.on("cancel-backend", (event) => {
 		backendCancelled = true;
 		childProcess.kill();
 	}
+});
+
+// FASTP QUALITY CONTROL BINARY
+let fastpProcess;
+let fastpCancelled = false;
+ipcMain.on("run-fastp", async (event, args) => {
+	try {
+		fastpCancelled = false;
+    const { params, workingDir = process.cwd() } = args;
+    if (!Array.isArray(params)) throw new Error("Params must be an array");
+
+		// Locate fastp binary
+		const fastpBinary = join(binPath, "fastp" + (platform === "win32" ? ".exe" : ""));
+
+		// Spawn fastp
+		let fastpProcess = spawn(fastpBinary, [...params], { cwd: workingDir });
+
+		// Handle stdout
+		fastpProcess.stdout.on("data", (data) => {
+			event.reply("fastp-output", data.toString());
+		});
+
+		// Send stderr to the regular log channel
+		fastpProcess.stderr.on("data", data => {
+			event.reply("fastp-output", data.toString());
+		});
+
+		// Handle completion
+		// rely on the exit code to signal true errors
+		fastpProcess.on("close", code => {
+			if (fastpCancelled) {
+        event.reply("fastp-cancelled", "Fastp process was cancelled.");
+      } else if (code !== 0) {
+        event.reply("fastp-error", `Fastp exited with code ${code}`);
+      } else {
+        event.reply("fastp-complete", "Fastp finished successfully.");
+      }
+      // clean up
+      fastpProcess = null;
+      fastpCancelled = false;
+		});
+	} catch (error) {
+		console.error(`Failed to run fastp: ${error.message}`);
+		event.reply("fastp-error", `Failed to run fastp: ${error.message}`);
+	}
+});
+
+// IPC handler to cancel fastp
+ipcMain.on("cancel-fastp", () => {
+  if (fastpProcess) {
+    fastpCancelled = true;
+    fastpProcess.kill();
+  }
 });

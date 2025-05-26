@@ -35,6 +35,13 @@ contextBridge.exposeInMainWorld("electron", {
 		}
 	},
 
+	// Method to retrieve total system memory in GB
+	getTotalRam: () => {
+		const totalRamInBytes = os.totalmem(); // Get total RAM in bytes
+		const totalRamInGB = Math.floor(totalRamInBytes / 1024 ** 3); // Convert to GB
+		return totalRamInGB;
+	},
+
 	// Manage Job History
 	async saveJobHistory(jobsHistory) {
 		try {
@@ -89,6 +96,9 @@ contextBridge.exposeInMainWorld("electron", {
 	openFileDialog: (options) => ipcRenderer.invoke("open-file-dialog", options),
 	openKrona: (filePath) => ipcRenderer.invoke("open-krona", filePath),
 
+	/* ==========================================================================
+   *  Metabuli (“classification”) IPC API
+   * ========================================================================== */
 	runBackend: (params, workingDir) => ipcRenderer.send("run-backend", { params, workingDir }),
 	cancelBackend: () => ipcRenderer.send("cancel-backend"),
 
@@ -97,16 +107,28 @@ contextBridge.exposeInMainWorld("electron", {
 	onBackendError: (callback) => ipcRenderer.on("backend-error", (event, error) => callback(error)),
 	onBackendCancelled: (callback) => ipcRenderer.on("backend-cancelled", (event, message) => callback(message)),
 
-	// Methods to remove event listeners
+	 /** Remove all Metabuli IPC listeners. */
 	offBackendRealtimeOutput: () => ipcRenderer.removeAllListeners("backend-realtime-output"),
 	offBackendComplete: () => ipcRenderer.removeAllListeners("backend-complete"),
 	offBackendError: () => ipcRenderer.removeAllListeners("backend-error"),
 	offBackendCancelled: () => ipcRenderer.removeAllListeners("backend-cancelled"),
 
-	// Method to retrieve total system memory in GB
-	getTotalRam: () => {
-		const totalRamInBytes = os.totalmem(); // Get total RAM in bytes
-		const totalRamInGB = Math.floor(totalRamInBytes / 1024 ** 3); // Convert to GB
-		return totalRamInGB;
+	/* ==========================================================================
+   *  fastp (QC) IPC API
+   * ========================================================================== */
+	runFastp: (params, workingDir) => ipcRenderer.send("run-fastp", { params, workingDir }),
+	cancelFastp: () => ipcRenderer.send("cancel-fastp"),
+
+	onFastpOutput: (callback) => ipcRenderer.on("fastp-output", (_, data) => callback(data)),
+	onFastpComplete: (callback) => ipcRenderer.on("fastp-complete", (_, msg) => callback(msg)),
+	onFastpError: (callback) => ipcRenderer.on("fastp-error", (_, error) => callback(error)),
+	onFastpCancelled: (callback) => ipcRenderer.on("fastp-cancelled", (event, message) => callback(message)),
+
+	/** Remove all fastp IPC listeners. */
+	offFastpListeners: () => {
+		ipcRenderer.removeAllListeners("fastp-output");
+		ipcRenderer.removeAllListeners("fastp-error");
+		ipcRenderer.removeAllListeners("fastp-complete");
 	},
+
 });
