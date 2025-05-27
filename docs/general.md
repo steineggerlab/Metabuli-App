@@ -57,7 +57,6 @@ We will make a button for GTDB soon.
         - [Upload Report](#upload-report)
     - [Create New Database](#create-new-database)
     - [Update Existing Database](#update-existing-database)
-    - [Database Management](#database-management)
 - [Demos](#demos)
 - [Acknowledgments](#acknowledgments)
 
