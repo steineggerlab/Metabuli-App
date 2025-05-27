@@ -182,7 +182,7 @@
 </template>
 
 <script>
-
+/* eslint-disable */
 export default {
   name: "QualityControlPage",
 	data() {
@@ -192,14 +192,14 @@ export default {
         // Store job details
         mode: "single-end",
         outFileSuffix: "_out",
+        outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/QC-test",
         entries: [
           { q1: "", q2: "" }
         ],
         testentries: [
-          { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_2.fastq" },
-          { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_2.fastq" },
+          { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/QC-test/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/QC-test/SRR24315757_2.fastq" },
+          { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/QC-test/SRR23604821_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/QC-test/SRR23604821_2.fastq" },
         ],
-        outdir: "", // TODO: do i need this?
       },
 
       // Properties for job processing status, response, and results
@@ -257,13 +257,31 @@ export default {
 				this.$emit("trigger-snackbar", "File dialog is not supported in the web environment.", "error", "warning", "Dismiss");
 			}
 		},
+    clearFile(field) {
+      this.jobDetails[field] = null;
+      this.$refs.jobForm.validate();
+    },
+
+    // Functions for handling filenames
 		extractFilename(path) {
 			return path.split("/").pop();
 		},
-		clearFile(field) {
-			this.jobDetails[field] = null;
-			this.$refs.jobForm.validate();
-		},
+    stripFileExtension(filePath) {
+      // 1. Extract just the filename, dropping any directory
+      const filename = this.extractFilename(filePath);
+
+      // 1. Separate the filename base from its extension
+      // TODO: check which file extensions we support
+      const m = filename.match(/(.+?)(\.(?:fastq|fq)(?:\.gz)?)$/i);
+      if (m) {
+        return {
+          base: m[1],  // filename base, e.g. “SRR24315757_1”
+          ext:  m[2],  // file extension, e.g. “.fastq” or “.fq.gz”
+        };
+      } else {
+        return { base: filename, ext: "" }; // TODO: handle case where no extension is found
+      }
+    },
 
     // Functions handling validation rules
     requiredRule(value) {
@@ -306,58 +324,37 @@ export default {
 			}
 		},
     async runBackend() {
-			// let params = ["fastp"];
+      const outDir = this.jobDetails.outdir;
+      const suffix = this.jobDetails.outFileSuffix;
+      const modeTag =
+        this.jobDetails.mode === "paired-end"   ? "_PE"  :
+        this.jobDetails.mode === "single-end"   ? "_SE"  :
+        "_LR";
       
-      // const outDir = this.jobDetails.outdir;
-      // const suffix = this.jobDetails.outFileSuffix;
+      for (const entry of this.jobDetails.testentries) { // TODO: use jobDetails.entries
+        const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
+        const batchName = `${base1}${modeTag}`;
+        const batchOutDir = `${outDir}/${batchName}`; // TODO: organize code
+        await window.electron.mkdir(batchOutDir);
 
-      for (const entry of this.jobDetails.entries) {
-        // Build the base name (strip .fastq or .fq)
-        const name1 = this.extractFilename(entry.q1);
-        // Prepend a header using that filename
-        let header = `==== fastp QC for ${name1}`;
-        if (this.jobDetails.mode === 'paired-end' && entry.q2) {
-          const name2 = this.extractFilename(entry.q2);
-          header += ` & ${name2}`;
-        }
-        header += ' ====\n';
-        // this.backendOutput += header;
-
-        // Build params for this sample
-        const params = [
-          "fastp",
-          "-i", entry.q1,
-          "-o", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_output.fastq",
-        ];
-
-        if (this.jobDetails.mode === "paired-end" && entry.q2) {
-          params.push("-I", entry.q2);
-        }
-        // Output files (always include HTML/JSON report)
-        params.push(
-          // "-o", `${outDir}/${base}${suffix}${entry.q2 ? "_R1.fastq" : ".fastq"}`,
-          // "-h", `${outDir}/${base}_report.html`,
-          // "-j", `${outDir}/${base}_report.json`
-        );
-
-        if (this.jobDetails.mode === "paired-end" && entry.q2) {
-          // add second output for paired-end
+        const params = ["fastp", 
+        "-h", `${batchOutDir}/${batchName}.html`,
+        "-j", `${batchOutDir}/${batchName}.json`];
+          
+          // Add read 1 input/output parameters
           params.push(
-            // "-O", `${outDir}/${base}${suffix}_R2.fastq`
-            "-O", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_2_output.fastq"
+            "-i", entry.q1, // Read 1 file
+            "-o", `${batchOutDir}/${base1}${suffix}${ext1}`, // Output filepath for Read 1
           );
-        }
-
-        // TEST: Example parameters for fastp
-        // params = [
-        //   "fastp",
-        //   "-i", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1.fastq",
-        //   // "-I", "/path/to/R2.fastq",
-        //   "-o", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_output.fastq",
-        //   // "-O", "/path/to/output_R2.fastq",
-        //   "-h", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_report.html",
-        //   "-j", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_report.json",
-        // ];
+          
+          // Add read 2 input/output parameters if paired-end mode
+          if (this.jobDetails.mode === "paired-end" && entry.q2) {
+            const { base: base2, ext: ext2 } = this.stripFileExtension(entry.q2);
+            params.push(
+              "-I", entry.q2,
+              "-O", `${batchOutDir}/${base2}${suffix}${ext2}`, // Output filepath for Read 2
+            );
+          }
 
         console.log("🚀 fastp job requested:", params); // DEBUG
         

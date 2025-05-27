@@ -93,6 +93,8 @@ contextBridge.exposeInMainWorld("electron", {
 		}
 	},
 
+	mkdir: (dirPath) => fs.mkdir(dirPath, { recursive: true }),
+
 	openFileDialog: (options) => ipcRenderer.invoke("open-file-dialog", options),
 	openKrona: (filePath) => ipcRenderer.invoke("open-krona", filePath),
 
