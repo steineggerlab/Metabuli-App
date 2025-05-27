@@ -53,12 +53,11 @@ We will make a button for GTDB soon.
 - [Installation](#installation)
 - [Usage](#usage)
     - [Classification](#classification)
-        - [New Search](#new-search)
+        - [New Classification](#new-classification)
         - [Upload Report](#upload-report)
+    - [Create New Database](#create-new-database)
+    - [Update Existing Database](#update-existing-database)
     - [Database Management](#database-management)
-        - [Creating a New Database](#create-new-database)
-        - [Adding New Sequences to An Existing Database](#add-new-sequences-to-an-existing-database)
-        - [Creating a New Taxa List](#create-new-taxa-list)
 - [Demos](#demos)
 - [Acknowledgments](#acknowledgments)
 
@@ -78,7 +77,7 @@ We will make a button for GTDB soon.
 Metabuli App provides two taxonomic profiling modes in **Search Settings** panel: **New Search** and **Upload Report**.
 <img alt="SearchPage_Demo_Image" src="https://github.com/user-attachments/assets/9ab5a86c-5603-4dc7-be3b-baf2ed490ef0" style="max-height: 600px; width: auto;">
 
-## New Search
+## New Classification
 ### Required Fields:
 1. **Mode:** Select the analysis mode among single-end, paired-end, or long-read.
 2. **Job ID:** Enter a unique identifier for the job.
@@ -177,7 +176,7 @@ You can create a new database in "NEW DATABASE" tab by providing these three fil
 
 ---
 
-## Update An Existing Database
+## Update Existing Database
 You can add new sequences to an existing database in the "UPDATE DATABASE" tab by providing these inputs:
 1. **FASTA files** : Each sequence must have a unique `>accession.version` or `>accesion` header (e.g., `>CP001849.1` or `>CP001849`).
 2. **NCBI-style accession2taxid** : Sequences with accessions not listed here will be skipped. Version numbers are ignored. </br>
