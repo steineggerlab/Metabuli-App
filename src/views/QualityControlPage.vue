@@ -193,8 +193,12 @@ export default {
         mode: "single-end",
         outFileSuffix: "_out",
         entries: [
-        { q1: "", q2: "" }
-      ],
+          { q1: "", q2: "" }
+        ],
+        testentries: [
+          { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_2.fastq" },
+          { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_2.fastq" },
+        ],
         outdir: "", // TODO: do i need this?
       },
 
@@ -302,80 +306,110 @@ export default {
 			}
 		},
     async runBackend() {
-			let params = ["fastp"];
+			// let params = ["fastp"];
+      
+      // const outDir = this.jobDetails.outdir;
+      // const suffix = this.jobDetails.outFileSuffix;
 
-			// // Add FASTA/Q file path(s)
-			// if (this.jobDetails.mode === "single-end") {
-			// 	params.push("--seq-mode", 1, this.jobDetails.q1);
-			// } else if (this.jobDetails.mode === "paired-end") {
-			// 	params.push(this.jobDetails.q1, this.jobDetails.q2);
-			// } else if (this.jobDetails.mode === "long-read") {
-			// 	params.push("--seq-mode", 3, this.jobDetails.q1);
-			// }
+      for (const entry of this.jobDetails.entries) {
+        // Build the base name (strip .fastq or .fq)
+        const name1 = this.extractFilename(entry.q1);
+        // Prepend a header using that filename
+        let header = `==== fastp QC for ${name1}`;
+        if (this.jobDetails.mode === 'paired-end' && entry.q2) {
+          const name2 = this.extractFilename(entry.q2);
+          header += ` & ${name2}`;
+        }
+        header += ' ====\n';
+        // this.backendOutput += header;
 
-			// // Add Classification file path
-			// params.push(this.jobDetails.classifications);
+        // Build params for this sample
+        const params = [
+          "fastp",
+          "-i", entry.q1,
+          "-o", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_output.fastq",
+        ];
 
-			// // Add Database path
-			// params.push(this.jobDetails.database);
+        if (this.jobDetails.mode === "paired-end" && entry.q2) {
+          params.push("-I", entry.q2);
+        }
+        // Output files (always include HTML/JSON report)
+        params.push(
+          // "-o", `${outDir}/${base}${suffix}${entry.q2 ? "_R1.fastq" : ".fastq"}`,
+          // "-h", `${outDir}/${base}_report.html`,
+          // "-j", `${outDir}/${base}_report.json`
+        );
 
-			// // Add Tax ID
-			// params.push("--tax-id", parseInt(this.taxonId));
+        if (this.jobDetails.mode === "paired-end" && entry.q2) {
+          // add second output for paired-end
+          params.push(
+            // "-O", `${outDir}/${base}${suffix}_R2.fastq`
+            "-O", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_2_output.fastq"
+          );
+        }
 
-      // TEST: Example parameters for fastp
-			params = [
-        "fastp",
-        "-i", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1.fastq",
-        // "-I", "/path/to/R2.fastq",
-        "-o", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_output.fastq",
-        // "-O", "/path/to/output_R2.fastq",
-        "-h", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_report.html",
-        "-j", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_report.json",
-      ];
+        // TEST: Example parameters for fastp
+        // params = [
+        //   "fastp",
+        //   "-i", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1.fastq",
+        //   // "-I", "/path/to/R2.fastq",
+        //   "-o", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_output.fastq",
+        //   // "-O", "/path/to/output_R2.fastq",
+        //   "-h", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_report.html",
+        //   "-j", "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/SRR24315757_1_report.json",
+        // ];
 
-			console.log("🚀 fastp job requested:", params); // DEBUG
+        console.log("🚀 fastp job requested:", params); // DEBUG
+        
+        // Return a promise that resolves or rejects based on backend success or failure
+        await new Promise((resolve, reject) => {
+          // Run backend process
+          window.electron.runFastp(params);
 
-			// Return a promise that resolves or rejects based on backend success or failure
-			return new Promise((resolve, reject) => {
-				// Run backend process
-				window.electron.runFastp(params);
-
-        window.electron.onFastpOutput((output) => {
-          this.backendOutput += output; // Append output in real-time
-					this.$nextTick(() => {
-						// Scroll to the bottom
-						const textarea = this.$refs.outputTextarea.$el.querySelector("textarea");
-						textarea.scrollTop = textarea.scrollHeight;
-					});
-
-					this.status = "RUNNING"; // Keep the status as RUNNING
+          const cleanup = () => {
+            window.electron.offFastpListeners();
+          };
+          
+          window.electron.onFastpOutput((output) => {
+            this.backendOutput += output;
+            this.$nextTick(() => {
+              // Scroll to the bottom
+              const textarea = this.$refs.outputTextarea.$el.querySelector("textarea");
+              textarea.scrollTop = textarea.scrollHeight;
+            });
+            // NO cleanup here—we want output throughout the run
+            this.status = "RUNNING"; // Keep the status as RUNNING
+          });
+          window.electron.onFastpError((err) => {
+            if (!this.errorHandled) {
+              const message = "\nError:\n" + err.toString();
+              this.backendOutput += message;
+              this.status = "ERROR"; // Signal job polling to stop
+              cleanup(); // Cleanup listeners
+              reject(new Error("Fastp execution error:", err));
+            }
+          });
+          window.electron.onFastpComplete((msg) => {
+            if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
+            this.backendOutput += `${msg}\n`;
+            this.status = "COMPLETE";
+            cleanup(); // Cleanup listeners
+            resolve();
+          });
+          
+          window.electron.onFastpCancelled((message) => {
+            if (this.status !== "TIMEOUT" && !this.errorHandled) {
+              this.backendOutput += `${message}\n`;
+              this.status = "CANCELLED";
+              cleanup(); // Cleanup listeners
+              reject(new Error("Process was cancelled"));
+            }
+          });
         });
-        window.electron.onFastpError((err) => {
-          if (!this.errorHandled) {
-						const message = "\nJob processing was terminated due to an error:\n" + err.toString();
-						this.backendOutput += message;
-						this.status = "ERROR"; // Signal job polling to stop
-						reject(new Error("Fastp execution error:", err));
-					}
-        });
-        window.electron.onFastpComplete((msg) => {
-          if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
-          this.backendOutput += msg;
-          this.status = "COMPLETE"; // Set status to COMPLETE
-          resolve(); // Resolve the backend promise
-        });
-
-				window.electron.onFastpCancelled((message) => {
-					if (this.status !== "TIMEOUT" && !this.errorHandled) {
-						this.backendOutput += message;
-						this.status = "CANCELLED";
-						reject(new Error("Process was cancelled"));
-					}
-				});
-			});
-		},
-		// Function to track job status + process results + trigger snackbar
-		async pollJobStatus(interval = 500, timeout = Infinity) {
+      }
+    },
+    // Function to track job status + process results + trigger snackbar
+    async pollJobStatus(interval = 500, timeout = Infinity) {
 			// FIXME: decide timeout duration
 			console.log("🚀 Running fastp job"); // DEBUG
 			const start = Date.now();
