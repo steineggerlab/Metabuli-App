@@ -24,11 +24,12 @@ We will make a button for GTDB soon.
 
 ## Functionality
 - **Download** pre-built **databases**
-- Run new **taxonomic profiling**
-- **Upload and browse** taxonomic profiling results
+- **Create or update databases** directly in the app
+- Run **taxonomic classification**
+- **Upload and browse** classification results
 - **Extract reads** classified under a specific taxon
-- Explore results with customizable **Sankey plots** and interactive **Krona plots**.
-- **Database Management:** Create or update databases directly in the app.
+- Explore results with interactive **Sankey** and **Krona** plots.
+
 
 ---
 
