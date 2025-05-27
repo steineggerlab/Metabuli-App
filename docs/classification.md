@@ -2,7 +2,7 @@
 Metabuli App provides two taxonomic profiling modes in **Search Settings** panel: **New Search** and **Upload Report**.
 <img alt="SearchPage_Demo_Image" src="https://github.com/user-attachments/assets/9ab5a86c-5603-4dc7-be3b-baf2ed490ef0" style="max-height: 600px; width: auto;">
 
-## New Search
+## New Classification
 ### Required Fields:
 1. **Mode:** Select the analysis mode among single-end, paired-end, or long-read.
 2. **Job ID:** Enter a unique identifier for the job.

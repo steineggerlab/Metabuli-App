@@ -1,4 +1,4 @@
-## Update An Existing Database
+## Update Existing Database
 You can add new sequences to an existing database in the "UPDATE DATABASE" tab by providing these inputs:
 1. **FASTA files** : Each sequence must have a unique `>accession.version` or `>accesion` header (e.g., `>CP001849.1` or `>CP001849`).
 2. **NCBI-style accession2taxid** : Sequences with accessions not listed here will be skipped. Version numbers are ignored. </br>
