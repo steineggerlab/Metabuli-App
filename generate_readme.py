@@ -1,4 +1,4 @@
-parts = ["docs/general.md", "docs/classification.md", "docs/createdb.md", "docs/updatedb.md", "docs/demo.md", "doc/references.md"]
+parts = ["docs/general.md", "docs/classification.md", "docs/createdb.md", "docs/updatedb.md", "docs/demo.md", "docs/references.md"]
 
 with open("README.md", "w") as outfile:
     for fname in parts:
