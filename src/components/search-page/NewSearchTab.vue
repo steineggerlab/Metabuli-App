@@ -31,7 +31,17 @@
 								<v-switch v-model="jobDetails.fastp" color="primary" hide-details="true"></v-switch>
 							</v-col>
 							<v-col>
-								<v-btn variant="text" size="small" prepend-icon="$tune" color="primary" :disabled="!jobDetails.fastp">Settings</v-btn>
+								<QCSettingsDialog v-model="showQCSettingsDialog" class="d-flex justify-start">
+                    <template v-slot:activator="{ props }">
+                      <v-btn 
+                        v-bind="props" 
+                        variant="text" 
+                        size="small" 
+                        prepend-icon="$tune" 
+                        color="primary"
+                        >Settings</v-btn>
+									</template>
+								</QCSettingsDialog>
 							</v-col>
 						</v-row>
 
@@ -259,10 +269,13 @@
 
 <script>
 import TSVParser from "@/plugins/tsvParser";
+import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
 
 export default {
 	name: "NewSearchTab",
-
+	components: {
+		QCSettingsDialog,
+	},
 	data() {
 		return {
 			// Properties for Run New Search tab

@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-container>
-      <v-card >
+      <v-card>
         <!-- HEADER TOOLBAR -->
         <v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">
           Quality Control (QC)
@@ -26,7 +26,27 @@
                   </v-btn-toggle>
                 </v-col>
               </v-row>
-      
+
+              <!-- Parameter Settings -->
+              <v-row align="center">
+                <v-col cols="2">
+                  <v-list-subheader>Parameter Settings</v-list-subheader>
+                </v-col>
+                <v-col>
+                  <QCSettingsDialog v-model="showQCSettingsDialog" @update-params="jobDetails.params = $event">
+                    <template v-slot:activator="{ props }">
+                      <v-btn 
+                        v-bind="props" 
+                        variant="text" 
+                        size="small" 
+                        prepend-icon="$tune" 
+                        color="primary"
+                        >Settings</v-btn>
+									</template>
+								</QCSettingsDialog>
+                </v-col>
+              </v-row>
+          
               <!-- Output Filename Suffix -->
                 <v-row >
                   <v-col cols="2">
@@ -182,8 +202,13 @@
 
 <script>
 /* eslint-disable */
+import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
+
 export default {
   name: "QualityControlPage",
+  components: {
+    QCSettingsDialog,
+  },
 	data() {
     return {
       isJobFormValid: false,
@@ -199,6 +224,7 @@ export default {
           { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR24315757_2.fastq" },
           { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_2.fastq" },
         ],
+        params: {},
       },
 
       // Properties for job processing status, response, and results
@@ -206,6 +232,9 @@ export default {
       backendOutput: "",
       errorHandled: false,
       processingFastp: false, // Flag to indicate if fastp is being processed
+
+      // Properties for QC settings dialog
+      showQCSettingsDialog: false,
 		};
 	},
 	computed: {
@@ -274,7 +303,7 @@ export default {
       const m = filename.match(
         /(.+?)((?:\.fna|\.fasta|\.fa|\.fq|\.fastq)(?:\.gz)?)$/i
       );
-      
+
       if (m) {
         return {
           base: m[1],  // filename base, e.g. “SRR24315757_1”
