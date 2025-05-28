@@ -154,7 +154,6 @@
             <template v-slot:subtitle>
               <v-textarea
                 variant="outlined"
-                v-if="backendOutput"
                 v-model="backendOutput"
                 label="Command Line Output"
                 rows="15"
@@ -192,13 +191,13 @@ export default {
         // Store job details
         mode: "single-end",
         outFileSuffix: "_out",
-        outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/QC-test",
+        outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test",
         entries: [
           { q1: "", q2: "" }
         ],
         testentries: [
-          { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/QC-test/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/QC-test/SRR24315757_2.fastq" },
-          { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/QC-test/SRR23604821_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/QC-test/SRR23604821_2.fastq" },
+          { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR24315757_2.fastq" },
+          { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_2.fastq" },
         ],
       },
 
@@ -307,6 +306,7 @@ export default {
 
 				// If backend completes successfully and polling hasn't timed out
 				if (this.status === "COMPLETE") {
+          console.log("🚀 Fastp job completed successfully!"); // DEBUG
 					// await this.processResults(false); // Make sure this is called after backend completion
 					// this.handleJobSuccess();
 				}
@@ -332,6 +332,16 @@ export default {
         "_LR";
       
       for (const entry of this.jobDetails.testentries) { // TODO: use jobDetails.entries
+        // 1) reset status & error flag
+        this.status = "RUNNING";
+        this.errorHandled = false;
+        // DEBUG
+        console.log('status:', this.status);
+        console.log('errorhandled:', this.errorHandled);
+        console.log('modetag:', modeTag);
+        console.log('entry:', entry);
+        //
+
         const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
         const batchName = `${base1}${modeTag}`;
         const batchOutDir = `${outDir}/${batchName}`; // TODO: organize code
@@ -360,15 +370,17 @@ export default {
         
         // Return a promise that resolves or rejects based on backend success or failure
         await new Promise((resolve, reject) => {
-          // Run backend process
-          window.electron.runFastp(params);
+          // 1. Remove any old listeners
+          // window.electron.offFastpListeners();
 
           const cleanup = () => {
             window.electron.offFastpListeners();
           };
           
+          // 2. Attach listeners
           window.electron.onFastpOutput((output) => {
             this.backendOutput += output;
+            console.log(output); // DEBUG
             this.$nextTick(() => {
               // Scroll to the bottom
               const textarea = this.$refs.outputTextarea.$el.querySelector("textarea");
@@ -402,6 +414,9 @@ export default {
               reject(new Error("Process was cancelled"));
             }
           });
+
+          // 3. Start backend process
+          window.electron.runFastp(params);
         });
       }
     },
