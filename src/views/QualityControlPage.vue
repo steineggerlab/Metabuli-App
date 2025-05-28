@@ -269,9 +269,12 @@ export default {
       // 1. Extract just the filename, dropping any directory
       const filename = this.extractFilename(filePath);
 
-      // 1. Separate the filename base from its extension
-      // TODO: check which file extensions we support
-      const m = filename.match(/(.+?)(\.(?:fastq|fq)(?:\.gz)?)$/i);
+      // 2. Separate the filename base from its extension
+      // Supported extensions: .fna, .fasta, .fa, .fq, .fastq, and their gzip versions (e.g., .fna.gz)
+      const m = filename.match(
+        /(.+?)((?:\.fna|\.fasta|\.fa|\.fq|\.fastq)(?:\.gz)?)$/i
+      );
+      
       if (m) {
         return {
           base: m[1],  // filename base, e.g. “SRR24315757_1”
