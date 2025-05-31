@@ -155,7 +155,7 @@
 									<v-col cols="6" class="filename-col">
 										<v-chip v-if="jobDetails.database" label color="primary" density="comfortable" class="filename-chip">
 											<v-icon icon="$delete" @click="clearFile('database')" class="mr-1"></v-icon>
-											{{ this.extractFilename(jobDetails.database) }}</v-chip
+											{{ extractFilename(jobDetails.database) }}</v-chip
 										>
 									</v-col>
 								</v-row>
@@ -177,7 +177,7 @@
 									<v-col cols="6" class="filename-col">
 										<v-chip v-if="jobDetails.outdir" label color="primary" density="comfortable" class="filename-chip">
 											<v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
-											{{ this.extractFilename(jobDetails.outdir) }}</v-chip
+											{{ extractFilename(jobDetails.outdir) }}</v-chip
 										>
 									</v-col>
 								</v-row>
@@ -288,6 +288,7 @@
 <script>
 import TSVParser from "@/plugins/tsvParser";
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
+import { extractFilename, stripFileExtension } from "@/plugins/fileUtils.js"; 
 
 export default {
 	name: "NewSearchTab",
@@ -305,12 +306,12 @@ export default {
 				q1: "",
 				q2: "",
 				entries: [
-          { q1: "", q2: "" }
+          { q1: "", q2: "", batchName: "" }
         ],
 				// database: "",
-				database: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/gtdb",
+				database: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/refseq_virus", // TODO: remove hardcoded path
 				// outdir: "",
-				outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR",
+				outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR", // TODO: remove hardcoded path
 				jobid: "",
 				maxram: "",
 			},
@@ -358,14 +359,6 @@ export default {
 						file: true,
 					},
 				},
-				// reducedAA: {
-				//   title: "Reduced AA",
-				//   description:
-				//     "0. Use 20 alphabets or 1. Use 15 alphabets to encode amino acids. Give the same value used for DB creation.",
-				//   parameter: "--reduced-aa", // FIXME: 엥 왜 안돼
-				//   value: "",
-				//   type: "INTEGER",
-				// },
 				accessionLevel: {
 					title: "Accession Level",
 					description: "Set 1 to use accession level classification (0 by default). It is available when the DB is also built with accession level taxonomy.",
@@ -429,7 +422,26 @@ export default {
 		computedHint() {
 			return `${this.jobDetails.jobid}_report.tsv`;
 		},
+		modeTag() {
+      if (this.jobDetails.mode === "paired-end") {
+        return "_PE";
+      } else if (this.jobDetails.mode === "single-end") {
+        return "_SE";
+      } else {
+        return "_LR";
+      }
+    },
 	},
+
+	watch: {
+    // Watch both mode and entries array — update batch names when either changes
+    'jobDetails.mode': 'updateBatchNames',
+    'jobDetails.entries': {
+      handler: 'updateBatchNames',
+      deep: true,
+      immediate: true
+    }
+  },
 
 	methods: {
 		// Button actions for adding/removing entry rows
@@ -488,9 +500,19 @@ export default {
 			// re-validate the form
 			this.$refs.jobForm?.validate();
 		},
-		extractFilename(path) {
-			return path.split("/").pop();
-		},
+		updateBatchNames() {			
+      this.jobDetails.entries.forEach(entry => {
+				if (entry.q1) {
+					const { base } = this.stripFileExtension(entry.q1);
+          entry.batchName = base + this.modeTag;
+        } else {
+					entry.batchName = "";
+        }
+      });
+			console.log(this.jobDetails.entries); // DEBUG: log updated entries
+    },
+		extractFilename,
+		stripFileExtension,
 
 		// Functions handling validation rules
 		requiredRule(value) {
@@ -514,43 +536,6 @@ export default {
 			if (setting.extra?.file) {
 				const filePath = await this.pickFile("directory");
 				setting.value = filePath;
-			}
-		},
-
-		// Start backend job request
-		async startJob() {
-			try {
-				// Start loading dialog
-				this.status = "RUNNING";
-				this.$emit("job-started", false);
-
-				// Start backend request and job polling simultaneously
-				const backendPromise = this.runBackend();
-				const pollingPromise = this.pollJobStatus();
-
-				// Wait for either backend to complete or polling to timeout/fail
-				await Promise.race([backendPromise, pollingPromise]);
-
-				// If backend completes successfully and polling hasn't timed out
-				if (this.status === "COMPLETE") {
-					await this.processResults(false); // Make sure this is called after backend completion
-					this.handleJobSuccess();
-				}
-			} catch (error) {
-				console.error("Error:", error.message); // Single error handling point
-				this.handleJobError(error);
-			} finally {
-				if (this.status !== "COMPLETE") {
-					this.status = "INITIAL";
-				}
-				this.errorHandled = false; // Resets error handled tracking
-				this.backendOutput = ""; // Clear backendOutput
-
-				// Remove any previously attached event listeners
-				window.electron.offBackendRealtimeOutput(); // Custom off method for the event
-				window.electron.offBackendComplete();
-				window.electron.offBackendError();
-				window.electron.offBackendCancelled();
 			}
 		},
 
@@ -590,106 +575,236 @@ export default {
 				// Emit job-completed event: close loading dialog and expose results tab in navigation drawer
 				this.$emit("job-completed", completedJob);
 
-				// Trigger snackbar
-				// this.$emit("trigger-snackbar", "Sample data successfully loaded.", "success", "success", "View", () => {
-				// 	this.$router.push({ name: "ResultsPage" });
-				// });
-
 				// Clear backendOutput
 				this.backendOutput = "";
 			}, 2000); // Simulate a job taking 2 seconds
 		},
 
-		async runBackend() {
-			let params = ["classify"];
+		// Start backend job request
+		async startJob() {
+			try {
+				// Start loading dialog
+				this.status = "RUNNING";
+				this.$emit("job-started", false);
 
-			// Add input
-			if (this.jobDetails.mode === "single-end") {
-				params.push("--seq-mode", 1, this.jobDetails.q1);
-			} else if (this.jobDetails.mode === "paired-end") {
-				params.push(this.jobDetails.q1, this.jobDetails.q2);
-			} else if (this.jobDetails.mode === "long-read") {
-				params.push("--seq-mode", 3, this.jobDetails.q1);
-			}
+				// Start backend request and job polling simultaneously
+				const backendPromise = this.runBackend();
+				const pollingPromise = this.pollJobStatus();
 
-			// Add dbdir, outdir, jobid
-			params.push(this.jobDetails.database, this.jobDetails.outdir, this.jobDetails.jobid);
+				// Wait for either backend to complete or polling to timeout/fail
+				await Promise.race([backendPromise, pollingPromise]);
 
-			// Add max-ram
-			if (this.jobDetails.maxram !== "") {
-				params.push("--max-ram", parseInt(this.jobDetails.maxram));
-			}
-
-			// Add advanced settings
-			for (const key in this.advancedSettings) {
-				let value;
-				const setting = this.advancedSettings[key];
-				if (setting.value !== "" && setting.value !== undefined) {
-					switch (setting.type) {
-						case "INTEGER":
-							value = parseInt(setting.value);
-							break;
-						case "FLOAT":
-							value = parseFloat(setting.value);
-							break;
-						default:
-							value = setting.value;
-					}
-					params.push(setting.parameter, value);
+				// If backend completes successfully and polling hasn't timed out
+				if (this.status === "COMPLETE") {
+					await this.processResults(false); // TODO: move into loop
+					this.handleJobSuccess(); // TODO: move into loop
 				}
+			} catch (error) { // TODO: figure out how to handle errors in the loop (e.g. if one entry fails, the rest should still run)
+				console.error("Error:", error.message); // Single error handling point
+				this.handleJobError(error); // TODO: move into loop
+			} finally {
+				if (this.status !== "COMPLETE") {
+					this.status = "INITIAL";
+				}
+				this.errorHandled = false; // Resets error handled tracking
+				this.backendOutput = ""; // Clear backendOutput
+
+				// Remove any previously attached event listeners
+				window.electron.offBackendRealtimeOutput(); // Custom off method for the event
+				window.electron.offBackendComplete();
+				window.electron.offBackendError();
+				window.electron.offBackendCancelled();
 			}
+		},
 
-			// TEST PARAMS
-			// params = [
-			//   "classify",
-			//   "--seq-mode",
-			//   1,
-			//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq",
-			//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/refseq_virus",
-			//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example",
-			//   "",
-			//   "--max-ram",
-			//   32,
-			// ];
+		async runBackend() {
+			const outDir = this.jobDetails.outdir;
+			const suffix = "_qc"; // TODO
+			const modeTag =
+        this.jobDetails.mode === "paired-end"   ? "_PE"  :
+        this.jobDetails.mode === "single-end"   ? "_SE"  :
+        "_LR";
 
-			console.log("🚀 Job requested:", params); // DEBUG
+			for (const entry of this.jobDetails.entries) {
+				let classifyRead1 = entry.q1;
+				let classifyRead2 = entry.q2;
+				
+				// Extract base from filename for naming (strip file extension)
+				const { base: base1, ext: ext1 } = stripFileExtension(entry.q1);
+				let base2 = "", ext2 = "";
+				if (this.jobDetails.mode === "paired-end" && entry.q2) {
+					({ base: base2, ext: ext2 } = stripFileExtension(entry.q2));
+				}
 
-			// Return a promise that resolves or rejects based on backend success or failure
-			return new Promise((resolve, reject) => {
-				// Run backend process
-				window.electron.runBackend(params);
+				// Create directory for QC batch output
+				const batchName = `${base1}${modeTag}`;
+				const batchOutDir = `${outDir}/${this.jobDetails.jobid}/${batchName}`;
+				await window.electron.mkdir(batchOutDir);
 
-				// Real-time output
-				window.electron.onBackendRealtimeOutput((output) => {
-					this.backendOutput += output; // Append output in real-time
-					this.$emit("backend-realtime-output", this.backendOutput);
-					this.status = "RUNNING"; // Keep the status as RUNNING
-				});
-
-				window.electron.onBackendComplete((message) => {
-					if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
-					this.backendOutput += message;
-					this.status = "COMPLETE"; // Signal job polling
-					resolve(); // Resolve the backend promise
-				});
-
-				window.electron.onBackendError((error) => {
-					if (!this.errorHandled) {
-						const message = "\nJob processing was terminated due to an error.";
-						this.backendOutput += message;
-						this.status = "ERROR"; // Signal job polling to stop
-						reject(new Error("Backend execution error:", error));
+				if (this.jobDetails.enableQC) {
+					// Build fastp parameters
+					const qcParams = ["fastp", 
+					"-h", `${batchOutDir}/${batchName}.html`,
+					"-j", `${batchOutDir}/${batchName}.json`,
+					// Always include read 1 in/out parameters
+					"-i", entry.q1,
+					"-o", `${batchOutDir}/${base1}${suffix}${ext1}`,
+					];
+					
+					// Add read 2 input/output parameters if paired-end mode
+					if (this.jobDetails.mode === "paired-end" && entry.q2) {
+						qcParams.push(
+							"-I", entry.q2,
+							"-O", `${batchOutDir}/${base2}${suffix}${ext2}`, // Output filepath for Read 2
+						);
 					}
+
+					console.log("🚀 fastp job requested:", qcParams); // DEBUG
+
+					// Return a promise that resolves or rejects based on backend success or failure
+					await new Promise((resolve, reject) => {
+						const cleanup = () => {
+							window.electron.offFastpListeners();
+						};
+						
+						// 2. Attach listeners
+						window.electron.onFastpOutput((output) => {
+							this.backendOutput += output;
+              this.$emit("backend-realtime-output", this.backendOutput);
+							console.log(output); // DEBUG
+							this.status = "RUNNING"; // Keep the status as RUNNING
+						});
+						window.electron.onFastpError((err) => {
+							if (!this.errorHandled) {
+								const message = "\nError:\n" + err.toString();
+								this.backendOutput += message;
+								this.status = "ERROR"; // Signal job polling to stop
+								cleanup(); // Cleanup listeners
+								reject(new Error("Fastp execution error:", err));
+							}
+						});
+						window.electron.onFastpComplete((msg) => {
+							if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
+							this.backendOutput += `${msg}\n`;
+							this.status = "COMPLETE";
+							cleanup(); // Cleanup listeners
+							resolve();
+						});
+						
+						window.electron.onFastpCancelled((message) => {
+							if (this.status !== "TIMEOUT" && !this.errorHandled) {
+								this.backendOutput += `${message}\n`;
+								this.status = "CANCELLED";
+								cleanup(); // Cleanup listeners
+								reject(new Error("Process was cancelled"));
+							}
+						});
+
+						// 3. Start backend process
+						window.electron.runFastp(qcParams);
+					});
+
+					// Set classifyRead1 and classifyRead2 to the QC output files
+					classifyRead1 = `${batchOutDir}/${base1}${suffix}${ext1}`;
+					if (this.jobDetails.mode === "paired-end" && entry.q2) {
+						classifyRead2 = `${batchOutDir}/${base2}${suffix}${ext2}`;
+					} else {
+						classifyRead2 = null; // No Read 2 in single-end mode
+					}
+				} // END if enableQC
+
+				// ──────────── Now run “classify” on whatever classifyRead1/2 were set to ────────────
+				const classifyParams = ["classify"];
+	
+				// Add input files based on mode
+				if (this.jobDetails.mode === "single-end") {
+					classifyParams.push("--seq-mode", 1, classifyRead1);
+				} else if (this.jobDetails.mode === "paired-end") {
+					classifyParams.push(classifyRead1, classifyRead2);
+				} else if (this.jobDetails.mode === "long-read") {
+					classifyParams.push("--seq-mode", 3, classifyRead1);
+				}
+
+				// Add database, outdir, jobid
+				classifyParams.push(
+					this.jobDetails.database, 
+					batchOutDir,
+					// this.jobDetails.outdir,
+					this.jobDetails.jobid
+				);
+
+				// Add max-ram
+				if (this.jobDetails.maxram !== "") {
+					classifyParams.push("--max-ram", parseInt(this.jobDetails.maxram));
+				}
+				
+				// Add advanced settings
+				for (const key in this.advancedSettings) {
+					const setting = this.advancedSettings[key];
+					if (setting.value !== "" && setting.value !== undefined) {
+						let value;
+						if (setting.type === "INTEGER") value = parseInt(setting.value);
+						else if (setting.type === "FLOAT") value = parseFloat(setting.value);
+						else value = setting.value;
+
+						classifyParams.push(setting.parameter, value);
+					}
+				}
+				
+				// TEST PARAMS
+				// params = [
+				//   "classify",
+				//   "--seq-mode",
+				//   1,
+				//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq",
+				//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/refseq_virus",
+				//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example",
+				//   "",
+				//   "--max-ram",
+				//   32,
+				// ];
+
+				console.log("🚀 Job requested:", classifyParams); // DEBUG
+
+				// Return a promise that resolves or rejects based on backend success or failure
+				return new Promise((resolve, reject) => {
+					// Real-time output
+					window.electron.onBackendRealtimeOutput((output) => {
+						this.backendOutput += output; // Append output in real-time
+						this.$emit("backend-realtime-output", this.backendOutput);
+						this.status = "RUNNING"; // Keep the status as RUNNING
+					});
+					
+					window.electron.onBackendComplete((message) => {
+						if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
+						this.backendOutput += message;
+						this.status = "COMPLETE"; // Signal job polling
+						resolve(); // Resolve the backend promise
+					});
+					
+					window.electron.onBackendError((error) => {
+						if (!this.errorHandled) {
+							const message = "\nJob processing was terminated due to an error.";
+							this.backendOutput += message;
+							this.status = "ERROR"; // Signal job polling to stop
+							reject(new Error("Backend execution error:", error));
+						}
+					});
+					
+					window.electron.onBackendCancelled((message) => {
+						if (this.status !== "TIMEOUT" && !this.errorHandled) {
+							this.backendOutput += message;
+							this.status = "CANCELLED";
+							reject(new Error("Process was cancelled"));
+						}
+					});
+
+					// Run backend process
+					window.electron.runBackend(classifyParams);
+
 				});
 
-				window.electron.onBackendCancelled((message) => {
-					if (this.status !== "TIMEOUT" && !this.errorHandled) {
-						this.backendOutput += message;
-						this.status = "CANCELLED";
-						reject(new Error("Process was cancelled"));
-					}
-				});
-			});
+			}
 		},
 
 		// Function to track job status + process results + trigger snackbar
@@ -712,7 +827,7 @@ export default {
 		},
 
 		// Function for processing results (shared for both tabs)
-		async processResults(isSample) {
+		async processResults(isSample) { // TODO: refactor to use the last batch of the entries
 			let reportFilePath;
 			let kronaFilePath;
 
@@ -825,6 +940,7 @@ export default {
 			window.electron.cancelBackend();
 		},
 
+		// Other helper functions
 		getCurrentDateTime() {
 			const now = new Date();
 
