@@ -148,7 +148,8 @@
                     </v-row>
                   </v-col>
                   </v-row>
-  
+                  
+                  <!-- Run QC Button -->
                   <v-btn :disabled="!isJobFormValid" @click="startJob" color="primary">Run QC</v-btn>
   
               </v-container>
@@ -213,6 +214,7 @@ export default {
     return {
       isJobFormValid: false,
       jobDetails: {
+      // TODO remove test entries
         // Store job details
         mode: "single-end",
         outFileSuffix: "_out",
@@ -243,10 +245,16 @@ export default {
 		},
 	},
 	methods: {
-    // Functions for handling files
+    // Button actions for adding/removing entry rows
     addEntry() {
       this.jobDetails.entries.push({ q1: "", q2: "" });
     },
+    removeEntry(index) {
+      if (this.jobDetails.entries.length > 1) {
+        this.jobDetails.entries.splice(index, 1);
+      }
+    },
+    // Functions for handling files
     selectDynamicFile(index, field) {
       this.selectFile(null, "file").then((filePath) => {
         if (filePath) {
@@ -256,11 +264,6 @@ export default {
     },
     clearDynamicFile(index, field) {
       this.jobDetails.entries[index][field] = "";
-    },
-    removeEntry(index) {
-      if (this.jobDetails.entries.length > 1) {
-        this.jobDetails.entries.splice(index, 1);
-      }
     },
 
 		async selectFile(field, type) {
