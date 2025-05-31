@@ -303,8 +303,6 @@ export default {
 				// Store job details including file paths
 				mode: "single-end",
 				enableQC: false,
-				q1: "",
-				q2: "",
 				entries: [
           { q1: "", q2: "", batchName: "" }
         ],
@@ -886,14 +884,6 @@ export default {
 
 			// Store latest job in local storage for results rendering
 			localStorage.setItem("processedResults", JSON.stringify(completedJob));
-
-			// Store completed job in local storage
-			// console.log("newrun completedJob:", completedJob); // DEBUG
-
-			// Trigger snackbar
-			// this.$emit("trigger-snackbar", "Job successfully completed. Check the results tab.", "success", "success", "View", () => {
-			// 	this.$router.push({ name: "ResultsPage" });
-			// });
 
 			// Emit job-completed event: close loading dialog and expose results tab in navigation drawer
 			this.$emit("job-completed", completedJob);
