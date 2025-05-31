@@ -28,7 +28,7 @@
 							</v-col>
 
 							<v-col cols="1">
-								<v-switch v-model="jobDetails.fastp" color="primary" hide-details="true"></v-switch>
+								<v-switch v-model="jobDetails.enableQC" color="primary" hide-details="true"></v-switch>
 							</v-col>
 							<v-col>
 								<QCSettingsDialog v-model="showQCSettingsDialog" class="d-flex justify-start">
@@ -72,36 +72,54 @@
 							</v-col>
 
 							<v-col cols="9" class="search-files">
-								<!-- Q1 File -->
-								<v-row>
-									<v-col cols="6">
-										<v-btn @click="selectFile('q1', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-											>Read 1 File</v-btn
-										>
-										<v-text-field v-model="jobDetails.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
+								<v-row v-for="(entry, index) in jobDetails.entries" :key="index">
+									<!-- Read 1 -->
+									<v-col cols="5">
+										<div v-if="!entry.q1">
+											<v-btn @click="pickFile('file', 'q1', index)" prepend-icon="$file" density="comfortable" size="default"
+												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
+												Read 1 File
+											</v-btn>
+										</div>
+										<v-chip v-else label color="primary" density="comfortable" class="filename-chip">
+											<v-icon icon="$delete" @click="clearFile('q1', index)" class="mr-1"></v-icon>
+											{{ extractFilename(entry.q1) }}
+										</v-chip>
+										<v-text-field v-model="entry.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
 									</v-col>
-									<v-col cols="6" class="filename-col">
-										<v-chip v-if="jobDetails.q1" label color="primary" density="comfortable" class="filename-chip">
-											<v-icon icon="$delete" @click="clearFile('q1')" class="mr-1"></v-icon>
-											{{ this.extractFilename(jobDetails.q1) }}</v-chip
+	
+									<!-- Read 2 -->
+									<v-col cols="5" v-if="jobDetails.mode === 'paired-end'">
+										<div v-if="!entry.q2">
+											<v-btn  @click="pickFile('file', 'q2', index)" prepend-icon="$file" density="comfortable" size="default"
+												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
+												Read 2 File
+											</v-btn>
+										</div>
+										<v-chip v-else label color="primary" density="comfortable" class="filename-chip">
+											<v-icon icon="$delete" @click="clearFile('q2', index)" class="mr-1"></v-icon>
+											{{ extractFilename(entry.q2) }}
+										</v-chip>
+										<v-text-field v-model="entry.q2" :rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]" style="display: none"></v-text-field>
+									</v-col>
+
+									<!-- Remove Row Button -->
+									<v-col cols="1" v-if="index > 0">
+										<v-btn
+											variant="text"
+											icon="$checkboxIndeterminate"
+											size="small"
+											density="compact"
+											@click="removeEntry(index)"
 										>
+										</v-btn>
 									</v-col>
 								</v-row>
 
-								<!-- Q2 File -->
-								<v-row v-if="jobDetails.mode === 'paired-end'">
-									<v-col cols="6">
-										<v-btn @click="selectFile('q2', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-											>Read 2 File</v-btn
-										>
-										<v-text-field v-model="jobDetails.q2" :rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]" style="display: none"></v-text-field>
-									</v-col>
-
-									<v-col cols="6" class="filename-col">
-										<v-chip v-if="jobDetails.q2" label color="primary" density="comfortable" class="filename-chip">
-											<v-icon icon="$delete" @click="clearFile('q2')" class="mr-1"></v-icon>
-											{{ this.extractFilename(jobDetails.q2) }}</v-chip
-										>
+								<!-- Add Entry Button -->
+								<v-row>
+									<v-col cols="12">
+										<v-btn variant="text" prepend-icon="$plusBox" @click="addEntry">Add Entry</v-btn>
 									</v-col>
 								</v-row>
 
@@ -110,7 +128,7 @@
 									<v-col cols="6">
 										<div class="d-flex flex-column align-center mb-0 gc-3">
 											<v-btn
-												@click="selectFile('database', 'directory')"
+												@click="pickFile('directory', 'database')"
 												prepend-icon="$folder"
 												density="comfortable"
 												size="default"
@@ -146,7 +164,7 @@
 								<v-row>
 									<v-col cols="6">
 										<v-btn
-											@click="selectFile('outdir', 'directory')"
+											@click="pickFile('directory', 'outdir')"
 											prepend-icon="$folder"
 											density="comfortable"
 											size="default"
@@ -283,11 +301,16 @@ export default {
 			jobDetails: {
 				// Store job details including file paths
 				mode: "single-end",
-				fastp: false,
+				enableQC: false,
 				q1: "",
 				q2: "",
-				database: "",
-				outdir: "",
+				entries: [
+          { q1: "", q2: "" }
+        ],
+				// database: "",
+				database: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/gtdb",
+				// outdir: "",
+				outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR",
 				jobid: "",
 				maxram: "",
 			},
@@ -409,36 +432,64 @@ export default {
 	},
 
 	methods: {
+		// Button actions for adding/removing entry rows
+		addEntry() {
+			this.jobDetails.entries.push({ q1: "", q2: "" });
+    },
+		removeEntry(index) {
+			if (this.jobDetails.entries.length > 1) {
+				this.jobDetails.entries.splice(index, 1);
+      }
+    },
 		// Functions for handling files
-		async selectFile(field, type) {
-			// FIXME: unify with UPLOAD REPORT TAB file selector function
-			if (window.electron) {
-				try {
-					const options = {
-						properties: type === "file" ? ["openFile"] : ["openDirectory"],
-					};
-					const filePaths = await window.electron.openFileDialog(options);
-					if (filePaths && filePaths.length > 0) {
-						if (!field) {
-							return filePaths[0];
-						}
-						this.jobDetails[field] = filePaths[0];
-					}
-				} catch (error) {
-					console.error("Error selecting file:", error); // DEBUG
-					this.$emit("trigger-snackbar", `File selection error: ${error}`, "error", "fileAlert", "Dismiss");
-				}
-			} else {
-				console.error("File dialog is not supported in the web environment."); // DEBUG
+		async pickFile(type, field = null, index = null) {
+			if (!window.electron) {
 				this.$emit("trigger-snackbar", "File dialog is not supported in the web environment.", "error", "warning", "Dismiss");
+				return;
 			}
+
+			try {
+				const options = {
+					properties: type === "file" ? ["openFile"] : ["openDirectory"],
+				};
+				const filePaths = await window.electron.openFileDialog(options);
+				if (!filePaths?.length) return;
+
+				const filePath = filePaths[0];
+				if (index !== null && field) {
+					// row entry
+					this.jobDetails.entries[index][field] = filePath;
+				} else if (field) {
+					// top‐level field
+					this.jobDetails[field] = filePath;
+				} else {
+					// no target field → return for ad-hoc use
+					return filePath;
+				}
+			} catch (err) {
+				console.error("File selection error:", err);
+				this.$emit("trigger-snackbar", `File selection error: ${err}`, "error", "fileAlert", "Dismiss");
+			} finally {
+				console.log(this.jobDetails); // DEBUG: log jobDetails after file selection
+				// re-validate the form
+				this.$refs.jobForm?.validate(); // TODO: do i need this
+		
+			}
+		},
+		clearFile(field, index = null) {
+			if (index !== null) {
+				// clear a row entry
+				this.jobDetails.entries[index][field] = "";
+			} else {
+				// clear a top-level field
+				this.jobDetails[field] = null;
+			}
+			console.log(this.jobDetails); // DEBUG: log jobDetails after file selection
+			// re-validate the form
+			this.$refs.jobForm?.validate();
 		},
 		extractFilename(path) {
 			return path.split("/").pop();
-		},
-		clearFile(field) {
-			this.jobDetails[field] = null;
-			this.$refs.jobForm.validate();
 		},
 
 		// Functions handling validation rules
@@ -461,7 +512,7 @@ export default {
 		},
 		async handleAdvancedSettingsTextFieldClick(setting) {
 			if (setting.extra?.file) {
-				const filePath = await this.selectFile(null, "directory");
+				const filePath = await this.pickFile("directory");
 				setting.value = filePath;
 			}
 		},
