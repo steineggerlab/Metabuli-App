@@ -49,6 +49,10 @@ module.exports = defineConfig({
 						to: "bin",
 						filter: ["**/*"],
 					},
+					{
+						from: "README.md",
+						to: "README.md",
+					},
 				],
 
 				// // Global artifactName for all platforms

@@ -3,6 +3,7 @@ import SearchPage from '../views/SearchPage.vue';
 import CustomDatabasePage from "../views/CustomDatabasePage.vue";
 import ResultsPage from '../views/ResultsPage.vue';
 import HistoryPage from '@/views/HistoryPage.vue';
+import QualityControlPage from '@/views/QualityControlPage.vue';
 
 const routes = [
 	{
@@ -30,6 +31,11 @@ const routes = [
 		name: "HistoryPage",
 		component: HistoryPage,
 	},
+	{
+		path: "/quality-control",
+		name: "QualityControlPage",
+		component: QualityControlPage,
+	}
 ];
 
 const router = createRouter({
