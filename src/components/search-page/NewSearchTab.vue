@@ -7,17 +7,41 @@
 				<div class="w-66 search-required-fields">
 					<v-container>
 						<!-- End Type (single-end, paired-end, long-read) -->
-						<v-row>
+						<v-row align="center">
 							<v-col cols="3">
 								<v-list-subheader>Mode</v-list-subheader>
 							</v-col>
 
 							<v-col>
-								<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" divided mandatory>
-									<v-btn value="single-end" height="30" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
-									<v-btn value="paired-end" height="30" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
-									<v-btn value="long-read" height="30" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
+								<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" density="compact" divided mandatory>
+									<v-btn value="single-end" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
+									<v-btn value="paired-end" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
+									<v-btn value="long-read" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
 								</v-btn-toggle>
+							</v-col>
+						</v-row>
+
+						<!-- Fastp Toggle Switch -->
+						<v-row align="center">
+							<v-col cols="3">
+								<v-list-subheader>Enable Quality Control</v-list-subheader>
+							</v-col>
+
+							<v-col cols="1">
+								<v-switch v-model="jobDetails.enableQC" color="primary" hide-details="true"></v-switch>
+							</v-col>
+							<v-col>
+								<QCSettingsDialog v-model="showQCSettingsDialog" class="d-flex justify-start">
+                    <template v-slot:activator="{ props }">
+                      <v-btn 
+                        v-bind="props" 
+                        variant="text" 
+                        size="small" 
+                        prepend-icon="$tune" 
+                        color="primary"
+                        >Settings</v-btn>
+									</template>
+								</QCSettingsDialog>
 							</v-col>
 						</v-row>
 
@@ -48,36 +72,54 @@
 							</v-col>
 
 							<v-col cols="9" class="search-files">
-								<!-- Q1 File -->
-								<v-row>
-									<v-col cols="6">
-										<v-btn @click="selectFile('q1', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-											>Read 1 File</v-btn
-										>
-										<v-text-field v-model="jobDetails.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
+								<v-row v-for="(entry, index) in jobDetails.entries" :key="index">
+									<!-- Read 1 -->
+									<v-col cols="5">
+										<div v-if="!entry.q1">
+											<v-btn @click="pickFile('file', 'q1', index)" prepend-icon="$file" density="comfortable" size="default"
+												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
+												Read 1 File
+											</v-btn>
+										</div>
+										<v-chip v-else label color="primary" density="comfortable" class="filename-chip">
+											<v-icon icon="$delete" @click="clearFile('q1', index)" class="mr-1"></v-icon>
+											{{ extractFilename(entry.q1) }}
+										</v-chip>
+										<v-text-field v-model="entry.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
 									</v-col>
-									<v-col cols="6" class="filename-col">
-										<v-chip v-if="jobDetails.q1" label color="primary" density="comfortable" class="filename-chip">
-											<v-icon icon="$delete" @click="clearFile('q1')" class="mr-1"></v-icon>
-											{{ this.extractFilename(jobDetails.q1) }}</v-chip
+	
+									<!-- Read 2 -->
+									<v-col cols="5" v-if="jobDetails.mode === 'paired-end'">
+										<div v-if="!entry.q2">
+											<v-btn  @click="pickFile('file', 'q2', index)" prepend-icon="$file" density="comfortable" size="default"
+												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
+												Read 2 File
+											</v-btn>
+										</div>
+										<v-chip v-else label color="primary" density="comfortable" class="filename-chip">
+											<v-icon icon="$delete" @click="clearFile('q2', index)" class="mr-1"></v-icon>
+											{{ extractFilename(entry.q2) }}
+										</v-chip>
+										<v-text-field v-model="entry.q2" :rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]" style="display: none"></v-text-field>
+									</v-col>
+
+									<!-- Remove Row Button -->
+									<v-col cols="1" v-if="index > 0">
+										<v-btn
+											variant="text"
+											icon="$checkboxIndeterminate"
+											size="small"
+											density="compact"
+											@click="removeEntry(index)"
 										>
+										</v-btn>
 									</v-col>
 								</v-row>
 
-								<!-- Q2 File -->
-								<v-row v-if="jobDetails.mode === 'paired-end'">
-									<v-col cols="6">
-										<v-btn @click="selectFile('q2', 'file')" prepend-icon="$file" density="comfortable" size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-											>Read 2 File</v-btn
-										>
-										<v-text-field v-model="jobDetails.q2" :rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]" style="display: none"></v-text-field>
-									</v-col>
-
-									<v-col cols="6" class="filename-col">
-										<v-chip v-if="jobDetails.q2" label color="primary" density="comfortable" class="filename-chip">
-											<v-icon icon="$delete" @click="clearFile('q2')" class="mr-1"></v-icon>
-											{{ this.extractFilename(jobDetails.q2) }}</v-chip
-										>
+								<!-- Add Entry Button -->
+								<v-row>
+									<v-col cols="12">
+										<v-btn variant="text" prepend-icon="$plusBox" @click="addEntry">Add Entry</v-btn>
 									</v-col>
 								</v-row>
 
@@ -86,7 +128,7 @@
 									<v-col cols="6">
 										<div class="d-flex flex-column align-center mb-0 gc-3">
 											<v-btn
-												@click="selectFile('database', 'directory')"
+												@click="pickFile('directory', 'database')"
 												prepend-icon="$folder"
 												density="comfortable"
 												size="default"
@@ -113,7 +155,7 @@
 									<v-col cols="6" class="filename-col">
 										<v-chip v-if="jobDetails.database" label color="primary" density="comfortable" class="filename-chip">
 											<v-icon icon="$delete" @click="clearFile('database')" class="mr-1"></v-icon>
-											{{ this.extractFilename(jobDetails.database) }}</v-chip
+											{{ extractFilename(jobDetails.database) }}</v-chip
 										>
 									</v-col>
 								</v-row>
@@ -122,7 +164,7 @@
 								<v-row>
 									<v-col cols="6">
 										<v-btn
-											@click="selectFile('outdir', 'directory')"
+											@click="pickFile('directory', 'outdir')"
 											prepend-icon="$folder"
 											density="comfortable"
 											size="default"
@@ -135,7 +177,7 @@
 									<v-col cols="6" class="filename-col">
 										<v-chip v-if="jobDetails.outdir" label color="primary" density="comfortable" class="filename-chip">
 											<v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
-											{{ this.extractFilename(jobDetails.outdir) }}</v-chip
+											{{ extractFilename(jobDetails.outdir) }}</v-chip
 										>
 									</v-col>
 								</v-row>
@@ -162,7 +204,15 @@
 					</v-container>
 				</div>
 
-				<v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img>
+				<v-divider vertical></v-divider>
+
+				<!-- Output Format -->
+				<v-card class="w-33" variant="text" >
+					<v-card-title class="text-button font-weight-bold">Output Format</v-card-title>
+					<v-card-subtitle>Lorem ipsum</v-card-subtitle>
+				</v-card>
+
+				<!-- <v-img class="w-33 marv-metabuli-opaque" :width="200" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img> -->
 			</div>
 
 			<!-- ADVANCED SETTINGS -->
@@ -237,21 +287,30 @@
 
 <script>
 import TSVParser from "@/plugins/tsvParser";
+import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
+import { extractFilename, stripFileExtension } from "@/plugins/fileUtils.js"; 
 
 export default {
 	name: "NewSearchTab",
-
+	components: {
+		QCSettingsDialog,
+	},
 	data() {
 		return {
 			// Properties for Run New Search tab
 			isJobFormValid: false,
 			jobDetails: {
 				// Store job details including file paths
-				mode: "single-end",
-				q1: "",
-				q2: "",
-				database: "",
-				outdir: "",
+				mode: "single-end", // "single-end" | "paired-end" | "long-read"
+				enableQC: false,
+				entries: [
+					{ q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq", batchName: "" }, // TODO: remove hardcoded path
+					{ q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq", batchName: "" }, // TODO: remove hardcoded path
+        ],
+				// database: "",
+				database: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/refseq_virus", // TODO: remove hardcoded path
+				// outdir: "",
+				outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR", // TODO: remove hardcoded path
 				jobid: "",
 				maxram: "",
 			},
@@ -299,14 +358,6 @@ export default {
 						file: true,
 					},
 				},
-				// reducedAA: {
-				//   title: "Reduced AA",
-				//   description:
-				//     "0. Use 20 alphabets or 1. Use 15 alphabets to encode amino acids. Give the same value used for DB creation.",
-				//   parameter: "--reduced-aa", // FIXME: 엥 왜 안돼
-				//   value: "",
-				//   type: "INTEGER",
-				// },
 				accessionLevel: {
 					title: "Accession Level",
 					description: "Set 1 to use accession level classification (0 by default). It is available when the DB is also built with accession level taxonomy.",
@@ -358,7 +409,7 @@ export default {
 			}, // FIXME: move requiredRule to here
 
 			// Properties for job processing status, response, and results
-			status: "INITIAL",
+			status: "INITIAL",// "INITIAL" | "RUNNING" | "COMPLETE" | "ERROR" | "CANCELLED" | "TIMEOUT"
 			results: "",
 			backendOutput: "",
 			processedResults: null,
@@ -370,40 +421,94 @@ export default {
 		computedHint() {
 			return `${this.jobDetails.jobid}_report.tsv`;
 		},
+		modeTag() {
+      if (this.jobDetails.mode === "paired-end") {
+        return "_PE";
+      } else if (this.jobDetails.mode === "single-end") {
+        return "_SE";
+      } else {
+        return "_LR";
+      }
+    },
 	},
 
+	watch: {
+    // Watch both mode and entries array — update batch names when either changes
+    'jobDetails.mode': 'updateBatchNames',
+    'jobDetails.entries': {
+      handler: 'updateBatchNames',
+      deep: true,
+      immediate: true
+    }
+  },
+
 	methods: {
+		// Button actions for adding/removing entry rows
+		addEntry() {
+			this.jobDetails.entries.push({ q1: "", q2: "" });
+    },
+		removeEntry(index) {
+			if (this.jobDetails.entries.length > 1) {
+				this.jobDetails.entries.splice(index, 1);
+      }
+    },
 		// Functions for handling files
-		async selectFile(field, type) {
-			// FIXME: unify with UPLOAD REPORT TAB file selector function
-			if (window.electron) {
-				try {
-					const options = {
-						properties: type === "file" ? ["openFile"] : ["openDirectory"],
-					};
-					const filePaths = await window.electron.openFileDialog(options);
-					if (filePaths && filePaths.length > 0) {
-						if (!field) {
-							return filePaths[0];
-						}
-						this.jobDetails[field] = filePaths[0];
-					}
-				} catch (error) {
-					console.error("Error selecting file:", error); // DEBUG
-					this.$emit("trigger-snackbar", `File selection error: ${error}`, "error", "fileAlert", "Dismiss");
-				}
-			} else {
-				console.error("File dialog is not supported in the web environment."); // DEBUG
+		async pickFile(type, field = null, index = null) {
+			if (!window.electron) {
 				this.$emit("trigger-snackbar", "File dialog is not supported in the web environment.", "error", "warning", "Dismiss");
+				return;
+			}
+
+			try {
+				const options = {
+					properties: type === "file" ? ["openFile"] : ["openDirectory"],
+				};
+				const filePaths = await window.electron.openFileDialog(options);
+				if (!filePaths?.length) return;
+
+				const filePath = filePaths[0];
+				if (index !== null && field) {
+					// row entry
+					this.jobDetails.entries[index][field] = filePath;
+				} else if (field) {
+					// top‐level field
+					this.jobDetails[field] = filePath;
+				} else {
+					// no target field → return for ad-hoc use
+					return filePath;
+				}
+			} catch (err) {
+				console.error("File selection error:", err);
+				this.$emit("trigger-snackbar", `File selection error: ${err}`, "error", "fileAlert", "Dismiss");
+			} finally {
+				// re-validate the form
+				this.$refs.jobForm?.validate(); // TODO: do i need this
+		
 			}
 		},
-		extractFilename(path) {
-			return path.split("/").pop();
+		clearFile(field, index = null) {
+			if (index !== null) {
+				// clear a row entry
+				this.jobDetails.entries[index][field] = "";
+			} else {
+				// clear a top-level field
+				this.jobDetails[field] = null;
+			}
+			// re-validate the form
+			this.$refs.jobForm?.validate();
 		},
-		clearFile(field) {
-			this.jobDetails[field] = null;
-			this.$refs.jobForm.validate();
-		},
+		updateBatchNames() {			
+      this.jobDetails.entries.forEach(entry => {
+				if (entry.q1) {
+					const { base } = this.stripFileExtension(entry.q1);
+          entry.batchName = base + this.modeTag;
+        } else {
+					entry.batchName = "";
+        }
+      });
+    },
+		extractFilename,
+		stripFileExtension,
 
 		// Functions handling validation rules
 		requiredRule(value) {
@@ -425,45 +530,8 @@ export default {
 		},
 		async handleAdvancedSettingsTextFieldClick(setting) {
 			if (setting.extra?.file) {
-				const filePath = await this.selectFile(null, "directory");
+				const filePath = await this.pickFile("directory");
 				setting.value = filePath;
-			}
-		},
-
-		// Start backend job request
-		async startJob() {
-			try {
-				// Start loading dialog
-				this.status = "RUNNING";
-				this.$emit("job-started", false);
-
-				// Start backend request and job polling simultaneously
-				const backendPromise = this.runBackend();
-				const pollingPromise = this.pollJobStatus();
-
-				// Wait for either backend to complete or polling to timeout/fail
-				await Promise.race([backendPromise, pollingPromise]);
-
-				// If backend completes successfully and polling hasn't timed out
-				if (this.status === "COMPLETE") {
-					await this.processResults(false); // Make sure this is called after backend completion
-					this.handleJobSuccess();
-				}
-			} catch (error) {
-				console.error("Error:", error.message); // Single error handling point
-				this.handleJobError(error);
-			} finally {
-				if (this.status !== "COMPLETE") {
-					this.status = "INITIAL";
-				}
-				this.errorHandled = false; // Resets error handled tracking
-				this.backendOutput = ""; // Clear backendOutput
-
-				// Remove any previously attached event listeners
-				window.electron.offBackendRealtimeOutput(); // Custom off method for the event
-				window.electron.offBackendComplete();
-				window.electron.offBackendError();
-				window.electron.offBackendCancelled();
 			}
 		},
 
@@ -503,129 +571,238 @@ export default {
 				// Emit job-completed event: close loading dialog and expose results tab in navigation drawer
 				this.$emit("job-completed", completedJob);
 
-				// Trigger snackbar
-				// this.$emit("trigger-snackbar", "Sample data successfully loaded.", "success", "success", "View", () => {
-				// 	this.$router.push({ name: "ResultsPage" });
-				// });
-
 				// Clear backendOutput
 				this.backendOutput = "";
 			}, 2000); // Simulate a job taking 2 seconds
 		},
 
-		async runBackend() {
-			let params = ["classify"];
+		// Main job processing function
+		async startJob() {
+			// Reset job state
+      this.status = "INITIAL";
+      this.errorHandled = false;
+      this.backendOutput = "";
 
-			// Add input
-			if (this.jobDetails.mode === "single-end") {
-				params.push("--seq-mode", 1, this.jobDetails.q1);
-			} else if (this.jobDetails.mode === "paired-end") {
-				params.push(this.jobDetails.q1, this.jobDetails.q2);
-			} else if (this.jobDetails.mode === "long-read") {
-				params.push("--seq-mode", 3, this.jobDetails.q1);
-			}
+			// Loop over each entry and run the job for each
+			for (const entry of this.jobDetails.entries) {
+				// Before each batch, reset status & backend‐output
+        this.status = "RUNNING";
+        this.errorHandled = false;
+        this.backendOutput = "";
+				this.$emit("job-started", false);
+				
+				try {
+					// 1) Run that one batch's backend process
+					await this.runOneEntry(entry);
+	
+					// 2) Poll until it flips to COMPLETE/ERROR (or times out)
+					await this.pollJobStatus();
 
-			// Add dbdir, outdir, jobid
-			params.push(this.jobDetails.database, this.jobDetails.outdir, this.jobDetails.jobid);
-
-			// Add max-ram
-			if (this.jobDetails.maxram !== "") {
-				params.push("--max-ram", parseInt(this.jobDetails.maxram));
-			}
-
-			// Add advanced settings
-			for (const key in this.advancedSettings) {
-				let value;
-				const setting = this.advancedSettings[key];
-				if (setting.value !== "" && setting.value !== undefined) {
-					switch (setting.type) {
-						case "INTEGER":
-							value = parseInt(setting.value);
-							break;
-						case "FLOAT":
-							value = parseFloat(setting.value);
-							break;
-						default:
-							value = setting.value;
-					}
-					params.push(setting.parameter, value);
+					// 3) If it succeeded, handle results for that batch:
+          if (this.status === "COMPLETE") {
+            await this.processResults(false, entry); // you can pass an argument pointing at batch folder if needed
+            this.handleBatchSuccess(entry);
+          }
+				} catch (error) { // TODO: figure out how to handle errors in the loop (e.g. if one entry fails, the rest should still run)
+					console.error(`Batch ${entry.batchName} failed:`, error);
+					// console.error("Error:", error.message); // Single error handling point
+					this.handleJobError(error); // TODO: move into loop
+				} finally {
+					// Save log file
+					window.electron.writeFile(`${this.jobDetails.outdir}/${this.jobDetails.jobid}/${entry.batchName}/${this.jobDetails.jobid}_log.txt`, this.backendOutput).catch(console.error);
 				}
 			}
 
-			// TEST PARAMS
-			// params = [
-			//   "classify",
-			//   "--seq-mode",
-			//   1,
-			//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq",
-			//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/refseq_virus",
-			//   "/Users/sunnylee/Documents/Steinegger Lab/metabuli_example",
-			//   "",
-			//   "--max-ram",
-			//   32,
-			// ];
-
-			console.log("🚀 Job requested:", params); // DEBUG
-
-			// Return a promise that resolves or rejects based on backend success or failure
-			return new Promise((resolve, reject) => {
-				// Run backend process
-				window.electron.runBackend(params);
-
-				// Real-time output
-				window.electron.onBackendRealtimeOutput((output) => {
-					this.backendOutput += output; // Append output in real-time
-					this.$emit("backend-realtime-output", this.backendOutput);
-					this.status = "RUNNING"; // Keep the status as RUNNING
-				});
-
-				window.electron.onBackendComplete((message) => {
-					if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
-					this.backendOutput += message;
-					this.status = "COMPLETE"; // Signal job polling
-					resolve(); // Resolve the backend promise
-				});
-
-				window.electron.onBackendError((error) => {
-					if (!this.errorHandled) {
-						const message = "\nJob processing was terminated due to an error.";
-						this.backendOutput += message;
-						this.status = "ERROR"; // Signal job polling to stop
-						reject(new Error("Backend execution error:", error));
-					}
-				});
-
-				window.electron.onBackendCancelled((message) => {
-					if (this.status !== "TIMEOUT" && !this.errorHandled) {
-						this.backendOutput += message;
-						this.status = "CANCELLED";
-						reject(new Error("Process was cancelled"));
-					}
-				});
-			});
+			// Once all batches are done (or attempted), reset top‐level UI state
+      this.status = "INITIAL";
+      this.backendOutput = "";
+      this.errorHandled = false;
 		},
 
-		// Function to track job status + process results + trigger snackbar
+		async runOneEntry(entry) {
+			// 1) Build the batch‐specific output folder: `${outdir}/${jobid}/${batchName}`
+      const outdir = this.jobDetails.outdir;
+      const jobid = this.jobDetails.jobid;
+      const batchName = entry.batchName;
+      const batchFolder = `${outdir}/${jobid}/${batchName}`;
+      // ensure that directory exists (recursively)
+      await window.electron.mkdir(batchFolder); // returns a Promise if you exposed it; `await` in caller
+
+			// Figure out file‐base names:
+      const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
+      let base2 = "", ext2 = "";
+      if (this.jobDetails.mode === "paired-end" && entry.q2) {
+        ({ base: base2, ext: ext2 } = this.stripFileExtension(entry.q2));
+      }
+
+			// 2) If QC is enabled, run fastp first:
+      let classifyRead1 = entry.q1;
+      let classifyRead2 = entry.q2;
+
+			if (this.jobDetails.enableQC) {
+				const suffixQC = "_qc"; // you had this as const suffix = "_qc"
+        const qcParams = [
+          "fastp",
+          "-h", `${batchFolder}/${batchName}.html`,
+          "-j", `${batchFolder}/${batchName}.json`,
+          "-i", entry.q1,
+          "-o", `${batchFolder}/${base1}${suffixQC}${ext1}`
+        ];
+        if (this.jobDetails.mode === "paired-end" && entry.q2) {
+          qcParams.push(
+            "-I", entry.q2,
+            "-O", `${batchFolder}/${base2}${suffixQC}${ext2}`
+          );
+        }
+
+        console.log("🚀 fastp job requested:", qcParams);
+
+				await new Promise((resolve, reject) => {
+					const cleanupFastp = () => {
+						window.electron.offFastpListeners();
+					};
+					
+					// 2. Attach listeners
+					window.electron.onFastpOutput((output) => {
+						// console.log(output); // DEBUG
+						this.backendOutput += output;
+						this.$emit("backend-realtime-output", this.backendOutput);
+						this.status = "RUNNING"; // Keep the status as RUNNING
+					});
+					window.electron.onFastpError((err) => {
+						if (!this.errorHandled) {
+							this.errorHandled = true; // Prevent multiple error handling
+							this.backendOutput += "\nError:\n" + err.toString();
+							this.status = "ERROR"; // Signal job polling to stop
+							cleanupFastp(); 
+							reject(new Error("Fastp execution error:", err));
+						}
+					});
+					window.electron.onFastpComplete((msg) => {
+						if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
+						this.backendOutput += `${msg}\n`;
+						this.status = "COMPLETE";
+						cleanupFastp(); 
+						resolve();
+					});
+					window.electron.onFastpCancelled((msg) => {
+						if (!this.errorHandled) {
+							this.errorHandled = true; // Prevent multiple error handling
+							this.backendOutput += "\nCancelled: " + msg;
+							this.status = "CANCELLED";
+							cleanupFastp(); 
+							reject(new Error("QC process was cancelled"));
+						}
+					});
+
+					// 3. Start backend process
+					window.electron.runFastp(qcParams);
+				});
+
+				// After fastp finishes, update classifyRead1/2 so that classify uses QC outputs:
+				classifyRead1 = `${batchFolder}/${base1}_qc${ext1}`;
+        if (this.jobDetails.mode === "paired-end" && entry.q2) {
+          classifyRead2 = `${batchFolder}/${base2}_qc${ext2}`;
+        } else {
+          classifyRead2 = null;
+        }
+			} // end if enableQC
+
+			// 3) Now run “classify” on classifyRead1 (and classifyRead2 if paired)
+			const classifyParams = ["classify"];
+      if (this.jobDetails.mode === "single-end") {
+        classifyParams.push("--seq-mode", 1, classifyRead1);
+      } else if (this.jobDetails.mode === "paired-end") {
+        classifyParams.push(classifyRead1, classifyRead2);
+      } else {
+        classifyParams.push("--seq-mode", 3, classifyRead1);
+      }
+
+      // Add dbdir, outdir (this batchFolder), jobid
+      classifyParams.push(this.jobDetails.database, batchFolder, jobid);
+
+      // Add max-ram if set
+      if (this.jobDetails.maxram) {
+        classifyParams.push("--max-ram", parseInt(this.jobDetails.maxram));
+      }
+
+      // Add any advancedSettings
+      Object.values(this.advancedSettings).forEach(setting => {
+        if (setting.value !== "" && setting.value !== undefined) {
+          let val;
+          if (setting.type === "INTEGER") val = parseInt(setting.value);
+          else if (setting.type === "FLOAT") val = parseFloat(setting.value);
+          else val = setting.value;
+          classifyParams.push(setting.parameter, val);
+        }
+      });
+
+      console.log("🚀 classify job requested:", classifyParams);
+
+      // Return a promise that resolves when classify finishes (or rejects on error)
+      return new Promise((resolve, reject) => {
+        const cleanupClassify = () => {
+          window.electron.offBackendRealtimeOutput();
+          window.electron.offBackendComplete();
+          window.electron.offBackendError();
+          window.electron.offBackendCancelled();
+        };
+
+        window.electron.onBackendRealtimeOutput(output => {
+          this.backendOutput += output;
+          this.$emit("backend-realtime-output", this.backendOutput);
+          this.status = "RUNNING";
+        });
+
+        window.electron.onBackendComplete(msg => {
+          if (this.status !== "RUNNING") return;
+          this.backendOutput += msg;
+          this.status = "COMPLETE";
+          cleanupClassify();
+          resolve();
+        });
+
+        window.electron.onBackendError(err => {
+          if (!this.errorHandled) {
+            this.errorHandled = true;
+            this.backendOutput += "\nError:\n" + err;
+            this.status = "ERROR";
+            cleanupClassify();
+            reject(new Error("classify execution error: " + err));
+          }
+        });
+
+        window.electron.onBackendCancelled(msg => {
+          if (!this.errorHandled) {
+            this.errorHandled = true;
+            this.backendOutput += "\nCancelled: " + msg;
+            this.status = "CANCELLED";
+            cleanupClassify();
+            reject(new Error("classify cancelled"));
+          }
+        });
+
+        window.electron.runBackend(classifyParams);
+      });
+		},
+
+		// Poll for status flips to “COMPLETE” or “ERROR” (or TIMEOUT)
 		async pollJobStatus(interval = 500, timeout = Infinity) {
-			// FIXME: decide timeout duration
-			console.log("🚀 Running job"); // DEBUG
+			// 	console.log("🚀 Running job"); // DEBUG
 			const start = Date.now();
-			while (Date.now() - start < timeout) {
-				if (this.errorHandled || this.status === "COMPLETE") return true;
-
-				if (this.status === "ERROR") {
-					throw new Error("Backend error occurred");
-				}
-				await new Promise((resolve) => setTimeout(resolve, interval));
-			}
-			if (!this.errorHandled) {
-				this.status = "TIMEOUT";
-				throw new Error("Polling timed out");
-			}
-		},
+      while (Date.now() - start < timeout) {
+        if (this.errorHandled || this.status === "COMPLETE") return true;
+        if (this.status === "ERROR") throw new Error("Backend signaled ERROR");
+        await new Promise(r => setTimeout(r, interval));
+      }
+      if (!this.errorHandled) {
+        this.status = "TIMEOUT";
+        throw new Error("Polling timed out");
+      }
+    },
 
 		// Function for processing results (shared for both tabs)
-		async processResults(isSample) {
+		async processResults(isSample, entry = null) {
 			let reportFilePath;
 			let kronaFilePath;
 
@@ -633,7 +810,14 @@ export default {
 			let resolvedOutdirPath;
 			let jobId;
 
-			resolvedOutdirPath = isSample ? this.jobDetailsSample.outdir : this.jobDetails.outdir;
+			let batchFolder = "";
+			if (!isSample) {
+				// Grab the last entry from jobDetails.entries
+				// const lastEntry = this.jobDetails.entries[this.jobDetails.entries.length - 1];
+				batchFolder = `${this.jobDetails.outdir}/${this.jobDetails.jobid}/${entry.batchName}`;
+			}
+
+			resolvedOutdirPath = isSample ? this.jobDetailsSample.outdir : batchFolder;
 			jobId = isSample ? this.jobDetailsSample.jobid : this.jobDetails.jobid;
 
 			// Set file paths for report and krona
@@ -664,38 +848,40 @@ export default {
 				console.error("Error opening Krona viewer:", error);
 			}
 		},
-		handleJobSuccess() {
-			console.log("🚀 Job completed successfully."); // DEBUG
 
-			// Object storing info about completedJob
-			const completedJob = {
-				jobDetails: this.jobDetails,
-				outdir: this.jobDetails.outdir,
-				jobid: this.jobDetails.jobid,
-				isSample: false,
-				jobStatus: "Completed",
-				jobType: "runSearch",
-				backendOutput: this.backendOutput,
-				resultsJSON: this.processedResults.jsonData.results,
-				kronaContent: this.processedResults.kronaContent,
-				reportFilePath: `${this.jobDetails.outdir}/${this.jobDetails.jobid}_report.tsv`
-			};
-			this.$emit("store-job", completedJob);
+		// Called once classify for one batch completes
+		handleBatchSuccess(entry) {
+      const jobid = this.jobDetails.jobid;
+      const batchFolder = `${this.jobDetails.outdir}/${jobid}/${entry.batchName}`;
 
-			// Store latest job in local storage for results rendering
-			localStorage.setItem("processedResults", JSON.stringify(completedJob));
+      // processResults(false) should look in batchFolder for jobid_report.tsv, etc.
+      // this.processResults(false, entry).then(() => {
+        const completedJob = {
+          jobDetails: { ...this.jobDetails },
+          outdir: batchFolder,
+          jobid: jobid,
+					isSample: false,
+          // batchName: entry.batchName,
+          jobStatus: "Completed",
+          jobType: "runSearch",
+          backendOutput: this.backendOutput,
+          resultsJSON: this.processedResults.jsonData.results,
+          kronaContent: this.processedResults.kronaContent,
+          reportFilePath: `${batchFolder}/${jobid}_report.tsv`
+        };
 
-			// Store completed job in local storage
-			// console.log("newrun completedJob:", completedJob); // DEBUG
+        this.$emit("store-job", completedJob);
+        localStorage.setItem(`processedResults`, JSON.stringify(completedJob));
 
-			// Trigger snackbar
-			// this.$emit("trigger-snackbar", "Job successfully completed. Check the results tab.", "success", "success", "View", () => {
-			// 	this.$router.push({ name: "ResultsPage" });
-			// });
+				// TODO: Emit job-completed and redirect to Results Page if its the last batch 
+        // Emit job-completed only if this is the last entry in the batch
+				const isLastEntry = entry === this.jobDetails.entries[this.jobDetails.entries.length - 1];
+				if (isLastEntry) {
+					this.$emit("job-completed", completedJob);
+				}
+      // });
+    },
 
-			// Emit job-completed event: close loading dialog and expose results tab in navigation drawer
-			this.$emit("job-completed", completedJob);
-		},
 		handleJobError() {
 			this.errorHandled = true; // Ensure flag is set to prevent further handling
 
@@ -738,6 +924,7 @@ export default {
 			window.electron.cancelBackend();
 		},
 
+		// Other helper functions
 		getCurrentDateTime() {
 			const now = new Date();
 
@@ -786,6 +973,7 @@ export default {
 .search-required-fields .search-files .filename-col {
 	padding-left: 0px;
 }
+
 :deep(.v-field__input),
 :deep(.v-text-field__suffix) {
 	padding-top: 4px !important;

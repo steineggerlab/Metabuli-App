@@ -4,7 +4,7 @@
 	"productName": "Metabuli App",
 	"description": "Metabuli is metagenomic classifier that jointly analyze both DNA and amino acid (AA) sequences.",
 	"repository": "https://github.com/steineggerlab/Metabuli-App",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"scripts": {
 		"serve": "vue-cli-service serve",
 		"build": "vue-cli-service build",
@@ -24,6 +24,7 @@
 		"core-js": "^3.8.3",
 		"d3": "^7.9.0",
 		"d3-sankey": "^0.12.3",
+		"marked": "^15.0.12",
 		"roboto-fontface": "*",
 		"save-svg-as-png": "^1.4.17",
 		"uuid": "^10.0.0",
