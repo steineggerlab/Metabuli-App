@@ -125,11 +125,13 @@ export default {
 			const plainResults = JSON.parse(JSON.stringify(job.resultsJSON));
 
 			// Create a new job entry with additional details
-			const jobEntry = {
+			const jobHistoryEntry = {
 				jobDetails: plainJobDetails,
 				jobId: job.jobid,
+				sampleNames: job.sampleNames,
 				timestamp: new Date().toISOString(), // Timestamp of job completion
 				jobType: job.jobType,
+				qcEnabled: job.qcEnabled,
 				isSample: job.isSample,
 				jobStatus: job.jobStatus,
 				backendOutput: job.backendOutput,
@@ -143,7 +145,7 @@ export default {
 				let jobsHistory = await loadJobsHistory();
 
 				// Add the new job to the history array
-				jobsHistory.push(jobEntry);
+				jobsHistory.push(jobHistoryEntry);
 
 				// Trim and store the latest 10 jobs in the file
 				await trimAndStoreJobsHistory(jobsHistory);

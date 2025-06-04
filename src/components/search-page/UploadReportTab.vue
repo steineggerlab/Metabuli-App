@@ -34,6 +34,7 @@
 
 <script>
 import TSVParser from "@/plugins/tsvParser";
+import { makeCompletedJob, makeFailedJob } from "@/plugins/jobHistoryStruct";
 
 export default {
 	name: "UploadReportTab",
@@ -86,18 +87,16 @@ export default {
 
 				setTimeout(() => {
 					// Object storing info about completedJob
-					const completedJob = {
+					const completedJob = makeCompletedJob({
 						jobDetails: null,
-						outdir: null,
-						jobid: null,
-						isSample: false,
-						jobStatus: "Completed",
-						jobType: "uploadReport",
+						sampleNames: null,
+						batchFolder: null,
 						backendOutput: this.backendOutput,
-						resultsJSON: this.processedResults.jsonData.results,
-						kronaContent: this.processedResults.kronaContent, // null
+						processedResults: this.processedResults,
+						isSample: false,
+						jobType: "uploadReport",
 						reportFilePath: this.file.path,
-					};
+					});
 
 					// Store latest job in local storage for results rendering
 					localStorage.setItem("processedResults", JSON.stringify(completedJob));
@@ -123,18 +122,15 @@ export default {
 
 				this.status = "ERROR";
 				// Create failed job object to store in local storage
-				const failedJob = {
+				const failedJob = makeFailedJob({
 					jobDetails: null,
-					outdir: null,
-					jobid: null,
-					isSample: false,
-					jobStatus: "ERROR", // this.status
-					jobType: "uploadReport",
+					sampleNames: null,
 					backendOutput: this.backendOutput,
-					resultsJSON: null,
-					kronaContent: null,
-					reportFilePath: null,
-				};
+					status: "ERROR",
+					jobType: "uploadReport",
+					isSample: false,
+				})
+			
 				// Store completed job in local storage
 				this.$emit("store-job", failedJob);
 

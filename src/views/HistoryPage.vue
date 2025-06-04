@@ -28,6 +28,16 @@
 					<span v-else>{{ item.jobId }}</span>
 				</template>
 
+				<!-- Sample Name Column -->
+				<template v-slot:[`item.sampleNames`]="{ item }">
+					<div v-if="!item.sampleNames || item.sampleNames.length === 0">-</div>
+					<div v-else>
+						<div v-for="(name, idx) in item.sampleNames" :key="idx">
+							{{ name }}
+						</div>
+					</div>
+				</template>
+
 				<!-- Timestamp Column -->
 				<template v-slot:[`item.timestamp`]="{ item }">
 					{{ formatTimestamp(item.timestamp) }}
@@ -41,16 +51,18 @@
 					<span v-else>Unknown</span>
 				</template>
 
+				<!-- QC Enabled Column -->
+				<template v-slot:[`item.qcEnabled`]="{ item }">
+					<v-icon v-if="item.qcEnabled" color="green" small icon="$success"></v-icon>
+					<v-icon v-else color="grey" small icon="$clear"></v-icon>
+				</template>
+
 				<!-- Status Column -->
 				<template v-slot:[`item.jobStatus`]="{ item }">
 					<v-chip v-if="item.jobStatus === 'Completed'" color="success" prepend-icon="$success" density="comfortable"> Completed </v-chip>
-
 					<v-chip v-else-if="item.jobStatus === 'ERROR'" color="error" prepend-icon="$warning" density="comfortable"> Failed </v-chip>
-
 					<v-chip v-else-if="item.jobStatus === 'TIMEOUT'" color="grey" prepend-icon="$timelapse" density="comfortable"> Timeout </v-chip>
-
 					<v-chip v-else-if="item.jobStatus === 'CANCELLED'" color="warning" prepend-icon="$cancel" density="comfortable"> Cancelled </v-chip>
-
 					<v-chip v-else color="grey" prepend-icon="$helpCircle" density="comfortable"> Incomplete </v-chip>
 				</template>
 
@@ -110,10 +122,12 @@ export default {
 		return {
 			headers: [
 				{ title: "Job ID", value: "jobId" },
+				{ title: "Sample Name", value: "sampleNames" },
 				{ title: "Completed At", value: "timestamp" },
 				{ title: "Type ", value: "jobType", align: "center" },
+				{ title: "QC Enabled", value: "qcEnabled", align: "center" },
 				{ title: "Status", value: "jobStatus", align: "center" },
-				{ title: "Process Log", value: "backendOutput", align: "center" },
+				{ title: "Log", value: "backendOutput", align: "center" },
 				{
 					title: "Actions",
 					value: "actions",

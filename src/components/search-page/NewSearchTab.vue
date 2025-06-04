@@ -297,6 +297,7 @@
 import TSVParser from "@/plugins/tsvParser";
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
 import { extractFilename, stripFileExtension } from "@/plugins/fileUtils.js"; 
+import { makeCompletedJob, makeFailedJob } from "@/plugins/jobHistoryStruct.js";
 
 export default {
 	name: "NewSearchTab",
@@ -325,12 +326,13 @@ export default {
 			jobDetailsSample: {
 				// Sample job details
 				mode: "paired-end",
+				enableQC: false,
 				q1: "SRR14484345_1.fq",
 				q2: "SRR14484345_2.fq",
 				database: "refseq_virus",
-				jobid: "sample_data",
 				outdir: "/sample_data",
-				maxram: 128,
+				jobid: "sample_data",
+				maxram: 32,
 			},
 			expandAdvancedSettings: false,
 			advancedSettings: {
@@ -557,18 +559,16 @@ export default {
 			const sampleReportFilePath = await window.electron.resolveFilePath(`${this.jobDetailsSample.outdir}/${this.jobDetailsSample.jobid}_report.tsv`, true);
 			setTimeout(() => {
 				// Object storing info about completedJob
-				const completedJob = {
+				const completedJob = makeCompletedJob({
 					jobDetails: this.jobDetailsSample,
-					outdir: this.jobDetailsSample.outdir,
-					jobid: this.jobDetailsSample.jobid,
+					sampleNames: ["SRR14484345_1", "SRR14484345_2"], 
+					batchFolder: this.jobDetailsSample.outdir,
 					isSample: true,
-					jobStatus: "Completed",
 					jobType: "runSearch",
 					backendOutput: this.backendOutput,
-					resultsJSON: this.processedResults.jsonData.results,
-					kronaContent: this.processedResults.kronaContent,
+					processedResults: this.processedResults,
 					reportFilePath: sampleReportFilePath,
-				};
+				});
 
 				// Store latest job in local storage for results rendering
 				localStorage.setItem("processedResults", JSON.stringify(completedJob));
@@ -614,7 +614,7 @@ export default {
 				} catch (error) { // TODO: figure out how to handle errors in the loop (e.g. if one entry fails, the rest should still run)
 					console.error(`Batch ${entry.batchName} failed:`, error);
 					// console.error("Error:", error.message); // Single error handling point
-					this.handleJobError(error); // TODO: move into loop
+					this.handleJobError(entry);
 				} finally {
 					// Save log file
 					window.electron.writeFile(`${this.jobDetails.outdir}/${this.jobDetails.jobid}/${entry.batchName}/${this.jobDetails.jobid}_log.txt`, this.backendOutput).catch(console.error);
@@ -696,7 +696,7 @@ export default {
 					window.electron.onFastpCancelled((msg) => {
 						if (!this.errorHandled) {
 							this.errorHandled = true; // Prevent multiple error handling
-							this.backendOutput += "\nCancelled: " + msg;
+							this.backendOutput += `\n${msg}`;
 							this.status = "CANCELLED";
 							cleanupFastp(); 
 							reject(new Error("QC process was cancelled"));
@@ -783,7 +783,7 @@ export default {
         window.electron.onBackendCancelled(msg => {
           if (!this.errorHandled) {
             this.errorHandled = true;
-            this.backendOutput += "\nCancelled: " + msg;
+            this.backendOutput += `\n${msg}`;
             this.status = "CANCELLED";
             cleanupClassify();
             reject(new Error("classify cancelled"));
@@ -864,50 +864,46 @@ export default {
 
       // processResults(false) should look in batchFolder for jobid_report.tsv, etc.
       // this.processResults(false, entry).then(() => {
-        const completedJob = {
-          jobDetails: { ...this.jobDetails },
-          outdir: batchFolder,
-          jobid: jobid,
-					isSample: false,
-          // batchName: entry.batchName,
-          jobStatus: "Completed",
-          jobType: "runSearch",
-          backendOutput: this.backendOutput,
-          resultsJSON: this.processedResults.jsonData.results,
-          kronaContent: this.processedResults.kronaContent,
-          reportFilePath: `${batchFolder}/${jobid}_report.tsv`
-        };
+			const { base: sampleNameBase1 } = this.stripFileExtension(entry.q1);
+			const { base: sampleNameBase2 } = this.stripFileExtension(entry.q2);
+			const completedJob = makeCompletedJob({
+				jobDetails: this.jobDetails,
+				sampleNames: this.jobDetails.mode === "paired-end" ? [sampleNameBase1, sampleNameBase2] : [sampleNameBase1],
+				batchFolder: batchFolder,
+				isSample: false,
+				jobType: "runSearch",
+				backendOutput: this.backendOutput,
+				processedResults: this.processedResults,
+				reportFilePath: `${batchFolder}/${jobid}_report.tsv`
+			});
 
-        this.$emit("store-job", completedJob);
-        localStorage.setItem(`processedResults`, JSON.stringify(completedJob));
+			this.$emit("store-job", completedJob);
+			localStorage.setItem(`processedResults`, JSON.stringify(completedJob));
 
-				// TODO: Emit job-completed and redirect to Results Page if its the last batch 
-        // Emit job-completed only if this is the last entry in the batch
-				const isLastEntry = entry === this.jobDetails.entries[this.jobDetails.entries.length - 1];
-				if (isLastEntry) {
-					this.$emit("job-completed", completedJob);
-				}
+			// Emit job-completed only if this is the last entry in the batch
+			const isLastEntry = entry === this.jobDetails.entries[this.jobDetails.entries.length - 1];
+			if (isLastEntry) {
+				this.$emit("job-completed", completedJob);
+			}
       // });
     },
 
-		handleJobError() {
+		handleJobError(entry) {
 			this.errorHandled = true; // Ensure flag is set to prevent further handling
 
 			// Additional error handling logic (save failed job to local storage, trigger snackbar)
 
 			// Create failed job object to store in local storage
-			const failedJob = {
+			const { base: sampleNameBase1 } = this.stripFileExtension(entry.q1);
+			const { base: sampleNameBase2 } = this.stripFileExtension(entry.q2);
+			const failedJob = makeFailedJob({
 				jobDetails: this.jobDetails,
-				outdir: this.jobDetails.outdir,
-				jobid: this.jobDetails.jobid,
-				isSample: false,
-				jobStatus: this.status,
-				jobType: "runSearch",
+				sampleNames: this.jobDetails.mode === "paired-end" ? [sampleNameBase1, sampleNameBase2] : [sampleNameBase1],
 				backendOutput: this.backendOutput,
-				resultsJSON: null,
-				kronaContent: null,
-				reportFilePath: null,
-			};
+				status: this.status,
+				jobType: "runSearch",
+				isSample: false,
+			});
 
 			// Store completed job in local storage
 			this.$emit("store-job", failedJob);
