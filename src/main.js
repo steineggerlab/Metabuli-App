@@ -13,6 +13,7 @@ import App from './App.vue'
 import router from './router'; // Import the router configuration
 import vuetify from './plugins/vuetify'
 import { loadFonts } from './plugins/webfontloader'
+import 'github-markdown-css/github-markdown.css'; // Import GitHub Markdown CSS for styling
 
 loadFonts()
 

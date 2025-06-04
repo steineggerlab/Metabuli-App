@@ -8,6 +8,23 @@
 					Search Settings
 					<v-spacer></v-spacer>
 
+					<div>
+						<v-btn icon="$helpCircleOutline" rounded="xl" @click="showReadme=true"></v-btn>
+
+						<!-- ReadMe Manual Bottom Sheet -->
+						<v-bottom-sheet v-model="showReadme">
+							<v-card>
+								<v-card-text style="max-height: 90vh; overflow-y: auto;">
+									<div class="markdown-body" v-html="readmeHtml"></div>
+								</v-card-text>
+								<v-card-actions>
+									<v-spacer></v-spacer>
+									<v-btn text @click="showReadme=false">Close</v-btn>
+								</v-card-actions>
+							</v-card>
+						</v-bottom-sheet>
+					</div>
+
 					<!-- TABS -->
 					<template v-slot:extension>
 						<v-tabs v-model="tab">
@@ -15,7 +32,7 @@
 						</v-tabs>
 					</template>
 				</v-toolbar>
-
+				
 				<v-tabs-window v-model="tab">
 					<!-- RUN SEARCH TAB -->
 					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[0].value">
@@ -29,14 +46,14 @@
 							@store-job="storeJob"
 						></NewSearchTab>
 					</v-tabs-window-item>
-
+					
 					<!-- UPLOAD REPORT TAB-->
 					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[1].value">
 						<UploadReportTab @job-started="emitJobStarted" @job-completed="emitJobCompleted" @job-aborted="emitJobAborted" @trigger-snackbar="triggerSnackbar" @store-job="storeJob"></UploadReportTab>
 					</v-tabs-window-item>
 				</v-tabs-window>
 			</v-card>
-
+			
 			<!-- Snackbar -->
 			<v-snackbar v-model="snackbar.show" :timeout="snackbar.timeout" location="top" color="white">
 				<v-icon :color="snackbar.color" :icon="`$${snackbar.icon}`"></v-icon>
@@ -54,6 +71,7 @@
 import NewSearchTab from "@/components/search-page/NewSearchTab.vue";
 import UploadReportTab from "@/components/search-page/UploadReportTab.vue";
 import { trimAndStoreJobsHistory, loadJobsHistory } from "@/plugins/storageUtils.js";
+import { marked } from "marked";
 
 export default {
 	name: "SearchSetting",
@@ -76,6 +94,10 @@ export default {
 			action: null,
 			timeout: 4000,
 		},
+
+		// ReadMe Manual Handling
+		showReadme: false,
+		readmeHtml: "",
 	}),
 
 	methods: {
@@ -148,6 +170,31 @@ export default {
 			}
 			this.snackbar.show = false;
 		},
+	},
+
+	async mounted() {
+		try {
+			// Load README.md file
+			const isProd = process.env.NODE_ENV === "production";
+
+			const readmePath = isProd
+				? window.electron.resolveFilePath("docs/classification.md", true) // TODO: fix path
+				: window.electron.resolveFilePath("../docs/classification.md", true);
+
+			const readmeContent = await window.electron.readFile(readmePath);
+			this.readmeHtml = marked(readmeContent);
+		} catch (err) {
+			console.error("Failed to load README.md:", err);
+			// Fallback content
+			this.readmeHtml = `
+				<p>
+					⚠️ Ran into an error while loading the instructions.<br>
+					You can still view them at
+					<a href="https://github.com/steineggerlab/Metabuli-App" target="_blank" style="text-decoration: underline;">
+						steineggerlab/Metabuli-App</a>
+				</p>
+			`;
+		}
 	},
 };
 </script>
