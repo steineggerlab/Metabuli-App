@@ -375,8 +375,8 @@ export default {
         console.log('errorhandled:', this.errorHandled);
         console.log('modetag:', modeTag);
         console.log('entry:', entry);
-        //
-
+        
+        // Create directory for batch output
         const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
         const batchName = `${base1}${modeTag}`;
         const batchOutDir = `${outDir}/${batchName}`; // TODO: organize code
@@ -386,28 +386,25 @@ export default {
         "-h", `${batchOutDir}/${batchName}.html`,
         "-j", `${batchOutDir}/${batchName}.json`];
           
-          // Add read 1 input/output parameters
+        // Add read 1 input/output parameters
+        params.push(
+          "-i", entry.q1, // Read 1 file
+          "-o", `${batchOutDir}/${base1}${suffix}${ext1}`, // Output filepath for Read 1
+        );
+        
+        // Add read 2 input/output parameters if paired-end mode
+        if (this.jobDetails.mode === "paired-end" && entry.q2) {
+          const { base: base2, ext: ext2 } = this.stripFileExtension(entry.q2);
           params.push(
-            "-i", entry.q1, // Read 1 file
-            "-o", `${batchOutDir}/${base1}${suffix}${ext1}`, // Output filepath for Read 1
+            "-I", entry.q2,
+            "-O", `${batchOutDir}/${base2}${suffix}${ext2}`, // Output filepath for Read 2
           );
-          
-          // Add read 2 input/output parameters if paired-end mode
-          if (this.jobDetails.mode === "paired-end" && entry.q2) {
-            const { base: base2, ext: ext2 } = this.stripFileExtension(entry.q2);
-            params.push(
-              "-I", entry.q2,
-              "-O", `${batchOutDir}/${base2}${suffix}${ext2}`, // Output filepath for Read 2
-            );
-          }
+        }
 
         console.log("🚀 fastp job requested:", params); // DEBUG
         
         // Return a promise that resolves or rejects based on backend success or failure
         await new Promise((resolve, reject) => {
-          // 1. Remove any old listeners
-          // window.electron.offFastpListeners();
-
           const cleanup = () => {
             window.electron.offFastpListeners();
           };
