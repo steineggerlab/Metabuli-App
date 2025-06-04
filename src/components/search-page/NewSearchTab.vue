@@ -1064,7 +1064,11 @@ export default {
         localStorage.setItem(`processedResults`, JSON.stringify(completedJob));
 
 				// TODO: Emit job-completed and redirect to Results Page if its the last batch 
-        // this.$emit("job-completed", completedJob);
+        // Emit job-completed only if this is the last entry in the batch
+				const isLastEntry = entry === this.jobDetails.entries[this.jobDetails.entries.length - 1];
+				if (isLastEntry) {
+					this.$emit("job-completed", completedJob);
+				}
       // });
     },
 
