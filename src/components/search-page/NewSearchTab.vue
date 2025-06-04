@@ -30,6 +30,7 @@
 							<v-col cols="1">
 								<v-switch v-model="jobDetails.enableQC" color="primary" hide-details="true"></v-switch>
 							</v-col>
+
 							<v-col>
 								<QCSettingsDialog v-model="showQCSettingsDialog" class="d-flex justify-start">
                     <template v-slot:activator="{ props }">
@@ -122,70 +123,77 @@
 										<v-btn variant="text" prepend-icon="$plusBox" @click="addEntry">Add Entry</v-btn>
 									</v-col>
 								</v-row>
+							</v-col>
+						</v-row>
+						
+						<!-- Database Directory -->
+						<v-row>
+							<v-col cols="3">
+								<v-list-subheader class="pr-0">Database Directory</v-list-subheader>
+							</v-col>
+							<v-col cols="4">
+								<div class="d-flex flex-column align-center mb-0 gc-3">
+									<v-btn
+										@click="pickFile('directory', 'database')"
+										prepend-icon="$folder"
+										density="comfortable"
+										size="default"
+										class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+									>Select Database</v-btn
+									>
+									<v-text-field v-model="jobDetails.database" :rules="[requiredRule]" style="display: none"></v-text-field>
+									
+									<!-- Database Download Button -->
+									<v-btn
+										color="primary"
+										prepend-icon="$openInNew"
+										variant="text"
+										class="text-caption font-weight-medium"
+										size="small"
+										rounded="xl"
+										href="https://metabuli.steineggerlab.workers.dev/"
+										target="_blank"
+										>Database Download
+									</v-btn>
+								</div>
+							</v-col>
+						
+							<v-col class="filename-col">
+								<v-chip v-if="jobDetails.database" label color="primary" density="comfortable" class="filename-chip">
+									<v-icon icon="$delete" @click="clearFile('database')" class="mr-1"></v-icon>
+									{{ extractFilename(jobDetails.database) }}
+								</v-chip>
+							</v-col>
+						</v-row>
+						
+						<!-- Output Directory -->
+						<v-row>
+							<v-col cols="3">
+								<v-list-subheader class="pr-0">Output Directory</v-list-subheader>
+							</v-col>
 
-								<!-- Database Directory -->
-								<v-row>
-									<v-col cols="6">
-										<div class="d-flex flex-column align-center mb-0 gc-3">
-											<v-btn
-												@click="pickFile('directory', 'database')"
-												prepend-icon="$folder"
-												density="comfortable"
-												size="default"
-												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-												>Select Database</v-btn
-											>
-											<v-text-field v-model="jobDetails.database" :rules="[requiredRule]" style="display: none"></v-text-field>
-
-											<!-- Database Download Button -->
-											<v-btn
-												color="primary"
-												prepend-icon="$openInNew"
-												variant="text"
-												class="text-caption font-weight-medium"
-												size="small"
-												rounded="xl"
-												href="https://metabuli.steineggerlab.workers.dev/"
-												target="_blank"
-												>Database Download
-											</v-btn>
-										</div>
-									</v-col>
-
-									<v-col cols="6" class="filename-col">
-										<v-chip v-if="jobDetails.database" label color="primary" density="comfortable" class="filename-chip">
-											<v-icon icon="$delete" @click="clearFile('database')" class="mr-1"></v-icon>
-											{{ extractFilename(jobDetails.database) }}</v-chip
-										>
-									</v-col>
-								</v-row>
-
-								<!-- Output Directory -->
-								<v-row>
-									<v-col cols="6">
-										<v-btn
-											@click="pickFile('directory', 'outdir')"
-											prepend-icon="$folder"
-											density="comfortable"
-											size="default"
-											class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-											>Output Directory</v-btn
-										>
-										<v-text-field v-model="jobDetails.outdir" :rules="[requiredRule]" style="display: none"></v-text-field>
-									</v-col>
-
-									<v-col cols="6" class="filename-col">
-										<v-chip v-if="jobDetails.outdir" label color="primary" density="comfortable" class="filename-chip">
-											<v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
-											{{ extractFilename(jobDetails.outdir) }}</v-chip
-										>
-									</v-col>
-								</v-row>
+							<v-col cols="4">
+								<v-btn
+									@click="pickFile('directory', 'outdir')"
+									prepend-icon="$folder"
+									density="comfortable"
+									size="default"
+									class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+									>Output Directory
+								</v-btn>
+								<v-text-field v-model="jobDetails.outdir" :rules="[requiredRule]" style="display: none"></v-text-field>
+							</v-col>
+							
+							<v-col class="filename-col">
+								<v-chip v-if="jobDetails.outdir" label color="primary" density="comfortable" class="filename-chip">
+									<v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
+									{{ extractFilename(jobDetails.outdir) }}
+								</v-chip>
 							</v-col>
 						</v-row>
 
 						<!-- --max-ram -->
-						<v-row class="mt-2">
+						<v-row class="mt-4">
 							<v-col cols="3">
 								<v-list-subheader>Max RAM</v-list-subheader>
 							</v-col>
@@ -204,15 +212,15 @@
 					</v-container>
 				</div>
 
-				<v-divider vertical></v-divider>
+				<!-- <v-divider vertical></v-divider> -->
 
 				<!-- Output Format -->
-				<v-card class="w-33" variant="text" >
+				<!-- <v-card class="w-33" variant="text" >
 					<v-card-title class="text-button font-weight-bold">Output Format</v-card-title>
 					<v-card-subtitle>Lorem ipsum</v-card-subtitle>
-				</v-card>
+				</v-card> -->
 
-				<!-- <v-img class="w-33 marv-metabuli-opaque" :width="200" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img> -->
+				<v-img class="w-33 marv-metabuli-opaque" :width="200" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img>
 			</div>
 
 			<!-- ADVANCED SETTINGS -->
