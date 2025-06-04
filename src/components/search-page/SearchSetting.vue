@@ -71,7 +71,7 @@
 import NewSearchTab from "@/components/search-page/NewSearchTab.vue";
 import UploadReportTab from "@/components/search-page/UploadReportTab.vue";
 import { trimAndStoreJobsHistory, loadJobsHistory } from "@/plugins/storageUtils.js";
-import { marked } from "marked";
+import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 
 export default {
 	name: "SearchSetting",
@@ -174,15 +174,7 @@ export default {
 
 	async mounted() {
 		try {
-			// Load README.md file
-			const isProd = process.env.NODE_ENV === "production";
-
-			const readmePath = isProd
-				? window.electron.resolveFilePath("docs/classification.md", true) // TODO: fix path
-				: window.electron.resolveFilePath("../docs/classification.md", true);
-
-			const readmeContent = await window.electron.readFile(readmePath);
-			this.readmeHtml = marked(readmeContent);
+			this.readmeHtml = await loadMarkdownAsHtml("docs/classification.md");
 		} catch (err) {
 			console.error("Failed to load README.md:", err);
 			// Fallback content

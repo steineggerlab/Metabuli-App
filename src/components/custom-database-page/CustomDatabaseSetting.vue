@@ -75,7 +75,7 @@
 <script>
 import NewDatabaseTab from "./NewDatabaseTab.vue";
 import UpdateDatabaseTab from "./UpdateDatabaseTab.vue";
-import { marked } from "marked";
+import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 
 export default {
 	name: "CustomDatabaseSetting",
@@ -140,18 +140,10 @@ export default {
 			this.snackbar.show = false;
 		},
 	},
-	
+
 	async mounted() {
 		try {
-			// Load README.md file
-			const isProd = process.env.NODE_ENV === "production";
-
-			const readmePath = isProd
-				? window.electron.resolveFilePath("/docs/createdb.md", true) // TODO: fix path
-				: window.electron.resolveFilePath("../docs/createdb.md", true);
-
-			const readmeContent = await window.electron.readFile(readmePath);
-			this.readmeHtml = marked(readmeContent);
+			this.readmeHtml = await loadMarkdownAsHtml("docs/createdb.md");
 		} catch (err) {
 			console.error("Failed to load README.md:", err);
 			// Fallback content
