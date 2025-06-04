@@ -301,10 +301,11 @@ export default {
 			isJobFormValid: false,
 			jobDetails: {
 				// Store job details including file paths
-				mode: "single-end",
+				mode: "single-end", // "single-end" | "paired-end" | "long-read"
 				enableQC: false,
 				entries: [
-          { q1: "", q2: "", batchName: "" }
+					{ q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq", batchName: "" }, // TODO: remove hardcoded path
+					{ q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq", batchName: "" }, // TODO: remove hardcoded path
         ],
 				// database: "",
 				database: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/refseq_virus", // TODO: remove hardcoded path
@@ -408,7 +409,7 @@ export default {
 			}, // FIXME: move requiredRule to here
 
 			// Properties for job processing status, response, and results
-			status: "INITIAL",
+			status: "INITIAL",// "INITIAL" | "RUNNING" | "COMPLETE" | "ERROR" | "CANCELLED" | "TIMEOUT"
 			results: "",
 			backendOutput: "",
 			processedResults: null,
@@ -480,7 +481,6 @@ export default {
 				console.error("File selection error:", err);
 				this.$emit("trigger-snackbar", `File selection error: ${err}`, "error", "fileAlert", "Dismiss");
 			} finally {
-				console.log(this.jobDetails); // DEBUG: log jobDetails after file selection
 				// re-validate the form
 				this.$refs.jobForm?.validate(); // TODO: do i need this
 		
@@ -494,7 +494,6 @@ export default {
 				// clear a top-level field
 				this.jobDetails[field] = null;
 			}
-			console.log(this.jobDetails); // DEBUG: log jobDetails after file selection
 			// re-validate the form
 			this.$refs.jobForm?.validate();
 		},
@@ -507,7 +506,6 @@ export default {
 					entry.batchName = "";
         }
       });
-			console.log(this.jobDetails.entries); // DEBUG: log updated entries
     },
 		extractFilename,
 		stripFileExtension,
@@ -578,41 +576,214 @@ export default {
 			}, 2000); // Simulate a job taking 2 seconds
 		},
 
-		// Start backend job request
+		// Main job processing function
 		async startJob() {
-			try {
-				// Start loading dialog
-				this.status = "RUNNING";
+			// Reset job state
+      this.status = "INITIAL";
+      this.errorHandled = false;
+      this.backendOutput = "";
+
+			// Loop over each entry and run the job for each
+			for (const entry of this.jobDetails.entries) {
+				// Before each batch, reset status & backend‐output
+        this.status = "RUNNING";
+        this.errorHandled = false;
+        this.backendOutput = "";
 				this.$emit("job-started", false);
+				
+				try {
+					// 1) Run that one batch's backend process
+					await this.runOneEntry(entry);
+	
+					// 2) Poll until it flips to COMPLETE/ERROR (or times out)
+					await this.pollJobStatus();
 
-				// Start backend request and job polling simultaneously
-				const backendPromise = this.runBackend();
-				const pollingPromise = this.pollJobStatus();
-
-				// Wait for either backend to complete or polling to timeout/fail
-				await Promise.race([backendPromise, pollingPromise]);
-
-				// If backend completes successfully and polling hasn't timed out
-				if (this.status === "COMPLETE") {
-					await this.processResults(false); // TODO: move into loop
-					this.handleJobSuccess(); // TODO: move into loop
+					// 3) If it succeeded, handle results for that batch:
+          if (this.status === "COMPLETE") {
+            await this.processResults(false, entry); // you can pass an argument pointing at batch folder if needed
+            this.handleBatchSuccess(entry);
+          }
+				} catch (error) { // TODO: figure out how to handle errors in the loop (e.g. if one entry fails, the rest should still run)
+					console.error(`Batch ${entry.batchName} failed:`, error);
+					// console.error("Error:", error.message); // Single error handling point
+					this.handleJobError(error); // TODO: move into loop
+				} finally {
+					// Save log file
+					window.electron.writeFile(`${this.jobDetails.outdir}/${this.jobDetails.jobid}/${entry.batchName}/${this.jobDetails.jobid}_log.txt`, this.backendOutput).catch(console.error);
 				}
-			} catch (error) { // TODO: figure out how to handle errors in the loop (e.g. if one entry fails, the rest should still run)
-				console.error("Error:", error.message); // Single error handling point
-				this.handleJobError(error); // TODO: move into loop
-			} finally {
-				if (this.status !== "COMPLETE") {
-					this.status = "INITIAL";
-				}
-				this.errorHandled = false; // Resets error handled tracking
-				this.backendOutput = ""; // Clear backendOutput
-
-				// Remove any previously attached event listeners
-				window.electron.offBackendRealtimeOutput(); // Custom off method for the event
-				window.electron.offBackendComplete();
-				window.electron.offBackendError();
-				window.electron.offBackendCancelled();
 			}
+
+			// Once all batches are done (or attempted), reset top‐level UI state
+      this.status = "INITIAL";
+      this.backendOutput = "";
+      this.errorHandled = false;
+		},
+
+		async runOneEntry(entry) {
+			// 1) Build the batch‐specific output folder: `${outdir}/${jobid}/${batchName}`
+      const outdir = this.jobDetails.outdir;
+      const jobid = this.jobDetails.jobid;
+      const batchName = entry.batchName;
+      const batchFolder = `${outdir}/${jobid}/${batchName}`;
+      // ensure that directory exists (recursively)
+      await window.electron.mkdir(batchFolder); // returns a Promise if you exposed it; `await` in caller
+
+			// Figure out file‐base names:
+      const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
+      let base2 = "", ext2 = "";
+      if (this.jobDetails.mode === "paired-end" && entry.q2) {
+        ({ base: base2, ext: ext2 } = this.stripFileExtension(entry.q2));
+      }
+
+			// 2) If QC is enabled, run fastp first:
+      let classifyRead1 = entry.q1;
+      let classifyRead2 = entry.q2;
+
+			if (this.jobDetails.enableQC) {
+				const suffixQC = "_qc"; // you had this as const suffix = "_qc"
+        const qcParams = [
+          "fastp",
+          "-h", `${batchFolder}/${batchName}.html`,
+          "-j", `${batchFolder}/${batchName}.json`,
+          "-i", entry.q1,
+          "-o", `${batchFolder}/${base1}${suffixQC}${ext1}`
+        ];
+        if (this.jobDetails.mode === "paired-end" && entry.q2) {
+          qcParams.push(
+            "-I", entry.q2,
+            "-O", `${batchFolder}/${base2}${suffixQC}${ext2}`
+          );
+        }
+
+        console.log("🚀 fastp job requested:", qcParams);
+
+				await new Promise((resolve, reject) => {
+					const cleanupFastp = () => {
+						window.electron.offFastpListeners();
+					};
+					
+					// 2. Attach listeners
+					window.electron.onFastpOutput((output) => {
+						// console.log(output); // DEBUG
+						this.backendOutput += output;
+						this.$emit("backend-realtime-output", this.backendOutput);
+						this.status = "RUNNING"; // Keep the status as RUNNING
+					});
+					window.electron.onFastpError((err) => {
+						if (!this.errorHandled) {
+							this.errorHandled = true; // Prevent multiple error handling
+							this.backendOutput += "\nError:\n" + err.toString();
+							this.status = "ERROR"; // Signal job polling to stop
+							cleanupFastp(); 
+							reject(new Error("Fastp execution error:", err));
+						}
+					});
+					window.electron.onFastpComplete((msg) => {
+						if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
+						this.backendOutput += `${msg}\n`;
+						this.status = "COMPLETE";
+						cleanupFastp(); 
+						resolve();
+					});
+					window.electron.onFastpCancelled((msg) => {
+						if (!this.errorHandled) {
+							this.errorHandled = true; // Prevent multiple error handling
+							this.backendOutput += "\nCancelled: " + msg;
+							this.status = "CANCELLED";
+							cleanupFastp(); 
+							reject(new Error("QC process was cancelled"));
+						}
+					});
+
+					// 3. Start backend process
+					window.electron.runFastp(qcParams);
+				});
+
+				// After fastp finishes, update classifyRead1/2 so that classify uses QC outputs:
+				classifyRead1 = `${batchFolder}/${base1}_qc${ext1}`;
+        if (this.jobDetails.mode === "paired-end" && entry.q2) {
+          classifyRead2 = `${batchFolder}/${base2}_qc${ext2}`;
+        } else {
+          classifyRead2 = null;
+        }
+			} // end if enableQC
+
+			// 3) Now run “classify” on classifyRead1 (and classifyRead2 if paired)
+			const classifyParams = ["classify"];
+      if (this.jobDetails.mode === "single-end") {
+        classifyParams.push("--seq-mode", 1, classifyRead1);
+      } else if (this.jobDetails.mode === "paired-end") {
+        classifyParams.push(classifyRead1, classifyRead2);
+      } else {
+        classifyParams.push("--seq-mode", 3, classifyRead1);
+      }
+
+      // Add dbdir, outdir (this batchFolder), jobid
+      classifyParams.push(this.jobDetails.database, batchFolder, jobid);
+
+      // Add max-ram if set
+      if (this.jobDetails.maxram) {
+        classifyParams.push("--max-ram", parseInt(this.jobDetails.maxram));
+      }
+
+      // Add any advancedSettings
+      Object.values(this.advancedSettings).forEach(setting => {
+        if (setting.value !== "" && setting.value !== undefined) {
+          let val;
+          if (setting.type === "INTEGER") val = parseInt(setting.value);
+          else if (setting.type === "FLOAT") val = parseFloat(setting.value);
+          else val = setting.value;
+          classifyParams.push(setting.parameter, val);
+        }
+      });
+
+      console.log("🚀 classify job requested:", classifyParams);
+
+      // Return a promise that resolves when classify finishes (or rejects on error)
+      return new Promise((resolve, reject) => {
+        const cleanupClassify = () => {
+          window.electron.offBackendRealtimeOutput();
+          window.electron.offBackendComplete();
+          window.electron.offBackendError();
+          window.electron.offBackendCancelled();
+        };
+
+        window.electron.onBackendRealtimeOutput(output => {
+          this.backendOutput += output;
+          this.$emit("backend-realtime-output", this.backendOutput);
+          this.status = "RUNNING";
+        });
+
+        window.electron.onBackendComplete(msg => {
+          if (this.status !== "RUNNING") return;
+          this.backendOutput += msg;
+          this.status = "COMPLETE";
+          cleanupClassify();
+          resolve();
+        });
+
+        window.electron.onBackendError(err => {
+          if (!this.errorHandled) {
+            this.errorHandled = true;
+            this.backendOutput += "\nError:\n" + err;
+            this.status = "ERROR";
+            cleanupClassify();
+            reject(new Error("classify execution error: " + err));
+          }
+        });
+
+        window.electron.onBackendCancelled(msg => {
+          if (!this.errorHandled) {
+            this.errorHandled = true;
+            this.backendOutput += "\nCancelled: " + msg;
+            this.status = "CANCELLED";
+            cleanupClassify();
+            reject(new Error("classify cancelled"));
+          }
+        });
+
+        window.electron.runBackend(classifyParams);
+      });
 		},
 
 		async runBackend() {
@@ -669,7 +840,7 @@ export default {
 						window.electron.onFastpOutput((output) => {
 							this.backendOutput += output;
               this.$emit("backend-realtime-output", this.backendOutput);
-							console.log(output); // DEBUG
+							// console.log(output); // DEBUG
 							this.status = "RUNNING"; // Keep the status as RUNNING
 						});
 						window.electron.onFastpError((err) => {
@@ -805,27 +976,23 @@ export default {
 			}
 		},
 
-		// Function to track job status + process results + trigger snackbar
+		// Poll for status flips to “COMPLETE” or “ERROR” (or TIMEOUT)
 		async pollJobStatus(interval = 500, timeout = Infinity) {
-			// FIXME: decide timeout duration
-			console.log("🚀 Running job"); // DEBUG
+			// 	console.log("🚀 Running job"); // DEBUG
 			const start = Date.now();
-			while (Date.now() - start < timeout) {
-				if (this.errorHandled || this.status === "COMPLETE") return true;
-
-				if (this.status === "ERROR") {
-					throw new Error("Backend error occurred");
-				}
-				await new Promise((resolve) => setTimeout(resolve, interval));
-			}
-			if (!this.errorHandled) {
-				this.status = "TIMEOUT";
-				throw new Error("Polling timed out");
-			}
-		},
+      while (Date.now() - start < timeout) {
+        if (this.errorHandled || this.status === "COMPLETE") return true;
+        if (this.status === "ERROR") throw new Error("Backend signaled ERROR");
+        await new Promise(r => setTimeout(r, interval));
+      }
+      if (!this.errorHandled) {
+        this.status = "TIMEOUT";
+        throw new Error("Polling timed out");
+      }
+    },
 
 		// Function for processing results (shared for both tabs)
-		async processResults(isSample) { // TODO: refactor to use the last batch of the entries
+		async processResults(isSample, entry = null) {
 			let reportFilePath;
 			let kronaFilePath;
 
@@ -833,7 +1000,14 @@ export default {
 			let resolvedOutdirPath;
 			let jobId;
 
-			resolvedOutdirPath = isSample ? this.jobDetailsSample.outdir : this.jobDetails.outdir;
+			let batchFolder = "";
+			if (!isSample) {
+				// Grab the last entry from jobDetails.entries
+				// const lastEntry = this.jobDetails.entries[this.jobDetails.entries.length - 1];
+				batchFolder = `${this.jobDetails.outdir}/${this.jobDetails.jobid}/${entry.batchName}`;
+			}
+
+			resolvedOutdirPath = isSample ? this.jobDetailsSample.outdir : batchFolder;
 			jobId = isSample ? this.jobDetailsSample.jobid : this.jobDetails.jobid;
 
 			// Set file paths for report and krona
@@ -864,6 +1038,36 @@ export default {
 				console.error("Error opening Krona viewer:", error);
 			}
 		},
+
+		// Called once classify for one batch completes
+		handleBatchSuccess(entry) {
+      const jobid = this.jobDetails.jobid;
+      const batchFolder = `${this.jobDetails.outdir}/${jobid}/${entry.batchName}`;
+
+      // processResults(false) should look in batchFolder for jobid_report.tsv, etc.
+      // this.processResults(false, entry).then(() => {
+        const completedJob = {
+          jobDetails: { ...this.jobDetails },
+          outdir: batchFolder,
+          jobid: jobid,
+					isSample: false,
+          // batchName: entry.batchName,
+          jobStatus: "Completed",
+          jobType: "runSearch",
+          backendOutput: this.backendOutput,
+          resultsJSON: this.processedResults.jsonData.results,
+          kronaContent: this.processedResults.kronaContent,
+          reportFilePath: `${batchFolder}/${jobid}_report.tsv`
+        };
+
+        this.$emit("store-job", completedJob);
+        localStorage.setItem(`processedResults`, JSON.stringify(completedJob));
+
+				// TODO: Emit job-completed and redirect to Results Page if its the last batch 
+        // this.$emit("job-completed", completedJob);
+      // });
+    },
+
 		handleJobSuccess() {
 			console.log("🚀 Job completed successfully."); // DEBUG
 
