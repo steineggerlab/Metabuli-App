@@ -24,7 +24,7 @@ You can add new sequences to an existing database in the "UPDATE DATABASE" tab b
 - **CDS Info**:  A file containing absolute paths to CDS files. For the listed accessions, Prodigal’s gene prediction will be skipped. Only GenBank/RefSeq-format CDS files are supported. 
 - **New Taxa**:  Used when adding sequences from taxa not included in the existing database. See the section below for details.
 
-### Adding seqeunces of new taxa
+### Adding sequences of new taxa
 > [WARNING] 
 > Mixing taxonomies within the same domain is not recommended. For example, adding prokaryotes to a GTDB-based database using NCBI taxonomy will cause issues, but adding eukaryotes or viruses to a GTDB-based database using NCBI taxonomy is fine since GTDB does not cover them.
 

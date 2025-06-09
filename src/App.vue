@@ -218,6 +218,7 @@ export default {
 	background-repeat: repeat !important;
 	background-size: contain !important;
 	padding-left: 20px;
+	padding-right: 8px;
 }
 
 .marv-metabuli-opaque {
