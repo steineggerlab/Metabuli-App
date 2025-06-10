@@ -14,26 +14,30 @@ Metabuli App provides two taxonomic profiling modes in **Search Settings** panel
     - Read 1 File (and Read 2 File if Paired-end is selected)
         - FASTA/FASTQ and their gzipped versions are supported.
         - `ADD ENTRY` to upload **multiple samples** to process using the same settings.
-    - Database Directory
-    - Output Directory
-        - Result files are saved in `Job ID` directory under the specified output directory.
+    - Database Folder
+    - Output Folder
+        - Result files are saved in `Job ID` folder under the specified output folder.
         - When **multiple samples** are processed, results are saved in `Job ID/sample_name` directories.
-5. **Max RAM:** Specify the maximum RAM (in GiB) to allocate for the job.
+5. **Max RAM:** Specify the maximum RAM (in GiB) to allocate for the job. (all available RAM by default)
 
 ### Advanced Settings (Optional): 
-- **Threads:** Specify thread count for the job.
-- **Min Score:** Set the minimum score for making a classification. It reduces false positives at the cost of sensitivity.
-    - Recommended values (For details, please refer Supp. Fig. 4-7 in the [Metabuli paper](https://www.nature.com/articles/s41592-024-02273-y)):
+- **Threads:** Specify thread count for the job. (all threads by default)
+- **Min Score:** Set the minimum similiarity score for making a classification. 
+    - Search results of scores lower than this are discarded to reduce false positives at the cost of sensitivity.
+    - Default is 0 to maximize sensitivity.
+    - Recommended values below increase precision without reducing the F1 score.
+    - These values are determined from score distributions of false and true positives in synthetic benchmarks (details in Supp. Fig. 4-7 in the [Metabuli paper](https://www.nature.com/articles/s41592-024-02273-y.epdf?sharing_token=je_2D5Su0-xVOSjuKSAXF9RgN0jAjWel9jnR3ZoTv0M7gE7NDF_xi_3sW8QdRiwfSJNwqaXItSoeCvr7cvcoQxKLt0oROgWc6urmki9tP80cXEuHPN0D7b4y9y3i8Yv7sZw8MxxhAj7W6p9eZE2zaK3eozdOkXvwADVfso9cXIM%3D)):
         - Illumina short reads: 0.15 
         - PacBio HiFi reads: 0.07
         - PacBio Sequel II reads: 0.005
         - Nanopore long reads: 0.008
-- **Min SP Score:** Set the minimum score for the species- or lower-level classification. It avoids overconfident classifications.
-    - Recommended values (For details, please refer Supp. Fig. 4-7 in the [Metabuli paper](https://www.nature.com/articles/s41592-024-02273-y)):
+- **Min SP Score:** Set the minimum similarity score for species‐ or lower‐rank classification.
+    - Reads with scores below this threshold are assigned to genus‐ or higher‐rank to avoid overconfident calls.
+    - Recommended values below increase precision without reducing the F1 score (details in Supp. Fig. 4-7 in the [Metabuli paper](https://www.nature.com/articles/s41592-024-02273-y.epdf?sharing_token=je_2D5Su0-xVOSjuKSAXF9RgN0jAjWel9jnR3ZoTv0M7gE7NDF_xi_3sW8QdRiwfSJNwqaXItSoeCvr7cvcoQxKLt0oROgWc6urmki9tP80cXEuHPN0D7b4y9y3i8Yv7sZw8MxxhAj7W6p9eZE2zaK3eozdOkXvwADVfso9cXIM%3D)):
         - Illumina short reads: 0.5 
         - PacBio HiFi reads: 0.3
-- **Taxonomy Path:** Use it when your database does not have `taxonomy` directory or `taxonomyDB` file. Provide a directroy of `names.dmp`, `nodes.dmp`, and `mereged.dmp` files. 
-- **Accession Level:** classify reads to accessions if available.
+- **Taxonomy Path:** Use it when your database does not have `taxonomy` folder or `taxonomyDB` file. Provide a directroy of `names.dmp`, `nodes.dmp`, and `mereged.dmp` files. 
+- **Accession Level:** Classify reads to accessions if the database is created with `--accession-level` option.
 
 ### Start Analysis: 
 - Click the `Run Metabuli` button to start the metagenomic classification process.
@@ -54,7 +58,11 @@ Metabuli App provides two taxonomic profiling modes in **Search Settings** panel
 5. `score`: DNA level identity score
 6. `rank`: Taxonomic rank of the taxon
 7. `taxID:match_count`: List of "taxID : k-mer match count"
-
+```
+#query_id       name    taxID   query_length    score   rank    taxID:match_count
+0       SRR14484345.1.1 0       141     0       -       -
+1       SRR14484345.8.1 2697049 141     0.808511        no rank 2697049:25
+```
 #### 2. JobID_report.tsv: It follows Kraken2's report format. The first line is a header, and the rest of the lines are tab-separated values. The columns are as follow.
 
 1. `clade_proportion`: Percentage of reads classified to the clade rooted at this taxon
@@ -63,6 +71,23 @@ Metabuli App provides two taxonomic profiling modes in **Search Settings** panel
 4. `rank`: Taxonomic rank of the taxon
 5. `taxID`: Tax ID according to the taxonomy dump files used in the database creation
 6. `name`: Taxonomic name of the taxon
+
+```
+#clade_proportion       clade_count     taxon_count     rank    taxID   name
+6.3491  1403612 1403612 no rank 0       unclassified
+93.6509 20703786        5550    no rank 1       root
+93.5580 20683246        8058    no rank 131567    cellular organisms
+93.3781 20643465        680714  superkingdom    2           Bacteria
+58.9608 13034701        105888  clade   1783272       Terrabacteria group
+54.7279 12098906        472184  phylum  1239            Bacillota
+50.0354 11061529        743978  class   186801            Clostridia
+24.4574 5406894 402967  order   186802              Eubacteriales
+18.2228 4028593 206645  family  216572                Oscillospiraceae
+8.4570  1869631 950213  genus   216851                  Faecalibacterium
+3.0276  669332  655324  species 853                       Faecalibacterium prausnitzii
+0.0238  5271    5271    strain  718252                      Faecalibacterium prausnitzii L2-6
+0.0199  4407    4407    strain  657322                      Faecalibacterium prausnitzii SL3/3
+```
 
 #### 3. JobID_krona.html: It is for an interactive Krona plot. You can use any modern web browser to open `JobID_krona.html`.
 
