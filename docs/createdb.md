@@ -46,12 +46,15 @@ You can create a new database in "NEW DATABASE" tab by providing these three fil
 5. **Taxonomy Path:** Folder of taxonomy dump files (`names.dmp`, `nodes.dmp`, and `merged.dmp` are requried).
 
 ### Optional fields
-- **Max RAM**: Specify the maximum RAM (in GiB) to allocate for the job.
-- **Threads**: Specify the number of threads to use for the job.
-- **Accession Level**: Create a database for accession-level classification. </br>
+- `--make-library`: Make species genome library before indexing. It is highly recommended when a single FASTA file contains multiple species. 
+- `--cds-info`: File containing CDS file paths. Provided CDSs are used for included accessions instead of predicted genes. Prodigal's gene prediction is skipped. Only GenBank/RefSeq CDS files are supported.
+- `--accession-level`: Set 1 to create an accession level database, with which you can classify reads to specific accessions. </br>
   (WARNING: It it not tested for large databases. Using it with > 100K sequences may cause issues.)
-- **Make Library**: Make a library of species genomes. It accelerates the process when some large FASTA files include many species genomes.
-- **CDS Info**: File containing absolute paths to CDS. For included accessions, Prodigal's gene prediction is skipped. Only GenBank/RefSeq CDS files are supported.   
+- `--max-ram`: Specify the maximum RAM (in GiB) to allocate for the job.
+- `--threads`: Specify the number of threads to use for the job.
+
+
+ 
 
 ---
 
@@ -73,13 +76,13 @@ You can add new sequences to an existing database in the "UPDATE DATABASE" tab b
     - If not checked: provide an NCBI-style accession2taxid file.
 
 ### Optional fields
-- **Max RAM**: Specify the maximum amount of RAM (in GiB) to allocate.
-- **Threads**: Specify the number of threads to use.
-- **Accession Level**: Create a database for accession-level classification. </br>
-  *(WARNING: This option is not tested for large databases. Using it with more than 100,000 sequences may cause issues.)*
-- **Make Library**: Create a library of species genomes. This accelerates processing when large FASTA files contain genomes of multiple species.
-- **CDS Info**:  A file containing absolute paths to CDS files. For the listed accessions, Prodigal’s gene prediction will be skipped. Only GenBank/RefSeq-format CDS files are supported. 
-- **New Taxa**:  Used when adding sequences from taxa not included in the existing database. See the section below for details.
+- `--make-library`: Make species genome library before indexing. It is highly recommended when a single FASTA file contains multiple species. 
+- `--cds-info`: File containing CDS file paths. Provided CDSs are used for included accessions instead of predicted genes. Prodigal's gene prediction is skipped. Only GenBank/RefSeq CDS files are supported.
+- `--accession-level`: Set 1 to create an accession level database, with which you can classify reads to specific accessions. </br>
+  (WARNING: It it not tested for large databases. Using it with > 100K sequences may cause issues.)
+- `--max-ram`: Specify the maximum RAM (in GiB) to allocate for the job.
+- `--threads`: Specify the number of threads to use for the job.
+- `--new-taxa`:  Used when adding sequences from taxa not included in the existing database. See the section below for details.
 
 ### Adding seqeunces of new taxa
 > [WARNING] 

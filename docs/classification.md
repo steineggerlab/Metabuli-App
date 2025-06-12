@@ -10,19 +10,17 @@ Metabuli App provides two taxonomic profiling modes in **Search Settings** panel
     - `fastp` and `fastplong` are used for short and long reads, respectively.
     - Please see QC documentation for more details.
 3. **Job ID:** Enter a unique identifier for the job.
-4. **Select Files:** Upload the necessary files and directories.
-    - Read 1 File (and Read 2 File if Paired-end is selected)
-        - FASTA/FASTQ and their gzipped versions are supported.
-        - `ADD ENTRY` to upload **multiple samples** to process using the same settings.
-    - Database Folder
-    - Output Folder
-        - Result files are saved in `Job ID` folder under the specified output folder.
-        - When **multiple samples** are processed, results are saved in `Job ID/sample_name` directories.
-5. **Max RAM:** Specify the maximum RAM (in GiB) to allocate for the job. (all available RAM by default)
+4. **Query Files:** Specify your query sample(s) to classify.
+    - FASTA/FASTQ and their gzipped versions are supported.
+    - `ADD ENTRY` to upload **multiple samples** to process using the same settings.
+5. **Database Folder:** Select the folder of Metabuli database.
+6. **Output Folder:** Specify the folder where the results will be saved.
+    - Result files are saved in `Job ID` folder under the specified output folder.
+    - When **multiple samples** are processed, results are saved in `Job ID/sample_name` directories.
+7. **Max RAM:** Specify the maximum RAM (in GiB) to allocate for the job. (all available RAM by default)
 
 ### Advanced Settings (Optional): 
-- **Threads:** Specify thread count for the job. (all threads by default)
-- **Min Score:** Set the minimum similiarity score for making a classification. 
+- `--min-score`: Set the minimum similiarity score for making a classification. 
     - Search results of scores lower than this are discarded to reduce false positives at the cost of sensitivity.
     - Default is 0 to maximize sensitivity.
     - Recommended values below increase precision without reducing the F1 score.
@@ -31,13 +29,16 @@ Metabuli App provides two taxonomic profiling modes in **Search Settings** panel
         - PacBio HiFi reads: 0.07
         - PacBio Sequel II reads: 0.005
         - Nanopore long reads: 0.008
-- **Min SP Score:** Set the minimum similarity score for species‐ or lower‐rank classification.
+- `--min-sp-score`: Set the minimum similarity score for species‐ or lower‐rank classification.
     - Reads with scores below this threshold are assigned to genus‐ or higher‐rank to avoid overconfident calls.
     - Recommended values below increase precision without reducing the F1 score (details in Supp. Fig. 4-7 in the [Metabuli paper](https://www.nature.com/articles/s41592-024-02273-y.epdf?sharing_token=je_2D5Su0-xVOSjuKSAXF9RgN0jAjWel9jnR3ZoTv0M7gE7NDF_xi_3sW8QdRiwfSJNwqaXItSoeCvr7cvcoQxKLt0oROgWc6urmki9tP80cXEuHPN0D7b4y9y3i8Yv7sZw8MxxhAj7W6p9eZE2zaK3eozdOkXvwADVfso9cXIM%3D)):
         - Illumina short reads: 0.5 
-        - PacBio HiFi reads: 0.3
-- **Taxonomy Path:** Use it when your database does not have `taxonomy` folder or `taxonomyDB` file. Provide a directroy of `names.dmp`, `nodes.dmp`, and `mereged.dmp` files. 
-- **Accession Level:** Classify reads to accessions if the database is created with `--accession-level` option.
+        - PacBio HiFi reads: 0.3        
+- `--threads`: Specify thread count for the job. (all threads by default)
+
+
+- `--taxonomy-path`: Use it when your database does not have `taxonomy` folder or `taxonomyDB` file. Provide a directroy of `names.dmp`, `nodes.dmp`, and `mereged.dmp` files. 
+- `--accession-level`: Classify reads to accessions if the database is created with `--accession-level` option.
 
 ### Start Analysis: 
 - Click the `Run Metabuli` button to start the metagenomic classification process.
