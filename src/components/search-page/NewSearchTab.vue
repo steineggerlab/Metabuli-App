@@ -126,7 +126,7 @@
 							<v-col cols="9" class="search-files">
 								<v-row v-for="(entry, index) in jobDetails.entries" :key="index">
 									<!-- Read 1 -->
-									<v-col cols="4">
+									<v-col cols="5">
 										<div v-if="!entry.q1">
 											<v-btn @click="pickFile('file', 'q1', index)" prepend-icon="$file" density="comfortable" size="default"
 												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
@@ -141,7 +141,7 @@
 									</v-col>
 	
 									<!-- Read 2 -->
-									<v-col cols="4" v-if="jobDetails.mode === 'paired-end'">
+									<v-col cols="5" v-if="jobDetails.mode === 'paired-end'">
 										<div v-if="!entry.q2">
 											<v-btn  @click="pickFile('file', 'q2', index)" prepend-icon="$file" density="comfortable" size="default"
 												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">

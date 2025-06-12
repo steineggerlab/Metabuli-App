@@ -6,7 +6,7 @@
 				<v-card variant="outlined" color="primary">
 					<v-card-title class="text-subtitle-2">
 						Please refer to the <a href="https://github.com/steineggerlab/Metabuli" target="_blank">Metabuli documentation</a> for more information on how to update a database.<br/>
-						You can add new sequences to an existing database. Adding new taxa is also possible with 'New Taxa' option.</v-card-title>
+						You can add new sequences to an existing database. Adding new taxa is also possible with <code>--new-taxa</code> option.</v-card-title>
 				</v-card>
 			</v-container>
             
@@ -297,7 +297,7 @@
                                     rounded="lg"
                                     density="compact"
                                     color="primary"
-                                    :placeholder="setting.extra?.file ? 'Select Path' : none"
+                                    :placeholder="setting.extra?.file ? 'Select' : none"
                                     v-model="setting.value"
                                     :prepend-icon="getAppendInnerIcon(setting)"
                                     :rules="getValidationRules(setting.parameter)"

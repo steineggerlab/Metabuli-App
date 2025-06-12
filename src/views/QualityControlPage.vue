@@ -280,6 +280,20 @@
         </v-list>
       </v-card>
     </v-dialog>
+    <!-- Footer: Reference to Paper -->
+		<v-container class="pt-0">
+			<v-card>
+				<v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">Reference</v-toolbar>
+				<v-card-text>
+					Shifu Chen.
+					<a href="https://onlinelibrary.wiley.com/doi/10.1002/imt2.107" target="_blank" class="text-blue-accent-4">
+						Ultrafast one-pass FASTQ data preprocessing, quality control, and deduplication using fastp.
+					</a>
+					iMeta (2023).
+				</v-card-text>
+			</v-card>
+		</v-container>
+
   </div>
 </template>
 
