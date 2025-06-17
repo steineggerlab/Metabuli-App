@@ -12,7 +12,7 @@ LIPO ?= lipo
 endif
 
 win: resources/win/x64/${FRONTEND_APP}.bat 
-mac: resources/mac/x64/${FRONTEND_APP} resources/mac/arm64/${FRONTEND_APP} resources/mac/x64/fastp resources/mac/arm64/fastp
+mac: resources/mac/x64/${FRONTEND_APP} resources/mac/arm64/${FRONTEND_APP} resources/mac/x64/fastp resources/mac/arm64/fastp resources/mac/x64/fastplong resources/mac/arm64/fastplong
 linux: resources/linux/arm64/${FRONTEND_APP} resources/linux/x64/${FRONTEND_APP}
 
 # macOS
@@ -41,6 +41,19 @@ resources/mac/x64/fastp: resources/mac/fastp
 resources/mac/arm64/fastp: resources/mac/fastp
 	mkdir -p resources/mac/arm64
 	$(LIPO) resources/mac/fastp -thin arm64 -output resources/mac/arm64/fastp || cp -f -- resources/mac/fastp resources/mac/arm64/fastp
+
+resources/mac/fastplong:
+	mkdir -p resources/mac
+	wget -nv -q -O - https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.1/fastplong-osx-universal.gz | gunzip > resources/mac/fastplong
+	chmod +x resources/mac/fastplong
+
+resources/mac/x64/fastplong: resources/mac/fastplong
+	mkdir -p resources/mac/x64
+	$(LIPO) resources/mac/fastplong -remove arm64 -output resources/mac/x64/fastplong || cp -f -- resources/mac/fastplong resources/mac/x64/fastplong
+
+resources/mac/arm64/fastplong: resources/mac/fastplong
+	mkdir -p resources/mac/arm64
+	$(LIPO) resources/mac/fastplong -thin arm64 -output resources/mac/arm64/fastplong || cp -f -- resources/mac/fastplong resources/mac/arm64/fastplong
 
 
 # Linux
