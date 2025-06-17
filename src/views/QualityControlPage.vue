@@ -462,7 +462,7 @@ export default {
         this.jobDetails.mode === "single-end"   ? "_SE"  :
         "_LR";
       
-      for (const entry of this.jobDetails.testentries) { // TODO: use jobDetails.entries
+      for (const entry of this.jobDetails.entries) { // TODO: use jobDetails.entries
         // 1) reset status & error flag
         this.status = "RUNNING";
         this.errorHandled = false;
