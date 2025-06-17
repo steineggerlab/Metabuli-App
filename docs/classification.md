@@ -20,7 +20,7 @@ Metabuli App provides two taxonomic profiling modes in **Search Settings** panel
 7. **Max RAM:** Specify the maximum RAM (in GiB) to allocate for the job. (all available RAM by default)
 
 ### Advanced Settings (Optional): 
-- `--min-score`: Set the minimum similiarity score for making a classification. 
+- `--min-score`: Set the minimum similarity score for making a classification.
     - Search results of scores lower than this are discarded to reduce false positives at the cost of sensitivity.
     - Default is 0 to maximize sensitivity.
     - Recommended values below increase precision without reducing the F1 score.
