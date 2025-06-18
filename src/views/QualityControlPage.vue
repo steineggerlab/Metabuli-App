@@ -6,6 +6,21 @@
         <v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">
           Raw Read Quality Control
           <v-spacer></v-spacer>
+          
+          <v-btn rounded="xs" @click="showReadme=true" variant="tonal"> MANUAL </v-btn>
+
+          <!-- ReadMe Manual Bottom Sheet -->
+          <v-bottom-sheet class="markdown-body" v-model="showReadme">
+            <v-card>
+              <v-card-text style="max-height: 90vh; overflow-y: auto;">
+                <div v-html="readmeHtml"></div>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn text @click="showReadme=false">Close</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-bottom-sheet>
         </v-toolbar>
         
         <v-container>
@@ -300,6 +315,7 @@
 <script>
 /* eslint-disable */
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
+import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 
 export default {
   name: "QualityControlPage",
@@ -333,6 +349,10 @@ export default {
 
       // Properties for QC settings dialog
       showQCSettingsDialog: false,
+
+      // ReadMe Manual Handling
+      showReadme: false,
+      readmeHtml: "",
 		};
 	},
 	computed: {
@@ -596,6 +616,23 @@ export default {
       this.hideDialog();
       window.electron.cancelFastp(); // Cancel the fastp process
     },
+	},
+
+  async mounted() {
+		try {
+			this.readmeHtml = await loadMarkdownAsHtml("docs/preprocess.md");
+		} catch (err) {
+			console.error("Failed to load README.md:", err);
+			// Fallback content
+			this.readmeHtml = `
+				<p>
+					⚠️ Ran into an error while loading the instructions.<br>
+					You can still view them at
+					<a href="https://github.com/steineggerlab/Metabuli-App" target="_blank" style="text-decoration: underline;">
+						steineggerlab/Metabuli-App</a>
+				</p>
+			`;
+		}
 	},
 };
 </script>
