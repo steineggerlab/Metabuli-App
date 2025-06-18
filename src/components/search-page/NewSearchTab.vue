@@ -9,7 +9,20 @@
 						<!-- End Type (single-end, paired-end, long-read) -->
 						<v-row align="center">
 							<v-col cols="3">
-								<v-list-subheader>Mode</v-list-subheader>
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon 
+												v-bind="props" 
+												icon="$helpCircle" 
+												size="16" 
+												color="grey lighten-2">
+											</v-icon>
+                                        </template>
+										Sequencing type of your samples.
+                                    </v-tooltip>
+									<span class="font-weight-bold">  Mode</span>
+								</v-list-subheader>
 							</v-col>
 
 							<v-col>
@@ -24,7 +37,20 @@
 						<!-- Fastp Toggle Switch -->
 						<v-row align="center">
 							<v-col cols="3">
-								<v-list-subheader>Enable Quality Control</v-list-subheader>
+								<v-list-subheader>
+									<v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon 
+												v-bind="props" 
+												icon="$helpCircle" 
+												size="16" 
+												color="grey lighten-2">
+											</v-icon>
+                                        </template>
+										Enable it to preprocess raw reads before classification.
+                                    </v-tooltip>
+									<span class="font-weight-bold">  Quality Control</span>
+								</v-list-subheader>
 							</v-col>
 
 							<v-col cols="1">
@@ -48,9 +74,22 @@
 						<!-- Job ID -->
 						<v-row>
 							<v-col cols="3">
-								<v-list-subheader>Job ID</v-list-subheader>
+								<v-list-subheader>
+									<v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon 
+												v-bind="props" 
+												icon="$helpCircle" 
+												size="16" 
+												color="grey lighten-2">
+											</v-icon>
+                                        </template>
+										TODO
+                                    </v-tooltip>
+									<span class="font-weight-bold">  Job ID</span>
+								</v-list-subheader>
 							</v-col>
-							<v-col>
+							<v-col cols="6">
 								<v-text-field
 									v-model="jobDetails.jobid"
 									:rules="[requiredRule]"
@@ -65,10 +104,23 @@
 							</v-col>
 						</v-row>
 
-						<!-- Select Files -->
+						<!-- Query Files -->
 						<v-row>
 							<v-col cols="3">
-								<v-list-subheader class="pr-0">Select Files</v-list-subheader>
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon 
+												v-bind="props" 
+												icon="$helpCircle" 
+												size="16" 
+												color="grey lighten-2">
+											</v-icon>
+                                        </template>
+										(gzipped) FASTA/Q query read files. 
+                                    </v-tooltip>
+									<span class="font-weight-bold">  Query Files</span>
+								</v-list-subheader>
 							</v-col>
 
 							<v-col cols="9" class="search-files">
@@ -118,14 +170,35 @@
 
 								<!-- Add Entry Button -->
 								<v-row>
-									<v-col cols="12">
+									<v-col cols="4">
 										<v-btn variant="text" prepend-icon="$plusBox" @click="addEntry">Add Entry</v-btn>
 									</v-col>
 								</v-row>
+							</v-col>
+						</v-row>
+						
+						<!-- Database Folder -->
+						<v-row>
+                            <v-col cols="3">
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon 
+												v-bind="props" 
+												icon="$helpCircle" 
+												size="16" 
+												color="grey lighten-2">
+											</v-icon>
+                                        </template>
+										Metabuli database folder.
+                                    </v-tooltip>
+									<span class="font-weight-bold">  Database Folder</span>
+								</v-list-subheader>
+							</v-col>
 
-								<!-- Database Directory -->
+							<v-col cols="9" class="search-files">
 								<v-row>
-									<v-col cols="6">
+									<v-col cols="4">
 										<div class="d-flex flex-column align-center mb-0 gc-3">
 											<v-btn
 												@click="pickFile('directory', 'database')"
@@ -133,7 +206,7 @@
 												density="comfortable"
 												size="default"
 												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-												>Select Database</v-btn
+												>Select Folder</v-btn
 											>
 											<v-text-field v-model="jobDetails.database" :rules="[requiredRule]" style="display: none"></v-text-field>
 
@@ -159,17 +232,39 @@
 										>
 									</v-col>
 								</v-row>
+							</v-col>
+						</v-row>
+									
 
-								<!-- Output Directory -->
+						<!-- Output Folder -->
+						<v-row>
+                            <v-col cols="3">
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon 
+												v-bind="props" 
+												icon="$helpCircle" 
+												size="16" 
+												color="grey lighten-2">
+											</v-icon>
+                                        </template>
+										Folder to store output files.
+                                    </v-tooltip>
+									<span class="font-weight-bold">  Output Folder</span>
+								</v-list-subheader>
+							</v-col>
+							<v-col cols="9" class="search-files">
+								<!-- Output Directory Button and Text Field -->
 								<v-row>
-									<v-col cols="6">
+									<v-col cols="4">
 										<v-btn
 											@click="pickFile('directory', 'outdir')"
 											prepend-icon="$folder"
 											density="comfortable"
 											size="default"
 											class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-											>Output Directory</v-btn
+											>Select Folder</v-btn
 										>
 										<v-text-field v-model="jobDetails.outdir" :rules="[requiredRule]" style="display: none"></v-text-field>
 									</v-col>
@@ -187,9 +282,22 @@
 						<!-- --max-ram -->
 						<v-row class="mt-2">
 							<v-col cols="3">
-								<v-list-subheader>Max RAM</v-list-subheader>
+								<v-list-subheader>
+									<v-tooltip location="top">
+                                        <template v-slot:activator="{ props }">
+                                            <v-icon 
+												v-bind="props" 
+												icon="$helpCircle" 
+												size="16" 
+												color="grey lighten-2">
+											</v-icon>
+                                        </template>
+										Maximum RAM to be used for the job.
+                                    </v-tooltip>
+									<span class="font-weight-bold">  Max RAM</span>
+								</v-list-subheader>
 							</v-col>
-							<v-col>
+							<v-col cols="6">
 								<v-text-field
 									v-model="jobDetails.maxram"
 									:rules="[...getValidationRules('--max-ram'), requiredRule]"
@@ -227,14 +335,32 @@
 					<!-- Parameters for precision mode -->
 					<v-container class="py-0">
 						<v-card variant="outlined" color="primary">
-							<v-card-title class="text-subtitle-2 pb-0">Parameters for precision mode (Metabuli-P)</v-card-title>
+							<v-card-title
+								class="text-subtitle-2 pb-0"
+								style="white-space: normal; word-break: break-word;"
+							>
+								Parameters for Precision Mode (Metabuli-P) <br>
+								<span class="font-weight-regular" style="font-style: normal;">
+									Recommended values below increase precision maintaing the F1 score. <br>
+									These values are determined from score distributions of false and true positives in synthetic benchmarks. <br>
+									(Details in Supp. Fig. 4-7 in the
+									<a
+										href="https://www.nature.com/articles/s41592-024-02273-y.epdf?sharing_token=je_2D5Su0-xVOSjuKSAXF9RgN0jAjWel9jnR3ZoTv0M7gE7NDF_xi_3sW8QdRiwfSJNwqaXItSoeCvr7cvcoQxKLt0oROgWc6urmki9tP80cXEuHPN0D7b4y9y3i8Yv7sZw8MxxhAj7W6p9eZE2zaK3eozdOkXvwADVfso9cXIM%3D"
+										target="_blank"
+										rel="noopener"
+										class="text--primary"
+									>
+										Metabuli paper
+									</a>)
+								</span>
+							</v-card-title>
 							<v-card-title class="text-caption">
 								<span v-if="jobDetails.mode === 'long-read'">
 									<strong>PacBio HiFi reads:</strong> --min-score 0.07 --min-sp-score 0.3<br />
 									<strong>PacBio Sequel II reads:</strong> --min-score 0.005<br />
 									<strong>ONT reads:</strong> --min-score 0.008
 								</span>
-								<span v-else> <strong>Illumina short reads:</strong> --min-score 0.15 --min-sp-score 0.5 </span>
+								<span v-else> <strong>Illumina short reads:</strong> <code> --min-score 0.15 --min-sp-score 0.5 </code> </span>
 							</v-card-title>
 						</v-card>
 					</v-container>
@@ -242,9 +368,9 @@
 					<!-- Input fields -->
 					<v-container fluid>
 						<v-row v-for="(setting, key) in advancedSettings" :key="key">
-							<v-col cols="7">
+							<v-col cols="8">
 								<v-list-subheader class="pr-0 text-high-emphasis font-weight-medium">
-									{{ setting.title }}
+									<code>{{ setting.title }}</code>
 								</v-list-subheader>
 								<small class="search-advanced-settings text-caption text-medium-emphasis pr-0" >
 									{{ setting.description }}
@@ -257,7 +383,7 @@
 									rounded="lg"
 									density="compact"
 									color="primary"
-									:placeholder="setting.extra?.file ? 'Select Directory' : none"
+									:placeholder="setting.extra?.file ? 'Select Folder' : none"
 									v-model="setting.value"
 									:prepend-icon="getAppendInnerIcon(setting)"
 									:rules="getValidationRules(setting.parameter)"
@@ -326,30 +452,23 @@ export default {
 			},
 			expandAdvancedSettings: false,
 			advancedSettings: {
-				thread: {
-					title: "Threads",
-					description: "The number of threads used (all by default)",
-					parameter: "--threads",
-					value: "",
-					type: "INTEGER",
-				},
 				minScore: {
-					title: "Min Score",
-					description: "The minimum score to be classified",
+					title: "--min-score",
+					description: "Search results of scores lower than this are discarded to reduce false positives at the cost of sensitivity. ",
 					parameter: "--min-score",
-					value: "",
+					value: "0",
 					type: "FLOAT",
 				},
 				minSpScore: {
-					title: "Min SP Score",
-					description: "The minimum score to be classified at or below species rank.",
+					title: "--min-sp-score",
+					description: "Reads with scores below this threshold are assigned to genus‐ or higher‐rank to avoid overconfident calls.",
 					parameter: "--min-sp-score",
-					value: "",
+					value: "0",
 					type: "FLOAT",
 				},
 				taxonomyPath: {
-					title: "Taxonomy Path",
-					description: "Directory where the taxonomy dump files are stored. (DBDIR/taxonomy by default)",
+					title: "--taxonomy-path",
+					description: "Use it when your database lacks 'taxonomy' directory or 'taxonomyDB' file to provide tax dump files.",
 					parameter: "--taxonomy-path",
 					value: "",
 					type: "STRING",
@@ -359,10 +478,17 @@ export default {
 					},
 				},
 				accessionLevel: {
-					title: "Accession Level",
-					description: "Set 1 to use accession level classification (0 by default). It is available when the DB is also built with accession level taxonomy.",
+					title: "--accession-level",
+					description: "Set 1 to use accession level classification. It is available when the DB is also built with accession level taxonomy.",
 					parameter: "--accession-level",
 					value: "0",
+					type: "INTEGER",
+				},
+				thread: {
+					title: "--threads",
+					description: "The number of threads used (all by default)",
+					parameter: "--threads",
+					value: "",
 					type: "INTEGER",
 				},
 			},
