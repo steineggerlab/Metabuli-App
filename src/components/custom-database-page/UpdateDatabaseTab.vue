@@ -6,7 +6,7 @@
 				<v-card variant="outlined" color="primary">
 					<v-card-title class="text-subtitle-2">
 						Please refer to the <a href="https://github.com/steineggerlab/Metabuli" target="_blank">Metabuli documentation</a> for more information on how to update a database.<br/>
-						You can add new sequences to an existing database. Adding new taxa is also possible with 'New Taxa' option.</v-card-title>
+						You can add new sequences to an existing database. Adding new taxa is also possible with <code>--new-taxa</code> option.</v-card-title>
 				</v-card>
 			</v-container>
             
@@ -18,11 +18,22 @@
 						<v-row>
 							<v-col cols="3" class="d-flex align-center">
 								<v-list-subheader class="pr-0">
-									GTDB-Based
-								</v-list-subheader>
+									<v-tooltip location="top">
+										<template v-slot:activator="{ props }">
+											<v-icon
+												v-bind="props"
+												icon="$helpCircle"
+												size="16"
+												color="grey lighten-2">
+											</v-icon>
+										</template>
+										Check if taxonkit-generated GTDB taxonomy dump files are used.
+									</v-tooltip>
+									<span class="font-weight-bold">  GTDB-Based</span>  
+								</v-list-subheader> 
 							</v-col>
 
-							<v-col cols="9">
+							<v-col cols="3">
 								<v-checkbox v-model="jobDetails.gtdbBased" color="primary" hide-details></v-checkbox>
 							</v-col>
 						</v-row>
@@ -30,8 +41,22 @@
                         <!-- Old DB Directory -->
                         <v-row>
                             <v-col cols="3">
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+										<template v-slot:activator="{ props }">
+											<v-icon
+												v-bind="props"
+												icon="$helpCircle"
+												size="16"
+												color="grey lighten-2">
+											</v-icon>
+										</template>
+										The existing database folder to be updated.
+									</v-tooltip>
+									<span class="font-weight-bold">  Old Database Folder</span>  
+								</v-list-subheader> 
                                 <v-list-subheader class="pr-0">
-                                    Old Database Directory
+                                    
                                 </v-list-subheader>
                             </v-col>
 
@@ -44,7 +69,7 @@
                                             density="comfortable"
                                             size="default"
                                             class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-                                            >Select Directory</v-btn
+                                            >Select Folder</v-btn
                                         >
                                         <v-text-field v-model="jobDetails.olddbdir" :rules="[requiredRule]" style="display: none"></v-text-field>
                                     </v-col>
@@ -61,9 +86,20 @@
                         <!-- New DB Directory -->
                         <v-row>
                             <v-col cols="3">
-                                <v-list-subheader class="pr-0">
-                                    New Database Directory
-                                </v-list-subheader>
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+										<template v-slot:activator="{ props }">
+											<v-icon
+												v-bind="props"
+												icon="$helpCircle"
+												size="16"
+												color="grey lighten-2">
+											</v-icon>
+										</template>
+										The folder to store the updated database.
+									</v-tooltip>
+									<span class="font-weight-bold">  New Database Folder</span>  
+								</v-list-subheader>
                             </v-col>
 
                             <v-col cols="9" class="search-files">
@@ -75,7 +111,7 @@
                                             density="comfortable"
                                             size="default"
                                             class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-                                            >Select Directory</v-btn
+                                            >Select Folder</v-btn
                                         >
                                         <v-text-field v-model="jobDetails.newdbdir" :rules="[requiredRule]" style="display: none"></v-text-field>
                                     </v-col>
@@ -92,15 +128,20 @@
                         <!-- FASTA File -->
                         <v-row>
                             <v-col cols="3">
-                                <v-list-subheader class="pr-0">
-                                    <v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
-                                        </template>
-										File of reference genome absolute paths.
-                                    </v-tooltip>
-                                    FASTA File
-                                </v-list-subheader>
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+										<template v-slot:activator="{ props }">
+											<v-icon
+												v-bind="props"
+												icon="$helpCircle"
+												size="16"
+												color="grey lighten-2">
+											</v-icon>
+										</template>
+										File of absolute paths of genome sequences to add.
+									</v-tooltip>
+									<span class="font-weight-bold">  FASTA File List</span>  
+								</v-list-subheader>
                             </v-col>
 
                             <v-col cols="9" class="search-files">
@@ -129,18 +170,61 @@
                         <!-- <accession2taxid> -->
                         <v-row>
                             <v-col cols="3">
-                                <v-list-subheader class="pr-0">
-                                    <v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
-                                        </template>
-                                        {{ jobDetails.gtdbBased ? 'Directory where the taxonomy dump files are stored.' : 'A path to NCBI-style accession2taxid.' }}
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+										<template v-slot:activator="{ props }">
+											<v-icon
+												v-bind="props"
+												icon="$helpCircle"
+												size="16"
+												color="grey lighten-2">
+											</v-icon>
+										</template>
+										{{ jobDetails.gtdbBased ? 'Folder where the taxonomy dump files are stored.' : 'NCBI-style accession2taxid mapping file.' }}
                                     </v-tooltip>
-									{{ jobDetails.gtdbBased ? "Taxonomy Path" : " Accession 2 Tax Id" }}
-                                </v-list-subheader>
+									<span class="font-weight-bold">  {{ jobDetails.gtdbBased ? "Taxonomy Folder" : " Accession to Tax. ID mapping" }}</span>  
+								</v-list-subheader>
                             </v-col>
 
-                            <v-col cols="9" class="search-files">
+                            <v-col cols="9" class="search-directory" v-if="jobDetails.gtdbBased">
+                                <v-row>
+                                    <v-col cols="4">
+                                        <div class="d-flex flex-column align-center mb-0 gc-3">
+                                            <!-- Select File Button -->
+                                            <v-btn
+                                                @click="selectFile('accession2taxid', 'directory')"
+                                                prepend-icon="$folder"
+                                                density="comfortable"
+                                                size="default"
+                                                class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
+                                                >Select Folder</v-btn
+                                            >
+                                            <v-text-field v-model="jobDetails.accession2taxid" :rules="[requiredRule]" style="display: none"></v-text-field>
+
+                                            <!-- Download Data Button -->
+                                            <v-btn
+                                                color="primary"
+                                                prepend-icon="$openInNew"
+                                                variant="text"
+                                                class="text-caption font-weight-medium"
+                                                size="small"
+                                                rounded="xl"
+                                                href="https://github.com/shenwei356/gtdb-taxdump/releases"
+                                                target="_blank"
+                                                >Download GTDB
+                                            </v-btn>
+                                        </div>
+                                    </v-col>
+                                    <v-col cols="8" class="filename-col">
+                                        <v-chip v-if="jobDetails.accession2taxid" label color="primary" density="comfortable" class="filename-chip">
+                                            <v-icon icon="$delete" @click="clearFile('accession2taxid')" class="mr-1"></v-icon>
+                                            {{ this.extractFilename(jobDetails.accession2taxid) }}</v-chip
+                                        >
+                                    </v-col>
+                                </v-row>
+                            </v-col>
+
+							<v-col cols="9" class="search-files" v-else>
                                 <v-row>
                                     <v-col cols="4">
                                         <div class="d-flex flex-column align-center mb-0 gc-3">
@@ -163,9 +247,9 @@
                                                 class="text-caption font-weight-medium"
                                                 size="small"
                                                 rounded="xl"
-                                                :href="jobDetails.gtdbBased ? 'https://github.com/shenwei356/gtdb-taxdump/releases' : 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/'"
+                                                href="https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/"
                                                 target="_blank"
-                                                >Download {{ jobDetails.gtdbBased ? "GTDB" : "NCBI" }}
+                                                >Download NCBI
                                             </v-btn>
                                         </div>
                                     </v-col>
@@ -177,6 +261,8 @@
                                     </v-col>
                                 </v-row>
                             </v-col>
+
+
                         </v-row>
                     </v-container>
                 </div>
@@ -196,9 +282,9 @@
                     <!-- Input fields -->
                     <v-container fluid class="py-0">
                         <v-row v-for="(setting, key) in advancedSettings" :key="key">
-                            <v-col cols="6">
+                            <v-col cols="7">
                                 <v-list-subheader class="pr-0 text-high-emphasis font-weight-medium">
-                                    {{ setting.title }}
+                                    <code>{{ setting.title }}</code>
                                 </v-list-subheader>
 								<small class="text-caption text-medium-emphasis pr-0" >
 									{{ setting.description }}
@@ -211,7 +297,7 @@
                                     rounded="lg"
                                     density="compact"
                                     color="primary"
-                                    :placeholder="setting.extra?.file ? 'Select Path' : none"
+                                    :placeholder="setting.extra?.file ? 'Select' : none"
                                     v-model="setting.value"
                                     :prepend-icon="getAppendInnerIcon(setting)"
                                     :rules="getValidationRules(setting.parameter)"
@@ -288,36 +374,36 @@ export default {
 		expandAdvancedSettings: false,
 		isNewTaxaDialogVisible: false,
 		advancedSettings: {
+			makeLibrary: {
+                title: "--make-library",
+				description: "Make species genome library before indexing. It is highly recommended when a single FASTA file contains multiple species.",
+				parameter: "--make-library",
+				value: "0", // FIXME: should be 0 or int?
+				type: "INTEGER",
+			},
+			accessionLevel: {
+				title: "--accession-level",
+				description: "Set 1 to create an accession level database, with which you can classify reads to specific accessions.",
+				parameter: "--accession-level",
+				value: "0", // FIXME: should be 0 or int?
+				type: "INTEGER",
+			},
 			maxRam: {
-				title: "Max RAM (GiB)",
+				title: "--max-ram (GiB)",
 				description: "The maximum RAM usage.",
 				parameter: "--max-ram",
 				value: 128,
 				type: "INTEGER"
 			},
 			thread: {
-				title: "Threads",
+				title: "--threads",
 				description: "The number of threads used (all by default)",
 				parameter: "--threads",
 				value: "", // FIXME: should be 0 or int?
 				type: "INTEGER",
 			},
-			accessionLevel: {
-				title: "Accession Level",
-				description: "Set 1 to create a DB for accession level classification.",
-				parameter: "--accession-level",
-				value: "0", // FIXME: should be 0 or int?
-				type: "INTEGER",
-			},
-            makeLibrary: {
-                title: "Make Library",
-				description: "Make species library for faster execution.",
-				parameter: "--make-library",
-				value: "0", // FIXME: should be 0 or int?
-				type: "INTEGER",
-			},
             newTaxa: {
-                title: "New Taxa",
+                title: "--new-taxa",
                 description: "List of new taxa. Please check GitHub for the format.",
                 parameter: "--new-taxa",
                 value: "",

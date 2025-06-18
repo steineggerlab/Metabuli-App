@@ -8,7 +8,7 @@
 					<v-spacer></v-spacer>
 
 					<div>
-						<v-btn icon="$helpCircleOutline" rounded="xl" @click="showReadme=true"></v-btn>
+						<v-btn rounded="xs" @click="showReadme=true" variant="tonal"> MANUAL </v-btn>
 
 						<!-- ReadMe Manual Bottom Sheet -->
 						<v-bottom-sheet class="markdown-body" v-model="showReadme">

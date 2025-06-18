@@ -5,17 +5,17 @@
 			<v-card class="mb-3 search-settings-panel">
 				<!-- HEADER TOOLBAR -->
 				<v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">
-					Search Settings
+					Taxonomic Classification
 					<v-spacer></v-spacer>
 
 					<div>
-						<v-btn icon="$helpCircleOutline" rounded="xl" @click="showReadme=true"></v-btn>
+						<v-btn rounded="xs" @click="showReadme=true" variant="tonal"> MANUAL </v-btn>
 
 						<!-- ReadMe Manual Bottom Sheet -->
-						<v-bottom-sheet v-model="showReadme">
+						<v-bottom-sheet class="markdown-body" v-model="showReadme">
 							<v-card>
 								<v-card-text style="max-height: 90vh; overflow-y: auto;">
-									<div class="markdown-body" v-html="readmeHtml"></div>
+									<div v-html="readmeHtml"></div>
 								</v-card-text>
 								<v-card-actions>
 									<v-spacer></v-spacer>
@@ -82,7 +82,7 @@ export default {
 	data: () => ({
 		tab: "runSearch",
 		tabItems: [
-			{ title: "New Search", value: "runSearch" },
+			{ title: "Run New Job", value: "runSearch" },
 			{ title: "Upload Report", value: "uploadReport" },
 		],
 		snackbar: {

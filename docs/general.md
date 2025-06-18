@@ -52,6 +52,7 @@ We will make a button for GTDB soon.
 
 - [Installation](#installation)
 - [Usage](#usage)
+    - [Raw Read QC and Preprocessing](#raw-read-quality-control)
     - [Classification](#classification)
         - [New Classification](#new-classification)
         - [Upload Report](#upload-report)
