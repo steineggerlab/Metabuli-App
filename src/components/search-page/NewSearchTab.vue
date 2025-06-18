@@ -27,8 +27,8 @@
 
 							<v-col>
 								<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" density="compact" divided mandatory>
-									<v-btn value="single-end" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
-									<v-btn value="paired-end" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
+									<v-btn value="paired-end" class="rounded-s-lg rounded-e-0 text-caption">Paired-end</v-btn>
+									<v-btn value="single-end" class="rounded-e-0 rounded-s-0 text-caption">Single-end</v-btn>
 									<v-btn value="long-read" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
 								</v-btn-toggle>
 							</v-col>
@@ -386,7 +386,7 @@ export default {
 			isJobFormValid: false,
 			jobDetails: {
 				// Store job details including file paths
-				mode: "single-end", // "single-end" | "paired-end" | "long-read"
+				mode: "paired-end", // "paired-end" | "single-end" | "long-read"
 				enableQC: false,
 				entries: [
 					{ q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq", batchName: "" }, // TODO: remove hardcoded path

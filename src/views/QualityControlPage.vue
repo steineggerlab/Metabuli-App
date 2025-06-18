@@ -50,8 +50,8 @@
       
                 <v-col>
                   <v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" density="compact" divided mandatory>
-                    <v-btn value="single-end" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
-                    <v-btn value="paired-end" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
+                    <v-btn value="paired-end" class="rounded-s-lg rounded-e-0 text-caption">Paired-end</v-btn>
+                    <v-btn value="single-end" class="rounded-e-0 rounded-s-0 text-caption">Single-end</v-btn>
                     <v-btn value="long-read" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
                   </v-btn-toggle>
                 </v-col>
@@ -312,7 +312,7 @@ export default {
       jobDetails: {
       // TODO remove test entries
         // Store job details
-        mode: "single-end",
+        mode: "paired-end",
         outFileSuffix: "_out",
         outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test",
         entries: [
