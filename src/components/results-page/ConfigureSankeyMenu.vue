@@ -5,7 +5,6 @@
       :close-on-content-click="false"
       :location="menuLocation"
       transition="slide-x-reverse-transition"
-      persistent
     >
       <!-- ACTIVATOR FOR MENU -->
       <template v-slot:activator="{ props }">
@@ -13,16 +12,16 @@
       </template>
 
       <v-card width="340" class="my-1 configure-menu">
-        <v-form ref="form">
+        <v-card>
           <!-- SWITCH (Show all) -->
           <v-list-item>
             <v-container class="pt-1">
               <div class="d-flex align-center gc-2">
                 <v-switch
-                  v-model="tempShowAll"
+                  :model-value="showAll"
+                  @update:modelValue="$emit('update:showAll', $event)"
                   color="indigo"
                   hide-details
-                  @update:modelValue="validateRange"
                 ></v-switch>
                 <div class="text-caption">Show all</div>
               </div>
@@ -47,42 +46,29 @@
                   </div>
                   <v-container class="d-flex align-center gc-4">
                     <v-btn-toggle
-                      v-model="tempCladeReadsMode"
-                      @change="setDefaultValue"
-                      :disabled="tempShowAll"
+                      :model-value="minCladeReadsMode"
+                      @update:modelValue="$emit('update:minCladeReadsMode', $event)"
+                      :disabled="showAll"
                       variant="outlined"
                       color="indigo"
                       divided
                       mandatory
                     >
-                      <v-btn
-                        icon
-                        value="%"
-                        height="30"
-                        class="rounded-s-lg rounded-e-0 text-caption"
-                        >%</v-btn
-                      >
-                      <v-btn
-                        icon
-                        value="#"
-                        height="30"
-                        class="rounded-e-lg rounded-s-0 text-caption"
-                        >#</v-btn
-                      >
+                      <v-btn icon value="%" height="30" class="rounded-s-lg rounded-e-0 text-caption">%</v-btn>
+                      <v-btn icon value="#" height="30" class="rounded-e-lg rounded-s-0 text-caption">#</v-btn>
                     </v-btn-toggle>
-
                     <v-text-field
-                      v-model="tempCladeReadsValue"
+                      :model-value="minCladeReads"
+                      @update:modelValue="$emit('update:minCladeReads', parseFloat($event))"
                       type="number"
-                      :min="tempCladeReadsMode === '%' ? 0 : 1"
-                      :max="tempCladeReadsMode === '%' ? 100 : 1000"
+                      :min="minCladeReadsMode === '%' ? 0 : 1"
+                      :max="minCladeReadsMode === '%' ? 100 : 1000"
+                      :step="minCladeReadsMode === '%' ? 0.01 : 1"
                       variant="underlined"
                       density="compact"
                       dense
                       class="flex-grow-1"
-                      :rules="[valueRangeRule]"
-                      @input="validateRange"
-                      :disabled="tempShowAll"
+                      :disabled="showAll"
                     ></v-text-field>
                   </v-container>
                 </v-list-item>
@@ -93,19 +79,20 @@
                   <v-container class="menu-item">
                     <v-slider
                       class="slider"
-                      v-model="tempTaxaLimit"
+                      :model-value="taxaLimit"
+                      @update:modelValue="$emit('update:taxaLimit', parseInt($event))"
                       thumb-label="always"
                       :thumb-size="15"
                       step="1"
                       :min="1"
                       :max="maxTaxaLimit"
                       tick-size="1"
-                      :disabled="tempShowAll"
-                      @change="validateRange"
+                      :disabled="showAll"
                     >
                       <template v-slot:append>
                         <v-text-field
-                          v-model="tempTaxaLimit"
+                          :model-value="taxaLimit"
+                          @update:modelValue="$emit('update:taxaLimit', parseInt($event))"
                           variant="outlined"
                           density="compact"
                           class="mx-0"
@@ -113,8 +100,6 @@
                           type="number"
                           hide-details
                           single-line
-                          :rules="[taxaLimitRangeRule]"
-                          @input="validateRange"
                         ></v-text-field>
                       </template>
                     </v-slider>
@@ -132,12 +117,93 @@
                   <v-container>
                     <v-slider
                       class="slider"
-                      v-model="tempFigureHeight"
+                      :model-value="figureHeight"
+                      @update:modelValue="$emit('update:figureHeight', parseInt($event))"
                       thumb-label="always"
                       :thumb-size="15"
                       step="5"
                       :min="300"
                       :max="1000"
+                    ></v-slider>
+                  </v-container>
+                </v-list-item>
+               
+                <v-list-item>
+                  <div class="text-caption">Node width</div>
+                  <v-container>
+                    <v-slider
+                      class="slider"
+                      :model-value="nodeWidth"
+                      @update:modelValue="$emit('update:nodeWidth', parseInt($event))"
+                      thumb-label="always"
+                      thumb-size="15"
+                      step="1"
+                      min="1"
+                      max="50"
+                    ></v-slider>
+                  </v-container>
+                </v-list-item>
+
+                <v-list-item>
+                  <div class="text-caption">Node padding</div>
+                  <v-container>
+                    <v-slider
+                      class="slider"
+                      :model-value="nodePadding"
+                      @update:modelValue="$emit('update:nodePadding', parseInt($event))"
+                      thumb-label="always"
+                      thumb-size="15"
+                      step="1"
+                      min="1"
+                      max="50"
+                    ></v-slider>
+                  </v-container>
+                </v-list-item>
+                
+                <v-list-item>
+                  <div class="text-caption">Node label font size</div>
+                  <v-container>
+                    <v-slider
+                      class="slider"
+                      :model-value="nodeLabelFontSize"
+                      @update:modelValue="$emit('update:nodeLabelFontSize', parseInt($event))"
+                      thumb-label="always"
+                      thumb-size="15"
+                      step="1"
+                      min="1"
+                      max="30"
+                    ></v-slider>
+                  </v-container>
+                </v-list-item>
+                
+                <v-list-item>
+                  <div class="text-caption">Node value font size</div>
+                  <v-container>
+                    <v-slider
+                      class="slider"
+                      :model-value="nodeValueFontSize"
+                      @update:modelValue="$emit('update:nodeValueFontSize', parseInt($event))"
+                      thumb-label="always"
+                      thumb-size="15"
+                      step="1"
+                      min="1"
+                      max="30"
+                    ></v-slider>
+                  </v-container>
+                </v-list-item>
+                
+                <v-list-item>
+                  <div class="text-caption">Rank label font size</div>
+                  <v-container>
+                    <v-slider
+                      class="slider"
+                      :model-value="rankLabelFontSize"
+                      @update:modelValue="$emit('update:rankLabelFontSize', parseInt($event))"
+                      thumb-label="always"
+                      thumb-size="15"
+                      step="1"
+                      min="1"
+                      max="30"
                     ></v-slider>
                   </v-container>
                 </v-list-item>
@@ -148,48 +214,30 @@
                   <v-container>
                     <div class="d-flex align-center flex-column">
                       <v-btn-toggle
-                        v-model="tempLabelOption"
+                        :model-value="labelOption"
+                        @update:modelValue="$emit('update:labelOption', $event)"
                         variant="outlined"
                         color="indigo"
                         divided
                         mandatory
                       >
-                        <v-btn
-                          value="proportion"
-                          height="30"
-                          class="rounded-s-lg rounded-e-0"
-                          >Proportion %</v-btn
-                        >
-                        <v-btn
-                          value="cladeReads"
-                          height="30"
-                          class="rounded-s-0 rounded-e-lg"
-                          >Clade Reads #</v-btn
-                        >
+                        <v-btn value="proportion" height="30" class="rounded-s-lg rounded-e-0">Proportion %</v-btn>
+                        <v-btn value="cladeReads" height="30" class="rounded-s-0 rounded-e-lg">Clade Reads #</v-btn>
                       </v-btn-toggle>
                     </div>
                   </v-container>
                 </v-list-item>
+                
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>
           <v-divider></v-divider>
 
-          <!-- APPLY AND CANCEL BUTTONS -->
           <v-card-actions>
-            <v-btn variant="text" @click="cancelChanges"> Cancel </v-btn>
-            <v-spacer></v-spacer>
-
-            <v-btn
-              color="indigo"
-              variant="text"
-              :disabled="!isFormValid"
-              @click="applyChanges"
-            >
-              Apply
-            </v-btn>
+            <v-btn variant="text" @click="menu = false">Close</v-btn>
+            <v-btn variant="text" @click="emitDefaults">Reset</v-btn>
           </v-card-actions>
-        </v-form>
+        </v-card>
       </v-card>
     </v-menu>
   </div>
@@ -199,200 +247,54 @@
 export default {
   name: "ConfigureSankeyMenu",
   props: {
-    maxTaxaLimit: {
-      type: Number,
-      default: 100,
-    },
+    maxTaxaLimit: { type: Number, default: 100 },
+    showAll: { type: Boolean, default: false },
+    taxaLimit: { type: Number, default: 10 },
+    minCladeReadsMode: { type: String, default: "%" },
+    minCladeReads: { type: Number, default: 0.01 },
+    figureHeight: { type: Number, default: 300 },
+    labelOption: { type: String, default: "cladeReads" },
+    menuLocation: { type: String, default: "bottom end" },
 
-    initialShowAll: {
-      type: Boolean,
-      default: false,
-    },
-    initialTaxaLimit: {
-      type: Number,
-      default: 10,
-    },
-    initialMinCladeReadsMode: {
-      type: String,
-      default: "%",
-    },
-    initialMinCladeReads: {
-      type: Number,
-      default: 0.01,
-    },
-    initialFigureHeight: {
-      type: Number,
-      default: 300,
-    },
-    initialLabelOption: {
-      type: String,
-      default: "cladeReads",
-    },
-
-    menuLocation: {
-      type: String,
-      default: "bottom end", // Default position is bottom
-    },
+    marginBottom: { type: Number, default: 50 },
+    marginRight: { type: Number, default: 150 },
+    nodeWidth: { type: Number, default: 20 },
+    nodePadding: { type: Number, default: 13 },
+    nodeLabelFontSize: { type: Number, default: 10 },
+    nodeValueFontSize: { type: Number, default: 10 },
+    rankLabelFontSize: { type: Number, default: 14 },
+    // superkingdom --> domain
+    // rankList: sankeyRankColumns,
+    // rankListWithRoot: [ "no rank", ...sankeyRankColumns ],
+    colorScheme: { type: Array, default: () => ([
+        "#57291F", "#C0413B", "#D77B5F", "#FF9200", "#FFCD73",
+        "#F7E5BF", "#C87505", "#F18E3F", "#E59579", "#C14C32",
+        "#80003A", "#506432", "#FFC500", "#B30019", "#EC410B",
+        "#E63400", "#8CB5B5", "#6C3400", "#FFA400", "#41222A",
+        "#FFB27B", "#FFCD87", "#BC7576",
+    ])},
+    unclassifiedLabelColor: { type: String, default: "#696B7E" },
   },
   data() {
     return {
       menu: false,
       activePanel: [0],
       isFormValid: true,
-
-      showAll: this.initialShowAll,
-      taxaLimit: this.initialTaxaLimit,
-      cladeReadsMode: this.initialMinCladeReadsMode,
-      cladeReadsValue: this.initialMinCladeReads,
-      figureHeight: this.initialFigureHeight,
-      labelOption: this.initialLabelOption,
-
-      tempShowAll: false,
-      tempTaxaLimit: 10,
-      tempCladeReadsMode: "%",
-      tempCladeReadsValue: 0.01,
-      tempFigureHeight: 550,
-      tempLabelOption: "cladeReads",
+      
+      // Store all default values to allow resetting the menu
+      // Populated by all props in the mounted lifecycle hook
+      defaults: {}
     };
   },
-  computed: {
-    valueRangeRule() {
-      const min = this.tempCladeReadsMode === "%" ? 0 : 0;
-      const max = this.tempCladeReadsMode === "%" ? 100 : Infinity;
-      return (value) => {
-        // Check if the value is empty or contains only a hyphen
-        if (value === "" || value === "-" || isNaN(value)) {
-          this.isFormValid = false;
-          return `Input required`;
-        }
-
-        // Check if the value is within the valid range
-        if (this.tempShowAll || (value >= min && value <= max)) {
-          this.isFormValid = true;
-          return true;
-        } else {
-          this.isFormValid = false;
-          const rule =
-            this.tempCladeReadsMode === "%"
-              ? `Valid range: 0-100`
-              : `Valid range: ${min}<`;
-          return rule;
-        }
-      };
-    },
-  },
-  watch: {
-    tempCladeReadsMode() {
-      this.setDefaultValue();
-    },
-
-    // Watch for changes in the initial values
-    initialShowAll(newVal) {
-      this.showAll = newVal;
-      this.tempShowAll = newVal;
-    },
-    initialTaxaLimit(newVal) {
-      this.taxaLimit = newVal;
-      this.tempTaxaLimit = newVal;
-    },
-    initialMinCladeReadsMode(newVal) {
-      this.cladeReadsMode = newVal;
-      this.tempCladeReadsMode = newVal;
-    },
-    initialMinCladeReads(newVal) {
-      this.cladeReadsValue = newVal;
-      this.tempCladeReadsValue = newVal;
-    },
-    initialFigureHeight(newVal) {
-      this.figureHeight = newVal;
-      this.tempFigureHeight = newVal;
-    },
-    initialLabelOption(newVal) {
-      this.labelOption = newVal;
-      this.tempLabelOption = newVal;
-    },
-  },
   methods: {
-    setDefaultValue() {
-      this.tempCladeReadsValue = this.tempCladeReadsMode === "%" ? 0.001 : 1;
-      this.tempLabelOption =
-        this.tempCladeReadsMode === "%" ? "proportion" : "cladeReads";
-      this.validateRange();
-    },
-    taxaLimitRangeRule(value) {
-      const min = 1;
-      const max = Infinity;
-
-      // Check if the value is empty or contains only a hyphen
-      if (value === "" || value === "-" || isNaN(value)) {
-        this.isFormValid = false;
-        return `Invalid input`;
+    emitDefaults() {
+      for (const [key, value] of Object.entries(this.defaults)) {
+        this.$emit(`update:${key}`, value);
       }
-
-      // Check if the value is within the valid range
-      if (this.tempShowAll || (value >= min && value <= max)) {
-        this.isFormValid = true;
-        return true;
-      } else {
-        this.isFormValid = false;
-        return `Value not in valid range (${min}<)`;
-      }
-    },
-    validateRange() {
-      if (this.$refs.form) {
-        this.$refs.form.validate();
-      }
-    },
-    applyChanges() {
-      // Apply the temporary values to the actual data
-      if (!this.tempShowAll) {
-        this.taxaLimit = this.tempTaxaLimit;
-        this.cladeReadsMode = this.tempCladeReadsMode;
-        this.cladeReadsValue = this.tempCladeReadsValue;
-      } else {
-        // Reset the temporary values to the current actual values
-        this.tempTaxaLimit = this.taxaLimit;
-        this.tempCladeReadsMode = this.cladeReadsMode;
-        this.tempCladeReadsValue = this.cladeReadsValue;
-      }
-      this.showAll = this.tempShowAll;
-      this.figureHeight = this.tempFigureHeight;
-      this.labelOption = this.tempLabelOption;
-
-      this.emitChanges();
-      this.menu = false; // Close the menu
-    },
-    emitChanges() {
-      this.$emit("updateSettings", {
-        showAll: this.showAll,
-        taxaLimit: this.taxaLimit,
-        minCladeReadsMode: this.cladeReadsMode,
-        minCladeReads: parseFloat(this.cladeReadsValue),
-        figureHeight: this.figureHeight,
-        labelOption: this.labelOption,
-      });
-    },
-    cancelChanges() {
-      // Reset the temporary values to the current actual values
-      this.tempShowAll = this.showAll;
-      this.tempTaxaLimit = this.taxaLimit;
-      this.tempCladeReadsMode = this.cladeReadsMode;
-      this.tempCladeReadsValue = this.cladeReadsValue;
-      this.tempFigureHeight = this.figureHeight;
-      this.tempLabelOption = this.labelOption;
-
-      this.menu = false; // Close the menu
     },
   },
-
   mounted() {
-    // Initialize the temporary values
-    this.tempShowAll = this.showAll;
-    this.tempTaxaLimit = this.taxaLimit;
-    this.tempCladeReadsMode = this.cladeReadsMode;
-    this.tempCladeReadsValue = this.cladeReadsValue;
-    this.tempFigureHeight = this.figureHeight;
-    this.tempLabelOption = this.labelOption;
+    Object.assign(this.defaults, this.$props);
   },
 };
 </script>

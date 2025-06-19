@@ -80,18 +80,22 @@
 					<v-card-text class="px-0 py-0 text-caption text-disabled"> *Subtrees are not shown for single nodes </v-card-text>
 				</div>
 				<!-- NODE SUBTREE SANKEY DIAGRAM -->
-				<SankeyDiagram
-					:id="sankeyId"
-					:isSubtree="true"
-					:instanceId="uniqueInstanceId"
-					:rawData="nodeDetails.subtreeData"
-					:taxaLimit="configureMenuSettings.taxaLimit"
-					:minCladeReadsMode="configureMenuSettings.minCladeReadsMode"
-					:minReads="configureMenuSettings.minCladeReads"
-					:figureHeight="configureMenuSettings.figureHeight"
-					:labelOption="configureMenuSettings.labelOption"
-					:showAll="configureMenuSettings.showAll"
-					@updateConfigureMenu="updateConfigureMenu"
+				<TaxoView
+					:rawData="nodeDetails.subtreeDataTsv"
+					:taxaLimit="config.taxaLimit"
+					:minCladeReadsMode="config.minCladeReadsMode"
+					:minReads="config.minCladeReads"
+					:figureHeight="config.figureHeight"
+					:labelOption="config.labelOption === 'proportion' ? 1 : 0"
+					:showAll="config.showAll"
+					:marginBottom="config.marginBottom"
+					:marginRight="config.marginRight"
+					:nodeWidth="config.nodeWidth"
+					:nodePadding="config.nodePadding"
+					:nodeLabelFontSize="config.nodeLabelFontSize"
+					:nodeValueFontSize="config.nodeValueFontSize"
+					:rankLabelFontSize="config.rankLabelFontSize"
+					ref="taxoview-dialog"
 				/>
 			</v-card-item>
 
@@ -108,21 +112,26 @@
 						<v-btn v-bind="props" extended prepend-icon="$fileExport" text="Extract" color="secondary" rounded> </v-btn>
 					</template>
 				</ExtractReadsDialog>
-
+				
 				<ConfigureSankeyMenu
-					:maxTaxaLimit="maxTaxaLimit"
-					:initialShowAll="configureMenuSettings.showAll"
-					:initialTaxaLimit="configureMenuSettings.taxaLimit"
-					:initialMinCladeReadsMode="configureMenuSettings.minCladeReadsMode"
-					:initialMinCladeReads="configureMenuSettings.minCladeReads"
-					:initialFigureHeight="configureMenuSettings.figureHeight"
-					:initialLabelOption="configureMenuSettings.labelOption"
+					:maxTaxaLimit="roundedMaxTaxaLimit"
 					:menuLocation="'top end'"
-					@updateSettings="updateSettings"
-					v-if="nodeDetails.hasSourceLinks"
+					v-model:show-all="config.showAll"
+					v-model:min-clade-reads-mode="config.minCladeReadsMode"
+					v-model:min-clade-reads="config.minCladeReads"
+					v-model:taxa-limit="config.taxaLimit"
+					v-model:figure-height="config.figureHeight"
+					v-model:label-option="config.labelOption"
+					v-model:margin-bottom="config.marginBottom"
+					v-model:margin-right="config.marginRight"
+					v-model:node-width="config.nodeWidth"
+					v-model:node-padding="config.nodePadding"
+					v-model:node-label-font-size="config.nodeLabelFontSize"
+					v-model:node-value-font-size="config.nodeValueFontSize"
+					v-model:rank-label-font-size="config.rankLabelFontSize"
 				>
 					<template v-slot:activator="{ props }">
-						<v-btn v-bind="props" extended color="indigo" text="Configure" prepend-icon="$edit" rounded> </v-btn>
+						<v-btn color="indigo" rounded="xl" v-bind="props">Configure Diagram</v-btn>
 					</template>
 				</ConfigureSankeyMenu>
 			</div>
@@ -131,7 +140,6 @@
 </template>
 
 <script>
-import SankeyDiagram from "@/components/results-page/SankeyDiagram.vue";
 import ExtractReadsDialog from "@/components/results-page/ExtractReadsDialog.vue";
 import ConfigureSankeyMenu from "@/components/results-page/ConfigureSankeyMenu.vue";
 import { v4 as uuidv4 } from "uuid";
@@ -141,7 +149,6 @@ import SankeyDownloadMenu from "@/components/results-page/SankeyDownloadMenu.vue
 export default {
 	name: "SankeyNodeDialog",
 	components: {
-		SankeyDiagram,
 		SankeyDownloadMenu,
 		ExtractReadsDialog,
 		ConfigureSankeyMenu,
@@ -161,6 +168,13 @@ export default {
 				minCladeReads: 0.01,
 				figureHeight: 500,
 				labelOption: "proportion",
+				marginBottom: 50,
+				marginRight: 150,
+				nodeWidth: 20,
+				nodePadding: 13,
+				nodeLabelFontSize: 10,
+				nodeValueFontSize: 10,
+				rankLabelFontSize: 14,
 			}),
 		},
 	},
@@ -168,14 +182,33 @@ export default {
 		return {
 			sankeyId: "subtree-sankey-svg",
 			uniqueInstanceId: "",
-
-			maxTaxaLimit: 100,
+			config: {
+				maxTaxaLimit: 100,
+				showAll: false,
+				taxaLimit: 20,
+				minCladeReadsMode: "%",
+				minCladeReads: 0.01,
+				figureHeight: 500,
+				labelOption: "proportion",
+				marginBottom: 50,
+				marginRight: 150,
+				nodeWidth: 20,
+				nodePadding: 13,
+				nodeLabelFontSize: 10,
+				nodeValueFontSize: 10,
+				rankLabelFontSize: 14,
+			}
 		};
+	},
+	watch: {
+		nodeDetails(newValue) {
+			console.log('node dialog data has changed', newValue)
+		}
 	},
 	computed: {
 		roundedMaxTaxaLimit() {
 			// Round up maxTaxaLimit to the nearest increment of 5
-			return Math.ceil(this.maxTaxaLimit / 5) * 5;
+			return Math.ceil(this.config.maxTaxaLimit / 5) * 5;
 		},
 		lineageHtml() {
 			return this.nodeDetails.data.lineage
@@ -190,7 +223,7 @@ export default {
 		// Configuration Menu
 		updateConfigureMenu(sankeyData) {
 			if (sankeyData) {
-				this.maxTaxaLimit = Math.ceil(sankeyData.maxTaxaPerRank / 5) * 5;
+				this.config.maxTaxaLimit = Math.ceil(sankeyData.maxTaxaPerRank / 5) * 5;
 			}
 		},
 
@@ -213,6 +246,7 @@ export default {
 
 	mounted() {
 		this.uniqueInstanceId = uuidv4();
+		Object.assign(this.config, this.$props.configureMenuSettings);	
 	},
 };
 </script>
