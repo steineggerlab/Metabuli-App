@@ -567,33 +567,30 @@ export default {
 		},
 		// Sankey Download Functions
 		emitMainSankeyDownloadFormat(downloadDetails) {
-			console.log('details', downloadDetails)
 			const { format, filename } = downloadDetails;
-			console.log(this.$refs.taxoview.$el.id)
-			this.handleFormatSelected({ sankeyId: "sankey-svg", format, filename });
+			const svg = this.$refs.taxoview.$el.querySelector('svg');
+			this.handleFormatSelected({ sankeySvgElement: svg, format, filename });
 		},
-		handleFormatSelected({ sankeyId, format, filename = "sankey_diagram" }) {
+		handleFormatSelected({ sankeySvgElement, format, filename = "sankey_diagram" }) {
 			switch (format) {
 				case "png":
-					this.downloadSankeyAsPng(sankeyId, filename);
+					this.downloadSankeyAsPng(sankeySvgElement, filename);
 					break;
 				case "jpg":
-					this.downloadSankeyAsJpg(sankeyId, filename);
+					this.downloadSankeyAsJpg(sankeySvgElement, filename);
 					break;
-				case "html":
-					this.downloadSankeyAsHtml(sankeyId, filename);
+				case "svg":
+					this.downloadSankeyAsSvg(sankeySvgElement, filename);
 					break;
 				default:
 					return;
 			}
 		},
-		downloadSankeyAsPng(sankeyId, filename) {
-			const sankeySvgElement = document.querySelector(`#${sankeyId}`); // Reference to the SVG ID
+		downloadSankeyAsPng(sankeySvgElement, filename) {
 			saveSvgAsPng(sankeySvgElement, `${filename}.png`);
 		},
-		async downloadSankeyAsJpg(sankeyId, filename) {
+		async downloadSankeyAsJpg(sankeySvgElement, filename) {
 			// Get the SVG element
-			const sankeySvgElement = document.querySelector(`#${sankeyId}`); // Reference to the SVG ID
 			const svg = d3.select(sankeySvgElement);
 			const svgString = new XMLSerializer().serializeToString(svg.node());
 
@@ -633,8 +630,7 @@ export default {
 			};
 			img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgString)));
 		},
-		downloadSankeyAsHtml(sankeyId, filename) {
-			const svgElement = document.querySelector(`#${sankeyId}`); // Correctly reference the SVG ID
+		downloadSankeyAsSvg(svgElement, filename) {
 			const svgData = new XMLSerializer().serializeToString(svgElement);
 			const svgBlob = new Blob([svgData], {
 				type: "image/svg+xml;charset=utf-8",
@@ -642,7 +638,7 @@ export default {
 			const url = URL.createObjectURL(svgBlob);
 			const link = document.createElement("a");
 			link.href = url;
-			link.download = `${filename}.html`;
+			link.download = `${filename}.svg`;
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
