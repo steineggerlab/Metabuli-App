@@ -74,6 +74,7 @@
 						<ConfigureSankeyMenu
 							:maxTaxaLimit="roundedMaxTaxaLimit"
 							:menuLocation="'bottom end'"
+							v-model:color-scheme="colorScheme"
 							v-model:show-all="showAll"
 							v-model:min-clade-reads-mode="minCladeReadsMode"
 							v-model:min-clade-reads="minCladeReads"
@@ -98,6 +99,7 @@
 					<TaxoView
 						v-if="originalData"
 						:rawData="originalData"
+						:colorScheme="colorScheme"
 						:taxaLimit="taxaLimit"
 						:minCladeReadsMode="minCladeReadsMode"
 						:minReads="minCladeReads"
@@ -340,9 +342,6 @@ export default {
 	},
 
 	watch: {
-		labelOption(newval) {
-			console.log("new label option", newval)
-		},
 		results: {
 			handler(newResults) {
 				const { nodes, nodesByDepth } = parseData(newResults);

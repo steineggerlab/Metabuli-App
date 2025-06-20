@@ -51,6 +51,7 @@
                       :disabled="showAll"
                       variant="outlined"
                       color="indigo"
+                      hide-details
                       divided
                       mandatory
                     >
@@ -67,6 +68,7 @@
                       variant="underlined"
                       density="compact"
                       dense
+                      hide-details
                       class="flex-grow-1"
                       :disabled="showAll"
                     ></v-text-field>
@@ -88,6 +90,7 @@
                       :max="maxTaxaLimit"
                       tick-size="1"
                       :disabled="showAll"
+                      hide-details
                     >
                       <template v-slot:append>
                         <v-text-field
@@ -124,6 +127,7 @@
                       step="5"
                       :min="300"
                       :max="1000"
+                      hide-details
                     ></v-slider>
                   </v-container>
                 </v-list-item>
@@ -140,6 +144,7 @@
                       step="1"
                       min="1"
                       max="50"
+                      hide-details
                     ></v-slider>
                   </v-container>
                 </v-list-item>
@@ -156,6 +161,7 @@
                       step="1"
                       min="1"
                       max="50"
+                      hide-details
                     ></v-slider>
                   </v-container>
                 </v-list-item>
@@ -172,6 +178,7 @@
                       step="1"
                       min="1"
                       max="30"
+                      hide-details
                     ></v-slider>
                   </v-container>
                 </v-list-item>
@@ -188,6 +195,7 @@
                       step="1"
                       min="1"
                       max="30"
+                      hide-details
                     ></v-slider>
                   </v-container>
                 </v-list-item>
@@ -204,6 +212,7 @@
                       step="1"
                       min="1"
                       max="30"
+                      hide-details
                     ></v-slider>
                   </v-container>
                 </v-list-item>
@@ -220,9 +229,32 @@
                         color="indigo"
                         divided
                         mandatory
+                        hide-details
                       >
                         <v-btn value="proportion" height="30" class="rounded-s-lg rounded-e-0">Proportion %</v-btn>
                         <v-btn value="cladeReads" height="30" class="rounded-s-0 rounded-e-lg">Clade Reads #</v-btn>
+                      </v-btn-toggle>
+                    </div>
+                  </v-container>
+                </v-list-item>
+                
+                <v-list-item>
+                  <div class="text-caption">Colorscheme</div>
+                  <v-container>
+                    <div class="d-flex align-center flex-column">
+                      <v-btn-toggle
+                        :model-value="colorSchemeId"
+                        @update:modelValue="$emit('update:colorScheme', getColorScheme($event))"
+                        variant="outlined"
+                        color="indigo"
+                        divided
+                        mandatory
+                        hide-details
+                      >
+                        <v-btn value="1" class="rounded-s-lg rounded-e-0" height="30">1</v-btn>
+                        <v-btn value="2" class="rounded-e-0 rounded-s-0" height="30">2</v-btn>
+                        <v-btn value="3" class="rounded-e-0 rounded-s-0" height="30">3</v-btn>
+                        <v-btn value="4" class="rounded-s-0 rounded-e-lg" height="30">4</v-btn>
                       </v-btn-toggle>
                     </div>
                   </v-container>
@@ -244,6 +276,46 @@
 </template>
 
 <script>
+const colorSchemes = {
+  1: [
+    "#57291F", "#C0413B", "#D77B5F", "#FF9200", "#FFCD73",
+    "#F7E5BF", "#C87505", "#F18E3F", "#E59579", "#C14C32",
+    "#80003A", "#506432", "#FFC500", "#B30019", "#EC410B",
+    "#E63400", "#8CB5B5", "#6C3400", "#FFA400", "#41222A",
+    "#FFB27B", "#FFCD87", "#BC7576"
+  ],
+  2: [
+    "#648FFF", "#785EF0", "#DC267F", "#FE6100", "#FFB000",
+    "#009E73", "#00BFC4", "#F564E3", "#B79F00", "#E69F00",
+    "#56B4E9", "#0072B2", "#D55E00", "#CC79A7", "#999999",
+    "#E15759", "#4E79A7", "#76B7B2", "#F28E2B", "#59A14F",
+    "#EDC948", "#B07AA1"
+  ],
+  3: [
+    "#1F77B4", "#AEC7E8", "#FF7F0E", "#FFBB78", "#2CA02C",
+    "#98DF8A", "#D62728", "#FF9896", "#9467BD", "#C5B0D5",
+    "#8C564B", "#C49C94", "#E377C2", "#F7B6D2", "#7F7F7F",
+    "#C7C7C7", "#BCBD22", "#DBDB8D", "#17BECF", "#9EDAE5"
+  ],
+  4: [
+    "#A6CEE3", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99",
+    "#E31A1C", "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A",
+    "#FFFF99", "#B15928", "#8DD3C7", "#FFFFB3", "#BEBADA",
+    "#FB8072", "#80B1D3", "#FDB462", "#B3DE69", "#FCCDE5",
+    "#D9D9D9", "#BC80BD"
+  ]
+}
+
+function isEqual(a, b) {
+  if (a === b) return true; // same reference
+  if (!Array.isArray(a) || !Array.isArray(b)) return false;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
 export default {
   name: "ConfigureSankeyMenu",
   props: {
@@ -271,9 +343,14 @@ export default {
         "#F7E5BF", "#C87505", "#F18E3F", "#E59579", "#C14C32",
         "#80003A", "#506432", "#FFC500", "#B30019", "#EC410B",
         "#E63400", "#8CB5B5", "#6C3400", "#FFA400", "#41222A",
-        "#FFB27B", "#FFCD87", "#BC7576",
+        "#FFB27B", "#FFCD87", "#BC7576"
     ])},
     unclassifiedLabelColor: { type: String, default: "#696B7E" },
+  },
+  computed: {
+    colorSchemeId() {
+      return Object.entries(colorSchemes).find(([_, v]) => isEqual(v, this.colorScheme))?.[0]
+    }
   },
   data() {
     return {
@@ -287,6 +364,12 @@ export default {
     };
   },
   methods: {
+    getColorScheme(id) {
+      return colorSchemes[id];
+    },
+    handleEmit(event) {
+      console.log('change', event)
+    },
     emitDefaults() {
       for (const [key, value] of Object.entries(this.defaults)) {
         this.$emit(`update:${key}`, value);

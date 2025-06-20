@@ -83,6 +83,7 @@
 				<TaxoView
 					:rawData="nodeDetails.subtreeDataTsv"
 					:taxaLimit="config.taxaLimit"
+					:colorScheme="config.colorScheme"
 					:minCladeReadsMode="config.minCladeReadsMode"
 					:minReads="config.minCladeReads"
 					:figureHeight="config.figureHeight"
@@ -117,6 +118,7 @@
 					:maxTaxaLimit="roundedMaxTaxaLimit"
 					:menuLocation="'top end'"
 					v-model:show-all="config.showAll"
+					v-model:color-scheme="config.colorScheme"
 					v-model:min-clade-reads-mode="config.minCladeReadsMode"
 					v-model:min-clade-reads="config.minCladeReads"
 					v-model:taxa-limit="config.taxaLimit"
@@ -175,6 +177,13 @@ export default {
 				nodeLabelFontSize: 10,
 				nodeValueFontSize: 10,
 				rankLabelFontSize: 14,
+				colorScheme: [
+					"#57291F", "#C0413B", "#D77B5F", "#FF9200", "#FFCD73",
+					"#F7E5BF", "#C87505", "#F18E3F", "#E59579", "#C14C32",
+					"#80003A", "#506432", "#FFC500", "#B30019", "#EC410B",
+					"#E63400", "#8CB5B5", "#6C3400", "#FFA400", "#41222A",
+					"#FFB27B", "#FFCD87", "#BC7576",
+				]
 			}),
 		},
 	},
@@ -197,13 +206,15 @@ export default {
 				nodeLabelFontSize: 10,
 				nodeValueFontSize: 10,
 				rankLabelFontSize: 14,
+				colorScheme: [
+					"#57291F", "#C0413B", "#D77B5F", "#FF9200", "#FFCD73",
+					"#F7E5BF", "#C87505", "#F18E3F", "#E59579", "#C14C32",
+					"#80003A", "#506432", "#FFC500", "#B30019", "#EC410B",
+					"#E63400", "#8CB5B5", "#6C3400", "#FFA400", "#41222A",
+					"#FFB27B", "#FFCD87", "#BC7576",
+				]
 			}
 		};
-	},
-	watch: {
-		nodeDetails(newValue) {
-			console.log('node dialog data has changed', newValue)
-		}
 	},
 	computed: {
 		roundedMaxTaxaLimit() {
