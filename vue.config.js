@@ -67,6 +67,11 @@ module.exports = defineConfig({
             filter: ["**/*"]
           },
 					{
+            from: path.resolve(__dirname, "docs"),
+            to: "docs",
+            filter: ["**/*"]
+          },
+					{
 						from: "README.md",
 						to: "README.md",
 					},
