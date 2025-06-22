@@ -43,6 +43,13 @@ export default createVuetify({
     VBtn: {
       rounded: "lg",
     },
+    VTextField: {
+      variant: 'underlined',
+      density: 'comfortable',
+    },
+    VSwitch: {
+      color: "indigo",
+    }
   },
   theme: {
     dark: false, // dark theme 제외
