@@ -11,22 +11,19 @@
 							<v-col cols="3">
 								<v-list-subheader class="pr-0">
 									<v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon 
-												v-bind="props" 
-												icon="$helpCircle" 
-												size="16" 
-												color="grey lighten-2">
+										<template v-slot:activator="{ props }">
+											<v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
 											</v-icon>
-                                        </template>
+										</template>
 										Sequencing type of your samples.
-                                    </v-tooltip>
-									<span class="font-weight-bold">  Mode</span>
+									</v-tooltip>
+									<span class="font-weight-bold"> Mode</span>
 								</v-list-subheader>
 							</v-col>
 
 							<v-col>
-								<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" density="compact" divided mandatory>
+								<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" density="compact" divided
+									mandatory>
 									<v-btn value="paired-end" class="rounded-s-lg rounded-e-0 text-caption">Paired-end</v-btn>
 									<v-btn value="single-end" class="rounded-e-0 rounded-s-0 text-caption">Single-end</v-btn>
 									<v-btn value="long-read" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
@@ -39,17 +36,13 @@
 							<v-col cols="3">
 								<v-list-subheader>
 									<v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon 
-												v-bind="props" 
-												icon="$helpCircle" 
-												size="16" 
-												color="grey lighten-2">
+										<template v-slot:activator="{ props }">
+											<v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
 											</v-icon>
-                                        </template>
+										</template>
 										Enable it to preprocess raw reads before classification.
-                                    </v-tooltip>
-									<span class="font-weight-bold">  Quality Control</span>
+									</v-tooltip>
+									<span class="font-weight-bold"> Quality Control</span>
 								</v-list-subheader>
 							</v-col>
 
@@ -59,14 +52,9 @@
 
 							<v-col>
 								<QCSettingsDialog v-model="showQCSettingsDialog" class="d-flex justify-start">
-                    <template v-slot:activator="{ props }">
-                      <v-btn 
-                        v-bind="props" 
-                        variant="text" 
-                        size="small" 
-                        prepend-icon="$tune" 
-                        color="primary"
-                        >Settings</v-btn>
+									<template v-slot:activator="{ props }">
+										<v-btn v-bind="props" variant="text" size="small" prepend-icon="$tune"
+											color="primary">Settings</v-btn>
 									</template>
 								</QCSettingsDialog>
 							</v-col>
@@ -77,31 +65,18 @@
 							<v-col cols="3">
 								<v-list-subheader>
 									<v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon 
-												v-bind="props" 
-												icon="$helpCircle" 
-												size="16" 
-												color="grey lighten-2">
+										<template v-slot:activator="{ props }">
+											<v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
 											</v-icon>
-                                        </template>
+										</template>
 										TODO
-                                    </v-tooltip>
-									<span class="font-weight-bold">  Job ID</span>
+									</v-tooltip>
+									<span class="font-weight-bold"> Job ID</span>
 								</v-list-subheader>
 							</v-col>
 							<v-col cols="6">
-								<v-text-field
-									v-model="jobDetails.jobid"
-									:rules="[requiredRule]"
-									:hint="computedHint"
-									persistent-hint
-									variant="outlined"
-									density="compact"
-									color="primary"
-									rounded="lg"
-									class="mb-2"
-								></v-text-field>
+								<v-text-field v-model="jobDetails.jobid" :rules="[requiredRule]" :hint="computedHint" persistent-hint
+									variant="outlined" density="compact" color="primary" rounded="lg" class="mb-2"></v-text-field>
 							</v-col>
 						</v-row>
 
@@ -110,17 +85,13 @@
 							<v-col cols="3">
 								<v-list-subheader class="pr-0">
 									<v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon 
-												v-bind="props" 
-												icon="$helpCircle" 
-												size="16" 
-												color="grey lighten-2">
+										<template v-slot:activator="{ props }">
+											<v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
 											</v-icon>
-                                        </template>
-										(gzipped) FASTA/Q query read files. 
-                                    </v-tooltip>
-									<span class="font-weight-bold">  Query Files</span>
+										</template>
+										(gzipped) FASTA/Q query read files.
+									</v-tooltip>
+									<span class="font-weight-bold"> Query Files</span>
 								</v-list-subheader>
 							</v-col>
 
@@ -129,8 +100,8 @@
 									<!-- Read 1 -->
 									<v-col cols="5">
 										<div v-if="!entry.q1">
-											<v-btn @click="pickFile('file', 'q1', index)" prepend-icon="$file" density="comfortable" size="default"
-												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
+											<v-btn @click="pickFile('file', 'q1', index)" prepend-icon="$file" density="comfortable"
+												size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
 												Read 1 File
 											</v-btn>
 										</div>
@@ -140,12 +111,12 @@
 										</v-chip>
 										<v-text-field v-model="entry.q1" :rules="[requiredRule]" style="display: none"></v-text-field>
 									</v-col>
-	
+
 									<!-- Read 2 -->
 									<v-col cols="5" v-if="jobDetails.mode === 'paired-end'">
 										<div v-if="!entry.q2">
-											<v-btn  @click="pickFile('file', 'q2', index)" prepend-icon="$file" density="comfortable" size="default"
-												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
+											<v-btn @click="pickFile('file', 'q2', index)" prepend-icon="$file" density="comfortable"
+												size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
 												Read 2 File
 											</v-btn>
 										</div>
@@ -153,18 +124,15 @@
 											<v-icon icon="$delete" @click="clearFile('q2', index)" class="mr-1"></v-icon>
 											{{ extractFilename(entry.q2) }}
 										</v-chip>
-										<v-text-field v-model="entry.q2" :rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]" style="display: none"></v-text-field>
+										<v-text-field v-model="entry.q2"
+											:rules="[jobDetails.mode === 'paired-end' ? requiredRule : () => true]"
+											style="display: none"></v-text-field>
 									</v-col>
 
 									<!-- Remove Row Button -->
 									<v-col cols="1" v-if="index > 0">
-										<v-btn
-											variant="text"
-											icon="$checkboxIndeterminate"
-											size="small"
-											density="compact"
-											@click="removeEntry(index)"
-										>
+										<v-btn variant="text" icon="$checkboxIndeterminate" size="small" density="compact"
+											@click="removeEntry(index)">
 										</v-btn>
 									</v-col>
 								</v-row>
@@ -180,58 +148,43 @@
 								<v-row>
 									<v-col cols="6">
 										<div class="d-flex flex-column align-center mb-0 gc-3">
-											<v-btn
-												@click="pickFile('directory', 'database')"
-												prepend-icon="$folder"
-												density="comfortable"
-												size="default"
-												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-												>Select Database</v-btn
-											>
-											<v-text-field v-model="jobDetails.database" :rules="[requiredRule]" style="display: none"></v-text-field>
+											<v-btn @click="pickFile('directory', 'database')" prepend-icon="$folder" density="comfortable"
+												size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">Select
+												Database</v-btn>
+											<v-text-field v-model="jobDetails.database" :rules="[requiredRule]"
+												style="display: none"></v-text-field>
 
 											<!-- Database Download Button -->
-											<v-btn
-												color="primary"
-												prepend-icon="$openInNew"
-												variant="text"
-												class="text-caption font-weight-medium"
-												size="small"
-												rounded="xl"
-												href="https://metabuli.steineggerlab.workers.dev/"
-												target="_blank"
-												>Database Download
+											<v-btn color="primary" prepend-icon="$openInNew" variant="text"
+												class="text-caption font-weight-medium" size="small" rounded="xl"
+												href="https://metabuli.steineggerlab.workers.dev/" target="_blank">Database
+												Download
 											</v-btn>
 										</div>
 									</v-col>
 
 									<v-col cols="6" class="filename-col">
-										<v-chip v-if="jobDetails.database" label color="primary" density="comfortable" class="filename-chip">
+										<v-chip v-if="jobDetails.database" label color="primary" density="comfortable"
+											class="filename-chip">
 											<v-icon icon="$delete" @click="clearFile('database')" class="mr-1"></v-icon>
-											{{ extractFilename(jobDetails.database) }}</v-chip
-										>
+											{{ extractFilename(jobDetails.database) }}</v-chip>
 									</v-col>
 								</v-row>
 
 								<!-- Output Directory -->
 								<v-row>
 									<v-col cols="6">
-										<v-btn
-											@click="pickFile('directory', 'outdir')"
-											prepend-icon="$folder"
-											density="comfortable"
-											size="default"
-											class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-											>Output Directory</v-btn
-										>
-										<v-text-field v-model="jobDetails.outdir" :rules="[requiredRule]" style="display: none"></v-text-field>
+										<v-btn @click="pickFile('directory', 'outdir')" prepend-icon="$folder" density="comfortable"
+											size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">Output
+											Directory</v-btn>
+										<v-text-field v-model="jobDetails.outdir" :rules="[requiredRule]"
+											style="display: none"></v-text-field>
 									</v-col>
 
 									<v-col cols="6" class="filename-col">
 										<v-chip v-if="jobDetails.outdir" label color="primary" density="comfortable" class="filename-chip">
 											<v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
-											{{ extractFilename(jobDetails.outdir) }}</v-chip
-										>
+											{{ extractFilename(jobDetails.outdir) }}</v-chip>
 									</v-col>
 								</v-row>
 							</v-col>
@@ -242,29 +195,18 @@
 							<v-col cols="3">
 								<v-list-subheader>
 									<v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon 
-												v-bind="props" 
-												icon="$helpCircle" 
-												size="16" 
-												color="grey lighten-2">
+										<template v-slot:activator="{ props }">
+											<v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
 											</v-icon>
-                                        </template>
+										</template>
 										Maximum RAM to be used for the job.
-                                    </v-tooltip>
-									<span class="font-weight-bold">  Max RAM</span>
+									</v-tooltip>
+									<span class="font-weight-bold"> Max RAM</span>
 								</v-list-subheader>
 							</v-col>
 							<v-col cols="6">
-								<v-text-field
-									v-model="jobDetails.maxram"
-									:rules="[...getValidationRules('--max-ram'), requiredRule]"
-									variant="outlined"
-									density="compact"
-									color="primary"
-									rounded="lg"
-									suffix="GiB"
-								></v-text-field>
+								<v-text-field v-model="jobDetails.maxram" :rules="[...getValidationRules('--max-ram'), requiredRule]"
+									variant="outlined" density="compact" color="primary" rounded="lg" suffix="GiB"></v-text-field>
 							</v-col>
 						</v-row>
 					</v-container>
@@ -278,13 +220,15 @@
 					<v-card-subtitle>Lorem ipsum</v-card-subtitle>
 				</v-card> -->
 
-				<v-img class="w-33 marv-metabuli-opaque" :width="200" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img>
+				<v-img class="w-33 marv-metabuli-opaque" :width="200" aspect-ratio="1/1" src="assets/marv_metabuli_small.png">
+				</v-img>
 			</div>
 
 			<!-- ADVANCED SETTINGS -->
 			<v-divider class="my-2"></v-divider>
 			<v-card-actions>
-				<v-btn text="Advanced Settings" :append-icon="expandAdvancedSettings ? '$collapse' : '$expand'" @click="expandAdvancedSettings = !expandAdvancedSettings" class="font-weight-bold"></v-btn>
+				<v-btn text="Advanced Settings" :append-icon="expandAdvancedSettings ? '$collapse' : '$expand'"
+					@click="expandAdvancedSettings = !expandAdvancedSettings" class="font-weight-bold"></v-btn>
 			</v-card-actions>
 
 			<!-- EXPANDABLE PANEL -->
@@ -293,21 +237,16 @@
 					<!-- Parameters for precision mode -->
 					<v-container class="py-0">
 						<v-card variant="outlined" color="primary">
-							<v-card-title
-								class="text-subtitle-2 pb-0"
-								style="white-space: normal; word-break: break-word;"
-							>
+							<v-card-title class="text-subtitle-2 pb-0" style="white-space: normal; word-break: break-word;">
 								Parameters for Precision Mode (Metabuli-P) <br>
 								<span class="font-weight-regular" style="font-style: normal;">
 									Recommended values below increase precision maintaing the F1 score. <br>
-									These values are determined from score distributions of false and true positives in synthetic benchmarks. <br>
+									These values are determined from score distributions of false and true positives in synthetic
+									benchmarks.
+									<br>
 									(Details in Supp. Fig. 4-7 in the
-									<a
-										href="https://www.nature.com/articles/s41592-024-02273-y.epdf?sharing_token=je_2D5Su0-xVOSjuKSAXF9RgN0jAjWel9jnR3ZoTv0M7gE7NDF_xi_3sW8QdRiwfSJNwqaXItSoeCvr7cvcoQxKLt0oROgWc6urmki9tP80cXEuHPN0D7b4y9y3i8Yv7sZw8MxxhAj7W6p9eZE2zaK3eozdOkXvwADVfso9cXIM%3D"
-										target="_blank"
-										rel="noopener"
-										class="text--primary"
-									>
+									<a href="https://www.nature.com/articles/s41592-024-02273-y.epdf?sharing_token=je_2D5Su0-xVOSjuKSAXF9RgN0jAjWel9jnR3ZoTv0M7gE7NDF_xi_3sW8QdRiwfSJNwqaXItSoeCvr7cvcoQxKLt0oROgWc6urmki9tP80cXEuHPN0D7b4y9y3i8Yv7sZw8MxxhAj7W6p9eZE2zaK3eozdOkXvwADVfso9cXIM%3D"
+										target="_blank" rel="noopener" class="text--primary">
 										Metabuli paper
 									</a>)
 								</span>
@@ -318,7 +257,8 @@
 									<strong>PacBio Sequel II reads:</strong> --min-score 0.005<br />
 									<strong>ONT reads:</strong> --min-score 0.008
 								</span>
-								<span v-else> <strong>Illumina short reads:</strong> <code> --min-score 0.15 --min-sp-score 0.5 </code> </span>
+								<span v-else> <strong>Illumina short reads:</strong> <code> --min-score 0.15 --min-sp-score 0.5 </code>
+								</span>
 							</v-card-title>
 						</v-card>
 					</v-container>
@@ -330,24 +270,17 @@
 								<v-list-subheader class="pr-0 text-high-emphasis font-weight-medium">
 									<code>{{ setting.title }}</code>
 								</v-list-subheader>
-								<small class="search-advanced-settings text-caption text-medium-emphasis pr-0" >
+								<small class="search-advanced-settings text-caption text-medium-emphasis pr-0">
 									{{ setting.description }}
 								</small>
 							</v-col>
 
 							<v-col>
-								<v-text-field
-									variant="outlined"
-									rounded="lg"
-									density="compact"
-									color="primary"
-									:placeholder="setting.extra?.file ? 'Select Folder' : none"
-									v-model="setting.value"
-									:prepend-icon="getAppendInnerIcon(setting)"
-									:rules="getValidationRules(setting.parameter)"
+								<v-text-field variant="outlined" rounded="lg" density="compact" color="primary"
+									:placeholder="setting.extra?.file ? 'Select Folder' : none" v-model="setting.value"
+									:prepend-icon="getAppendInnerIcon(setting)" :rules="getValidationRules(setting.parameter)"
 									:suffix="setting.extra?.suffix || ''"
-									v-on:click="handleAdvancedSettingsTextFieldClick(setting)"
-								></v-text-field>
+									v-on:click="handleAdvancedSettingsTextFieldClick(setting)"></v-text-field>
 							</v-col>
 						</v-row>
 					</v-container>
@@ -372,7 +305,7 @@
 <script>
 import TSVParser from "@/plugins/tsvParser";
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
-import { extractFilename, stripFileExtension } from "@/plugins/fileUtils.js"; 
+import { extractFilename, stripFileExtension } from "@/plugins/fileUtils.js";
 import { makeCompletedJob, makeFailedJob } from "@/plugins/jobHistoryStruct.js";
 
 export default {
@@ -391,7 +324,7 @@ export default {
 				entries: [
 					{ q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq", batchName: "" }, // TODO: remove hardcoded path
 					{ q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq", batchName: "" }, // TODO: remove hardcoded path
-        ],
+				],
 				// database: "",
 				database: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/refseq_virus", // TODO: remove hardcoded path
 				// outdir: "",
@@ -508,36 +441,36 @@ export default {
 			return `${this.jobDetails.jobid}_report.tsv`;
 		},
 		modeTag() {
-      if (this.jobDetails.mode === "paired-end") {
-        return "_PE";
-      } else if (this.jobDetails.mode === "single-end") {
-        return "_SE";
-      } else {
-        return "_LR";
-      }
-    },
+			if (this.jobDetails.mode === "paired-end") {
+				return "_PE";
+			} else if (this.jobDetails.mode === "single-end") {
+				return "_SE";
+			} else {
+				return "_LR";
+			}
+		},
 	},
 
 	watch: {
-    // Watch both mode and entries array — update batch names when either changes
-    'jobDetails.mode': 'updateBatchNames',
-    'jobDetails.entries': {
-      handler: 'updateBatchNames',
-      deep: true,
-      immediate: true
-    }
-  },
+		// Watch both mode and entries array — update batch names when either changes
+		'jobDetails.mode': 'updateBatchNames',
+		'jobDetails.entries': {
+			handler: 'updateBatchNames',
+			deep: true,
+			immediate: true
+		}
+	},
 
 	methods: {
 		// Button actions for adding/removing entry rows
 		addEntry() {
 			this.jobDetails.entries.push({ q1: "", q2: "" });
-    },
+		},
 		removeEntry(index) {
 			if (this.jobDetails.entries.length > 1) {
 				this.jobDetails.entries.splice(index, 1);
-      }
-    },
+			}
+		},
 		// Functions for handling files
 		async pickFile(type, field = null, index = null) {
 			if (!window.electron) {
@@ -569,7 +502,7 @@ export default {
 			} finally {
 				// re-validate the form
 				this.$refs.jobForm?.validate(); // TODO: do i need this
-		
+
 			}
 		},
 		clearFile(field, index = null) {
@@ -583,16 +516,16 @@ export default {
 			// re-validate the form
 			this.$refs.jobForm?.validate();
 		},
-		updateBatchNames() {			
-      this.jobDetails.entries.forEach(entry => {
+		updateBatchNames() {
+			this.jobDetails.entries.forEach(entry => {
 				if (entry.q1) {
 					const { base } = this.stripFileExtension(entry.q1);
-          entry.batchName = base + this.modeTag;
-        } else {
+					entry.batchName = base + this.modeTag;
+				} else {
 					entry.batchName = "";
-        }
-      });
-    },
+				}
+			});
+		},
 		extractFilename,
 		stripFileExtension,
 
@@ -637,7 +570,7 @@ export default {
 				// Object storing info about completedJob
 				const completedJob = makeCompletedJob({
 					jobDetails: this.jobDetailsSample,
-					sampleNames: ["SRR14484345_1", "SRR14484345_2"], 
+					sampleNames: ["SRR14484345_1", "SRR14484345_2"],
 					batchFolder: this.jobDetailsSample.outdir,
 					isSample: true,
 					jobType: "runSearch",
@@ -663,30 +596,30 @@ export default {
 		// Main job processing function
 		async startJob() {
 			// Reset job state
-      this.status = "INITIAL";
-      this.errorHandled = false;
-      this.backendOutput = "";
+			this.status = "INITIAL";
+			this.errorHandled = false;
+			this.backendOutput = "";
 
 			// Loop over each entry and run the job for each
 			for (const entry of this.jobDetails.entries) {
 				// Before each batch, reset status & backend‐output
-        this.status = "RUNNING";
-        this.errorHandled = false;
-        this.backendOutput = "";
+				this.status = "RUNNING";
+				this.errorHandled = false;
+				this.backendOutput = "";
 				this.$emit("job-started", false);
-				
+
 				try {
 					// 1) Run that one batch's backend process
 					await this.runOneEntry(entry);
-	
+
 					// 2) Poll until it flips to COMPLETE/ERROR (or times out)
 					await this.pollJobStatus();
 
 					// 3) If it succeeded, handle results for that batch:
-          if (this.status === "COMPLETE") {
-            await this.processResults(false, entry); // you can pass an argument pointing at batch folder if needed
-            this.handleBatchSuccess(entry);
-          }
+					if (this.status === "COMPLETE") {
+						await this.processResults(false, entry); // you can pass an argument pointing at batch folder if needed
+						this.handleBatchSuccess(entry);
+					}
 				} catch (error) { // TODO: figure out how to handle errors in the loop (e.g. if one entry fails, the rest should still run)
 					console.error(`Batch ${entry.batchName} failed:`, error);
 					// console.error("Error:", error.message); // Single error handling point
@@ -698,54 +631,54 @@ export default {
 			}
 
 			// Once all batches are done (or attempted), reset top‐level UI state
-      this.status = "INITIAL";
-      this.backendOutput = "";
-      this.errorHandled = false;
+			this.status = "INITIAL";
+			this.backendOutput = "";
+			this.errorHandled = false;
 		},
 
 		async runOneEntry(entry) {
 			// 1) Build the batch‐specific output folder: `${outdir}/${jobid}/${batchName}`
-      const outdir = this.jobDetails.outdir;
-      const jobid = this.jobDetails.jobid;
-      const batchName = entry.batchName;
-      const batchFolder = `${outdir}/${jobid}/${batchName}`;
-      // ensure that directory exists (recursively)
-      await window.electron.mkdir(batchFolder); // returns a Promise if you exposed it; `await` in caller
+			const outdir = this.jobDetails.outdir;
+			const jobid = this.jobDetails.jobid;
+			const batchName = entry.batchName;
+			const batchFolder = `${outdir}/${jobid}/${batchName}`;
+			// ensure that directory exists (recursively)
+			await window.electron.mkdir(batchFolder); // returns a Promise if you exposed it; `await` in caller
 
 			// Figure out file‐base names:
-      const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
-      let base2 = "", ext2 = "";
-      if (this.jobDetails.mode === "paired-end" && entry.q2) {
-        ({ base: base2, ext: ext2 } = this.stripFileExtension(entry.q2));
-      }
+			const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
+			let base2 = "", ext2 = "";
+			if (this.jobDetails.mode === "paired-end" && entry.q2) {
+				({ base: base2, ext: ext2 } = this.stripFileExtension(entry.q2));
+			}
 
 			// 2) If QC is enabled, run fastp first:
-      let classifyRead1 = entry.q1;
-      let classifyRead2 = entry.q2;
+			let classifyRead1 = entry.q1;
+			let classifyRead2 = entry.q2;
 
 			if (this.jobDetails.enableQC) {
 				const suffixQC = "_qc"; // you had this as const suffix = "_qc"
-        const qcParams = [
-          "fastp",
-          "-h", `${batchFolder}/${batchName}.html`,
-          "-j", `${batchFolder}/${batchName}.json`,
-          "-i", entry.q1,
-          "-o", `${batchFolder}/${base1}${suffixQC}${ext1}`
-        ];
-        if (this.jobDetails.mode === "paired-end" && entry.q2) {
-          qcParams.push(
-            "-I", entry.q2,
-            "-O", `${batchFolder}/${base2}${suffixQC}${ext2}`
-          );
-        }
+				const qcParams = [
+					"fastp",
+					"-h", `${batchFolder}/${batchName}.html`,
+					"-j", `${batchFolder}/${batchName}.json`,
+					"-i", entry.q1,
+					"-o", `${batchFolder}/${base1}${suffixQC}${ext1}`
+				];
+				if (this.jobDetails.mode === "paired-end" && entry.q2) {
+					qcParams.push(
+						"-I", entry.q2,
+						"-O", `${batchFolder}/${base2}${suffixQC}${ext2}`
+					);
+				}
 
-        console.log("🚀 fastp job requested:", qcParams);
+				console.log("🚀 fastp job requested:", qcParams);
 
 				await new Promise((resolve, reject) => {
 					const cleanupFastp = () => {
 						window.electron.offFastpListeners();
 					};
-					
+
 					// 2. Attach listeners
 					window.electron.onFastpOutput((output) => {
 						// console.log(output); // DEBUG
@@ -758,7 +691,7 @@ export default {
 							this.errorHandled = true; // Prevent multiple error handling
 							this.backendOutput += "\nError:\n" + err.toString();
 							this.status = "ERROR"; // Signal job polling to stop
-							cleanupFastp(); 
+							cleanupFastp();
 							reject(new Error("Fastp execution error:", err));
 						}
 					});
@@ -766,7 +699,7 @@ export default {
 						if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
 						this.backendOutput += `${msg}\n`;
 						this.status = "COMPLETE";
-						cleanupFastp(); 
+						cleanupFastp();
 						resolve();
 					});
 					window.electron.onFastpCancelled((msg) => {
@@ -774,7 +707,7 @@ export default {
 							this.errorHandled = true; // Prevent multiple error handling
 							this.backendOutput += `\n${msg}`;
 							this.status = "CANCELLED";
-							cleanupFastp(); 
+							cleanupFastp();
 							reject(new Error("QC process was cancelled"));
 						}
 					});
@@ -785,102 +718,102 @@ export default {
 
 				// After fastp finishes, update classifyRead1/2 so that classify uses QC outputs:
 				classifyRead1 = `${batchFolder}/${base1}_qc${ext1}`;
-        if (this.jobDetails.mode === "paired-end" && entry.q2) {
-          classifyRead2 = `${batchFolder}/${base2}_qc${ext2}`;
-        } else {
-          classifyRead2 = null;
-        }
+				if (this.jobDetails.mode === "paired-end" && entry.q2) {
+					classifyRead2 = `${batchFolder}/${base2}_qc${ext2}`;
+				} else {
+					classifyRead2 = null;
+				}
 			} // end if enableQC
 
 			// 3) Now run “classify” on classifyRead1 (and classifyRead2 if paired)
 			const classifyParams = ["classify"];
-      if (this.jobDetails.mode === "single-end") {
-        classifyParams.push("--seq-mode", 1, classifyRead1);
-      } else if (this.jobDetails.mode === "paired-end") {
-        classifyParams.push(classifyRead1, classifyRead2);
-      } else {
-        classifyParams.push("--seq-mode", 3, classifyRead1);
-      }
+			if (this.jobDetails.mode === "single-end") {
+				classifyParams.push("--seq-mode", 1, classifyRead1);
+			} else if (this.jobDetails.mode === "paired-end") {
+				classifyParams.push(classifyRead1, classifyRead2);
+			} else {
+				classifyParams.push("--seq-mode", 3, classifyRead1);
+			}
 
-      // Add dbdir, outdir (this batchFolder), jobid
-      classifyParams.push(this.jobDetails.database, batchFolder, jobid);
+			// Add dbdir, outdir (this batchFolder), jobid
+			classifyParams.push(this.jobDetails.database, batchFolder, jobid);
 
-      // Add max-ram if set
-      if (this.jobDetails.maxram) {
-        classifyParams.push("--max-ram", parseInt(this.jobDetails.maxram));
-      }
+			// Add max-ram if set
+			if (this.jobDetails.maxram) {
+				classifyParams.push("--max-ram", parseInt(this.jobDetails.maxram));
+			}
 
-      // Add any advancedSettings
-      Object.values(this.advancedSettings).forEach(setting => {
-        if (setting.value !== "" && setting.value !== undefined) {
-          let val;
-          if (setting.type === "INTEGER") val = parseInt(setting.value);
-          else if (setting.type === "FLOAT") val = parseFloat(setting.value);
-          else val = setting.value;
-          classifyParams.push(setting.parameter, val);
-        }
-      });
+			// Add any advancedSettings
+			Object.values(this.advancedSettings).forEach(setting => {
+				if (setting.value !== "" && setting.value !== undefined) {
+					let val;
+					if (setting.type === "INTEGER") val = parseInt(setting.value);
+					else if (setting.type === "FLOAT") val = parseFloat(setting.value);
+					else val = setting.value;
+					classifyParams.push(setting.parameter, val);
+				}
+			});
 
-      console.log("🚀 classify job requested:", classifyParams);
+			console.log("🚀 classify job requested:", classifyParams);
 
-      // Return a promise that resolves when classify finishes (or rejects on error)
-      return new Promise((resolve, reject) => {
-        const cleanupClassify = () => {
-          window.electron.offBackendRealtimeOutput();
-          window.electron.offBackendComplete();
-          window.electron.offBackendError();
-          window.electron.offBackendCancelled();
-        };
+			// Return a promise that resolves when classify finishes (or rejects on error)
+			return new Promise((resolve, reject) => {
+				const cleanupClassify = () => {
+					window.electron.offBackendRealtimeOutput();
+					window.electron.offBackendComplete();
+					window.electron.offBackendError();
+					window.electron.offBackendCancelled();
+				};
 
-        window.electron.onBackendRealtimeOutput(output => {
-          this.backendOutput += output;
-          this.$emit("backend-realtime-output", this.backendOutput);
-          this.status = "RUNNING";
-        });
+				window.electron.onBackendRealtimeOutput(output => {
+					this.backendOutput += output;
+					this.$emit("backend-realtime-output", this.backendOutput);
+					this.status = "RUNNING";
+				});
 
-        window.electron.onBackendComplete(msg => {
-          if (this.status !== "RUNNING") return;
-          this.backendOutput += msg;
-          this.status = "COMPLETE";
-          cleanupClassify();
-          resolve();
-        });
+				window.electron.onBackendComplete(msg => {
+					if (this.status !== "RUNNING") return;
+					this.backendOutput += msg;
+					this.status = "COMPLETE";
+					cleanupClassify();
+					resolve();
+				});
 
-        window.electron.onBackendError(err => {
-          if (!this.errorHandled) {
-            this.errorHandled = true;
-            this.backendOutput += "\nError:\n" + err;
+				window.electron.onBackendError(err => {
+					if (!this.errorHandled) {
+						this.errorHandled = true;
+						this.backendOutput += "\nError:\n" + err;
 						this.$emit("backend-realtime-output", this.backendOutput);
-            this.status = "ERROR";
-            cleanupClassify();
-            reject(new Error("classify execution error: " + err));
-          }
-        });
+						this.status = "ERROR";
+						cleanupClassify();
+						reject(new Error("classify execution error: " + err));
+					}
+				});
 
-        window.electron.onBackendCancelled(msg => {
-          if (!this.errorHandled) {
-            this.errorHandled = true;
-            this.backendOutput += `\n${msg}`;
-            this.status = "CANCELLED";
-            cleanupClassify();
-            reject(new Error("classify cancelled"));
-          }
-        });
+				window.electron.onBackendCancelled(msg => {
+					if (!this.errorHandled) {
+						this.errorHandled = true;
+						this.backendOutput += `\n${msg}`;
+						this.status = "CANCELLED";
+						cleanupClassify();
+						reject(new Error("classify cancelled"));
+					}
+				});
 
-        window.electron.runBackend(classifyParams);
-      });
+				window.electron.runBackend(classifyParams);
+			});
 		},
 
 		// Poll for status flips to “COMPLETE” or “ERROR” (or TIMEOUT)
 		async pollJobStatus(interval = 500, timeout = Infinity) {
 			console.log("🚀 classify job running");
 			const start = Date.now();
-      while (Date.now() - start < timeout) {
-        if (this.errorHandled || this.status === "COMPLETE") return true;
-        if (this.status === "ERROR") throw new Error("Backend signaled ERROR");
-        await new Promise(r => setTimeout(r, interval));
-      }
-    },
+			while (Date.now() - start < timeout) {
+				if (this.errorHandled || this.status === "COMPLETE") return true;
+				if (this.status === "ERROR") throw new Error("Backend signaled ERROR");
+				await new Promise(r => setTimeout(r, interval));
+			}
+		},
 
 		// Function for processing results (shared for both tabs)
 		async processResults(isSample, entry = null) {
@@ -932,11 +865,11 @@ export default {
 
 		// Called once classify for one batch completes
 		handleBatchSuccess(entry) {
-      const jobid = this.jobDetails.jobid;
-      const batchFolder = `${this.jobDetails.outdir}/${jobid}/${entry.batchName}`;
+			const jobid = this.jobDetails.jobid;
+			const batchFolder = `${this.jobDetails.outdir}/${jobid}/${entry.batchName}`;
 
-      // processResults(false) should look in batchFolder for jobid_report.tsv, etc.
-      // this.processResults(false, entry).then(() => {
+			// processResults(false) should look in batchFolder for jobid_report.tsv, etc.
+			// this.processResults(false, entry).then(() => {
 			const { base: sampleNameBase1 } = this.stripFileExtension(entry.q1);
 			const { base: sampleNameBase2 } = this.stripFileExtension(entry.q2);
 			const completedJob = makeCompletedJob({
@@ -958,8 +891,8 @@ export default {
 			if (isLastEntry) {
 				this.$emit("job-completed", completedJob);
 			}
-      // });
-    },
+			// });
+		},
 
 		handleJobError(entry) {
 			this.errorHandled = true; // Ensure flag is set to prevent further handling
@@ -1031,6 +964,7 @@ export default {
 .v-col {
 	padding-bottom: 0px;
 }
+
 .v-row {
 	margin-top: 0px;
 	margin-bottom: 0px;
@@ -1039,12 +973,15 @@ export default {
 .search-required-fields .v-col {
 	padding-top: 0px;
 }
+
 .search-required-fields .v-list-subheader {
 	min-height: 30px;
 }
+
 .search-required-fields .search-files .v-row {
 	margin-bottom: 12px;
 }
+
 .search-required-fields .search-files .filename-col {
 	padding-left: 0px;
 }
