@@ -93,15 +93,14 @@
             <!-- Quality Filtering -->
             <v-card-title class="text-button">Quality Filtering</v-card-title>
             <v-card-text class="w-50">
-              <v-switch v-model="params.disable_quality_filtering"
-                label="Disable quality filtering" />
+              <v-switch v-model="params.disable_quality_filtering" label="Disable quality filtering" />
               <v-text-field v-model.number="params.qualified_quality_phred" :disabled="params.disable_quality_filtering"
                 label="Min per-base Phred score" type="number" />
-              <v-text-field v-model.number="params.unqualified_percent_limit" :disabled="params.disable_quality_filtering"
-                label="Max % low-quality bases" type="number" />
+              <v-text-field v-model.number="params.unqualified_percent_limit"
+                :disabled="params.disable_quality_filtering" label="Max % low-quality bases" type="number" />
               <v-text-field v-model.number="params.mean_qual" :disabled="params.disable_quality_filtering"
                 label="Min avg quality (optional)" type="number" />
-            </v-card-text> 
+            </v-card-text>
             <v-divider class="my-4" />
 
             <!-- Length Filtering -->
@@ -167,6 +166,17 @@
               <v-text-field v-model.number="params.compression" label="Compression level" type="number" />
             </v-card-text>
           </div>
+          <v-divider class="my‐4"></v-divider>
+          <!-- Extra params file -->
+          <v-card-title class="text-button">Additional Parameters</v-card-title>
+          <v-card-text>
+            <!-- TODO -->
+            <v-text-field v-model="extraFile" prepend-icon="$file" color="indigo" @click:prepend="loadExtraParamsFile"
+              readonly label="Load extra fastp params file" />
+            <small class="text-caption">The file should contain one parameter per line, and each line should start with
+              the parameter name followed by its value. Parameters here will override the GUI settings. Please use long
+              options (e.g., `--disable_quality_filtering`) instead of short options (e.g., `-Q`).</small>
+          </v-card-text>
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -236,6 +246,8 @@ export default {
     return {
       dialog: this.modelValue,
       params: { ...defaults, ...this.initialParams },
+      extraFile: null,
+      extraParams: [], // parsed lines
     };
   },
   watch: {
@@ -245,7 +257,12 @@ export default {
   },
   methods: {
     onSave() {
-      this.$emit('update-fastp-params', { ...this.params });
+      // emit both the GUI params and any extras
+      const allArgs = [
+        ...this.buildFastpArgs(this.params),
+        ...this.extraParams
+      ];
+      this.$emit('update-fastp-params', allArgs);
       this.dialog = false;
     },
     onCancel() {
@@ -278,6 +295,47 @@ export default {
       const input = event.target;
       input.scrollLeft = input.scrollWidth;
     },
+    async loadExtraParamsFile() {
+      try {
+        const [filePath] = await window.electron.openFileDialog({
+          properties: ["openFile"]
+        });
+        if (!filePath) return;
+
+        this.extraFile = filePath;
+        const text = await window.electron.readFile(filePath);
+
+        this.extraParams = text
+          .split(/\r?\n/) // split on each line
+          .filter(line => line.trim()) // trim whitespace
+          .flatMap(line => line.trim().split(/\s+/)); // Now split each line into [flag, value?] and flatten
+          console.log(this.extraParams);
+        // e.g. ["--disable_quality_filtering", "--qualified_quality_phred", "20", ...]
+      } catch (err) {
+        console.error("Error loading extra params file:", err);
+        this.$emit(
+          "trigger-snackbar",
+          `Failed to load params: ${err.message}`,
+          "error"
+        );
+      }
+    },
+    buildFastpArgs(params) {
+      // Function for building fastp command line arguments from params object (gui settings)
+      return Object.entries(params)
+        .flatMap(([key, val]) => {
+          const flag = `--${key}`;
+          // Boolean flag: only emit when true
+          if (typeof val === "boolean") {
+            return val ? [flag] : [];
+          }
+          // Value option: emit when present
+          if (val !== null && val !== undefined && val !== "") {
+            return [flag, String(val)];
+          }
+          return [];
+        });
+    }
   },
 };
 </script>

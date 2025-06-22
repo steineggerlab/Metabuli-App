@@ -6,7 +6,7 @@
         <v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">
           Raw Read Quality Control
           <v-spacer></v-spacer>
-          
+
           <v-btn rounded="xs" @click="showReadme=true" variant="tonal"> MANUAL </v-btn>
 
           <!-- ReadMe Manual Bottom Sheet -->
@@ -22,27 +22,25 @@
             </v-card>
           </v-bottom-sheet>
         </v-toolbar>
-        
+
         <v-container>
-				<v-card variant="outlined" color="primary">
-          <v-card-title
-						class="text-subtitle-2 pb-2"
-						style="white-space: normal; word-break: break-word;"
-					>
-						Metabuli App runs <code>fastp</code> and <code>fastplong</code> for raw read quality control on short and long reads respectively. <br>
-            You can select one or more (gzipped) FASTQ files for quality control. <br>
-            <br>
-            For each sample, <code>fastp</code>/<code>fastplong</code> will generate the following files: <br>
+          <v-card variant="outlined" color="primary">
+            <v-card-title class="text-subtitle-2 pb-2" style="white-space: normal; word-break: break-word;">
+              Metabuli App runs <code>fastp</code> and <code>fastplong</code> for raw read quality control on short and
+              long reads respectively. <br>
+              You can select one or more (gzipped) FASTQ files for quality control. <br>
+              <br>
+              For each sample, <code>fastp</code>/<code>fastplong</code> will generate the following files: <br>
               - Preprocessed FASTQ files <br>
               - Quality control and filtering report files in HTML format <br>
               - JSON format report files for further analysis <br>
-          </v-card-title>
-				</v-card>
+            </v-card-title>
+          </v-card>
         </v-container>
-        
+
         <v-form ref="jobForm" v-model="isJobFormValid">
           <div class="search-required-fields">
-  
+
             <v-container>
               <!-- End Type (single-end, paired-end, long-read) -->
               <v-row align="center" class="mt-2">
@@ -50,21 +48,18 @@
                   <v-list-subheader>
                     <v-tooltip location="top">
                       <template v-slot:activator="{ props }">
-                        <v-icon
-                          v-bind="props"
-                          icon="$helpCircle"
-                          size="16"
-                          color="grey lighten-2">
+                        <v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
                         </v-icon>
                       </template>
                       Sequencing type of your samples.
                     </v-tooltip>
-                    <span class="font-weight-bold">  Mode</span>  
+                    <span class="font-weight-bold"> Mode</span>
                   </v-list-subheader>
                 </v-col>
-      
+
                 <v-col>
-                  <v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" density="compact" divided mandatory>
+                  <v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="primary" density="compact" divided
+                    mandatory>
                     <v-btn value="paired-end" class="rounded-s-lg rounded-e-0 text-caption">Paired-end</v-btn>
                     <v-btn value="single-end" class="rounded-e-0 rounded-s-0 text-caption">Single-end</v-btn>
                     <v-btn value="long-read" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
@@ -78,183 +73,151 @@
                   <v-list-subheader>
                     <v-tooltip location="top">
                       <template v-slot:activator="{ props }">
-                        <v-icon
-                          v-bind="props"
-                          icon="$helpCircle"
-                          size="16"
-                          color="grey lighten-2">
+                        <v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
                         </v-icon>
                       </template>
                       Set <code>fastp/fastplong</code> parameters. Default values are used if not set.
                     </v-tooltip>
-                    <span class="font-weight-bold">  Parameter Settings</span>  
+                    <span class="font-weight-bold"> Parameter Settings</span>
                   </v-list-subheader>
                 </v-col>
                 <v-col>
-                  <QCSettingsDialog v-model="showQCSettingsDialog" @update-params="jobDetails.params = $event">
+                  <!-- <QCSettingsDialog v-model="showQCSettingsDialog" @update-params="jobDetails.params = $event">
                     <template v-slot:activator="{ props }">
-                      <v-btn 
-                        v-bind="props" 
-                        variant="text" 
-                        size="small" 
-                        prepend-icon="$tune" 
-                        color="primary"
-                        >Settings</v-btn>
-									</template>
-								</QCSettingsDialog>
+                      <v-btn v-bind="props" variant="text" size="small" prepend-icon="$tune"
+                        color="primary">Settings</v-btn>
+                    </template>
+                  </QCSettingsDialog> -->
+                  <QCSettingsDialog v-model="showQCSettingsDialog" :mode="jobDetails.mode"
+                    :initialParams="jobDetails.fastpParams" @update-fastp-params="jobDetails.fastpParams = $event">
+                    <template v-slot:activator="{ props }">
+                      <v-btn v-bind="props" variant="text" size="small" prepend-icon="$tune"
+                        color="primary">Settings</v-btn>
+                    </template>
+                  </QCSettingsDialog>
+
                 </v-col>
               </v-row>
-          
+
               <!-- Output Filename Suffix -->
-                <v-row >
-                  <v-col cols="3">
-                    <v-list-subheader>
+              <v-row>
+                <v-col cols="3">
+                  <v-list-subheader>
                     <v-tooltip location="top">
                       <template v-slot:activator="{ props }">
-                        <v-icon
-                          v-bind="props"
-                          icon="$helpCircle"
-                          size="16"
-                          color="grey lighten-2">
+                        <v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
                         </v-icon>
                       </template>
                       TODO
                     </v-tooltip>
-                    <span class="font-weight-bold">  Output File Suffix</span>  
+                    <span class="font-weight-bold"> Output File Suffix</span>
                   </v-list-subheader>
-                  </v-col>
-                  <v-col cols="3">
-                    <v-text-field
-                      v-model="jobDetails.outFileSuffix"
-                      :rules="[requiredRule]"
-                      :hint="computedHint"
-                      persistent-hint
-                      variant="outlined"
-                      density="compact"
-                      color="primary"
-                      rounded="lg"
-  
-                    ></v-text-field>
-                  </v-col>
-                </v-row>
-    
-                <!-- Output Directory -->
-                <v-row>
-                  <v-col cols="3">
-                    <v-list-subheader>
-                      <v-tooltip location="top">
-                        <template v-slot:activator="{ props }">
-                          <v-icon
-                            v-bind="props"
-                            icon="$helpCircle"
-                            size="16"
-                            color="grey lighten-2">
-                          </v-icon>
-                        </template>
-                        Folder to store output files.
-                      </v-tooltip>
-                      <span class="font-weight-bold">  Output Folder</span>  
-                    </v-list-subheader>                    
-                  </v-col>
-                  <v-col cols="3">
-                    <v-btn
-                      @click="selectFile('outdir', 'directory')"
-                      prepend-icon="$folder"
-                      density="comfortable"
-                      size="default"
-                      class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-                      >Select Folder</v-btn
-                    >
-                    <v-text-field v-model="jobDetails.outdir" :rules="[requiredRule]" style="display: none"></v-text-field>
-                  </v-col>
-        
-                  <v-col class="filename-col">
-                    <v-chip v-if="jobDetails.outdir" label color="primary" density="comfortable" class="filename-chip">
-                      <v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
-                      {{ this.extractFilename(jobDetails.outdir) }}</v-chip
-                    >
-                  </v-col>
-                </v-row>
-  
-                <!-- Select Files -->
-                  <v-row class="mt-0">
-                  <v-col cols="3">
-                    <v-list-subheader>
-                      <v-tooltip location="top">
-                        <template v-slot:activator="{ props }">
-                          <v-icon
-                            v-bind="props"
-                            icon="$helpCircle"
-                            size="16"
-                            color="grey lighten-2">
-                          </v-icon>
-                        </template>
-                        One or more (gzipped) FASTQ files to process.
-                      </v-tooltip>
-                      <span class="font-weight-bold">  Raw Read Files</span>  
-                    </v-list-subheader>                    
-                  </v-col>
-                  <v-col>
-                    <v-row v-for="(entry, index) in jobDetails.entries" :key="index">
-                      <!-- Read 1 -->
-                      <v-col cols="4">
-                        <div v-if="!entry.q1">
-                          <v-btn @click="selectDynamicFile(index, 'q1')" prepend-icon="$file" density="comfortable" size="default"
-                            class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
-                            Read 1 File
-                          </v-btn>
-                        </div>
-                        <v-chip v-else label color="primary" density="comfortable" class="filename-chip">
-                          <v-icon icon="$delete" @click="clearDynamicFile(index, 'q1')" class="mr-1"></v-icon>
-                          {{ extractFilename(entry.q1) }}
-                        </v-chip>
-                      </v-col>
-      
-                      <!-- Read 2 -->
-                      <v-col cols="4" v-if="jobDetails.mode === 'paired-end'">
-                        <div v-if="!entry.q2">
-                          <v-btn @click="selectDynamicFile(index, 'q2')" prepend-icon="$file" density="comfortable" size="default"
-                            class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
-                            Read 2 File
-                          </v-btn>
-                        </div>
-                        <v-chip v-else label color="primary" density="comfortable" class="filename-chip">
-                          <v-icon icon="$delete" @click="clearDynamicFile(index, 'q2')" class="mr-1"></v-icon>
-                          {{ extractFilename(entry.q2) }}
-                        </v-chip>
-                      </v-col>
-  
-                      <!-- Remove Row Button -->
-                      <v-col cols="1" v-if="index > 0">
-                        <v-btn
-                          variant="text"
-                          icon="$checkboxIndeterminate"
-                          size="small"
-                          density="compact"
-                          @click="removeEntry(index)"
-                        >
+                </v-col>
+                <v-col cols="3">
+                  <v-text-field v-model="jobDetails.outFileSuffix" :rules="[requiredRule]" :hint="computedHint"
+                    persistent-hint variant="outlined" density="compact" color="primary" rounded="lg"></v-text-field>
+                </v-col>
+              </v-row>
+
+              <!-- Output Directory -->
+              <v-row>
+                <v-col cols="3">
+                  <v-list-subheader>
+                    <v-tooltip location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
+                        </v-icon>
+                      </template>
+                      Folder to store output files.
+                    </v-tooltip>
+                    <span class="font-weight-bold"> Output Folder</span>
+                  </v-list-subheader>
+                </v-col>
+                <v-col cols="3">
+                  <v-btn @click="selectFile('outdir', 'directory')" prepend-icon="$folder" density="comfortable"
+                    size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">Select
+                    Folder</v-btn>
+                  <v-text-field v-model="jobDetails.outdir" :rules="[requiredRule]"
+                    style="display: none"></v-text-field>
+                </v-col>
+
+                <v-col class="filename-col">
+                  <v-chip v-if="jobDetails.outdir" label color="primary" density="comfortable" class="filename-chip">
+                    <v-icon icon="$delete" @click="clearFile('outdir')" class="mr-1"></v-icon>
+                    {{ this.extractFilename(jobDetails.outdir) }}</v-chip>
+                </v-col>
+              </v-row>
+
+              <!-- Select Files -->
+              <v-row class="mt-0">
+                <v-col cols="3">
+                  <v-list-subheader>
+                    <v-tooltip location="top">
+                      <template v-slot:activator="{ props }">
+                        <v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
+                        </v-icon>
+                      </template>
+                      One or more (gzipped) FASTQ files to process.
+                    </v-tooltip>
+                    <span class="font-weight-bold"> Raw Read Files</span>
+                  </v-list-subheader>
+                </v-col>
+                <v-col>
+                  <v-row v-for="(entry, index) in jobDetails.entries" :key="index">
+                    <!-- Read 1 -->
+                    <v-col cols="4">
+                      <div v-if="!entry.q1">
+                        <v-btn @click="selectDynamicFile(index, 'q1')" prepend-icon="$file" density="comfortable"
+                          size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
+                          Read 1 File
                         </v-btn>
-                      </v-col>
-                    </v-row>
-  
-                    <!-- Add Entry Button -->
-                    <v-row>
-                      <v-col cols="12">
-                        <v-btn variant="text" prepend-icon="$plusBox" @click="addEntry">Add Entry</v-btn>
-                      </v-col>
-                    </v-row>
-                  </v-col>
+                      </div>
+                      <v-chip v-else label color="primary" density="comfortable" class="filename-chip">
+                        <v-icon icon="$delete" @click="clearDynamicFile(index, 'q1')" class="mr-1"></v-icon>
+                        {{ extractFilename(entry.q1) }}
+                      </v-chip>
+                    </v-col>
+
+                    <!-- Read 2 -->
+                    <v-col cols="4" v-if="jobDetails.mode === 'paired-end'">
+                      <div v-if="!entry.q2">
+                        <v-btn @click="selectDynamicFile(index, 'q2')" prepend-icon="$file" density="comfortable"
+                          size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">
+                          Read 2 File
+                        </v-btn>
+                      </div>
+                      <v-chip v-else label color="primary" density="comfortable" class="filename-chip">
+                        <v-icon icon="$delete" @click="clearDynamicFile(index, 'q2')" class="mr-1"></v-icon>
+                        {{ extractFilename(entry.q2) }}
+                      </v-chip>
+                    </v-col>
+
+                    <!-- Remove Row Button -->
+                    <v-col cols="1" v-if="index > 0">
+                      <v-btn variant="text" icon="$checkboxIndeterminate" size="small" density="compact"
+                        @click="removeEntry(index)">
+                      </v-btn>
+                    </v-col>
                   </v-row>
-                  
-                  <!-- Run QC Button -->
-                  <v-btn :disabled="!isJobFormValid" @click="startJob" color="primary">Run QC</v-btn>
-  
-              </v-container>
-            </div>
+
+                  <!-- Add Entry Button -->
+                  <v-row>
+                    <v-col cols="12">
+                      <v-btn variant="text" prepend-icon="$plusBox" @click="addEntry">Add Entry</v-btn>
+                    </v-col>
+                  </v-row>
+                </v-col>
+              </v-row>
+
+              <!-- Run QC Button -->
+              <v-btn :disabled="!isJobFormValid" @click="startJob" color="primary">Run QC</v-btn>
+
+            </v-container>
+          </div>
         </v-form>
       </v-card>
     </v-container>
-  
+
     <!-- Loading Dialog -->
     <v-dialog v-model="processingFastp" persistent>
       <v-card class="mx-auto" width="700">
@@ -270,18 +233,9 @@
           <!-- Display Real-time Output -->
           <v-list-item class="pt-1">
             <template v-slot:subtitle>
-              <v-textarea
-                variant="outlined"
-                v-model="backendOutput"
-                label="Command Line Output"
-                rows="15"
-                no-resize
-                readonly
-                hide-details="true"
-                bg-color="white"
-                class="mt-3 mx-0 text-caption"
-                ref="outputTextarea"
-              ></v-textarea>
+              <v-textarea variant="outlined" v-model="backendOutput" label="Command Line Output" rows="15" no-resize
+                readonly hide-details="true" bg-color="white" class="mt-3 mx-0 text-caption"
+                ref="outputTextarea"></v-textarea>
             </template>
           </v-list-item>
 
@@ -296,18 +250,18 @@
       </v-card>
     </v-dialog>
     <!-- Footer: Reference to Paper -->
-		<v-container class="pt-0">
-			<v-card>
-				<v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">Reference</v-toolbar>
-				<v-card-text>
-					Shifu Chen.
-					<a href="https://onlinelibrary.wiley.com/doi/10.1002/imt2.107" target="_blank" class="text-blue-accent-4">
-						Ultrafast one-pass FASTQ data preprocessing, quality control, and deduplication using fastp.
-					</a>
-					iMeta (2023).
-				</v-card-text>
-			</v-card>
-		</v-container>
+    <v-container class="pt-0">
+      <v-card>
+        <v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">Reference</v-toolbar>
+        <v-card-text>
+          Shifu Chen.
+          <a href="https://onlinelibrary.wiley.com/doi/10.1002/imt2.107" target="_blank" class="text-blue-accent-4">
+            Ultrafast one-pass FASTQ data preprocessing, quality control, and deduplication using fastp.
+          </a>
+          iMeta (2023).
+        </v-card-text>
+      </v-card>
+    </v-container>
 
   </div>
 </template>
@@ -339,6 +293,7 @@ export default {
           { q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_2.fastq" },
         ],
         params: {},
+        fastpParams: {},
       },
 
       // Properties for job processing status, response, and results
@@ -516,6 +471,11 @@ export default {
             "-O", `${batchOutDir}/${base2}${suffix}${ext2}`, // Output filepath for Read 2
           );
         }
+
+        // Append fastp params from dialog
+        if (this.jobDetails.fastpParams && this.jobDetails.fastpParams.length > 0) {
+          params.push(...this.jobDetails.fastpParams);
+        } 
 
         console.log("🚀 fastp job requested:", params); // DEBUG
         
