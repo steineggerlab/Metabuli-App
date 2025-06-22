@@ -51,10 +51,11 @@
 							</v-col>
 
 							<v-col>
-								<QCSettingsDialog v-model="showQCSettingsDialog" class="d-flex justify-start">
+								<QCSettingsDialog v-model="showQCSettingsDialog" :mode="jobDetails.mode"
+									:initialParams="jobDetails.fastpParams" @update-fastp-params="jobDetails.fastpParams = $event">
 									<template v-slot:activator="{ props }">
-										<v-btn v-bind="props" variant="text" size="small" prepend-icon="$tune"
-											color="primary">Settings</v-btn>
+										<v-btn v-bind="props" :disabled="!jobDetails.enableQC" variant="text" size="small"
+											prepend-icon="$tune" color="primary">Settings</v-btn>
 									</template>
 								</QCSettingsDialog>
 							</v-col>
@@ -331,6 +332,8 @@ export default {
 				outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR", // TODO: remove hardcoded path
 				jobid: "",
 				maxram: "",
+
+				fastpParams: {}, // Parameters for quality control (fastp/fastplong)
 			},
 			jobDetailsSample: {
 				// Sample job details
@@ -671,6 +674,11 @@ export default {
 						"-O", `${batchFolder}/${base2}${suffixQC}${ext2}`
 					);
 				}
+
+				// Append fastp params from dialog
+				if (this.jobDetails.fastpParams && this.jobDetails.fastpParams.length > 0) {
+					qcParams.push(...this.jobDetails.fastpParams);
+				} 
 
 				console.log("🚀 fastp job requested:", qcParams);
 
