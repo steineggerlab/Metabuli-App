@@ -132,24 +132,36 @@ ipcMain.handle("open-krona", async (event, filePath) => {
 });
 
 // To execute bin file for Metabuli
-const platform = os.platform();
 const mapPlatform = (platform) => {
 	switch (platform) {
-		case "win32":
+    case "win32": 
 			return "win";
-		case "darwin":
+    case "darwin":
 			return "mac";
-		case "linux":
+    case "linux": 
 			return "linux";
-		default:
+    default:      
 			return "UNSUPPORTED-PLATFORM";
-	}
+  }
 };
 
+const platform = os.platform();            // "darwin" | "win32" | "linux"
+const folder   = mapPlatform(platform);    // "mac"    | "win"     | "linux"
+		
 // Determine the base path for binaries
-const binPath = app.isPackaged
-	? join(process.resourcesPath, "bin") 
-	: join(appRootDir.get(), "resources", mapPlatform(platform), os.arch());
+// when packaged, electron-builder will have put your Makefile output under:
+//   MyApp.app/Contents/Resources/resources/mac     (for mac)
+//   MyApp-win-unpacked/resources/resources/win/x64 (for windows)
+//   MyApp-linux/resources/resources/linux/{arm64,x64}
+const baseResources = app.isPackaged
+  ? join(process.resourcesPath, "resources", folder)
+  : join(appRootDir.get(), "resources", folder);
+
+// only Windows & Linux have arch sub-folders, mac has binaries directly in /resources/mac
+const arch = os.arch(); // "x64" | "arm64"
+const binPath = folder === "mac"
+	? baseResources
+	: join(baseResources, arch);
 
 // METABULI BACKEND BINARY
 const backendBinary = join(binPath, "metabuli" + (platform == "win32" ? ".bat" : ""));

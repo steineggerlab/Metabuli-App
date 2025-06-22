@@ -11,9 +11,9 @@ else
 LIPO ?= lipo
 endif
 
-win: resources/win/x64/${FRONTEND_APP}.bat 
-mac: resources/mac/x64/${FRONTEND_APP} resources/mac/arm64/${FRONTEND_APP} resources/mac/x64/fastp resources/mac/arm64/fastp resources/mac/x64/fastplong resources/mac/arm64/fastplong
-linux: resources/linux/arm64/${FRONTEND_APP} resources/linux/x64/${FRONTEND_APP}
+win: resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/fastp
+mac: resources/mac/${FRONTEND_APP} resources/mac/fastp resources/mac/fastplong
+linux: resources/linux/arm64/${FRONTEND_APP} resources/linux/x64/${FRONTEND_APP} resources/linux/x64/fastp
 
 # macOS
 resources/mac/${FRONTEND_APP}:
@@ -21,39 +21,15 @@ resources/mac/${FRONTEND_APP}:
 	wget -nv -q -O - https://mmseqs.com/metabuli/metabuli-osx-universal.tar.gz | tar -xOf - ${FRONTEND_APP}/bin/${FRONTEND_APP} > resources/mac/${FRONTEND_APP}
 	chmod +x resources/mac/${FRONTEND_APP}
 
-resources/mac/x64/${FRONTEND_APP}: resources/mac/${FRONTEND_APP}
-	mkdir -p resources/mac/x64
-	$(LIPO) resources/mac/${FRONTEND_APP} -remove arm64 -output resources/mac/x64/${FRONTEND_APP} || cp -f -- resources/mac/${FRONTEND_APP} resources/mac/x64/${FRONTEND_APP}
-
-resources/mac/arm64/${FRONTEND_APP}: resources/mac/${FRONTEND_APP}
-	mkdir -p resources/mac/arm64
-	$(LIPO) resources/mac/${FRONTEND_APP} -thin arm64 -output resources/mac/arm64/${FRONTEND_APP} || cp -f -- resources/mac/${FRONTEND_APP} resources/mac/arm64/${FRONTEND_APP}
-
 resources/mac/fastp:
 	mkdir -p resources/mac
 	wget -nv -q -O - https://github.com/jaebeom-kim/fastp/releases/download/v0.0.1/fastp-osx-universal.gz | gunzip > resources/mac/fastp
 	chmod +x resources/mac/fastp
 
-resources/mac/x64/fastp: resources/mac/fastp
-	mkdir -p resources/mac/x64
-	$(LIPO) resources/mac/fastp -remove arm64 -output resources/mac/x64/fastp || cp -f -- resources/mac/fastp resources/mac/x64/fastp
-
-resources/mac/arm64/fastp: resources/mac/fastp
-	mkdir -p resources/mac/arm64
-	$(LIPO) resources/mac/fastp -thin arm64 -output resources/mac/arm64/fastp || cp -f -- resources/mac/fastp resources/mac/arm64/fastp
-
 resources/mac/fastplong:
 	mkdir -p resources/mac
 	wget -nv -q -O - https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.1/fastplong-osx-universal.gz | gunzip > resources/mac/fastplong
 	chmod +x resources/mac/fastplong
-
-resources/mac/x64/fastplong: resources/mac/fastplong
-	mkdir -p resources/mac/x64
-	$(LIPO) resources/mac/fastplong -remove arm64 -output resources/mac/x64/fastplong || cp -f -- resources/mac/fastplong resources/mac/x64/fastplong
-
-resources/mac/arm64/fastplong: resources/mac/fastplong
-	mkdir -p resources/mac/arm64
-	$(LIPO) resources/mac/fastplong -thin arm64 -output resources/mac/arm64/fastplong || cp -f -- resources/mac/fastplong resources/mac/arm64/fastplong
 
 
 # Linux
@@ -81,7 +57,7 @@ resources/linux/x64/fastp:
 	wget http://opengene.org/fastp/fastp && mv fastp resources/linux/x64/fastp && chmod a+x resources/linux/x64/fastp
 
 
-
+# Windows
 resources/win/x64/${FRONTEND_APP}.bat:
 	mkdir -p resources/win/x64
 	cd resources/win/x64 && wget -nv -O ${FRONTEND_APP}-win64.zip https://mmseqs.com/metabuli/metabuli-win64.zip \
