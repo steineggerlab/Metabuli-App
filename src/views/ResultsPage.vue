@@ -9,15 +9,9 @@
 		<v-card-text class="d-flex flex-column h-100 pb-0">
 			<v-tabs-window v-model="tab" class="h-100">
 				<!-- NODE DETAILS DIALOG (SHARED BY TABLE & SANKEY) -->
-				<SankeyNodeDialog 
-				v-if="dialogData" 
-				v-model="isDialogVisible" 
-				:nodeDetails="dialogData" 
-				:configureMenuSettings="sankeyConfigurationSettings"
-				@update-config="handleUpdateConfig"
-				@close-dialog="hideDialog" 
-				@download-sankey="handleFormatSelected" 
-				class="align-top" />
+				<SankeyNodeDialog v-if="dialogData" v-model="isDialogVisible" :nodeDetails="dialogData"
+					:configureMenuSettings="sankeyConfigurationSettings" @update-config="handleUpdateConfig"
+					@close-dialog="hideDialog" @download-sankey="handleFormatSelected" class="align-top" />
 
 				<!-- TABLE TAB -->
 				<v-tabs-window-item value="table" class="h-100">
@@ -30,33 +24,17 @@
 					<div class="d-flex justify-space-around my-5 mx-2 gc-1">
 						<!-- SEARCH BAR -->
 						<div class="d-flex flex-column">
-							<v-text-field
-								v-model="searchQuery"
-								prepend-inner-icon="$magnify"
-								density="compact"
-								label="Search Name or Taxon ID"
-								variant="outlined"
-								rounded="lg"
-								single-line
-								color="indigo"
-								clearable
-							></v-text-field>
+							<v-text-field v-model="searchQuery" prepend-inner-icon="$magnify" density="compact"
+								label="Search Name or Taxon ID" variant="outlined" rounded="lg" single-line color="indigo"
+								clearable></v-text-field>
 							<div class="d-flex align-center">Click on a node to see lineage and subtree.</div>
 						</div>
 
 						<!-- BUTTON TO OPEN ISSUE WHEN SANKEY VERIFICATION FAILS -->
 						<v-tooltip location="end">
 							<template #activator="{ props }">
-								<v-btn
-								v-if="!taxonomyVerification" 
-								v-bind="props"
-								icon="$alert"
-								color="amber-darken-2"
-								variant="text"
-								rounded="xl"
-								class="ml-2"
-								@click="openGithubIssue"
-								></v-btn>
+								<v-btn v-if="!taxonomyVerification" v-bind="props" icon="$alert" color="amber-darken-2" variant="text"
+									rounded="xl" class="ml-2" @click="openGithubIssue"></v-btn>
 							</template>
 							Taxonomy report mismatch detected. Notify the developer!
 						</v-tooltip>
@@ -71,17 +49,10 @@
 						</SankeyDownloadMenu>
 
 						<!-- CONFIGURE SANKEY MENU -->
-						<ConfigureSankeyMenu
-							:maxTaxaLimit="roundedMaxTaxaLimit"
-							:initialShowAll="showAll"
-							:initialTaxaLimit="taxaLimit"
-							:initialMinCladeReadsMode="minCladeReadsMode"
-							:initialMinCladeReads="minCladeReads"
-							:initialFigureHeight="figureHeight"
-							:initialLabelOption="labelOption"
-							:menuLocation="'bottom end'"
-							@updateSettings="handleUpdateConfig"
-						>
+						<ConfigureSankeyMenu :maxTaxaLimit="roundedMaxTaxaLimit" :initialShowAll="showAll"
+							:initialTaxaLimit="taxaLimit" :initialMinCladeReadsMode="minCladeReadsMode"
+							:initialMinCladeReads="minCladeReads" :initialFigureHeight="figureHeight"
+							:initialLabelOption="labelOption" :menuLocation="'bottom end'" @updateSettings="handleUpdateConfig">
 							<template v-slot:activator="{ props }">
 								<v-btn color="indigo" rounded="xl" v-bind="props">Configure Diagram</v-btn>
 							</template>
@@ -89,21 +60,10 @@
 					</div>
 
 					<!-- SANKEY DIAGRAM -->
-					<SankeyDiagram
-						:searchQuery="searchQuery"
-						:id="'sankey-svg'"
-						:isSubtree="false"
-						:instanceId="uniqueInstanceId"
-						:rawData="results"
-						:taxaLimit="taxaLimit"
-						:minCladeReadsMode="minCladeReadsMode"
-						:minReads="minCladeReads"
-						:figureHeight="figureHeight"
-						:labelOption="labelOption"
-						:showAll="showAll"
-						@updateConfigureMenu="updateConfigureMenu"
-						@node-click="showDialog"
-					/>
+					<SankeyDiagram :searchQuery="searchQuery" :id="'sankey-svg'" :isSubtree="false" :instanceId="uniqueInstanceId"
+						:rawData="results" :taxaLimit="taxaLimit" :minCladeReadsMode="minCladeReadsMode" :minReads="minCladeReads"
+						:figureHeight="figureHeight" :labelOption="labelOption" :showAll="showAll"
+						@updateConfigureMenu="updateConfigureMenu" @node-click="showDialog" />
 				</v-tabs-window-item>
 
 				<!-- KRONA TAB -->
@@ -158,7 +118,7 @@ export default {
 			minCladeReads: 0.01,
 			figureHeight: 500,
 			labelOption: "proportion",
-			
+
 			searchQuery: "",
 
 			// Sankey Node Dialog
@@ -201,10 +161,10 @@ export default {
 		// Functions handling Details Dialog (shared between Table and Sankey tab)
 		// Data processing functions for Subtree Sankey
 		parseData(data) {
-			const nodesByRank = {}; 
+			const nodesByRank = {};
 			let currentLineage = [];
 			this.nodesByDepth = {};
-			
+
 			let rootNode = null;
 			let unclassifiedNode = null;
 
@@ -247,12 +207,12 @@ export default {
 						nodesByRank["no rank"] = [];
 					}
 					// nodesByRank["root"].push(node); // FIXME: overlapping issue with root node when i put this in
-					
+
 					// Reassign some attributes specific to unclassified node
 					node.rank = "no rank";
 					node.rankDisplayName = node.name;
 					node.isUnclassifiedNode = true;
-					
+
 					unclassifiedNode = node;
 				} else if (this.isRootNode(node)) {
 					if (!nodesByRank["no rank"]) {
@@ -263,32 +223,32 @@ export default {
 					// Reassign some attributes specific to root node
 					node.rank = "no rank"; // FIXME: remove this after fixing logic to leave it as "no rank", same as taxonomyreport
 					node.rankDisplayName = node.name;
-					
+
 					rootNode = node;
 					this.nodes.push(rootNode);
-				} 
+				}
 
 				// Store lineage for each node
 				let lastLineageNode = currentLineage[currentLineage.length - 1];
 				if (lastLineageNode) {
 					let currentDepth = node.hierarchy;
-					let lastDepth = lastLineageNode.hierarchy; 
-					
+					let lastDepth = lastLineageNode.hierarchy;
+
 					while (lastLineageNode && currentDepth <= lastDepth) {
 						currentLineage.pop();
-						
+
 						lastLineageNode = currentLineage[currentLineage.length - 1];
 						if (!lastLineageNode) {
 							break; // Exit the loop if no more nodes in the lineage (i.e. traced back to root node)
 						}
-						
+
 						lastDepth = lastLineageNode.hierarchy; // Update lastRank for the next iteration comparison
 					}
 				}
 				// Append current node to currentLineage array + store lineage data
 				currentLineage.push(node);
 				node.lineage = [...currentLineage];
-				
+
 				// Store current node to parent's children collection (for sankey verification taxonomyreport regeneration)
 				const parent = node.lineage[node.lineage.length - 2];
 				if (parent) {
@@ -310,24 +270,24 @@ export default {
 			Step 4: Create node for Unclassified Sequences linked to the root node
 			*/
 			if (unclassifiedNode && rootNode) { // FIXME: remove rootNode if unneeded
-					// Add to selected and all nodes (always present, excluded from taxa limit)
-					this.nodes.push(unclassifiedNode);
+				// Add to selected and all nodes (always present, excluded from taxa limit)
+				this.nodes.push(unclassifiedNode);
 
-					// Add link from root node to unclassified node
-					// selectedLinks.push({
-					// 	sourceName: rootNode.name,
-					// 	source: rootNode.id,
-					// 	targetName: unclassifiedNode.name,
-					// 	target: unclassifiedNode.id,
-					// 	value: totalUnclassifiedCladeReads,
-					// });
-					// allLinks.push({
-					// 	sourceName: rootNode.name,
-					// 	source: rootNode.id,
-					// 	targetName: unclassifiedNode.name,
-					// 	target: unclassifiedNode.id,
-					// 	value: totalUnclassifiedCladeReads,
-					// });
+				// Add link from root node to unclassified node
+				// selectedLinks.push({
+				// 	sourceName: rootNode.name,
+				// 	source: rootNode.id,
+				// 	targetName: unclassifiedNode.name,
+				// 	target: unclassifiedNode.id,
+				// 	value: totalUnclassifiedCladeReads,
+				// });
+				// allLinks.push({
+				// 	sourceName: rootNode.name,
+				// 	source: rootNode.id,
+				// 	targetName: unclassifiedNode.name,
+				// 	target: unclassifiedNode.id,
+				// 	value: totalUnclassifiedCladeReads,
+				// });
 				// }
 			}
 
@@ -432,21 +392,27 @@ export default {
 			const extractedTaxonomyArray = extractTaxonomyArray(this.nodesByDepth);
 
 			const properties = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "nameWithIndentation"];
-			
+
 			// Regenerate taxonomy report from the sankey data
-			const regeneratedReport = extractedTaxonomyArray
-				.map(node => properties.map(property => node[property] !== undefined && node[property] !== null 
-					? node[property] 
-					: "").join("\t"))
-				.join("\n");
-			
+			const header = "#clade_proportion\tclade_count\ttaxon_count\trank\ttaxID\tname";
+			const regeneratedReport = [
+				header,
+				...extractedTaxonomyArray.map(node =>
+					properties
+						.map(property =>
+							node[property] !== undefined && node[property] !== null ? node[property] : ""
+						)
+						.join("\t")
+				)
+			].join("\n");
+
 			const compareSuccessful = await compareTSVContents(regeneratedReport, originalReportFilePath);
 			return compareSuccessful; // return true or false depending on verification result
 		},
 		openGithubIssue() {
 			const title = encodeURIComponent("Original Taxonomy Report Misalignment with Reverse-Generated Report");
 			const body = encodeURIComponent(
-  `> To help us investigate the issue, please share your 'report.tsv' file using one of the following methods:
+				`> To help us investigate the issue, please share your 'report.tsv' file using one of the following methods:
 >
 >1. **File Sharing Service**:  
 >   Upload your 'report.tsv' file to a trusted file-sharing platform like Google Drive or Dropbox. Ensure the link is accessible to us, and include the link in this issue.
@@ -455,7 +421,7 @@ export default {
 >   Alternatively, you can email the 'report.tsv' file to [snjlee58@snu.ac.kr]. Please include the issue number in the email subject (e.g., "Metabuli App Issue #123: Report File").
 >
 >This will help us review and resolve the issue more effectively. Let us know if you have any questions!`
-);
+			);
 
 			const url = `https://github.com/steineggerlab/Metabuli-App/issues/new?title=${title}&body=${body}`;
 			window.open(url, "_blank");
@@ -594,7 +560,9 @@ export default {
 <style>
 .tab-fill-height {
 	height: 75vh;
-	overflow-y: auto; /* Enable vertical scrolling */
-	overflow-x: auto; /* Hide horizontal overflow */
+	overflow-y: auto;
+	/* Enable vertical scrolling */
+	overflow-x: auto;
+	/* Hide horizontal overflow */
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<SearchSetting @job-started="showDialog" @job-aborted="hideDialog" @job-timed-out="handleJobTimeOut" @job-completed="handleJobComplete" @backend-realtime-output="updateRealtimeOutput" />
+		<SearchSetting @job-started="showDialog" @job-aborted="hideDialog" @job-completed="handleJobComplete" @backend-realtime-output="updateRealtimeOutput" />
 
 		<!-- Loading Dialog -->
 		<v-dialog v-model="loadingDialog" persistent>
@@ -108,10 +108,6 @@ export default {
 			} else if (completedJob.jobType === "uploadReport") {
 				this.$emit("report-uploaded");
 			}
-		},
-		handleJobTimeOut() {
-			this.cancelBackend();
-			this.backendOutput = "Job timed out."; // Display timeout message
 		},
 		cancelBackend() {
 			this.hideDialog();

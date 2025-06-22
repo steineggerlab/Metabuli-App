@@ -850,6 +850,7 @@ export default {
           if (!this.errorHandled) {
             this.errorHandled = true;
             this.backendOutput += "\nError:\n" + err;
+						this.$emit("backend-realtime-output", this.backendOutput);
             this.status = "ERROR";
             cleanupClassify();
             reject(new Error("classify execution error: " + err));
@@ -872,16 +873,12 @@ export default {
 
 		// Poll for status flips to “COMPLETE” or “ERROR” (or TIMEOUT)
 		async pollJobStatus(interval = 500, timeout = Infinity) {
-			// 	console.log("🚀 Running job"); // DEBUG
+			console.log("🚀 classify job running");
 			const start = Date.now();
       while (Date.now() - start < timeout) {
         if (this.errorHandled || this.status === "COMPLETE") return true;
         if (this.status === "ERROR") throw new Error("Backend signaled ERROR");
         await new Promise(r => setTimeout(r, interval));
-      }
-      if (!this.errorHandled) {
-        this.status = "TIMEOUT";
-        throw new Error("Polling timed out");
       }
     },
 
@@ -985,17 +982,15 @@ export default {
 			this.$emit("store-job", failedJob);
 
 			// Trigger snackbar corresponding to case
-			if (this.status === "TIMEOUT") {
-				this.$emit("job-timed-out");
-				this.$emit("trigger-snackbar", "Job execution timed out.", "warning", "timer", "Retry", this.startJob);
-			} else if (this.status === "CANCELLED") {
+			if (this.status === "CANCELLED") {
 				this.$emit("trigger-snackbar", "Job was cancelled.", "info", "cancel", "Dismiss");
 			} else if (this.status === "ERROR") {
-				this.$emit("job-aborted");
 				this.$emit("trigger-snackbar", "Invalid request. Check your query and try again.", "error", "warning", "Dismiss");
 			} else {
-				this.$emit("job-aborted");
+				this.backendOutput += "\nError: An unexpected error occurred. Please try again.\n";
+				this.$emit("backend-realtime-output", this.backendOutput);
 				this.$emit("trigger-snackbar", "An unexpected error occurred. Please try again.", "error", "warning", "Dismiss");
+				// TODO: leaves record in job history as 'INCOMPLETE', find out why
 			}
 
 			this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
