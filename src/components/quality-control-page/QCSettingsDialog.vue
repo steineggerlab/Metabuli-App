@@ -167,15 +167,18 @@
             </v-card-text>
           </div>
           <v-divider class="my‐4"></v-divider>
+
           <!-- Extra params file -->
-          <v-card-title class="text-button">Additional Parameters</v-card-title>
+          <v-card-title class="text-button mt-4">Additional Parameters</v-card-title>
           <v-card-text>
-            <!-- TODO -->
             <v-text-field v-model="extraFile" prepend-icon="$file" color="indigo" @click:prepend="loadExtraParamsFile"
               readonly label="Load extra fastp params file" />
-            <small class="text-caption">The file should contain one parameter per line, and each line should start with
-              the parameter name followed by its value. Parameters here will override the GUI settings. Please use long
-              options (e.g., `--disable_quality_filtering`) instead of short options (e.g., `-Q`).</small>
+            <small class="text-caption">
+              The file should contain one parameter per line, and each line should start with
+              the parameter name followed by its value. Parameters here will override the GUI settings.<br />
+              Check <a href="https://github.com/OpenGene/fastp" target="_blank">fastp</a> and <a href="https://github.com/OpenGene/fastplong" target="_blank">fastplong</a> GitHub repository for parameter list. <br />
+              Please use long options (e.g., <code>--disable_quality_filtering</code>) instead of short options (e.g., <code>-Q</code>).
+            </small>
           </v-card-text>
         </v-form>
       </v-card-text>
@@ -352,5 +355,14 @@ export default {
 
 .dialog-style .v-card-title{
   color: #3F51B5  ;
+}
+
+/* hyperlink */
+.v-card-text a {
+  color: inherit;
+}
+
+.v-card-text a:hover {
+  text-decoration: none;
 }
 </style>
