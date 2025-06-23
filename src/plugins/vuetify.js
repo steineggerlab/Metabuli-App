@@ -36,7 +36,6 @@ import {
   mdiTune,
   mdiInformationOutline,
   mdiFilter,
-  mdiHome,
 } from "@mdi/js"; // Icon search: https://vuetifyjs.com/en/features/icon-fonts/#mdi-icon-search
 
 export default createVuetify({
@@ -107,7 +106,6 @@ export default createVuetify({
       tune: mdiTune,
       informationOutline: mdiInformationOutline,
       filter: mdiFilter,
-      home: mdiHome,
     },
     sets: {
       mdi,

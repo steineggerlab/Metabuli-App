@@ -77,7 +77,6 @@ export default {
 		rail: true,
 		hover: "",
 		items: [
-			{ title: "Home", path: "/", icon: "home" },
 			{ title: "Data Input", path: "/search", icon: "upload" },
 			{ title: "Quality Control", path: "/quality-control", icon: "filter" },
 			{ title: "Custom Database", path: "/custom-database", icon: "database" },
