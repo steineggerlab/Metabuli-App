@@ -82,7 +82,7 @@
                   </v-list-subheader>
                 </v-col>
                 <v-col>
-                  <QCSettingsDialog v-model="showQCSettingsDialog" :mode="jobDetails.mode"
+                  <QCSettingsDialog :mode="jobDetails.mode"
                     :initialParams="jobDetails.fastpParams" @update-fastp-params="jobDetails.fastpParams = $event">
                     <template v-slot:activator="{ props }">
                       <v-btn v-bind="props" variant="text" size="small" prepend-icon="$tune"
@@ -295,9 +295,6 @@ export default {
       backendOutput: "",
       errorHandled: false,
       processingFastp: false, // Flag to indicate if fastp is being processed
-
-      // Properties for QC settings dialog
-      showQCSettingsDialog: false,
 
       // ReadMe Manual Handling
       showReadme: false,

@@ -51,7 +51,7 @@
 							</v-col>
 
 							<v-col>
-								<QCSettingsDialog v-model="showQCSettingsDialog" :mode="jobDetails.mode"
+								<QCSettingsDialog :mode="jobDetails.mode"
 									:initialParams="jobDetails.fastpParams" @update-fastp-params="jobDetails.fastpParams = $event">
 									<template v-slot:activator="{ props }">
 										<v-btn v-bind="props" :disabled="!jobDetails.enableQC" variant="text" size="small"
