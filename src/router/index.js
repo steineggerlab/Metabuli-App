@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
+import LandingPage from '../views/LandingPage.vue';
 import SearchPage from '../views/SearchPage.vue';
 import CustomDatabasePage from "../views/CustomDatabasePage.vue";
 import ResultsPage from '../views/ResultsPage.vue';
@@ -7,10 +8,10 @@ import QualityControlPage from '@/views/QualityControlPage.vue';
 
 const routes = [
 	{
-		path: "/",
-		name: "Home",
-		redirect: "/search", // Redirect to a default route if needed
-	},
+    path: "/",
+    name: "LandingPage",
+    component: LandingPage
+  },
 	{
 		path: "/search",
 		name: "SearchPage",
