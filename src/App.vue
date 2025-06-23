@@ -51,7 +51,7 @@
 				</v-card-text>
 				<v-card-actions>
 					<v-spacer></v-spacer>
-					<v-btn text @click="showReadme=false">Close</v-btn>
+					<v-btn text @click="showReadme = false">Close</v-btn>
 				</v-card-actions>
 			</v-card>
 		</v-bottom-sheet>
@@ -155,6 +155,7 @@ export default {
 .v-app-bar.v-toolbar {
 	padding-inline-start: 4px;
 }
+
 .custom-toolbar {
 	color: white;
 	font-size: 20px;
@@ -173,9 +174,11 @@ export default {
 	text-decoration: none;
 	color: inherit;
 }
+
 .nav-item:hover {
 	background-color: rgba(21, 101, 192, 0.1);
 }
+
 .nav-item.active {
 	color: #1565c0;
 }

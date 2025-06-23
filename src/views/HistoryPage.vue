@@ -1,18 +1,9 @@
 <template>
 	<v-container class="w-100">
 		<v-card>
-			<v-data-table
-				v-model="selectedItems"
-				:headers="headers"
-				:items="jobsHistory"
-				item-value="timestamp"
-				:items-per-page="10"
-				class="elevation-1"
-				:sort-by="[{ key: 'timestamp', order: 'desc' }]"
-				select-strategy="page"
-				show-select
-				hide-default-footer
-			>
+			<v-data-table v-model="selectedItems" :headers="headers" :items="jobsHistory" item-value="timestamp"
+				:items-per-page="10" class="elevation-1" :sort-by="[{ key: 'timestamp', order: 'desc' }]" select-strategy="page"
+				show-select hide-default-footer>
 				<template v-slot:top>
 					<v-toolbar image="assets/toolbar_background.png" class="custom-toolbar py-3" density="compact">
 						<div class="d-flex flex-column">
@@ -59,21 +50,27 @@
 
 				<!-- Status Column -->
 				<template v-slot:[`item.jobStatus`]="{ item }">
-					<v-chip v-if="item.jobStatus === 'Completed'" color="success" prepend-icon="$success" density="comfortable"> Completed </v-chip>
-					<v-chip v-else-if="item.jobStatus === 'ERROR'" color="error" prepend-icon="$warning" density="comfortable"> Failed </v-chip>
-					<v-chip v-else-if="item.jobStatus === 'TIMEOUT'" color="grey" prepend-icon="$timelapse" density="comfortable"> Timeout </v-chip>
-					<v-chip v-else-if="item.jobStatus === 'CANCELLED'" color="warning" prepend-icon="$cancel" density="comfortable"> Cancelled </v-chip>
+					<v-chip v-if="item.jobStatus === 'Completed'" color="success" prepend-icon="$success" density="comfortable">
+						Completed </v-chip>
+					<v-chip v-else-if="item.jobStatus === 'ERROR'" color="error" prepend-icon="$warning" density="comfortable">
+						Failed </v-chip>
+					<v-chip v-else-if="item.jobStatus === 'TIMEOUT'" color="grey" prepend-icon="$timelapse" density="comfortable">
+						Timeout </v-chip>
+					<v-chip v-else-if="item.jobStatus === 'CANCELLED'" color="warning" prepend-icon="$cancel"
+						density="comfortable"> Cancelled </v-chip>
 					<v-chip v-else color="grey" prepend-icon="$helpCircle" density="comfortable"> Incomplete </v-chip>
 				</template>
 
 				<template v-slot:[`item.backendOutput`]="{ item }">
-					<v-btn variant="text" size="small" prepend-icon="$openInNew" class="text-body-2" :disabled="!item.backendOutput" @click="viewBackendOutput(item.backendOutput)"> View Log </v-btn>
+					<v-btn variant="text" size="small" prepend-icon="$openInNew" class="text-body-2"
+						:disabled="!item.backendOutput" @click="viewBackendOutput(item.backendOutput)"> View Log </v-btn>
 				</template>
 
 				<!-- Action Column -->
 				<template v-slot:[`item.actions`]="{ item }">
 					<div class="d-flex align-center justify-center">
-						<v-btn prepend-icon="$eye" variant="tonal" color="primary" size="small" class="text-body-2" :disabled="!item.results" @click="viewDetails(item)">See Results </v-btn>
+						<v-btn prepend-icon="$eye" variant="tonal" color="primary" size="small" class="text-body-2"
+							:disabled="!item.results" @click="viewDetails(item)">See Results </v-btn>
 						<v-btn variant="text" icon="$trash" size="small" rounded="xl" @click="deleteJob(item.timestamp)"> </v-btn>
 					</div>
 				</template>
@@ -83,7 +80,8 @@
 			<v-fade-transition>
 				<div v-if="selectedItems.length > 0" class="floating-action-box bg-white py-2 px-3 elevation-3 rounded-lg">
 					<v-chip variant="text">{{ selectedItems.length }} selected</v-chip>
-					<v-btn variant="outlined" color="error" icon="$trash" size="small" density="comfortable" class="px-2" @click="deleteSelectedItems"></v-btn>
+					<v-btn variant="outlined" color="error" icon="$trash" size="small" density="comfortable" class="px-2"
+						@click="deleteSelectedItems"></v-btn>
 				</div>
 			</v-fade-transition>
 
@@ -92,10 +90,12 @@
 				<v-card class="text-break">
 					<v-card-title class="headline pl-4 d-flex justify-space-between align-center">
 						Job Process Output Log
-						<v-btn icon="$clipboard" variant="text" density="comfortable" size="large" color="primary" @click="copyToClipboard"> </v-btn>
+						<v-btn icon="$clipboard" variant="text" density="comfortable" size="large" color="primary"
+							@click="copyToClipboard"> </v-btn>
 					</v-card-title>
 
-					<v-card-text class="w-100 text-break" style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word">
+					<v-card-text class="w-100 text-break"
+						style="white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word">
 						<div class="text-caption">{{ selectedBackendOutput }}</div>
 					</v-card-text>
 					<v-card-actions>
@@ -180,7 +180,7 @@ export default {
 
 			// Convert jobsHistory to plain objects and save
 			const plainJobsHistory = JSON.parse(JSON.stringify(this.jobsHistory));
-			
+
 			// Trim and store the latest n jobs in the file
 			await trimAndStoreJobsHistory(plainJobsHistory);
 		},

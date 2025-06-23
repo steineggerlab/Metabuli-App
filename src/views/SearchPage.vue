@@ -1,6 +1,7 @@
 <template>
 	<div>
-		<SearchSetting @job-started="showDialog" @job-aborted="hideDialog" @job-completed="handleJobComplete" @backend-realtime-output="updateRealtimeOutput" />
+		<SearchSetting @job-started="showDialog" @job-aborted="hideDialog" @job-completed="handleJobComplete"
+			@backend-realtime-output="updateRealtimeOutput" />
 
 		<!-- Loading Dialog -->
 		<v-dialog v-model="loadingDialog" persistent>
@@ -19,19 +20,9 @@
 						<!-- Display Real-time Output -->
 						<v-list-item class="pt-1">
 							<template v-slot:subtitle>
-								<v-textarea
-									variant="outlined"
-									v-if="backendOutput"
-									v-model="backendOutput"
-									label="Command Line Output"
-									rows="15"
-									no-resize
-									readonly
-									hide-details="true"
-									bg-color="white"
-									class="mt-3 mx-0 text-caption"
-									ref="outputTextarea"
-								></v-textarea>
+								<v-textarea variant="outlined" v-if="backendOutput" v-model="backendOutput" label="Command Line Output"
+									rows="15" no-resize readonly hide-details="true" bg-color="white" class="mt-3 mx-0 text-caption"
+									ref="outputTextarea"></v-textarea>
 							</template>
 						</v-list-item>
 

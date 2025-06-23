@@ -7,7 +7,7 @@
           Raw Read Quality Control
           <v-spacer></v-spacer>
 
-          <v-btn rounded="xs" @click="showReadme=true" variant="tonal"> MANUAL </v-btn>
+          <v-btn rounded="xs" @click="showReadme = true" variant="tonal"> MANUAL </v-btn>
 
           <!-- ReadMe Manual Bottom Sheet -->
           <v-bottom-sheet class="markdown-body" v-model="showReadme">
@@ -17,7 +17,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn text @click="showReadme=false">Close</v-btn>
+                <v-btn text @click="showReadme = false">Close</v-btn>
               </v-card-actions>
             </v-card>
           </v-bottom-sheet>
@@ -270,11 +270,11 @@ export default {
   components: {
     QCSettingsDialog,
   },
-	data() {
+  data() {
     return {
       isJobFormValid: false,
       jobDetails: {
-      // TODO remove test entries
+        // TODO remove test entries
         // Store job details
         mode: "paired-end",
         outFileSuffix: "_out",
@@ -291,7 +291,7 @@ export default {
       },
 
       // Properties for job processing status, response, and results
-			status: "INITIAL", // INITIAL, RUNNING, COMPLETE, ERROR
+      status: "INITIAL", // INITIAL, RUNNING, COMPLETE, ERROR
       backendOutput: "",
       errorHandled: false,
       processingFastp: false, // Flag to indicate if fastp is being processed
@@ -302,14 +302,14 @@ export default {
       // ReadMe Manual Handling
       showReadme: false,
       readmeHtml: "",
-		};
-	},
-	computed: {
-		computedHint() {
-			return `{inputFileName}${this.jobDetails.outFileSuffix}.fastq`;
-		},
-	},
-	methods: {
+    };
+  },
+  computed: {
+    computedHint() {
+      return `{inputFileName}${this.jobDetails.outFileSuffix}.fastq`;
+    },
+  },
+  methods: {
     // Button actions for adding/removing entry rows
     addEntry() {
       this.jobDetails.entries.push({ q1: "", q2: "" });
@@ -331,37 +331,37 @@ export default {
       this.jobDetails.entries[index][field] = "";
     },
 
-		async selectFile(field, type) {
-			if (window.electron) {
-				try {
-					const options = {
-						properties: type === "file" ? ["openFile"] : ["openDirectory"],
-					};
-					const filePaths = await window.electron.openFileDialog(options);
-					if (filePaths && filePaths.length > 0) {
-						if (!field) {
-							return filePaths[0];
-						}
-						this.jobDetails[field] = filePaths[0];
-					}
-				} catch (error) {
-					console.error("Error selecting file:", error); // DEBUG
-					this.$emit("trigger-snackbar", `File selection error: ${error}`, "error", "fileAlert", "Dismiss");
-				}
-			} else {
-				console.error("File dialog is not supported in the web environment."); // DEBUG
-				this.$emit("trigger-snackbar", "File dialog is not supported in the web environment.", "error", "warning", "Dismiss");
-			}
-		},
+    async selectFile(field, type) {
+      if (window.electron) {
+        try {
+          const options = {
+            properties: type === "file" ? ["openFile"] : ["openDirectory"],
+          };
+          const filePaths = await window.electron.openFileDialog(options);
+          if (filePaths && filePaths.length > 0) {
+            if (!field) {
+              return filePaths[0];
+            }
+            this.jobDetails[field] = filePaths[0];
+          }
+        } catch (error) {
+          console.error("Error selecting file:", error); // DEBUG
+          this.$emit("trigger-snackbar", `File selection error: ${error}`, "error", "fileAlert", "Dismiss");
+        }
+      } else {
+        console.error("File dialog is not supported in the web environment."); // DEBUG
+        this.$emit("trigger-snackbar", "File dialog is not supported in the web environment.", "error", "warning", "Dismiss");
+      }
+    },
     clearFile(field) {
       this.jobDetails[field] = null;
       this.$refs.jobForm.validate();
     },
 
     // Functions for handling filenames
-		extractFilename(path) {
-			return path.split("/").pop();
-		},
+    extractFilename(path) {
+      return path.split("/").pop();
+    },
     stripFileExtension(filePath) {
       // 1. Extract just the filename, dropping any directory
       const filename = this.extractFilename(filePath);
@@ -375,7 +375,7 @@ export default {
       if (m) {
         return {
           base: m[1],  // filename base, e.g. “SRR24315757_1”
-          ext:  m[2],  // file extension, e.g. “.fastq” or “.fq.gz”
+          ext: m[2],  // file extension, e.g. “.fastq” or “.fq.gz”
         };
       } else {
         return { base: filename, ext: "" }; // TODO: handle case where no extension is found
@@ -391,46 +391,46 @@ export default {
     },
 
     // Start backend job request
-		async startJob() {
-			try {
-				// Start loading dialog
-				this.status = "RUNNING";
+    async startJob() {
+      try {
+        // Start loading dialog
+        this.status = "RUNNING";
         this.processingFastp = true; // Set processing flag
 
-				// Start backend request and job polling simultaneously
-				const backendPromise = this.runBackend();
-				const pollingPromise = this.pollJobStatus();
+        // Start backend request and job polling simultaneously
+        const backendPromise = this.runBackend();
+        const pollingPromise = this.pollJobStatus();
 
-				// Wait for either backend to complete or polling to timeout/fail
-				await Promise.race([backendPromise, pollingPromise]);
+        // Wait for either backend to complete or polling to timeout/fail
+        await Promise.race([backendPromise, pollingPromise]);
 
-				// If backend completes successfully and polling hasn't timed out
-				if (this.status === "COMPLETE") {
+        // If backend completes successfully and polling hasn't timed out
+        if (this.status === "COMPLETE") {
           console.log("🚀 Fastp job completed successfully!"); // DEBUG
-					// await this.processResults(false); // Make sure this is called after backend completion
-					// this.handleJobSuccess();
-				}
-			} catch (error) {
-				console.error("Error:", error.message); // Single error handling point
-				this.handleJobError(error);
-			} finally {
-				if (this.status !== "COMPLETE") {
-					this.status = "INITIAL";
-				}
-				this.errorHandled = false; // Resets error handled tracking
+          // await this.processResults(false); // Make sure this is called after backend completion
+          // this.handleJobSuccess();
+        }
+      } catch (error) {
+        console.error("Error:", error.message); // Single error handling point
+        this.handleJobError(error);
+      } finally {
+        if (this.status !== "COMPLETE") {
+          this.status = "INITIAL";
+        }
+        this.errorHandled = false; // Resets error handled tracking
 
-				// Remove any previously attached event listeners
-				window.electron.offFastpListeners();
-			}
-		},
+        // Remove any previously attached event listeners
+        window.electron.offFastpListeners();
+      }
+    },
     async runBackend() {
       const outDir = this.jobDetails.outdir;
       const suffix = this.jobDetails.outFileSuffix;
       const modeTag =
-        this.jobDetails.mode === "paired-end"   ? "_PE"  :
-        this.jobDetails.mode === "single-end"   ? "_SE"  :
-        "_LR";
-      
+        this.jobDetails.mode === "paired-end" ? "_PE" :
+          this.jobDetails.mode === "single-end" ? "_SE" :
+            "_LR";
+
       for (const entry of this.jobDetails.entries) { // TODO: use jobDetails.entries
         // 1) reset status & error flag
         this.status = "RUNNING";
@@ -440,7 +440,7 @@ export default {
         console.log('errorhandled:', this.errorHandled);
         console.log('modetag:', modeTag);
         console.log('entry:', entry);
-        
+
         // Create directory for batch output
         const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
         const batchName = `${base1}${modeTag}`;
@@ -452,16 +452,16 @@ export default {
           : 'fastp';
 
         const params = [
-          qcCmd, 
+          qcCmd,
           "-h", `${batchOutDir}/${batchName}.html`,
           "-j", `${batchOutDir}/${batchName}.json`];
-          
+
         // Add read 1 input/output parameters
         params.push(
           "-i", entry.q1, // Read 1 file
           "-o", `${batchOutDir}/${base1}${suffix}${ext1}`, // Output filepath for Read 1
         );
-        
+
         // Add read 2 input/output parameters if paired-end mode
         if (this.jobDetails.mode === "paired-end" && entry.q2) {
           const { base: base2, ext: ext2 } = this.stripFileExtension(entry.q2);
@@ -474,16 +474,16 @@ export default {
         // Append fastp params from dialog
         if (this.jobDetails.fastpParams && this.jobDetails.fastpParams.length > 0) {
           params.push(...this.jobDetails.fastpParams);
-        } 
+        }
 
         console.log("🚀 fastp job requested:", params); // DEBUG
-        
+
         // Return a promise that resolves or rejects based on backend success or failure
         await new Promise((resolve, reject) => {
           const cleanup = () => {
             window.electron.offFastpListeners();
           };
-          
+
           // 2. Attach listeners
           window.electron.onFastpOutput((output) => {
             this.backendOutput += output;
@@ -512,7 +512,7 @@ export default {
             cleanup(); // Cleanup listeners
             resolve();
           });
-          
+
           window.electron.onFastpCancelled((message) => {
             if (this.status !== "TIMEOUT" && !this.errorHandled) {
               this.backendOutput += `${message}\n`;
@@ -529,61 +529,61 @@ export default {
     },
     // Function to track job status + process results + trigger snackbar
     async pollJobStatus(interval = 500, timeout = Infinity) {
-			// FIXME: decide timeout duration
-			console.log("🚀 Running fastp job"); // DEBUG
-			const start = Date.now();
-			while (Date.now() - start < timeout) {
-				if (this.errorHandled || this.status === "COMPLETE") return true;
+      // FIXME: decide timeout duration
+      console.log("🚀 Running fastp job"); // DEBUG
+      const start = Date.now();
+      while (Date.now() - start < timeout) {
+        if (this.errorHandled || this.status === "COMPLETE") return true;
 
-				if (this.status === "ERROR") {
-					throw new Error("Backend error occurred");
-				}
-				await new Promise((resolve) => setTimeout(resolve, interval));
-			}
-			if (!this.errorHandled) {
-				this.status = "TIMEOUT";
-				throw new Error("Polling timed out");
-			}
-		},
+        if (this.status === "ERROR") {
+          throw new Error("Backend error occurred");
+        }
+        await new Promise((resolve) => setTimeout(resolve, interval));
+      }
+      if (!this.errorHandled) {
+        this.status = "TIMEOUT";
+        throw new Error("Polling timed out");
+      }
+    },
     handleJobError() {
-			this.errorHandled = true; // Ensure flag is set to prevent further handling
-			this.processingFastp = false;
-			this.backendOutput = "";
+      this.errorHandled = true; // Ensure flag is set to prevent further handling
+      this.processingFastp = false;
+      this.backendOutput = "";
 
-			// Trigger snackbar corresponding to case
-			if (this.status === "TIMEOUT") {
-				this.cancelBackend();
+      // Trigger snackbar corresponding to case
+      if (this.status === "TIMEOUT") {
+        this.cancelBackend();
 
-				this.triggerSnackbar("Job execution timed out.", "warning", "timer", "Retry", this.startJob);
-			} else if (this.status === "CANCELLED") {
-				this.triggerSnackbar("Job was cancelled.", "info", "cancel", "Dismiss");
-			} else if (this.status === "ERROR") {
-				this.triggerSnackbar("Invalid request. Check your query and try again.", "error", "warning", "Dismiss");
-			} else {
-				this.triggerSnackbar("An unexpected error occurred. Please try again.", "error", "warning", "Dismiss");
-			}
+        this.triggerSnackbar("Job execution timed out.", "warning", "timer", "Retry", this.startJob);
+      } else if (this.status === "CANCELLED") {
+        this.triggerSnackbar("Job was cancelled.", "info", "cancel", "Dismiss");
+      } else if (this.status === "ERROR") {
+        this.triggerSnackbar("Invalid request. Check your query and try again.", "error", "warning", "Dismiss");
+      } else {
+        this.triggerSnackbar("An unexpected error occurred. Please try again.", "error", "warning", "Dismiss");
+      }
 
-			this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
-		},
+      this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
+    },
 
     // Show/hide dialog
-		hideDialog() {
-			this.processingFastp = false;
-			this.backendOutput = ""; // Clear backend output
-		},
+    hideDialog() {
+      this.processingFastp = false;
+      this.backendOutput = ""; // Clear backend output
+    },
     cancelProcess() {
       this.hideDialog();
       window.electron.cancelFastp(); // Cancel the fastp process
     },
-	},
+  },
 
   async mounted() {
-		try {
-			this.readmeHtml = await loadMarkdownAsHtml("docs/preprocess.md");
-		} catch (err) {
-			console.error("Failed to load README.md:", err);
-			// Fallback content
-			this.readmeHtml = `
+    try {
+      this.readmeHtml = await loadMarkdownAsHtml("docs/preprocess.md");
+    } catch (err) {
+      console.error("Failed to load README.md:", err);
+      // Fallback content
+      this.readmeHtml = `
 				<p>
 					⚠️ Ran into an error while loading the instructions.<br>
 					You can still view them at
@@ -591,18 +591,19 @@ export default {
 						steineggerlab/Metabuli-App</a>
 				</p>
 			`;
-		}
-	},
+    }
+  },
 };
 </script>
 
 <style scoped>
 .v-col {
-	padding-bottom: 0px;
+  padding-bottom: 0px;
   padding-top: 0px;
 }
+
 .v-row {
-	margin-bottom: 0px;
+  margin-bottom: 0px;
   margin-top: 12px;
 }
 </style>

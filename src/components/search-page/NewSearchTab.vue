@@ -683,7 +683,7 @@ export default {
 				// Append fastp params from dialog
 				if (this.jobDetails.fastpParams && this.jobDetails.fastpParams.length > 0) {
 					qcParams.push(...this.jobDetails.fastpParams);
-				} 
+				}
 
 				console.log("🚀 fastp job requested:", qcParams);
 

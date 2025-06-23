@@ -9,7 +9,7 @@
 					<v-spacer></v-spacer>
 
 					<div>
-						<v-btn rounded="xs" @click="showReadme=true" variant="tonal"> MANUAL </v-btn>
+						<v-btn rounded="xs" @click="showReadme = true" variant="tonal"> MANUAL </v-btn>
 
 						<!-- ReadMe Manual Bottom Sheet -->
 						<v-bottom-sheet class="markdown-body" v-model="showReadme">
@@ -19,7 +19,7 @@
 								</v-card-text>
 								<v-card-actions>
 									<v-spacer></v-spacer>
-									<v-btn text @click="showReadme=false">Close</v-btn>
+									<v-btn text @click="showReadme = false">Close</v-btn>
 								</v-card-actions>
 							</v-card>
 						</v-bottom-sheet>
@@ -32,33 +32,33 @@
 						</v-tabs>
 					</template>
 				</v-toolbar>
-				
+
 				<v-tabs-window v-model="tab">
 					<!-- RUN SEARCH TAB -->
-					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[0].value">
-						<NewSearchTab
-							@job-started="emitJobStarted"
-							@job-completed="emitJobCompleted"
-							@job-aborted="emitJobAborted"
-							@backend-realtime-output="emitBackendRealtimeOutput"
-							@trigger-snackbar="triggerSnackbar"
-							@store-job="storeJob"
-						></NewSearchTab>
+					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition"
+						:value="tabItems[0].value">
+						<NewSearchTab @job-started="emitJobStarted" @job-completed="emitJobCompleted" @job-aborted="emitJobAborted"
+							@backend-realtime-output="emitBackendRealtimeOutput" @trigger-snackbar="triggerSnackbar"
+							@store-job="storeJob">
+						</NewSearchTab>
 					</v-tabs-window-item>
-					
+
 					<!-- UPLOAD REPORT TAB-->
-					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[1].value">
-						<UploadReportTab @job-started="emitJobStarted" @job-completed="emitJobCompleted" @job-aborted="emitJobAborted" @trigger-snackbar="triggerSnackbar" @store-job="storeJob"></UploadReportTab>
+					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition"
+						:value="tabItems[1].value">
+						<UploadReportTab @job-started="emitJobStarted" @job-completed="emitJobCompleted"
+							@job-aborted="emitJobAborted" @trigger-snackbar="triggerSnackbar" @store-job="storeJob"></UploadReportTab>
 					</v-tabs-window-item>
 				</v-tabs-window>
 			</v-card>
-			
+
 			<!-- Snackbar -->
 			<v-snackbar v-model="snackbar.show" :timeout="snackbar.timeout" location="top" color="white">
 				<v-icon :color="snackbar.color" :icon="`$${snackbar.icon}`"></v-icon>
 				{{ snackbar.message }}
 				<template v-slot:actions>
-					<v-btn v-if="snackbar.buttonText" :color="snackbar.color" variant="text" @click="handleSnackbarAction">{{ snackbar.buttonText }}</v-btn>
+					<v-btn v-if="snackbar.buttonText" :color="snackbar.color" variant="text" @click="handleSnackbarAction">{{
+						snackbar.buttonText }}</v-btn>
 					<v-btn v-else :color="snackbar.color" variant="text" @click="snackbar.show = false"> Close </v-btn>
 				</template>
 			</v-snackbar>
@@ -202,12 +202,14 @@ export default {
 .v-col {
 	padding-bottom: 0px;
 }
+
 .v-row {
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
 
 .custom-snackbar {
-	top: 64px !important; /* Adjust this value to match your app bar height */
+	top: 64px !important;
+	/* Adjust this value to match your app bar height */
 }
 </style>
