@@ -44,7 +44,7 @@
 			</v-layout>
 		</v-navigation-drawer>
 
-		<v-bottom-sheet v-model="showReadme">
+		<v-bottom-sheet class="markdown-body" v-model="showReadme">
 			<v-card>
 				<v-card-text style="max-height: 90vh; overflow-y: auto;">
 					<div v-html="readmeHtml"></div>
@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import { marked } from "marked";
+import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 
 export default {
 	name: "App",
@@ -126,15 +126,7 @@ export default {
 	},
 	async mounted() {
 		try {
-			// Load README.md file
-			const isProd = process.env.NODE_ENV === "production";
-
-			const readmePath = isProd
-				? window.electron.resolveFilePath("README.md", true)
-				: window.electron.resolveFilePath("../README.md", true);
-
-			const readmeContent = await window.electron.readFile(readmePath);
-			this.readmeHtml = marked(readmeContent);
+			this.readmeHtml  = await loadMarkdownAsHtml("README.md");
 		} catch (err) {
 			console.error("Failed to load README.md:", err);
 			// Fallback content
