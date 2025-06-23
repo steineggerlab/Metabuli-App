@@ -82,8 +82,8 @@
                   </v-list-subheader>
                 </v-col>
                 <v-col>
-                  <QCSettingsDialog :mode="jobDetails.mode"
-                    :initialParams="jobDetails.fastpParams" @update-fastp-params="jobDetails.fastpParams = $event">
+                  <QCSettingsDialog :mode="jobDetails.mode" :initialParams="jobDetails.fastpParams"
+                    @update-fastp-params="jobDetails.fastpParams = $event">
                     <template v-slot:activator="{ props }">
                       <v-btn v-bind="props" variant="text" size="small" prepend-icon="$tune"
                         color="primary">Settings</v-btn>

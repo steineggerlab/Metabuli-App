@@ -5,8 +5,28 @@
     </template>
 
     <v-card>
-      <v-card-title class="font-weight-bold text-h6 px-6 pt-6 text-button">Quality Control Settings</v-card-title>
-      <v-card-text class="dialog-style">
+      <!-- <v-card-title class="font-weight-bold text-h6 px-6 pt-6 text-button">Quality Control Settings</v-card-title> -->
+      <v-card-title class="d-flex justify-space-between align-center px-6 pt-6">
+        <span class="text-button font-weight-bold">Quality Control Settings</span>
+        <v-btn rounded="xs" variant="tonal" color="indigo" @click="showReadme = true">
+          MANUAL
+        </v-btn>
+
+        <!-- ReadMe Manual Bottom Sheet -->
+        <v-bottom-sheet class="markdown-body" v-model="showReadme">
+          <v-card>
+            <v-card-text style="max-height: 90vh; overflow-y: auto;">
+              <div v-html="readmeHtml"></div>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn text @click="showReadme = false">Close</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-bottom-sheet>
+      </v-card-title>
+
+      <v-card-text class="dialog-style pt-2">
         <v-form ref="form">
           <!-- Short / Paired-end Reads (fastp) -->
           <div v-if="mode === 'single-end' || mode === 'paired-end'">
@@ -176,8 +196,12 @@
             <small class="text-caption">
               The file should contain one parameter per line, and each line should start with
               the parameter name followed by its value. Parameters here will override the GUI settings.<br />
-              Check <a href="https://github.com/OpenGene/fastp" target="_blank">fastp</a> and <a href="https://github.com/OpenGene/fastplong" target="_blank">fastplong</a> GitHub repository for parameter list. <br />
-              Please use long options (e.g., <code>--disable_quality_filtering</code>) instead of short options (e.g., <code>-Q</code>).
+              Check <a href="https://github.com/OpenGene/fastp" target="_blank">fastp</a> and <a
+                href="https://github.com/OpenGene/fastplong" target="_blank">fastplong</a> GitHub repository for
+              parameter
+              list. <br />
+              Please use long options (e.g., <code>--disable_quality_filtering</code>) instead of short options (e.g.,
+              <code>-Q</code>).
             </small>
           </v-card-text>
         </v-form>
@@ -192,6 +216,7 @@
 </template>
 
 <script>
+import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 export default {
   name: 'QCSettingsDialog',
   props: {
@@ -251,6 +276,9 @@ export default {
       params: { ...defaults, ...this.initialParams },
       extraFile: null,
       extraParams: [], // parsed lines
+
+      showReadme: false,
+      readmeHtml: "",
     };
   },
   watch: {
@@ -338,6 +366,22 @@ export default {
           }
           return [];
         });
+    }
+  },
+  async mounted() {
+    try {
+      this.readmeHtml = await loadMarkdownAsHtml("docs/preprocess.md");
+    } catch (err) {
+      console.error("Failed to load README.md:", err);
+      // Fallback content
+      this.readmeHtml = `
+				<p>
+					⚠️ Ran into an error while loading the instructions.<br>
+					You can still view them at
+					<a href="https://github.com/steineggerlab/Metabuli-App" target="_blank" style="text-decoration: underline;">
+						steineggerlab/Metabuli-App</a>
+				</p>
+			`;
     }
   },
 };
