@@ -5,7 +5,6 @@
     </template>
 
     <v-card>
-      <!-- <v-card-title class="font-weight-bold text-h6 px-6 pt-6 text-button">Quality Control Settings</v-card-title> -->
       <v-card-title class="d-flex justify-space-between align-center px-6 pt-6">
         <span class="text-button font-weight-bold">Quality Control Settings</span>
         <v-btn rounded="xs" variant="tonal" color="indigo" @click="showReadme = true">
