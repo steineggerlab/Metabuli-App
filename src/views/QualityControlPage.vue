@@ -447,9 +447,14 @@ export default {
         const batchOutDir = `${outDir}/${batchName}`; // TODO: organize code
         await window.electron.mkdir(batchOutDir);
 
-        const params = ["fastp", 
-        "-h", `${batchOutDir}/${batchName}.html`,
-        "-j", `${batchOutDir}/${batchName}.json`];
+        const qcCmd = this.jobDetails.mode === 'long-read'
+          ? 'fastplong'
+          : 'fastp';
+
+        const params = [
+          qcCmd, 
+          "-h", `${batchOutDir}/${batchName}.html`,
+          "-j", `${batchOutDir}/${batchName}.json`];
           
         // Add read 1 input/output parameters
         params.push(
@@ -518,7 +523,7 @@ export default {
           });
 
           // 3. Start backend process
-          window.electron.runFastp(params);
+          window.electron.runFastp(params, this.jobDetails.mode);
         });
       }
     },

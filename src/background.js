@@ -224,14 +224,18 @@ let fastpCancelled = false;
 ipcMain.on("run-fastp", async (event, args) => {
 	try {
 		fastpCancelled = false;
-    const { params, workingDir = process.cwd() } = args;
+    const { params, mode, workingDir = process.cwd() } = args;
     if (!Array.isArray(params)) throw new Error("Params must be an array");
 
-		// Locate fastp binary
-		const fastpBinary = join(binPath, "fastp" + (platform === "win32" ? ".exe" : ""));
+		// pick fastp/fastplong binary based on mode
+    const binName = mode === 'long-read'
+      ? 'fastplong'
+      : 'fastp';
+    const ext = platform === 'win32' ? '.exe' : '';
+    const qcBinary = join(binPath, binName + ext);
 
 		// Spawn fastp
-		let fastpProcess = spawn(fastpBinary, [...params], { cwd: workingDir });
+		let fastpProcess = spawn(qcBinary, params, { cwd: workingDir });
 
 		// Handle stdout
 		fastpProcess.stdout.on("data", (data) => {

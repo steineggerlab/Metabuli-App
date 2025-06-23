@@ -661,8 +661,13 @@ export default {
 
 			if (this.jobDetails.enableQC) {
 				const suffixQC = "_qc"; // you had this as const suffix = "_qc"
+
+				const qcCmd = this.jobDetails.mode === 'long-read'
+					? 'fastplong'
+					: 'fastp';
+
 				const qcParams = [
-					"fastp",
+					qcCmd,
 					"-h", `${batchFolder}/${batchName}.html`,
 					"-j", `${batchFolder}/${batchName}.json`,
 					"-i", entry.q1,
@@ -721,7 +726,7 @@ export default {
 					});
 
 					// 3. Start backend process
-					window.electron.runFastp(qcParams);
+					window.electron.runFastp(qcParams, this.jobDetails.mode);
 				});
 
 				// After fastp finishes, update classifyRead1/2 so that classify uses QC outputs:
