@@ -1,4 +1,5 @@
 export async function trimAndStoreJobsHistory(jobsHistory) {
+	const storageLimit = 20; // Limit to the latest n jobs
 	// Convert timestamp strings to numbers for accurate sorting
 	jobsHistory.forEach((job) => {
 		job.timestamp = new Date(job.timestamp).getTime();
@@ -8,8 +9,8 @@ export async function trimAndStoreJobsHistory(jobsHistory) {
 	jobsHistory.sort((a, b) => b.timestamp - a.timestamp);
 
 	// Trim the jobsHistory array to keep only the latest 10 jobs
-	if (jobsHistory.length > 10) {
-		jobsHistory = jobsHistory.slice(0, 10); // Keep the first 10 entries, which are the latest
+	if (jobsHistory.length > storageLimit) {
+		jobsHistory = jobsHistory.slice(0, storageLimit); // Keep the first 10 entries, which are the latest
 	}
 
 	// Save the trimmed jobsHistory array to a JSON file using Electron's API
