@@ -35,14 +35,21 @@
 						<v-row align="center">
 							<v-col cols="3">
 								<v-list-subheader>
-									<v-tooltip location="top">
-										<template v-slot:activator="{ props }">
-											<v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2">
-											</v-icon>
-										</template>
-										Enable it to preprocess raw reads before classification.
-									</v-tooltip>
-									<span class="font-weight-bold"> Quality Control</span>
+									<div class="d-flex gc-1">
+										<v-tooltip location="top">
+											<template v-slot:activator="{ props }">
+												<v-icon v-bind="props" icon="$helpCircle" size="16" color="grey lighten-2" class="mt-1">
+												</v-icon>
+											</template>
+											Enable it to preprocess raw reads before classification.
+										</v-tooltip>
+										<div class="d-flex flex-column">
+											<span class="font-weight-bold"> Quality Control</span>
+											<small class="text-caption grey--text">
+												({{ jobDetails.mode === 'long-read' ? 'fastplong' : 'fastp' }})
+											</small>
+										</div>
+									</div>
 								</v-list-subheader>
 							</v-col>
 
