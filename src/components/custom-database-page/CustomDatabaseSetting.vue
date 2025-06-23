@@ -26,14 +26,13 @@
 
 					<!-- TABS -->
 					<template v-slot:extension>
-						<v-tabs v-model="tab">
+						<v-tabs v-model="activeTab">
 							<v-tab v-for="item in tabItems" :text="item.title" :key="item.value" :value="item.value"></v-tab>
 						</v-tabs>
 					</template>
 				</v-toolbar>
-
 				
-			<v-tabs-window v-model="tab">
+			<v-tabs-window v-model="activeTab">
 					<!-- NEW DATABASE TAB -->
 					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[0].value">
 						<NewDatabaseTab
@@ -84,7 +83,7 @@ export default {
 		UpdateDatabaseTab
 	},
 	data: () => ({
-		tab: "newDatabase",
+		activeTab: "newDatabase",
 		tabItems: [
 			{ title: "New Database", value: "newDatabase" },
 			{ title: "Update Database", value: "updateDatabase" },
@@ -103,6 +102,19 @@ export default {
 		showReadme: false,
 		readmeHtml: "",
 	}),
+	created() {
+		// if URL has ?tab=updateDatabase, switch to that pane
+		const t = this.$route.query.tab;
+		if (t === "updateDatabase" || t === "newDatabase") {
+			this.activeTab = t;
+		}
+	},
+	watch: {
+		// keep URL in sync if user clicks the other tab manually
+		activeTab(n) {
+			this.$router.replace({ query: { ...this.$route.query, tab: n } });
+		},
+	},
 	methods: {
 		// Cascade emit from tabs
 		emitJobStarted(bool) {

@@ -204,7 +204,7 @@
                                             <!-- Download Data Button -->
                                             <v-btn
                                                 color="primary"
-                                                prepend-icon="$openInNew"
+                                                prepend-icon="$download"
                                                 variant="text"
                                                 class="text-caption font-weight-medium"
                                                 size="small"
@@ -242,7 +242,7 @@
                                             <!-- Download Data Button -->
                                             <v-btn
                                                 color="primary"
-                                                prepend-icon="$openInNew"
+                                                prepend-icon="$download"
                                                 variant="text"
                                                 class="text-caption font-weight-medium"
                                                 size="small"

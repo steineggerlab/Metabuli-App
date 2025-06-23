@@ -51,8 +51,8 @@
 							</v-col>
 
 							<v-col>
-								<QCSettingsDialog :mode="jobDetails.mode"
-									:initialParams="jobDetails.fastpParams" @update-fastp-params="jobDetails.fastpParams = $event">
+								<QCSettingsDialog :mode="jobDetails.mode" :initialParams="jobDetails.fastpParams"
+									@update-fastp-params="jobDetails.fastpParams = $event">
 									<template v-slot:activator="{ props }">
 										<v-btn v-bind="props" :disabled="!jobDetails.enableQC" variant="text" size="small"
 											prepend-icon="$tune" color="primary">Settings</v-btn>
@@ -148,19 +148,38 @@
 								<!-- Database Directory -->
 								<v-row>
 									<v-col cols="6">
-										<div class="d-flex flex-column align-center mb-0 gc-3">
+										<div class="d-flex flex-column align-start mb-0 gc-3">
 											<v-btn @click="pickFile('directory', 'database')" prepend-icon="$folder" density="comfortable"
 												size="default" class="w-100 text-caption font-weight-medium rounded-lg text-uppercase">Select
 												Database</v-btn>
 											<v-text-field v-model="jobDetails.database" :rules="[requiredRule]"
 												style="display: none"></v-text-field>
 
-											<!-- Database Download Button -->
-											<v-btn color="primary" prepend-icon="$openInNew" variant="text"
-												class="text-caption font-weight-medium" size="small" rounded="xl"
-												href="https://metabuli.steineggerlab.workers.dev/" target="_blank">Database
-												Download
-											</v-btn>
+											<div class="mt-2">
+												<!-- Database Download Button -->
+												<v-btn color="primary" prepend-icon="$download" variant="text"
+													class="text-caption font-weight-medium ml-2" size="small" rounded="xl"
+													href="https://metabuli.steineggerlab.workers.dev/" target="_blank">
+													Download Database
+												</v-btn>
+
+												<!-- Go to Custom Database page -->
+												<v-btn color="secondary" prepend-icon="$databasePlus" variant="text"
+													class="text-caption font-weight-medium ml-2" size="small" rounded="xl"
+													@click="$router.push({ name: 'CustomDatabasePage' })">
+													Create New Database
+												</v-btn>
+
+												<!-- Go directly to the “Update” tab of Custom Database page -->
+												<v-btn color="secondary" prepend-icon="$databaseImport" variant="text"
+													class="text-caption font-weight-medium ml-2" size="small" rounded="xl" @click="$router.push({
+															name: 'CustomDatabasePage',
+															query: { tab: 'updateDatabase' }
+														})">
+													Update Existing Database
+												</v-btn>
+											</div>
+
 										</div>
 									</v-col>
 
@@ -192,7 +211,7 @@
 						</v-row>
 
 						<!-- --max-ram -->
-						<v-row class="mt-4">
+						<v-row class="mt-3">
 							<v-col cols="3">
 								<v-list-subheader>
 									<v-tooltip location="top">
@@ -321,7 +340,7 @@ export default {
 			jobDetails: {
 				// Store job details including file paths
 				mode: "paired-end", // "paired-end" | "single-end" | "long-read"
-				enableQC: false,
+				enableQC: true,
 				entries: [
 					{ q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq", batchName: "" }, // TODO: remove hardcoded path
 					{ q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq", q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq", batchName: "" }, // TODO: remove hardcoded path
