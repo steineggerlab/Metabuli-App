@@ -363,6 +363,20 @@ export default {
 				value: "", // FIXME: should be 0 or int?
 				type: "INTEGER",
 			},
+			validateDb: {
+				title: "--validate-db",
+				description: "Validate DB files (0 by default)",
+				parameter: "--validate-db",
+				value: "0",
+				type: "INTEGER",
+			},
+			validateInput: {
+				title: "--validate-input",
+				description: "Validate query file format (0 by default)",
+				parameter: "--validate-input",
+				value: "0",
+				type: "INTEGER",
+			}
 		},
 		validationRules: {
             "--threads": (value) => {

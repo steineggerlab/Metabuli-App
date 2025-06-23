@@ -291,7 +291,7 @@
 								</small>
                             </v-col>
 
-                            <v-col>
+                            <v-col cols="5">
                                 <v-text-field
                                     variant="outlined"
                                     rounded="lg"
@@ -401,6 +401,31 @@ export default {
 				parameter: "--threads",
 				value: "", // FIXME: should be 0 or int?
 				type: "INTEGER",
+			},
+			validateDb: {
+				title: "--validate-db",
+				description: "Validate DB files (0 by default)",
+				parameter: "--validate-db",
+				value: "0",
+				type: "INTEGER",
+			},
+			validateInput: {
+				title: "--validate-input",
+				description: "Validate query file format (0 by default)",
+				parameter: "--validate-input",
+				value: "0",
+				type: "INTEGER",
+			},
+			cdsInfo: {
+				title: "--cds-info",
+				description: "List of absolute paths to CDS files.",
+				parameter: "--cds-info",
+				value: "",
+				type: "STRING",
+				extra: {
+					appendIcon: "file",
+					file: true, // FIXME: edit the select file path function to accomodate both file and directory
+				}
 			},
             newTaxa: {
                 title: "--new-taxa",
