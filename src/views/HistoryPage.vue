@@ -17,7 +17,7 @@
 					<v-toolbar image="assets/toolbar_background.png" class="custom-toolbar py-3" density="compact">
 						<div class="d-flex flex-column">
 							<div>Job History</div>
-							<v-list-item-subtitle>Metabuli stores the latest 10 job histories</v-list-item-subtitle>
+							<v-list-item-subtitle>Metabuli stores the latest 20 job histories</v-list-item-subtitle>
 						</div>
 					</v-toolbar>
 				</template>
@@ -181,7 +181,7 @@ export default {
 			// Convert jobsHistory to plain objects and save
 			const plainJobsHistory = JSON.parse(JSON.stringify(this.jobsHistory));
 			
-			// Trim and store the latest 10 jobs in the file
+			// Trim and store the latest n jobs in the file
 			await trimAndStoreJobsHistory(plainJobsHistory);
 		},
 		async deleteSelectedItems() {
