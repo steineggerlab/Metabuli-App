@@ -101,8 +101,8 @@
 						:rawData="originalData"
 						:colorScheme="colorScheme"
 						:taxaLimit="taxaLimit"
-						:minCladeReadsMode="minCladeReadsMode"
-						:minReads="minCladeReads"
+						:minThresholdMode="minCladeReadsMode"
+						:minThreshold="minCladeReads"
 						:figureHeight="figureHeight"
 						:labelOption="labelOption === 'proportion' ? 1 : 0"
 						:showAll="showAll"
@@ -380,6 +380,7 @@ export default {
 				minCladeReads: this.minCladeReads,
 				figureHeight: this.figureHeight,
 				labelOption: this.labelOption,
+				colorScheme: this.colorScheme
 			}
 			return settings;
 		},
