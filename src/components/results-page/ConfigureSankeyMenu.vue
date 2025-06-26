@@ -47,7 +47,7 @@
                   <v-container class="d-flex align-center gc-4">
                     <v-btn-toggle
                       :model-value="minCladeReadsMode"
-                      @update:modelValue="$emit('update:minCladeReadsMode', $event)"
+                      @update:modelValue="$emit('update:minCladeReadsMode', parseInt($event))"
                       :disabled="showAll"
                       variant="outlined"
                       color="indigo"
@@ -55,16 +55,16 @@
                       divided
                       mandatory
                     >
-                      <v-btn icon value="%" height="30" class="rounded-s-lg rounded-e-0 text-caption">%</v-btn>
-                      <v-btn icon value="#" height="30" class="rounded-e-lg rounded-s-0 text-caption">#</v-btn>
+                      <v-btn icon :value="0" height="30" class="rounded-s-lg rounded-e-0 text-caption">%</v-btn>
+                      <v-btn icon :value="1" height="30" class="rounded-e-lg rounded-s-0 text-caption">#</v-btn>
                     </v-btn-toggle>
                     <v-text-field
                       :model-value="minCladeReads"
                       @update:modelValue="$emit('update:minCladeReads', parseFloat($event))"
                       type="number"
-                      :min="minCladeReadsMode === '%' ? 0 : 1"
-                      :max="minCladeReadsMode === '%' ? 100 : 1000"
-                      :step="minCladeReadsMode === '%' ? 0.01 : 1"
+                      :min="minCladeReadsMode === 0 ? 0 : 1"
+                      :max="minCladeReadsMode === 0 ? 100 : 1000"
+                      :step="minCladeReadsMode === 0 ? 0.01 : 1"
                       variant="underlined"
                       density="compact"
                       dense
@@ -322,12 +322,11 @@ export default {
     maxTaxaLimit: { type: Number, default: 100 },
     showAll: { type: Boolean, default: false },
     taxaLimit: { type: Number, default: 10 },
-    minCladeReadsMode: { type: String, default: "%" },
+    minCladeReadsMode: { type: Number, default: 0 },
     minCladeReads: { type: Number, default: 0.01 },
     figureHeight: { type: Number, default: 300 },
     labelOption: { type: String, default: "cladeReads" },
     menuLocation: { type: String, default: "bottom end" },
-
     marginBottom: { type: Number, default: 50 },
     marginRight: { type: Number, default: 150 },
     nodeWidth: { type: Number, default: 20 },
@@ -349,7 +348,8 @@ export default {
   },
   computed: {
     colorSchemeId() {
-      return Object.entries(colorSchemes).find(([_, v]) => isEqual(v, this.colorScheme))?.[0]
+      return Object.entries(colorSchemes).find(predicate => isEqual(predicate[1], this.colorScheme))?.[0]
+      // return Object.entries(colorSchemes).find(([index, v]) => isEqual(v, this.colorScheme))?.[0]
     }
   },
   data() {
@@ -357,7 +357,6 @@ export default {
       menu: false,
       activePanel: [0],
       isFormValid: true,
-      
       // Store all default values to allow resetting the menu
       // Populated by all props in the mounted lifecycle hook
       defaults: {}
@@ -366,9 +365,6 @@ export default {
   methods: {
     getColorScheme(id) {
       return colorSchemes[id];
-    },
-    handleEmit(event) {
-      console.log('change', event)
     },
     emitDefaults() {
       for (const [key, value] of Object.entries(this.defaults)) {

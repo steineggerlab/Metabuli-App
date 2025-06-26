@@ -115,7 +115,7 @@
 						:nodeValueFontSize="nodeValueFontSize"
 						:rankLabelFontSize="rankLabelFontSize"
 						ref="taxoview"
-						@vue:mounted="bindSvgClick"
+						@node-clicked="handleNodeClick"
 					/>
 				</v-tabs-window-item>
 
@@ -301,7 +301,7 @@ export default {
 
 			showAll: false,
 			taxaLimit: 20, // FIXME: refactor, make this into dictionary storing info about configuration
-			minCladeReadsMode: "%",
+			minCladeReadsMode: 0,
 			minCladeReads: 0.01,
 			figureHeight: 500,
 			labelOption: "proportion",
@@ -361,9 +361,6 @@ export default {
 				});
 			},
 		},
-		searchQuery(newQuery) {
-			this.highlightNodes(newQuery);
-		},
 	},
 
 	computed: {
@@ -387,32 +384,20 @@ export default {
 	},
 
 	methods: {
-		// TODO: put inside TaxoView component
-		// binds event listener to click event on taxa nodes
-		// should be in TaxoView.vue and trigger an emit()
-		bindSvgClick() {
-			this.$nextTick(() => {
-				this.$refs.taxoview.$el.addEventListener('click', event => {
-					const target = event.target;
-					if (target.tagName !== "rect") return;
-					let taxId = null;
-					for (const c of target.classList) {
-						if (c.startsWith('taxid')) {
-							taxId = c.split('-')[1];
-							break;
-						}
-					}
-					if (taxId === null) return;
-					const nodeData = this.lookupTaxonNode(taxId);
-					this.showDialog(nodeData);
-				});
-			})
+		handleNodeClick(data) {
+			if (!data) return;
+			const taxId = data.taxon_id || data.id;
+			const nodeData = this.lookupTaxonNode(taxId);
+			this.showDialog(nodeData);
 		},
 		// TODO: if TaxoView accepts a data object this shouldn't be necessary
 		// addRoot currently needed to get past TSVParser
 		generateTsvReport(array, addRoot=false) {
 			const properties = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "nameWithIndentation"];
 			let rows = array;
+			rows.forEach(row => {
+				if (row.rank === 'superkingdom') row.rank = 'domain'
+			})
 			if (addRoot) {
 				let root = { rank: "no rank", taxon_id: "0", name: "unclassified", nameWithIndentation: "unclassified", proportion: "0", clade_reads: "0", taxon_reads: "0" };
 				let root2 = Object.assign({}, array[0], { rank: "no rank", taxon_id: "1", name: "root", nameWithIndentation: "root" });
@@ -424,35 +409,6 @@ export default {
 					: "").join("\t"))
 				.join('\n');
 		},
-		// TODO: this should only be inside the TaxoView component
-		// keep the searchQueryMatchNodes logic but then call function on TaxoView for highlighting on change
-		highlightNodes(query) {
-			const svg = d3.select(this.$refs.taxoview.$refs.sankeyContainer);
-			this.searchQueryMatchNodes.clear(); // Clear previous matches
-
-			// If the query is empty, reset all nodes and links to full opacity
-			if (!query) {
-				svg.selectAll("rect").style("opacity", 1);
-				svg.selectAll("path").style("opacity", 1);
-				svg.selectAll(".node-name").style("opacity", 1);
-				svg.selectAll(".clade-reads").style("opacity", 1);
-				return;
-			}
-
-			// Iterate over nodes to find those that match the query
-			svg.selectAll(".node-group").each((d) => {
-				if (d.name.toLowerCase().includes(query.toLowerCase()) || d.taxon_id.startsWith(query)) {
-					this.searchQueryMatchNodes.add(d.id);
-				}
-			});
-
-			// Set opacity for nodes and links
-			svg.selectAll("rect").style("opacity", (d) => (this.searchQueryMatchNodes.has(d.id) ? 1 : 0.2));
-			svg.selectAll("path").style("opacity", 0.2); // Gray all paths
-			svg.selectAll(".node-name").style("opacity", (d) => (this.searchQueryMatchNodes.has(d.id) ? 1 : 0.1));
-			svg.selectAll(".clade-reads").style("opacity", (d) => (this.searchQueryMatchNodes.has(d.id) ? 1 : 0.1));
-		},
-		
 		// Functions handling Details Dialog (shared between Table and Sankey tab)
 		// Data processing functions for Subtree Sankey
 		extractSubtreeRawData(selectedNode) {
@@ -510,15 +466,16 @@ export default {
 			// }
 			const nodeData = { proportion, clade_reads, taxon_reads, taxon_id, name, rank, hierarchy, lineage };
 			const subtreeRawData = this.extractSubtreeRawData(nodeData); // Extract subtree raw data for clicked node
+			const rankList = subtreeRawData.map(row => (row.rank === 'superkingdom') ? 'domain' : row.rank).filter((v, i, a) => a.indexOf(v) === i && v !== 'no rank' && !v.startsWith('sub'));	
 			const subtreeRawTsv = this.generateTsvReport(subtreeRawData, true);
 			const hasSourceLinks = subtreeRawData.length > 1 ? true : false; // Determine if the subtree has more than 1 node
-
 			this.dialogData = {
 				type: "node",
 				data: nodeData,
 				subtreeData: subtreeRawData,
 				subtreeDataTsv: subtreeRawTsv,
 				hasSourceLinks: hasSourceLinks,
+				rankList: rankList
 			};
 			this.isDialogVisible = true;
 		},

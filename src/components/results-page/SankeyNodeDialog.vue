@@ -96,6 +96,7 @@
 					:nodeLabelFontSize="config.nodeLabelFontSize"
 					:nodeValueFontSize="config.nodeValueFontSize"
 					:rankLabelFontSize="config.rankLabelFontSize"
+					:ranksToShow="nodeDetails.rankList"
 					ref="taxoview-dialog"
 				/>
 			</v-card-item>
@@ -166,7 +167,7 @@ export default {
 			default: () => ({
 				showAll: false,
 				taxaLimit: 20,
-				minCladeReadsMode: "%",
+				minCladeReadsMode: 0,
 				minCladeReads: 0.01,
 				figureHeight: 500,
 				labelOption: "proportion",
@@ -195,7 +196,7 @@ export default {
 				maxTaxaLimit: 100,
 				showAll: false,
 				taxaLimit: 20,
-				minCladeReadsMode: "%",
+				minCladeReadsMode: 0,
 				minCladeReads: 0.01,
 				figureHeight: 500,
 				labelOption: "proportion",
