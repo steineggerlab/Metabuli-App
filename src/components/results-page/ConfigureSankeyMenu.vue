@@ -1,11 +1,7 @@
 <template>
   <div class="text-center">
-    <v-menu
-      v-model="menu"
-      :close-on-content-click="false"
-      :location="menuLocation"
-      transition="slide-x-reverse-transition"
-    >
+    <v-menu v-model="menu" :close-on-content-click="false" :location="menuLocation"
+      transition="slide-x-reverse-transition">
       <!-- ACTIVATOR FOR MENU -->
       <template v-slot:activator="{ props }">
         <slot name="activator" v-bind="{ props }"></slot>
@@ -17,12 +13,8 @@
           <v-list-item>
             <v-container class="pt-1">
               <div class="d-flex align-center gc-2">
-                <v-switch
-                  :model-value="showAll"
-                  @update:modelValue="$emit('update:showAll', $event)"
-                  color="indigo"
-                  hide-details
-                ></v-switch>
+                <v-switch :model-value="showAll" @update:modelValue="$emit('update:showAll', $event)" color="indigo"
+                  hide-details></v-switch>
                 <div class="text-caption">Show all</div>
               </div>
             </v-container>
@@ -30,11 +22,7 @@
 
           <v-divider></v-divider>
 
-          <v-expansion-panels
-            v-model="activePanel"
-            variant="accordion"
-            elevation="0"
-          >
+          <v-expansion-panels v-model="activePanel" variant="accordion" elevation="0">
             <v-expansion-panel title="Node Settings">
               <!-- GRAPH SETTINGS -->
               <v-expansion-panel-text>
@@ -45,33 +33,17 @@
                     <p class="text-grey">%: Proportion | #: Clade Reads</p>
                   </div>
                   <v-container class="d-flex align-center gc-4">
-                    <v-btn-toggle
-                      :model-value="minCladeReadsMode"
-                      @update:modelValue="$emit('update:minCladeReadsMode', parseInt($event))"
-                      :disabled="showAll"
-                      variant="outlined"
-                      color="indigo"
-                      hide-details
-                      divided
-                      mandatory
-                    >
+                    <v-btn-toggle :model-value="minCladeReadsMode"
+                      @update:modelValue="$emit('update:minCladeReadsMode', parseInt($event))" :disabled="showAll"
+                      variant="outlined" color="indigo" hide-details divided mandatory>
                       <v-btn icon :value="0" height="30" class="rounded-s-lg rounded-e-0 text-caption">%</v-btn>
                       <v-btn icon :value="1" height="30" class="rounded-e-lg rounded-s-0 text-caption">#</v-btn>
                     </v-btn-toggle>
-                    <v-text-field
-                      :model-value="minCladeReads"
-                      @update:modelValue="$emit('update:minCladeReads', parseFloat($event))"
-                      type="number"
-                      :min="minCladeReadsMode === 0 ? 0 : 1"
-                      :max="minCladeReadsMode === 0 ? 100 : 1000"
-                      :step="minCladeReadsMode === 0 ? 0.01 : 1"
-                      variant="underlined"
-                      density="compact"
-                      dense
-                      hide-details
-                      class="flex-grow-1"
-                      :disabled="showAll"
-                    ></v-text-field>
+                    <v-text-field :model-value="minCladeReads"
+                      @update:modelValue="$emit('update:minCladeReads', parseFloat($event))" type="number"
+                      :min="minCladeReadsMode === 0 ? 0 : 1" :max="minCladeReadsMode === 0 ? 100 : 1000"
+                      :step="minCladeReadsMode === 0 ? 0.01 : 1" variant="underlined" density="compact" dense
+                      hide-details class="flex-grow-1" :disabled="showAll"></v-text-field>
                   </v-container>
                 </v-list-item>
 
@@ -79,141 +51,95 @@
                 <v-list-item>
                   <div class="text-caption">Taxa per level</div>
                   <v-container class="menu-item">
-                    <v-slider
-                      class="slider"
-                      :model-value="taxaLimit"
-                      @update:modelValue="$emit('update:taxaLimit', parseInt($event))"
-                      thumb-label="always"
-                      :thumb-size="15"
-                      step="1"
-                      :min="1"
-                      :max="maxTaxaLimit"
-                      tick-size="1"
-                      :disabled="showAll"
-                      hide-details
-                    >
+                    <v-slider class="slider" :model-value="taxaLimit"
+                      @update:modelValue="$emit('update:taxaLimit', parseInt($event))" thumb-label="always"
+                      :thumb-size="15" step="1" :min="1" :max="maxTaxaLimit" tick-size="1" :disabled="showAll"
+                      hide-details>
                       <template v-slot:append>
-                        <v-text-field
-                          :model-value="taxaLimit"
-                          @update:modelValue="$emit('update:taxaLimit', parseInt($event))"
-                          variant="outlined"
-                          density="compact"
-                          class="mx-0"
-                          style="width: 90px;"
-                          type="number"
-                          hide-details
-                          single-line
-                        ></v-text-field>
+                        <v-text-field :model-value="taxaLimit"
+                          @update:modelValue="$emit('update:taxaLimit', parseInt($event))" variant="outlined"
+                          density="compact" class="mx-0" style="width: 90px;" type="number" hide-details
+                          single-line></v-text-field>
                       </template>
                     </v-slider>
                   </v-container>
                 </v-list-item>
+
+                <v-list-item>
+                  <div class="text-caption">Rank Options</div>
+                  <v-container class="align-center">
+                    <!-- <div class=""> -->
+                      <v-btn-toggle :model-value="selectedRanks"
+                        @update:modelValue="$emit('update:selectedRanks', $event)" variant="outlined" color="indigo"
+                        multiple divided mandatory hide-details class="d-flex w-100">
+                        <v-btn v-for="rank in rankOptions" :key="rank" :value="rank"
+                          class="rounded-e-0 rounded-s-0"
+                          style="height: 30px; min-width: 35px; max-width: 35px !important;">
+                          {{ rank[0] }}
+                        </v-btn>
+                      </v-btn-toggle>
+                    <!-- </div> -->
+                  </v-container>
+                </v-list-item>
+
               </v-expansion-panel-text>
             </v-expansion-panel>
 
             <!-- VISUAL SETTINGS -->
             <v-expansion-panel title="Visual Settings">
-              <v-expansion-panel-text>
+              <v-expansion-panel-text class="scrollable-panel">
                 <!-- SLIDER (Figure Height) -->
                 <v-list-item>
                   <div class="text-caption">Figure Height</div>
                   <v-container>
-                    <v-slider
-                      class="slider"
-                      :model-value="figureHeight"
-                      @update:modelValue="$emit('update:figureHeight', parseInt($event))"
-                      thumb-label="always"
-                      :thumb-size="15"
-                      step="5"
-                      :min="300"
-                      :max="1000"
-                      hide-details
-                    ></v-slider>
+                    <v-slider class="slider" :model-value="figureHeight"
+                      @update:modelValue="$emit('update:figureHeight', parseInt($event))" thumb-label="always"
+                      :thumb-size="15" step="5" :min="300" :max="1000" hide-details></v-slider>
                   </v-container>
                 </v-list-item>
-               
+
                 <v-list-item>
                   <div class="text-caption">Node width</div>
                   <v-container>
-                    <v-slider
-                      class="slider"
-                      :model-value="nodeWidth"
-                      @update:modelValue="$emit('update:nodeWidth', parseInt($event))"
-                      thumb-label="always"
-                      thumb-size="15"
-                      step="1"
-                      min="1"
-                      max="50"
-                      hide-details
-                    ></v-slider>
+                    <v-slider class="slider" :model-value="nodeWidth"
+                      @update:modelValue="$emit('update:nodeWidth', parseInt($event))" thumb-label="always"
+                      thumb-size="15" step="1" min="1" max="50" hide-details></v-slider>
                   </v-container>
                 </v-list-item>
 
                 <v-list-item>
                   <div class="text-caption">Node padding</div>
                   <v-container>
-                    <v-slider
-                      class="slider"
-                      :model-value="nodePadding"
-                      @update:modelValue="$emit('update:nodePadding', parseInt($event))"
-                      thumb-label="always"
-                      thumb-size="15"
-                      step="1"
-                      min="1"
-                      max="50"
-                      hide-details
-                    ></v-slider>
+                    <v-slider class="slider" :model-value="nodePadding"
+                      @update:modelValue="$emit('update:nodePadding', parseInt($event))" thumb-label="always"
+                      thumb-size="15" step="1" min="1" max="50" hide-details></v-slider>
                   </v-container>
                 </v-list-item>
-                
+
                 <v-list-item>
                   <div class="text-caption">Node label font size</div>
                   <v-container>
-                    <v-slider
-                      class="slider"
-                      :model-value="nodeLabelFontSize"
-                      @update:modelValue="$emit('update:nodeLabelFontSize', parseInt($event))"
-                      thumb-label="always"
-                      thumb-size="15"
-                      step="1"
-                      min="1"
-                      max="30"
-                      hide-details
-                    ></v-slider>
+                    <v-slider class="slider" :model-value="nodeLabelFontSize"
+                      @update:modelValue="$emit('update:nodeLabelFontSize', parseInt($event))" thumb-label="always"
+                      thumb-size="15" step="1" min="1" max="30" hide-details></v-slider>
                   </v-container>
                 </v-list-item>
-                
+
                 <v-list-item>
                   <div class="text-caption">Node value font size</div>
                   <v-container>
-                    <v-slider
-                      class="slider"
-                      :model-value="nodeValueFontSize"
-                      @update:modelValue="$emit('update:nodeValueFontSize', parseInt($event))"
-                      thumb-label="always"
-                      thumb-size="15"
-                      step="1"
-                      min="1"
-                      max="30"
-                      hide-details
-                    ></v-slider>
+                    <v-slider class="slider" :model-value="nodeValueFontSize"
+                      @update:modelValue="$emit('update:nodeValueFontSize', parseInt($event))" thumb-label="always"
+                      thumb-size="15" step="1" min="1" max="30" hide-details></v-slider>
                   </v-container>
                 </v-list-item>
-                
+
                 <v-list-item>
                   <div class="text-caption">Rank label font size</div>
                   <v-container>
-                    <v-slider
-                      class="slider"
-                      :model-value="rankLabelFontSize"
-                      @update:modelValue="$emit('update:rankLabelFontSize', parseInt($event))"
-                      thumb-label="always"
-                      thumb-size="15"
-                      step="1"
-                      min="1"
-                      max="30"
-                      hide-details
-                    ></v-slider>
+                    <v-slider class="slider" :model-value="rankLabelFontSize"
+                      @update:modelValue="$emit('update:rankLabelFontSize', parseInt($event))" thumb-label="always"
+                      thumb-size="15" step="1" min="1" max="30" hide-details></v-slider>
                   </v-container>
                 </v-list-item>
 
@@ -222,35 +148,22 @@
                   <div class="text-caption">Label Option</div>
                   <v-container>
                     <div class="d-flex align-center flex-column">
-                      <v-btn-toggle
-                        :model-value="labelOption"
-                        @update:modelValue="$emit('update:labelOption', $event)"
-                        variant="outlined"
-                        color="indigo"
-                        divided
-                        mandatory
-                        hide-details
-                      >
+                      <v-btn-toggle :model-value="labelOption" @update:modelValue="$emit('update:labelOption', $event)"
+                        variant="outlined" color="indigo" divided mandatory hide-details>
                         <v-btn value="proportion" height="30" class="rounded-s-lg rounded-e-0">Proportion %</v-btn>
                         <v-btn value="cladeReads" height="30" class="rounded-s-0 rounded-e-lg">Clade Reads #</v-btn>
                       </v-btn-toggle>
                     </div>
                   </v-container>
                 </v-list-item>
-                
+
                 <v-list-item>
                   <div class="text-caption">Colorscheme</div>
                   <v-container>
                     <div class="d-flex align-center flex-column">
-                      <v-btn-toggle
-                        :model-value="colorSchemeId"
-                        @update:modelValue="$emit('update:colorScheme', getColorScheme($event))"
-                        variant="outlined"
-                        color="indigo"
-                        divided
-                        mandatory
-                        hide-details
-                      >
+                      <v-btn-toggle :model-value="colorSchemeId"
+                        @update:modelValue="$emit('update:colorScheme', getColorScheme($event))" variant="outlined"
+                        color="indigo" divided mandatory hide-details>
                         <v-btn value="1" class="rounded-s-lg rounded-e-0" height="30">1</v-btn>
                         <v-btn value="2" class="rounded-e-0 rounded-s-0" height="30">2</v-btn>
                         <v-btn value="3" class="rounded-e-0 rounded-s-0" height="30">3</v-btn>
@@ -259,7 +172,7 @@
                     </div>
                   </v-container>
                 </v-list-item>
-                
+
               </v-expansion-panel-text>
             </v-expansion-panel>
           </v-expansion-panels>
@@ -337,6 +250,13 @@ export default {
     // superkingdom --> domain
     // rankList: sankeyRankColumns,
     // rankListWithRoot: [ "no rank", ...sankeyRankColumns ],
+    rankOptions: { type: Array, default: () => ([
+      "no rank", "domain", "kingdom", "phylum", "class", "order", "family", "genus", "species"
+    ]) },
+    selectedRanks: {
+      type: Array,
+      default: () => ([])
+    },
     colorScheme: { type: Array, default: () => ([
         "#57291F", "#C0413B", "#D77B5F", "#FF9200", "#FFCD73",
         "#F7E5BF", "#C87505", "#F18E3F", "#E59579", "#C14C32",
@@ -411,4 +331,11 @@ export default {
 :deep(.configure-menu .v-expansion-panel-text__wrapper) {
   padding: 0px;
 }
+
+.scrollable-panel {
+  max-height: 40vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
 </style>

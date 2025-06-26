@@ -54,7 +54,9 @@
 							v-model:taxa-limit="taxaLimit" v-model:figure-height="figureHeight" v-model:label-option="labelOption"
 							v-model:margin-bottom="marginBottom" v-model:margin-right="marginRight" v-model:node-width="nodeWidth"
 							v-model:node-padding="nodePadding" v-model:node-label-font-size="nodeLabelFontSize"
-							v-model:node-value-font-size="nodeValueFontSize" v-model:rank-label-font-size="rankLabelFontSize">
+							v-model:node-value-font-size="nodeValueFontSize" v-model:rank-label-font-size="rankLabelFontSize"
+							:rankOptions="ranksPresent" 
+							v-model:selectedRanks="ranksToShow">
 							<template v-slot:activator="{ props }">
 								<v-btn color="indigo" rounded="xl" v-bind="props">Configure Diagram</v-btn>
 							</template>
@@ -67,7 +69,9 @@
 						:labelOption="labelOption === 'proportion' ? 1 : 0" :showAll="showAll" :searchQuery="searchQuery"
 						:marginBottom="marginBottom" :marginRight="marginRight" :nodeWidth="nodeWidth" :nodePadding="nodePadding"
 						:nodeLabelFontSize="nodeLabelFontSize" :nodeValueFontSize="nodeValueFontSize"
-						:rankLabelFontSize="rankLabelFontSize" ref="taxoview" @node-clicked="handleNodeClick" />
+						:rankLabelFontSize="rankLabelFontSize" ref="taxoview" @node-clicked="handleNodeClick"
+						:ranksToShow="ranksToShow" 
+						/>
 				</v-tabs-window-item>
 
 				<!-- KRONA TAB -->
@@ -266,6 +270,8 @@ export default {
 			// superkingdom --> domain
 			// rankList: sankeyRankColumns,
 			// rankListWithRoot: [ "no rank", ...sankeyRankColumns ],
+			ranksPresent: [],
+			ranksToShow: ["no rank", "domain", "kingdom", "phylum", "class", "order", "family", "genus", "species"],
 			colorScheme: [
 				// Autum colours
 				"#57291F", "#C0413B", "#D77B5F", "#FF9200", "#FFCD73",
@@ -296,6 +302,14 @@ export default {
 			handler(newResults) {
 				const { nodes, nodesByDepth } = parseData(newResults);
 				this.nodes = nodes;
+
+				const rankListWithRoot = ["no rank", "domain", "kingdom", "phylum", "class", "order", "family", "genus", "species"];
+				const ranksPresent = Array.from(
+					new Set(nodes.map(n => n.rank))
+				).filter(r => rankListWithRoot.includes(r));
+				this.ranksToShow = ranksPresent; // Set default ranks to show
+				this.ranksPresent = ranksPresent;
+
 				this.nodesByDepth = nodesByDepth;
 				this.verifySankey().then((result) => {
 					if (result === null) {
