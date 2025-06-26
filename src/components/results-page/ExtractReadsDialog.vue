@@ -25,8 +25,8 @@
 								<v-col class="pb-0">
 									<div class="text-caption mb-1">Classification Mode</div>
 									<v-btn-toggle v-model="jobDetails.mode" variant="outlined" color="secondary" divided mandatory>
-										<v-btn value="single-end" height="30" class="rounded-s-lg rounded-e-0 text-caption">Single-end</v-btn>
-										<v-btn value="paired-end" height="30" class="rounded-e-0 rounded-s-0 text-caption">Paired-end</v-btn>
+										<v-btn value="paired-end" height="30" class="rounded-s-lg rounded-e-0 text-caption">Paired-end</v-btn>
+										<v-btn value="single-end" height="30" class="rounded-e-0 rounded-s-0 text-caption">Single-end</v-btn>
 										<v-btn value="long-read" height="30" class="rounded-e-lg rounded-s-0 text-caption">Long-read</v-btn>
 									</v-btn-toggle>
 								</v-col>
@@ -396,8 +396,7 @@ export default {
 
 				window.electron.onBackendError((error) => {
 					if (!this.errorHandled) {
-						const message = "\nJob processing was terminated due to an error.";
-						this.backendOutput += message;
+						this.backendOutput += "\nError: " + error;
 						this.status = "ERROR"; // Signal job polling to stop
 						reject(new Error("Backend execution error:", error));
 					}
@@ -489,7 +488,7 @@ export default {
 		const processedResults = JSON.parse(localStorage.getItem("processedResults"));
 		if (processedResults) {
 			this.jobDetails = processedResults.jobDetails ? processedResults.jobDetails : this.jobDetails; // Leave as default empty filepaths for Upload Result jobs
-			
+
 			// Loop over each path and check if the file exists
 			const keyPath = {
 				q1: processedResults.q1,

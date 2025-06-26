@@ -14,9 +14,9 @@
 				</template>
 
 				<!-- Job ID Column -->
-				<template v-slot:[`item.jobId`]="{ item }">
-					<span v-if="item.jobId === '' || item.jobId === null">-</span>
-					<span v-else>{{ item.jobId }}</span>
+				<template v-slot:[`item.jobid`]="{ item }">
+					<span v-if="item.jobid === '' || item.jobid === null">-</span>
+					<span v-else>{{ item.jobid }}</span>
 				</template>
 
 				<!-- Sample Name Column -->
@@ -121,7 +121,7 @@ export default {
 	data() {
 		return {
 			headers: [
-				{ title: "Job ID", value: "jobId" },
+				{ title: "Job ID", value: "jobid" },
 				{ title: "Sample Files", value: "sampleFiles" },
 				{ title: "Completed At", value: "timestamp" },
 				{ title: "Type ", value: "jobType", align: "center" },
