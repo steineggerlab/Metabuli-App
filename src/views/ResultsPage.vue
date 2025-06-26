@@ -9,9 +9,15 @@
 		<v-card-text class="d-flex flex-column h-100 pb-0">
 			<v-tabs-window v-model="tab" class="h-100">
 				<!-- NODE DETAILS DIALOG (SHARED BY TABLE & SANKEY) -->
-				<SankeyNodeDialog v-if="dialogData" v-model="isDialogVisible" :nodeDetails="dialogData"
-					:configureMenuSettings="sankeyConfigurationSettings" @update-config="handleUpdateConfig"
-					@close-dialog="hideDialog" @download-sankey="handleFormatSelected" class="align-top" />
+				<SankeyNodeDialog 
+					v-if="dialogData" 
+					v-model="isDialogVisible" 
+					:nodeDetails="dialogData" 
+					:configureMenuSettings="sankeyConfigurationSettings"
+					@close-dialog="hideDialog" 
+					@download-sankey="handleFormatSelected" 
+					class="align-top"
+				/>
 
 				<!-- TABLE TAB -->
 				<v-tabs-window-item value="table" class="h-100">
@@ -49,10 +55,24 @@
 						</SankeyDownloadMenu>
 
 						<!-- CONFIGURE SANKEY MENU -->
-						<ConfigureSankeyMenu :maxTaxaLimit="roundedMaxTaxaLimit" :initialShowAll="showAll"
-							:initialTaxaLimit="taxaLimit" :initialMinCladeReadsMode="minCladeReadsMode"
-							:initialMinCladeReads="minCladeReads" :initialFigureHeight="figureHeight"
-							:initialLabelOption="labelOption" :menuLocation="'bottom end'" @updateSettings="handleUpdateConfig">
+						<ConfigureSankeyMenu
+							:maxTaxaLimit="roundedMaxTaxaLimit"
+							:menuLocation="'bottom end'"
+							v-model:color-scheme="colorScheme"
+							v-model:show-all="showAll"
+							v-model:min-clade-reads-mode="minCladeReadsMode"
+							v-model:min-clade-reads="minCladeReads"
+							v-model:taxa-limit="taxaLimit"
+							v-model:figure-height="figureHeight"
+							v-model:label-option="labelOption"
+							v-model:margin-bottom="marginBottom"
+							v-model:margin-right="marginRight"
+							v-model:node-width="nodeWidth"
+							v-model:node-padding="nodePadding"
+							v-model:node-label-font-size="nodeLabelFontSize"
+							v-model:node-value-font-size="nodeValueFontSize"
+							v-model:rank-label-font-size="rankLabelFontSize"
+						>
 							<template v-slot:activator="{ props }">
 								<v-btn color="indigo" rounded="xl" v-bind="props">Configure Diagram</v-btn>
 							</template>
@@ -60,10 +80,27 @@
 					</div>
 
 					<!-- SANKEY DIAGRAM -->
-					<SankeyDiagram :searchQuery="searchQuery" :id="'sankey-svg'" :isSubtree="false" :instanceId="uniqueInstanceId"
-						:rawData="results" :taxaLimit="taxaLimit" :minCladeReadsMode="minCladeReadsMode" :minReads="minCladeReads"
-						:figureHeight="figureHeight" :labelOption="labelOption" :showAll="showAll"
-						@updateConfigureMenu="updateConfigureMenu" @node-click="showDialog" />
+					<TaxoView
+						v-if="originalData"
+						:rawData="originalData"
+						:colorScheme="colorScheme"
+						:taxaLimit="taxaLimit"
+						:minThresholdMode="minCladeReadsMode"
+						:minThreshold="minCladeReads"
+						:figureHeight="figureHeight"
+						:labelOption="labelOption === 'proportion' ? 1 : 0"
+						:showAll="showAll"
+						:searchQuery="searchQuery"
+						:marginBottom="marginBottom"
+						:marginRight="marginRight"
+						:nodeWidth="nodeWidth"
+						:nodePadding="nodePadding"
+						:nodeLabelFontSize="nodeLabelFontSize"
+						:nodeValueFontSize="nodeValueFontSize"
+						:rankLabelFontSize="rankLabelFontSize"
+						ref="taxoview"
+						@node-clicked="handleNodeClick"
+					/>
 				</v-tabs-window-item>
 
 				<!-- KRONA TAB -->
@@ -78,7 +115,6 @@
 </template>
 
 <script>
-import SankeyDiagram from "@/components/results-page/SankeyDiagram.vue";
 import ResultsTable from "@/components/results-page/ResultsTable.vue";
 import ConfigureSankeyMenu from "@/components/results-page/ConfigureSankeyMenu.vue";
 import SankeyDownloadMenu from "@/components/results-page/SankeyDownloadMenu.vue";
@@ -89,11 +125,146 @@ import { v4 as uuidv4 } from "uuid";
 import { sankeyRankColumns } from "@/plugins/rankUtils";
 import { extractTaxonomyArray, compareTSVContents } from "@/plugins/sankeyUtils";
 
+// TODO: import these from TaxoView component
+// e.g. import TaxoView, { isRootNode, isUnclassifiedNode, parseData } from "taxoview"
+function isRootNode(node) {
+	return parseInt(node.taxon_id) === 1;
+}
+function isUnclassifiedNode(node) {
+	return parseInt(node.taxon_id) === 0;
+}
+function parseData(data) {
+	const nodes = [];
+	const nodesByRank = {}; 
+	const nodesByDepth = {};
+
+	let currentLineage = [];
+	let rootNode = null;
+	let unclassifiedNode = null;
+
+	// Step 1: Create nodes and save lineage data for all nodes
+	data.forEach((d) => {
+		let node = {
+			id: d.taxon_id,
+			taxon_id: d.taxon_id,
+			name: d.name,
+			nameWithIndentation: d.nameWithIndentation,
+			rank: d.rank,
+			rankDisplayName: d.rank,
+			hierarchy: parseInt(d.depth),
+			proportion: parseFloat(d.proportion),
+			clade_reads: parseInt(d.clade_reads),
+			taxon_reads: d.taxon_reads,
+			lineage: null,
+			isUnclassifiedNode: false,
+			children: [], // FIXME: change to null?
+		};
+
+		// Add node to its corresponding depth collection
+		if (!Object.keys(nodesByDepth).map(Number).includes(node.hierarchy)) {
+			nodesByDepth[node.hierarchy] = [];
+		}
+		nodesByDepth[node.hierarchy].push(node);
+
+		// Add node to its corresponding rank collection
+		// Consider root node and unclassified node separately
+		if (sankeyRankColumns.includes(d.rank)) {
+			if (!nodesByRank[d.rank]) {
+				nodesByRank[d.rank] = [];
+			}
+			nodesByRank[d.rank].push(node);
+		} else if (isUnclassifiedNode(node)) {
+			// FIXME: figure out which rank to put unclassified node in
+			if (!nodesByRank["no rank"]) {
+				nodesByRank["no rank"] = [];
+			}
+			// nodesByRank["root"].push(node); // FIXME: overlapping issue with root node when i put this in
+			
+			// Reassign some attributes specific to unclassified node
+			node.rank = "no rank";
+			node.rankDisplayName = node.name;
+			node.isUnclassifiedNode = true;
+			
+			unclassifiedNode = node;
+		} else if (isRootNode(node)) {
+			if (!nodesByRank["no rank"]) {
+				nodesByRank["no rank"] = [];
+			}
+			nodesByRank["no rank"].push(node);
+
+			// Reassign some attributes specific to root node
+			node.rank = "no rank"; // FIXME: remove this after fixing logic to leave it as "no rank", same as taxonomyreport
+			node.rankDisplayName = node.name;
+			
+			rootNode = node;
+			nodes.push(rootNode);
+		} 
+
+		// Store lineage for each node
+		let lastLineageNode = currentLineage[currentLineage.length - 1];
+		if (lastLineageNode) {
+			let currentDepth = node.hierarchy;
+			let lastDepth = lastLineageNode.hierarchy; 
+			
+			while (lastLineageNode && currentDepth <= lastDepth) {
+				currentLineage.pop();
+				
+				lastLineageNode = currentLineage[currentLineage.length - 1];
+				if (!lastLineageNode) {
+					break; // Exit the loop if no more nodes in the lineage (i.e. traced back to root node)
+				}
+				
+				lastDepth = lastLineageNode.hierarchy; // Update lastRank for the next iteration comparison
+			}
+		}
+		// Append current node to currentLineage array + store lineage data
+		currentLineage.push(node);
+		node.lineage = [...currentLineage];
+		
+		// Store current node to parent's children collection (for sankey verification taxonomyreport regeneration)
+		const parent = node.lineage[node.lineage.length - 2];
+		if (parent) {
+			parent.children.push(node);
+		}
+	});
+
+	// Step 2: Store all nodes and store rank-filtered nodes separately
+	sankeyRankColumns.forEach((rank) => {
+		if (nodesByRank[rank]) {
+			// Store all nodes
+			nodes.push(...nodesByRank[rank]);
+		}
+	});
+
+	// Step 4: Create node for Unclassified Sequences linked to the root node
+	if (unclassifiedNode && rootNode) { // FIXME: remove rootNode if unneeded
+			// Add to selected and all nodes (always present, excluded from taxa limit)
+			nodes.push(unclassifiedNode);
+			// Add link from root node to unclassified node
+			// selectedLinks.push({
+			// 	sourceName: rootNode.name,
+			// 	source: rootNode.id,
+			// 	targetName: unclassifiedNode.name,
+			// 	target: unclassifiedNode.id,
+			// 	value: totalUnclassifiedCladeReads,
+			// });
+			// allLinks.push({
+			// 	sourceName: rootNode.name,
+			// 	source: rootNode.id,
+			// 	targetName: unclassifiedNode.name,
+			// 	target: unclassifiedNode.id,
+			// 	value: totalUnclassifiedCladeReads,
+			// });
+		// }
+	}
+	return { nodes, nodesByDepth };
+}
+
+
 export default {
 	name: "ResultsPage",
 	components: {
 		ResultsTable,
-		SankeyDiagram,
 		SankeyDownloadMenu,
 		ConfigureSankeyMenu,
 		SankeyNodeDialog,
@@ -114,12 +285,33 @@ export default {
 
 			showAll: false,
 			taxaLimit: 20, // FIXME: refactor, make this into dictionary storing info about configuration
-			minCladeReadsMode: "%",
+			minCladeReadsMode: 0,
 			minCladeReads: 0.01,
 			figureHeight: 500,
 			labelOption: "proportion",
 
+			marginBottom: 50, // Margin for rank labels
+			marginRight: 150,
+			nodeWidth: 20,
+			nodePadding: 13,
+			nodeLabelFontSize: 10,
+			nodeValueFontSize: 10,
+			rankLabelFontSize: 14,
+			// superkingdom --> domain
+			// rankList: sankeyRankColumns,
+			// rankListWithRoot: [ "no rank", ...sankeyRankColumns ],
+			colorScheme: [
+				// Autum colours
+				"#57291F", "#C0413B", "#D77B5F", "#FF9200", "#FFCD73",
+				"#F7E5BF", "#C87505", "#F18E3F", "#E59579", "#C14C32",
+				"#80003A", "#506432", "#FFC500", "#B30019", "#EC410B",
+				"#E63400", "#8CB5B5", "#6C3400", "#FFA400", "#41222A",
+				"#FFB27B", "#FFCD87", "#BC7576",
+			],
+			unclassifiedLabelColor: "#696B7E",	
+			
 			searchQuery: "",
+			searchQueryMatchNodes: new Set(),
 
 			// Sankey Node Dialog
 			isDialogVisible: false,
@@ -128,13 +320,29 @@ export default {
 			// Data for sankey in dialog
 			nodes: [],
 			nodesByDepth: {},
+			
+			originalData: ''
 		};
 	},
 
 	watch: {
 		results: {
 			handler(newResults) {
-				this.parseData(newResults);
+				const { nodes, nodesByDepth } = parseData(newResults);
+				this.nodes = nodes;
+				this.nodesByDepth = nodesByDepth;
+				this.verifySankey().then((result) => {
+					if (result === null) {
+						console.warn("⚠️ Original report file not found. Taxonomy verification skipped.");
+						this.taxonomyVerification = null; // Use `null` for file-not-found case
+					} else if (result === false) {
+						console.log("🟥 Taxonomy verification failed.");
+						this.taxonomyVerification = false; // Use `false` for verification failure
+					} else if (result === true) {
+						console.log("🟩 Taxonomy verification succeeded.");
+						this.taxonomyVerification = true; // Use `true` for verification success
+					}
+				});
 			},
 		},
 	},
@@ -146,173 +354,47 @@ export default {
 		},
 		sankeyConfigurationSettings() {
 			// Automatically recalculates when any fields change
-			return {
+			const settings = {
 				showAll: this.showAll,
 				taxaLimit: this.taxaLimit,
 				minCladeReadsMode: this.minCladeReadsMode,
 				minCladeReads: this.minCladeReads,
 				figureHeight: this.figureHeight,
 				labelOption: this.labelOption,
+				colorScheme: this.colorScheme
 			}
+			return settings;
 		},
 	},
 
 	methods: {
+		handleNodeClick(data) {
+			if (!data) return;
+			const taxId = data.taxon_id || data.id;
+			const nodeData = this.lookupTaxonNode(taxId);
+			this.showDialog(nodeData);
+		},
+		// TODO: if TaxoView accepts a data object this shouldn't be necessary
+		// addRoot currently needed to get past TSVParser
+		generateTsvReport(array, addRoot=false) {
+			const properties = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "nameWithIndentation"];
+			let rows = array;
+			rows.forEach(row => {
+				if (row.rank === 'superkingdom') row.rank = 'domain'
+			})
+			if (addRoot) {
+				let root = { rank: "no rank", taxon_id: "0", name: "unclassified", nameWithIndentation: "unclassified", proportion: "0", clade_reads: "0", taxon_reads: "0" };
+				let root2 = Object.assign({}, array[0], { rank: "no rank", taxon_id: "1", name: "root", nameWithIndentation: "root" });
+				rows = [root, root2, ...array]
+			}
+			return rows
+				.map(node => properties.map(property => node[property] !== undefined && node[property] !== null 
+					? node[property] 
+					: "").join("\t"))
+				.join('\n');
+		},
 		// Functions handling Details Dialog (shared between Table and Sankey tab)
 		// Data processing functions for Subtree Sankey
-		parseData(data) {
-			const nodesByRank = {};
-			let currentLineage = [];
-			this.nodesByDepth = {};
-
-			let rootNode = null;
-			let unclassifiedNode = null;
-
-			/*
-			Step 1: Create nodes and save lineage data for all nodes
-			*/
-			data.forEach((d) => {
-				let node = {
-					id: d.taxon_id,
-					taxon_id: d.taxon_id,
-					name: d.name,
-					nameWithIndentation: d.nameWithIndentation,
-					rank: d.rank,
-					rankDisplayName: d.rank,
-					hierarchy: parseInt(d.depth),
-					proportion: parseFloat(d.proportion),
-					clade_reads: parseInt(d.clade_reads),
-					taxon_reads: d.taxon_reads,
-					lineage: null,
-					isUnclassifiedNode: false,
-					children: [], // FIXME: change to null?
-				};
-
-				// Add node to its corresponding depth collection
-				if (!Object.keys(this.nodesByDepth).map(Number).includes(node.hierarchy)) {
-					this.nodesByDepth[node.hierarchy] = [];
-				}
-				this.nodesByDepth[node.hierarchy].push(node);
-
-				// Add node to its corresponding rank collection
-				// Consider root node and unclassified node separately
-				if (sankeyRankColumns.includes(d.rank)) {
-					if (!nodesByRank[d.rank]) {
-						nodesByRank[d.rank] = [];
-					}
-					nodesByRank[d.rank].push(node);
-				} else if (this.isUnclassifiedNode(node)) {
-					// FIXME: figure out which rank to put unclassified node in
-					if (!nodesByRank["no rank"]) {
-						nodesByRank["no rank"] = [];
-					}
-					// nodesByRank["root"].push(node); // FIXME: overlapping issue with root node when i put this in
-
-					// Reassign some attributes specific to unclassified node
-					node.rank = "no rank";
-					node.rankDisplayName = node.name;
-					node.isUnclassifiedNode = true;
-
-					unclassifiedNode = node;
-				} else if (this.isRootNode(node)) {
-					if (!nodesByRank["no rank"]) {
-						nodesByRank["no rank"] = [];
-					}
-					nodesByRank["no rank"].push(node);
-
-					// Reassign some attributes specific to root node
-					node.rank = "no rank"; // FIXME: remove this after fixing logic to leave it as "no rank", same as taxonomyreport
-					node.rankDisplayName = node.name;
-
-					rootNode = node;
-					this.nodes.push(rootNode);
-				}
-
-				// Store lineage for each node
-				let lastLineageNode = currentLineage[currentLineage.length - 1];
-				if (lastLineageNode) {
-					let currentDepth = node.hierarchy;
-					let lastDepth = lastLineageNode.hierarchy;
-
-					while (lastLineageNode && currentDepth <= lastDepth) {
-						currentLineage.pop();
-
-						lastLineageNode = currentLineage[currentLineage.length - 1];
-						if (!lastLineageNode) {
-							break; // Exit the loop if no more nodes in the lineage (i.e. traced back to root node)
-						}
-
-						lastDepth = lastLineageNode.hierarchy; // Update lastRank for the next iteration comparison
-					}
-				}
-				// Append current node to currentLineage array + store lineage data
-				currentLineage.push(node);
-				node.lineage = [...currentLineage];
-
-				// Store current node to parent's children collection (for sankey verification taxonomyreport regeneration)
-				const parent = node.lineage[node.lineage.length - 2];
-				if (parent) {
-					parent.children.push(node);
-				}
-			});
-
-			/* 
-			Step 2: Store all nodes and store rank-filtered nodes separately
-			*/
-			sankeyRankColumns.forEach((rank) => {
-				if (nodesByRank[rank]) {
-					// Store all nodes
-					this.nodes.push(...nodesByRank[rank]);
-				}
-			});
-
-			/*
-			Step 4: Create node for Unclassified Sequences linked to the root node
-			*/
-			if (unclassifiedNode && rootNode) { // FIXME: remove rootNode if unneeded
-				// Add to selected and all nodes (always present, excluded from taxa limit)
-				this.nodes.push(unclassifiedNode);
-
-				// Add link from root node to unclassified node
-				// selectedLinks.push({
-				// 	sourceName: rootNode.name,
-				// 	source: rootNode.id,
-				// 	targetName: unclassifiedNode.name,
-				// 	target: unclassifiedNode.id,
-				// 	value: totalUnclassifiedCladeReads,
-				// });
-				// allLinks.push({
-				// 	sourceName: rootNode.name,
-				// 	source: rootNode.id,
-				// 	targetName: unclassifiedNode.name,
-				// 	target: unclassifiedNode.id,
-				// 	value: totalUnclassifiedCladeReads,
-				// });
-				// }
-			}
-
-			// Verify sankey
-			this.verifySankey().then((result) => {
-				if (result === null) {
-					console.warn("⚠️ Original report file not found. Taxonomy verification skipped.");
-					this.taxonomyVerification = null; // Use `null` for file-not-found case
-				} else if (result === false) {
-					console.log("🟥 Taxonomy verification failed.");
-					this.taxonomyVerification = false; // Use `false` for verification failure
-				} else if (result === true) {
-					console.log("🟩 Taxonomy verification succeeded.");
-					this.taxonomyVerification = true; // Use `true` for verification success
-				}
-			});
-		},
-		isRootNode(node) {
-			// Check if the node is the root node
-			return parseInt(node.taxon_id) === 1;
-		},
-		isUnclassifiedNode(node) {
-			// Check if the node is the unclassified node
-			return parseInt(node.taxon_id) === 0;
-		},
 		extractSubtreeRawData(selectedNode) {
 			// Used only when isSubtree === false
 			let startIdx = -1;
@@ -343,9 +425,8 @@ export default {
 			const subtreeRawData = this.results.slice(startIdx, endIdx + 1);
 			return subtreeRawData;
 		},
-		// // Event handling to show/hide Details Dialog
-		handleRowClick(rowData) {
-			const node = this.nodes.find((node) => node.taxon_id === rowData.taxon_id);
+		lookupTaxonNode(taxon_id) {
+			const node = this.nodes.find((node) => node.taxon_id === taxon_id);
 			const nodeData = {
 				proportion: node.proportion,
 				clade_reads: node.clade_reads,
@@ -356,7 +437,11 @@ export default {
 				hierarchy: node.hierarchy,
 				lineage: node.lineage
 			};
-
+			return nodeData;
+		},
+		// // Event handling to show/hide Details Dialog
+		handleRowClick(rowData) {
+			const nodeData = this.lookupTaxonNode(rowData.taxon_id);
 			this.showDialog(nodeData);
 		},
 		showDialog({ proportion, clade_reads, taxon_reads, taxon_id, name, rank, hierarchy, lineage } = {}) {
@@ -365,15 +450,17 @@ export default {
 			// }
 			const nodeData = { proportion, clade_reads, taxon_reads, taxon_id, name, rank, hierarchy, lineage };
 			const subtreeRawData = this.extractSubtreeRawData(nodeData); // Extract subtree raw data for clicked node
+			const rankList = subtreeRawData.map(row => (row.rank === 'superkingdom') ? 'domain' : row.rank).filter((v, i, a) => a.indexOf(v) === i && v !== 'no rank' && !v.startsWith('sub'));	
+			const subtreeRawTsv = this.generateTsvReport(subtreeRawData, true);
 			const hasSourceLinks = subtreeRawData.length > 1 ? true : false; // Determine if the subtree has more than 1 node
-
 			this.dialogData = {
 				type: "node",
 				data: nodeData,
 				subtreeData: subtreeRawData,
+				subtreeDataTsv: subtreeRawTsv,
 				hasSourceLinks: hasSourceLinks,
+				rankList: rankList
 			};
-
 			this.isDialogVisible = true;
 		},
 		hideDialog() {
@@ -426,52 +513,32 @@ export default {
 			const url = `https://github.com/steineggerlab/Metabuli-App/issues/new?title=${title}&body=${body}`;
 			window.open(url, "_blank");
 		},
-
-		// Sankey Diagram Configuration Settings
-		handleUpdateConfig(settings) {
-			this.showAll = settings.showAll;
-
-			if (settings.showAll) {
-				this.taxaLimit = this.maxTaxaLimit;
-				this.minCladeReadsMode = "#";
-				this.minCladeReads = 0;
-			} else {
-				this.taxaLimit = settings.taxaLimit;
-				this.minCladeReadsMode = settings.minCladeReadsMode;
-				this.minCladeReads = settings.minCladeReads;
-			}
-
-			this.figureHeight = settings.figureHeight;
-			this.labelOption = settings.labelOption;
-		},
-
 		// Sankey Download Functions
 		emitMainSankeyDownloadFormat(downloadDetails) {
 			const { format, filename } = downloadDetails;
-			this.handleFormatSelected({ sankeyId: "sankey-svg", format, filename });
+			const svg = this.$refs.taxoview.$el.querySelector('svg');
+			this.handleFormatSelected({ sankeySvgElement: svg, format, filename });
 		},
-		handleFormatSelected({ sankeyId, format, filename = "sankey_diagram" }) {
+		handleFormatSelected({ sankeySvgElement, format, filename = "sankey_diagram" }) {
 			switch (format) {
 				case "png":
-					this.downloadSankeyAsPng(sankeyId, filename);
+					this.downloadSankeyAsPng(sankeySvgElement, filename);
 					break;
 				case "jpg":
-					this.downloadSankeyAsJpg(sankeyId, filename);
+					this.downloadSankeyAsJpg(sankeySvgElement, filename);
 					break;
-				case "html":
-					this.downloadSankeyAsHtml(sankeyId, filename);
+				case "svg":
+					this.downloadSankeyAsSvg(sankeySvgElement, filename);
 					break;
 				default:
 					return;
 			}
 		},
-		downloadSankeyAsPng(sankeyId, filename) {
-			const sankeySvgElement = document.querySelector(`#${sankeyId}`); // Reference to the SVG ID
+		downloadSankeyAsPng(sankeySvgElement, filename) {
 			saveSvgAsPng(sankeySvgElement, `${filename}.png`);
 		},
-		async downloadSankeyAsJpg(sankeyId, filename) {
+		async downloadSankeyAsJpg(sankeySvgElement, filename) {
 			// Get the SVG element
-			const sankeySvgElement = document.querySelector(`#${sankeyId}`); // Reference to the SVG ID
 			const svg = d3.select(sankeySvgElement);
 			const svgString = new XMLSerializer().serializeToString(svg.node());
 
@@ -511,8 +578,7 @@ export default {
 			};
 			img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgString)));
 		},
-		downloadSankeyAsHtml(sankeyId, filename) {
-			const svgElement = document.querySelector(`#${sankeyId}`); // Correctly reference the SVG ID
+		downloadSankeyAsSvg(svgElement, filename) {
 			const svgData = new XMLSerializer().serializeToString(svgElement);
 			const svgBlob = new Blob([svgData], {
 				type: "image/svg+xml;charset=utf-8",
@@ -520,7 +586,7 @@ export default {
 			const url = URL.createObjectURL(svgBlob);
 			const link = document.createElement("a");
 			link.href = url;
-			link.download = `${filename}.html`;
+			link.download = `${filename}.svg`;
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
@@ -543,13 +609,19 @@ export default {
 
 		// Generate unique instance ID for Sankey
 		this.uniqueInstanceId = uuidv4();
-
+		
 		try {
 			// Retrieve and parse completedJob from local storage
 			const processedResults = JSON.parse(localStorage.getItem("processedResults"));
 			if (processedResults) {
 				this.renderResults(processedResults);
+
 			}
+			
+			const originalReportFilePath = sessionStorage.getItem("reportFilePath");
+			const originalReportContent = await window.electron.readFile(originalReportFilePath);
+			this.originalData = originalReportContent;
+					
 		} catch (error) {
 			console.error("Error loading results:", error);
 		}

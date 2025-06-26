@@ -44,7 +44,7 @@ export default {
 		items: [
 			{ text: "JPG", value: "jpg", icon: "$image" },
 			{ text: "PNG", value: "png", icon: "$fileImage" },
-			{ text: "HTML", value: "html", icon: "$codeTags" },
+			{ text: "SVG", value: "svg", icon: "$codeTags" },
 		],
 	}),
 
