@@ -334,6 +334,7 @@ import TSVParser from "@/plugins/tsvParser";
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
 import { extractFilename, stripFileExtension } from "@/plugins/fileUtils.js";
 import { makeCompletedJob, makeFailedJob } from "@/plugins/jobHistoryStruct.js";
+import { CITATIONS, formatCitations } from "@/citations.js";
 
 export default {
 	name: "NewSearchTab",
@@ -671,6 +672,19 @@ export default {
 					// Save log file
 					window.electron.writeFile(`${this.jobDetails.outdir}/${this.jobDetails.jobid}/${entry.batchName}/${this.jobDetails.jobid}_log.txt`, this.backendOutput).catch(console.error);
 				}
+			}
+
+			if (this.status === "COMPLETE") {
+				// Gather citations to export
+				const citations = [
+					CITATIONS.metabuli,
+					...(this.jobDetails.enableQC ? [CITATIONS.fastp] : []),
+				]
+
+				// Write citations to file in job_id folder
+				const jobIDPath = `${this.jobDetails.outdir}/${this.jobDetails.jobid}/citations.txt`;
+				const citationsContent = formatCitations(citations);
+				await window.electron.writeFile(jobIDPath, citationsContent);
 			}
 
 			// Once all batches are done (or attempted), reset top‐level UI state

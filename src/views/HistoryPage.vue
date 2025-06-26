@@ -2,7 +2,7 @@
 	<v-container class="w-100">
 		<v-card>
 			<v-data-table v-model="selectedItems" :headers="headers" :items="jobsHistory" item-value="timestamp"
-				:items-per-page="10" class="elevation-1" :sort-by="[{ key: 'timestamp', order: 'desc' }]" select-strategy="page"
+				:items-per-page="20" class="elevation-1" :sort-by="[{ key: 'timestamp', order: 'desc' }]" select-strategy="page"
 				show-select hide-default-footer>
 				<template v-slot:top>
 					<v-toolbar image="assets/toolbar_background.png" class="custom-toolbar py-3" density="compact">

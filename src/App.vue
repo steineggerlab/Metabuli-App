@@ -36,7 +36,7 @@
 
 				<!-- HELP NAVIGATION ITEM -->
 				<v-list>
-					<v-list-item @click="showReadme = true" class="nav-item" title="How To Use the App"
+					<v-list-item @click="showReadme = true" class="nav-item" title="App User Manual"
 						prepend-icon="$informationOutline"></v-list-item>
 				</v-list>
 
