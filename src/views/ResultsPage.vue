@@ -14,7 +14,7 @@
 
 				<!-- TABLE TAB -->
 				<v-tabs-window-item value="table" class="h-100">
-					<ResultsTable :data="results" class="h-100" @row-click="handleRowClick" />
+					<ResultsTable :data="results" :isSample="isSample" class="h-100" @row-click="handleRowClick" />
 				</v-tabs-window-item>
 
 				<!-- SANKEY TAB-->
@@ -509,6 +509,7 @@ export default {
 			const processedResults = JSON.parse(localStorage.getItem("processedResults"));
 			if (processedResults) {
 				this.renderResults(processedResults);
+				this.isSample = processedResults.isSample;
 
 			}
 

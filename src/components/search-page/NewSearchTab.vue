@@ -180,9 +180,9 @@
 												<!-- Go directly to the “Update” tab of Custom Database page -->
 												<v-btn color="secondary" prepend-icon="$databaseImport" variant="text"
 													class="text-caption font-weight-medium ml-2" size="small" rounded="xl" @click="$router.push({
-															name: 'CustomDatabasePage',
-															query: { tab: 'updateDatabase' }
-														})">
+														name: 'CustomDatabasePage',
+														query: { tab: 'updateDatabase' }
+													})">
 													Update Existing Database
 												</v-btn>
 											</div>
@@ -614,7 +614,10 @@ export default {
 				// Object storing info about completedJob
 				const completedJob = makeCompletedJob({
 					jobDetails: this.jobDetailsSample,
-					sampleNames: ["SRR14484345_1", "SRR14484345_2"],
+					q1: this.jobDetailsSample.q1,
+					q2: this.jobDetailsSample.q2,
+					database: this.jobDetailsSample.database,
+					sampleFiles: ["SRR14484345_1.fastq", "SRR14484345_2.fastq"],
 					batchFolder: this.jobDetailsSample.outdir,
 					isSample: true,
 					jobType: "runSearch",
@@ -937,11 +940,12 @@ export default {
 
 			// processResults(false) should look in batchFolder for jobid_report.tsv, etc.
 			// this.processResults(false, entry).then(() => {
-			const { base: sampleNameBase1 } = this.stripFileExtension(entry.q1);
-			const { base: sampleNameBase2 } = this.stripFileExtension(entry.q2);
 			const completedJob = makeCompletedJob({
 				jobDetails: this.jobDetails,
-				sampleNames: this.jobDetails.mode === "paired-end" ? [sampleNameBase1, sampleNameBase2] : [sampleNameBase1],
+				q1: entry.q1,
+				q2: entry.q2,
+				database: this.jobDetails.database,
+				sampleFiles: this.jobDetails.mode === "paired-end" ? [extractFilename(entry.q1), extractFilename(entry.q2)] : [extractFilename(entry.q1)],
 				batchFolder: batchFolder,
 				isSample: false,
 				jobType: "runSearch",
@@ -967,11 +971,12 @@ export default {
 			// Additional error handling logic (save failed job to local storage, trigger snackbar)
 
 			// Create failed job object to store in local storage
-			const { base: sampleNameBase1 } = this.stripFileExtension(entry.q1);
-			const { base: sampleNameBase2 } = this.stripFileExtension(entry.q2);
 			const failedJob = makeFailedJob({
 				jobDetails: this.jobDetails,
-				sampleNames: this.jobDetails.mode === "paired-end" ? [sampleNameBase1, sampleNameBase2] : [sampleNameBase1],
+				q1: entry.q1,
+				q2: entry.q2,
+				database: this.jobDetails.database,
+				sampleFiles: this.jobDetails.mode === "paired-end" ? [extractFilename(entry.q1), extractFilename(entry.q2)] : [extractFilename(entry.q1)],
 				backendOutput: this.backendOutput,
 				status: this.status,
 				jobType: "runSearch",

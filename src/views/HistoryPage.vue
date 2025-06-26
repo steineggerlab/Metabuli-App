@@ -20,10 +20,10 @@
 				</template>
 
 				<!-- Sample Name Column -->
-				<template v-slot:[`item.sampleNames`]="{ item }">
-					<div v-if="!item.sampleNames || item.sampleNames.length === 0">-</div>
+				<template v-slot:[`item.sampleFiles`]="{ item }">
+					<div v-if="!item.sampleFiles || item.sampleFiles.length === 0">-</div>
 					<div v-else>
-						<div v-for="(name, idx) in item.sampleNames" :key="idx">
+						<div v-for="(name, idx) in item.sampleFiles" :key="idx">
 							{{ name }}
 						</div>
 					</div>
@@ -70,7 +70,7 @@
 				<template v-slot:[`item.actions`]="{ item }">
 					<div class="d-flex align-center justify-center">
 						<v-btn prepend-icon="$eye" variant="tonal" color="primary" size="small" class="text-body-2"
-							:disabled="!item.results" @click="viewDetails(item)">See Results </v-btn>
+							:disabled="!item.resultsJSON" @click="viewDetails(item)">See Results </v-btn>
 						<v-btn variant="text" icon="$trash" size="small" rounded="xl" @click="deleteJob(item.timestamp)"> </v-btn>
 					</div>
 				</template>
@@ -122,7 +122,7 @@ export default {
 		return {
 			headers: [
 				{ title: "Job ID", value: "jobId" },
-				{ title: "Sample Name", value: "sampleNames" },
+				{ title: "Sample Files", value: "sampleFiles" },
 				{ title: "Completed At", value: "timestamp" },
 				{ title: "Type ", value: "jobType", align: "center" },
 				{ title: "QC Enabled", value: "qcEnabled", align: "center" },
@@ -151,16 +151,19 @@ export default {
 	},
 	methods: {
 		viewDetails(jobItem) {
+			console.log(jobItem);
 			const completedJob = {
 				jobDetails: jobItem.jobDetails,
+				q1: jobItem.q1,
+				q2: jobItem.q2,
 				jobType: "runSearch",
 				isSample: jobItem.isSample,
-				resultsJSON: jobItem.results,
+				resultsJSON: jobItem.resultsJSON,
 				kronaContent: jobItem.kronaContent,
 				reportFilePath: jobItem.reportFilePath,
 			};
 
-			localStorage.setItem("processedResults", JSON.stringify(completedJob));
+			localStorage.setItem("processedResults", JSON.stringify(jobItem));
 
 			// Store report file path in session storage for later use (taxonomy verification)
 			const reportFilePath = completedJob.reportFilePath;

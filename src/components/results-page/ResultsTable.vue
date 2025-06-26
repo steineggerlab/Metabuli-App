@@ -97,7 +97,7 @@
 							@click="$emit('row-click', item)"
 						/>
 						<!-- EXTRACT READS BUTTON -->
-						<ExtractReadsDialog :taxonId="item.taxon_id" :menuLocation="'top center'">
+						<ExtractReadsDialog v-if="!isSample" :taxonId="item.taxon_id" :menuLocation="'top center'">
 							<template v-slot:activator="{ props }">
 								<v-btn v-bind="props" text="Extract" prepend-icon="$fileExport" variant="tonal" color="secondary" size="small" class="text-body-2"/>
 							</template>
@@ -169,6 +169,7 @@ export default {
 	},
 	props: {
 		data: Array,
+		isSample: Boolean,
 	},
 	computed: {
 		filteredTableResults() {

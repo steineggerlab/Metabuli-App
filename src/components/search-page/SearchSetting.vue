@@ -116,24 +116,10 @@ export default {
 
 		// Function managing job history storage
 		async storeJob(job) {
-			// Deep clone the jobDetails and results to avoid storing reactive proxies
-			const plainJobDetails = JSON.parse(JSON.stringify(job.jobDetails));
-			const plainResults = JSON.parse(JSON.stringify(job.resultsJSON));
-
 			// Create a new job entry with additional details
 			const jobHistoryEntry = {
-				jobDetails: plainJobDetails,
-				jobId: job.jobid,
-				sampleNames: job.sampleNames,
-				timestamp: new Date().toISOString(), // Timestamp of job completion
-				jobType: job.jobType,
-				qcEnabled: job.qcEnabled,
-				isSample: job.isSample,
-				jobStatus: job.jobStatus,
-				backendOutput: job.backendOutput,
-				results: plainResults,
-				kronaContent: job.kronaContent,
-				reportFilePath: job.reportFilePath,
+				...JSON.parse(JSON.stringify(job)),
+				timestamp: new Date().toISOString(),
 			};
 
 			try {

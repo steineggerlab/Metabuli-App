@@ -1,9 +1,12 @@
-export function makeCompletedJob({ jobDetails, sampleNames, batchFolder, backendOutput, processedResults, isSample, jobType, reportFilePath }) {
+export function makeCompletedJob({ jobDetails, q1, q2, sampleFiles, batchFolder, backendOutput, processedResults, isSample, jobType, reportFilePath }) {
   return {
     jobDetails: { ...jobDetails }, // Null when job is uploadReport
     outdir: batchFolder,
     jobid: jobDetails ? jobDetails.jobid : null,
-    sampleNames: sampleNames ? sampleNames : [], // List of samples
+    q1: q1,
+    q2: q2,
+    database: jobDetails ? jobDetails.database : null,
+    sampleFiles: sampleFiles ? sampleFiles : [], // List of read files
     isSample,
     qcEnabled: jobDetails ? jobDetails.enableQC : false,
     jobStatus: "Completed",
@@ -15,12 +18,15 @@ export function makeCompletedJob({ jobDetails, sampleNames, batchFolder, backend
   };
 }
 
-export function makeFailedJob({ jobDetails, sampleNames, backendOutput, status, jobType, isSample }) {
+export function makeFailedJob({ jobDetails, q1, q2, sampleFiles, backendOutput, status, jobType, isSample }) {
   return {
     jobDetails: { ...jobDetails }, // Null when job is uploadReport
     outdir: jobDetails ? jobDetails.outdir : null,
     jobid: jobDetails ? jobDetails.jobid : null,
-    sampleNames: sampleNames ? sampleNames : [], // List of samples
+    q1: q1,
+    q2: q2,
+    database: jobDetails ? jobDetails.database : null,
+    sampleFiles: sampleFiles ? sampleFiles : [], // List of read files
     isSample,
     qcEnabled: jobDetails ? jobDetails.enableQC : false,
     jobStatus: status,

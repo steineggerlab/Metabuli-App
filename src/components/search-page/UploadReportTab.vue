@@ -10,7 +10,8 @@
 			<v-sheet class="d-flex flex-column gr-2 mb-2">
 				<!-- Upload Box -->
 				<div class="d-flex flex-column align-center dotted-border gr-3" @click="triggerFilePicker">
-					<v-file-input v-model="file" ref="fileInput" class="hidden-input" @change="handleFileSelect" accept=".tsv"></v-file-input>
+					<v-file-input v-model="file" ref="fileInput" class="hidden-input" @change="handleFileSelect"
+						accept=".tsv"></v-file-input>
 					<v-icon size="50" icon="$fileUpload" color="primary"></v-icon>
 					<p class="text-body-2">Drag & drop your file here or choose from files.</p>
 				</div>
@@ -19,7 +20,8 @@
 				<div v-if="file" class="uploaded-file">
 					<v-card-subtitle>Uploaded File</v-card-subtitle>
 					<v-card-text class="py-1">
-						<v-chip label closable prepend-icon="$file" color="primary" @click:close="removeFile">{{ file.name }}</v-chip>
+						<v-chip label closable prepend-icon="$file" color="primary" @click:close="removeFile">{{ file.name
+							}}</v-chip>
 					</v-card-text>
 				</div>
 
@@ -28,7 +30,8 @@
 			</v-sheet>
 		</v-container>
 
-		<v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png"> </v-img>
+		<v-img class="w-33 marv-metabuli-opaque" :width="300" aspect-ratio="1/1" src="assets/marv_metabuli_small.png">
+		</v-img>
 	</div>
 </template>
 
@@ -89,7 +92,10 @@ export default {
 					// Object storing info about completedJob
 					const completedJob = makeCompletedJob({
 						jobDetails: null,
-						sampleNames: null,
+						q1: null,
+						q2: null,
+						database: null,
+						sampleFiles: null,
 						batchFolder: null,
 						backendOutput: this.backendOutput,
 						processedResults: this.processedResults,
@@ -124,13 +130,16 @@ export default {
 				// Create failed job object to store in local storage
 				const failedJob = makeFailedJob({
 					jobDetails: null,
-					sampleNames: null,
+					q1: null,
+					q2: null,
+					database: null,
+					sampleFiles: null,
 					backendOutput: this.backendOutput,
 					status: "ERROR",
 					jobType: "uploadReport",
 					isSample: false,
 				})
-			
+
 				// Store completed job in local storage
 				this.$emit("store-job", failedJob);
 

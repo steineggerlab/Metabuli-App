@@ -202,7 +202,7 @@ export default {
 			outdir: "",
 			classifications: "",
 		},
-		isSampleJob: null,
+
 		// Properties for backend job processing status, backend output, error tracking
 		status: "INITIAL",
 		backendOutput: "",
@@ -489,25 +489,17 @@ export default {
 		const processedResults = JSON.parse(localStorage.getItem("processedResults"));
 		if (processedResults) {
 			this.jobDetails = processedResults.jobDetails ? processedResults.jobDetails : this.jobDetails; // Leave as default empty filepaths for Upload Result jobs
-			this.isSampleJob = processedResults.isSample;
-
-			// Resolve file paths for Load Sample Data
-			if (this.isSampleJob) {
-				this.jobDetails.outdir = window.electron.getBasePath();
-				this.jobDetails.q1 = `${this.jobDetails.outdir}/${this.jobDetails.q1}`;
-				this.jobDetails.q2 = `${this.jobDetails.outdir}/${this.jobDetails.q2}`;
-				this.jobDetails.database = `${this.jobDetails.outdir}/${this.jobDetails.database}`;
-			}
-			// Resolve file path for classifications file
-			this.jobDetails.classifications = `${this.jobDetails.outdir}/${this.jobDetails.jobid}_classifications.tsv`;
-
+			
 			// Loop over each path and check if the file exists
-			const paths = ["q1", "q2", "classifications", "database"]; // Array of file paths to check
-			for (const key of paths) {
-				const fileExists = await window.electron.fileExists(this.jobDetails[key]);
-				if (!fileExists) {
-					this.jobDetails[key] = ""; // Set to empty string if the file doesn't exist
-				}
+			const keyPath = {
+				q1: processedResults.q1,
+				q2: processedResults.q2,
+				classifications: `${processedResults.outdir}/${processedResults.jobid}_classifications.tsv`,
+				database: processedResults.database,
+			};
+			for (const key of Object.keys(keyPath)) {
+				const fileExists = await window.electron.fileExists(keyPath[key]);
+				this.jobDetails[key] = fileExists ? keyPath[key] : ""; // Set to empty string if the file doesn't exist
 			}
 		}
 	},
