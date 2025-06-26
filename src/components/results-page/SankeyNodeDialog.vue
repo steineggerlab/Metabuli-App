@@ -14,7 +14,8 @@
 					<!-- Rank Column -->
 					<v-col>
 						<v-card-subtitle>Rank</v-card-subtitle>
-						<v-chip :color="getRankColor(nodeDetails.data.rank)" rounded="xl" variant="outlined" density="compact" class="font-weight-bold" label>{{ nodeDetails.data.rank }}</v-chip>
+						<v-chip :color="getRankColor(nodeDetails.data.rank)" rounded="xl" variant="outlined" density="compact"
+							class="font-weight-bold" label>{{ nodeDetails.data.rank }}</v-chip>
 					</v-col>
 
 					<!-- Proportion Column -->
@@ -44,26 +45,14 @@
 					</v-col>
 
 					<v-col class="d-flex flex-column justify-start">
-						<v-btn
-							color="primary"
-							append-icon="$openInNew"
-							text="NCBI"
-							class="button-text-right text-none"
-							size="small"
+						<v-btn color="primary" append-icon="$openInNew" text="NCBI" class="button-text-right text-none" size="small"
 							variant="text"
 							:href="`https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?mode=Info&id=${nodeDetails.data.taxon_id}`"
-							target="_blank"
-						></v-btn>
-						<v-btn
-							color="primary"
-							append-icon="$openInNew"
-							text="Assemblies"
-							class="button-text-right text-none"
-							size="small"
-							variant="text"
+							target="_blank"></v-btn>
+						<v-btn color="primary" append-icon="$openInNew" text="Assemblies" class="button-text-right text-none"
+							size="small" variant="text"
 							:href="`https://www.ncbi.nlm.nih.gov/assembly/?term=txid${nodeDetails.data.taxon_id}[Organism:exp]`"
-							target="_blank"
-						></v-btn>
+							target="_blank"></v-btn>
 					</v-col>
 				</v-row>
 			</v-card-item>
@@ -77,33 +66,23 @@
 
 				<div class="d-flex align-end gc-2 mb-4">
 					<v-card-subtitle class="pb-0 opacity-100 font-weight-bold">Subtree</v-card-subtitle>
-					<v-card-text class="px-0 py-0 text-caption text-disabled"> *Subtrees are not shown for single nodes </v-card-text>
+					<v-card-text class="px-0 py-0 text-caption text-disabled"> *Subtrees are not shown for single nodes
+					</v-card-text>
 				</div>
 				<!-- NODE SUBTREE SANKEY DIAGRAM -->
-				<TaxoView
-					:rawData="nodeDetails.subtreeDataTsv"
-					:taxaLimit="config.taxaLimit"
-					:colorScheme="config.colorScheme"
-					:minThresholdMode="config.minCladeReadsMode"
-					:minThreshold="config.minCladeReads"
-					:figureHeight="config.figureHeight"
-					:labelOption="config.labelOption === 'proportion' ? 1 : 0"
-					:showAll="config.showAll"
-					:marginBottom="config.marginBottom"
-					:marginRight="config.marginRight"
-					:nodeWidth="config.nodeWidth"
-					:nodePadding="config.nodePadding"
-					:nodeLabelFontSize="config.nodeLabelFontSize"
-					:nodeValueFontSize="config.nodeValueFontSize"
-					:rankLabelFontSize="config.rankLabelFontSize"
-					:ranksToShow="nodeDetails.rankList"
-					ref="taxoview-dialog"
-				/>
+				<TaxoView :rawData="nodeDetails.subtreeDataTsv" :taxaLimit="config.taxaLimit" :colorScheme="config.colorScheme"
+					:minThresholdMode="config.minCladeReadsMode" :minThreshold="config.minCladeReads"
+					:figureHeight="config.figureHeight" :labelOption="config.labelOption === 'proportion' ? 1 : 0"
+					:showAll="config.showAll" :marginBottom="config.marginBottom" :marginRight="config.marginRight"
+					:nodeWidth="config.nodeWidth" :nodePadding="config.nodePadding" :nodeLabelFontSize="config.nodeLabelFontSize"
+					:nodeValueFontSize="config.nodeValueFontSize" :rankLabelFontSize="config.rankLabelFontSize"
+					:ranksToShow="nodeDetails.rankList" ref="taxoview-dialog" />
 			</v-card-item>
 
 			<!-- Floating Action Button -->
 			<div class="fab-container d-flex align-center gc-1 mb-6">
-				<SankeyDownloadMenu :taxonId="nodeDetails.data.taxon_id" :menuLocation="'top center'" @format-selected="emitSubtreeSankeyDownloadDetails" v-if="nodeDetails.hasSourceLinks">
+				<SankeyDownloadMenu :taxonId="nodeDetails.data.taxon_id" :menuLocation="'top center'"
+					@format-selected="downloadSubtreeSankey" v-if="nodeDetails.hasSourceLinks">
 					<template v-slot:activator="{ props }">
 						<v-btn v-bind="props" icon="$download" size="x-small" rounded="circle"> </v-btn>
 					</template>
@@ -114,25 +93,16 @@
 						<v-btn v-bind="props" extended prepend-icon="$fileExport" text="Extract" color="secondary" rounded> </v-btn>
 					</template>
 				</ExtractReadsDialog>
-				
-				<ConfigureSankeyMenu
-					:maxTaxaLimit="roundedMaxTaxaLimit"
-					:menuLocation="'top end'"
-					v-model:show-all="config.showAll"
-					v-model:color-scheme="config.colorScheme"
-					v-model:min-clade-reads-mode="config.minCladeReadsMode"
-					v-model:min-clade-reads="config.minCladeReads"
-					v-model:taxa-limit="config.taxaLimit"
-					v-model:figure-height="config.figureHeight"
-					v-model:label-option="config.labelOption"
-					v-model:margin-bottom="config.marginBottom"
-					v-model:margin-right="config.marginRight"
-					v-model:node-width="config.nodeWidth"
-					v-model:node-padding="config.nodePadding"
-					v-model:node-label-font-size="config.nodeLabelFontSize"
+
+				<ConfigureSankeyMenu :maxTaxaLimit="roundedMaxTaxaLimit" :menuLocation="'top end'"
+					v-model:show-all="config.showAll" v-model:color-scheme="config.colorScheme"
+					v-model:min-clade-reads-mode="config.minCladeReadsMode" v-model:min-clade-reads="config.minCladeReads"
+					v-model:taxa-limit="config.taxaLimit" v-model:figure-height="config.figureHeight"
+					v-model:label-option="config.labelOption" v-model:margin-bottom="config.marginBottom"
+					v-model:margin-right="config.marginRight" v-model:node-width="config.nodeWidth"
+					v-model:node-padding="config.nodePadding" v-model:node-label-font-size="config.nodeLabelFontSize"
 					v-model:node-value-font-size="config.nodeValueFontSize"
-					v-model:rank-label-font-size="config.rankLabelFontSize"
-				>
+					v-model:rank-label-font-size="config.rankLabelFontSize">
 					<template v-slot:activator="{ props }">
 						<v-btn color="indigo" rounded="xl" v-bind="props">Configure Diagram</v-btn>
 					</template>
@@ -148,6 +118,7 @@ import ConfigureSankeyMenu from "@/components/results-page/ConfigureSankeyMenu.v
 import { v4 as uuidv4 } from "uuid";
 import { getRankColor } from "@/plugins/rankUtils";
 import SankeyDownloadMenu from "@/components/results-page/SankeyDownloadMenu.vue";
+import { exportSankeyDiagram } from "@/plugins/downloadUtils";
 
 export default {
 	name: "SankeyNodeDialog",
@@ -241,15 +212,16 @@ export default {
 
 		// Sankey Diagram
 		updateSettings(newSettings) {
-			this.$emit('update-config', { 
-				...newSettings 
+			this.$emit('update-config', {
+				...newSettings
 			});
 		},
 
 		// Sankey Download Functions
-		emitSubtreeSankeyDownloadDetails(downloadDetails) {
+		downloadSubtreeSankey(downloadDetails) {
 			const { format, filename } = downloadDetails;
-			this.$emit("download-sankey", { sankeyId: this.sankeyId, format, filename });
+			const svg = this.$refs['taxoview-dialog'].$el.querySelector('svg');
+			exportSankeyDiagram({ sankeySvgElement: svg, format, filename });
 		},
 
 		// Get color for rank chip
@@ -258,7 +230,7 @@ export default {
 
 	mounted() {
 		this.uniqueInstanceId = uuidv4();
-		Object.assign(this.config, this.$props.configureMenuSettings);	
+		Object.assign(this.config, this.$props.configureMenuSettings);
 	},
 };
 </script>
@@ -268,11 +240,13 @@ export default {
 .summary .v-card-subtitle {
 	margin-bottom: 8px;
 }
+
 .summary .v-card-text {
 	padding-top: 3px;
 	padding-inline: 0px;
 	font-weight: 500;
 }
+
 .button-text-right {
 	justify-content: flex-end !important;
 }
