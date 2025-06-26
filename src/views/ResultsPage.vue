@@ -30,33 +30,17 @@
 					<div class="d-flex justify-space-around my-5 mx-2 gc-1">
 						<!-- SEARCH BAR -->
 						<div class="d-flex flex-column">
-							<v-text-field
-								v-model="searchQuery"
-								prepend-inner-icon="$magnify"
-								density="compact"
-								label="Search Name or Taxon ID"
-								variant="outlined"
-								rounded="lg"
-								single-line
-								color="indigo"
-								clearable
-							></v-text-field>
+							<v-text-field v-model="searchQuery" prepend-inner-icon="$magnify" density="compact"
+								label="Search Name or Taxon ID" variant="outlined" rounded="lg" single-line color="indigo"
+								clearable></v-text-field>
 							<div class="d-flex align-center">Click on a node to see lineage and subtree.</div>
 						</div>
 
 						<!-- BUTTON TO OPEN ISSUE WHEN SANKEY VERIFICATION FAILS -->
 						<v-tooltip location="end">
 							<template #activator="{ props }">
-								<v-btn
-								v-if="!taxonomyVerification" 
-								v-bind="props"
-								icon="$alert"
-								color="amber-darken-2"
-								variant="text"
-								rounded="xl"
-								class="ml-2"
-								@click="openGithubIssue"
-								></v-btn>
+								<v-btn v-if="!taxonomyVerification" v-bind="props" icon="$alert" color="amber-darken-2" variant="text"
+									rounded="xl" class="ml-2" @click="openGithubIssue"></v-btn>
 							</template>
 							Taxonomy report mismatch detected. Notify the developer!
 						</v-tooltip>
@@ -495,21 +479,27 @@ export default {
 			const extractedTaxonomyArray = extractTaxonomyArray(this.nodesByDepth);
 
 			const properties = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "nameWithIndentation"];
-			
+
 			// Regenerate taxonomy report from the sankey data
-			const regeneratedReport = extractedTaxonomyArray
-				.map(node => properties.map(property => node[property] !== undefined && node[property] !== null 
-					? node[property] 
-					: "").join("\t"))
-				.join("\n");
-			
+			const header = "#clade_proportion\tclade_count\ttaxon_count\trank\ttaxID\tname";
+			const regeneratedReport = [
+				header,
+				...extractedTaxonomyArray.map(node =>
+					properties
+						.map(property =>
+							node[property] !== undefined && node[property] !== null ? node[property] : ""
+						)
+						.join("\t")
+				)
+			].join("\n");
+
 			const compareSuccessful = await compareTSVContents(regeneratedReport, originalReportFilePath);
 			return compareSuccessful; // return true or false depending on verification result
 		},
 		openGithubIssue() {
 			const title = encodeURIComponent("Original Taxonomy Report Misalignment with Reverse-Generated Report");
 			const body = encodeURIComponent(
-  `> To help us investigate the issue, please share your 'report.tsv' file using one of the following methods:
+				`> To help us investigate the issue, please share your 'report.tsv' file using one of the following methods:
 >
 >1. **File Sharing Service**:  
 >   Upload your 'report.tsv' file to a trusted file-sharing platform like Google Drive or Dropbox. Ensure the link is accessible to us, and include the link in this issue.
@@ -518,7 +508,7 @@ export default {
 >   Alternatively, you can email the 'report.tsv' file to [snjlee58@snu.ac.kr]. Please include the issue number in the email subject (e.g., "Metabuli App Issue #123: Report File").
 >
 >This will help us review and resolve the issue more effectively. Let us know if you have any questions!`
-);
+			);
 
 			const url = `https://github.com/steineggerlab/Metabuli-App/issues/new?title=${title}&body=${body}`;
 			window.open(url, "_blank");
@@ -642,7 +632,9 @@ export default {
 <style>
 .tab-fill-height {
 	height: 75vh;
-	overflow-y: auto; /* Enable vertical scrolling */
-	overflow-x: auto; /* Hide horizontal overflow */
+	overflow-y: auto;
+	/* Enable vertical scrolling */
+	overflow-x: auto;
+	/* Hide horizontal overflow */
 }
 </style>

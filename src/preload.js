@@ -118,7 +118,7 @@ contextBridge.exposeInMainWorld("electron", {
 	/* ==========================================================================
    *  fastp (QC) IPC API
    * ========================================================================== */
-	runFastp: (params, workingDir) => ipcRenderer.send("run-fastp", { params, workingDir }),
+	runFastp: (params, mode, workingDir) => ipcRenderer.send("run-fastp", { params, mode, workingDir }),
 	cancelFastp: () => ipcRenderer.send("cancel-fastp"),
 
 	onFastpOutput: (callback) => ipcRenderer.on("fastp-output", (_, data) => callback(data)),

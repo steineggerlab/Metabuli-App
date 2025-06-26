@@ -5,21 +5,21 @@
 			<v-card class="mb-3 search-settings-panel">
 				<!-- HEADER TOOLBAR -->
 				<v-toolbar image="assets/toolbar_background.png" class="custom-toolbar" density="compact">
-					Search Settings
+					Taxonomic Classification
 					<v-spacer></v-spacer>
 
 					<div>
-						<v-btn icon="$helpCircleOutline" rounded="xl" @click="showReadme=true"></v-btn>
+						<v-btn rounded="xs" @click="showReadme = true" variant="tonal"> MANUAL </v-btn>
 
 						<!-- ReadMe Manual Bottom Sheet -->
-						<v-bottom-sheet v-model="showReadme">
+						<v-bottom-sheet class="markdown-body" v-model="showReadme">
 							<v-card>
 								<v-card-text style="max-height: 90vh; overflow-y: auto;">
-									<div class="markdown-body" v-html="readmeHtml"></div>
+									<div v-html="readmeHtml"></div>
 								</v-card-text>
 								<v-card-actions>
 									<v-spacer></v-spacer>
-									<v-btn text @click="showReadme=false">Close</v-btn>
+									<v-btn text @click="showReadme = false">Close</v-btn>
 								</v-card-actions>
 							</v-card>
 						</v-bottom-sheet>
@@ -32,34 +32,33 @@
 						</v-tabs>
 					</template>
 				</v-toolbar>
-				
+
 				<v-tabs-window v-model="tab">
 					<!-- RUN SEARCH TAB -->
-					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[0].value">
-						<NewSearchTab
-							@job-started="emitJobStarted"
-							@job-completed="emitJobCompleted"
-							@job-aborted="emitJobAborted"
-							@backend-realtime-output="emitBackendRealtimeOutput"
-							@job-timed-out="emitJobTimedOut"
-							@trigger-snackbar="triggerSnackbar"
-							@store-job="storeJob"
-						></NewSearchTab>
+					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition"
+						:value="tabItems[0].value">
+						<NewSearchTab @job-started="emitJobStarted" @job-completed="emitJobCompleted" @job-aborted="emitJobAborted"
+							@backend-realtime-output="emitBackendRealtimeOutput" @trigger-snackbar="triggerSnackbar"
+							@store-job="storeJob">
+						</NewSearchTab>
 					</v-tabs-window-item>
-					
+
 					<!-- UPLOAD REPORT TAB-->
-					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[1].value">
-						<UploadReportTab @job-started="emitJobStarted" @job-completed="emitJobCompleted" @job-aborted="emitJobAborted" @trigger-snackbar="triggerSnackbar" @store-job="storeJob"></UploadReportTab>
+					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition"
+						:value="tabItems[1].value">
+						<UploadReportTab @job-started="emitJobStarted" @job-completed="emitJobCompleted"
+							@job-aborted="emitJobAborted" @trigger-snackbar="triggerSnackbar" @store-job="storeJob"></UploadReportTab>
 					</v-tabs-window-item>
 				</v-tabs-window>
 			</v-card>
-			
+
 			<!-- Snackbar -->
 			<v-snackbar v-model="snackbar.show" :timeout="snackbar.timeout" location="top" color="white">
 				<v-icon :color="snackbar.color" :icon="`$${snackbar.icon}`"></v-icon>
 				{{ snackbar.message }}
 				<template v-slot:actions>
-					<v-btn v-if="snackbar.buttonText" :color="snackbar.color" variant="text" @click="handleSnackbarAction">{{ snackbar.buttonText }}</v-btn>
+					<v-btn v-if="snackbar.buttonText" :color="snackbar.color" variant="text" @click="handleSnackbarAction">{{
+						snackbar.buttonText }}</v-btn>
 					<v-btn v-else :color="snackbar.color" variant="text" @click="snackbar.show = false"> Close </v-btn>
 				</template>
 			</v-snackbar>
@@ -71,7 +70,7 @@
 import NewSearchTab from "@/components/search-page/NewSearchTab.vue";
 import UploadReportTab from "@/components/search-page/UploadReportTab.vue";
 import { trimAndStoreJobsHistory, loadJobsHistory } from "@/plugins/storageUtils.js";
-import { marked } from "marked";
+import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 
 export default {
 	name: "SearchSetting",
@@ -82,7 +81,7 @@ export default {
 	data: () => ({
 		tab: "runSearch",
 		tabItems: [
-			{ title: "New Search", value: "runSearch" },
+			{ title: "Run New Job", value: "runSearch" },
 			{ title: "Upload Report", value: "uploadReport" },
 		],
 		snackbar: {
@@ -111,9 +110,6 @@ export default {
 		emitBackendRealtimeOutput(string) {
 			this.$emit("backend-realtime-output", string);
 		},
-		emitJobTimedOut() {
-			this.$emit("job-timed-out");
-		},
 		emitJobAborted() {
 			this.$emit("job-aborted");
 		},
@@ -125,11 +121,13 @@ export default {
 			const plainResults = JSON.parse(JSON.stringify(job.resultsJSON));
 
 			// Create a new job entry with additional details
-			const jobEntry = {
+			const jobHistoryEntry = {
 				jobDetails: plainJobDetails,
 				jobId: job.jobid,
+				sampleNames: job.sampleNames,
 				timestamp: new Date().toISOString(), // Timestamp of job completion
 				jobType: job.jobType,
+				qcEnabled: job.qcEnabled,
 				isSample: job.isSample,
 				jobStatus: job.jobStatus,
 				backendOutput: job.backendOutput,
@@ -143,7 +141,7 @@ export default {
 				let jobsHistory = await loadJobsHistory();
 
 				// Add the new job to the history array
-				jobsHistory.push(jobEntry);
+				jobsHistory.push(jobHistoryEntry);
 
 				// Trim and store the latest 10 jobs in the file
 				await trimAndStoreJobsHistory(jobsHistory);
@@ -174,15 +172,7 @@ export default {
 
 	async mounted() {
 		try {
-			// Load README.md file
-			const isProd = process.env.NODE_ENV === "production";
-
-			const readmePath = isProd
-				? window.electron.resolveFilePath("docs/classification.md", true) // TODO: fix path
-				: window.electron.resolveFilePath("../docs/classification.md", true);
-
-			const readmeContent = await window.electron.readFile(readmePath);
-			this.readmeHtml = marked(readmeContent);
+			this.readmeHtml = await loadMarkdownAsHtml("docs/classification.md");
 		} catch (err) {
 			console.error("Failed to load README.md:", err);
 			// Fallback content
@@ -212,12 +202,14 @@ export default {
 .v-col {
 	padding-bottom: 0px;
 }
+
 .v-row {
 	margin-top: 0px;
 	margin-bottom: 0px;
 }
 
 .custom-snackbar {
-	top: 64px !important; /* Adjust this value to match your app bar height */
+	top: 64px !important;
+	/* Adjust this value to match your app bar height */
 }
 </style>

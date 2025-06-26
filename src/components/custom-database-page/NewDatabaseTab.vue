@@ -1,4 +1,17 @@
 <template>
+
+	<v-container>
+	<v-card variant="outlined" color="primary">
+        <v-card-title
+			class="text-subtitle-2 pb-2"
+			style="white-space: normal; word-break: break-word;"
+		>
+		You can build a custom database by providing genome sequence files and the corresponding taxonomy information.<br>
+		Refer to the manual for detailed instructions on preparing the required files.
+        </v-card-title>
+	</v-card>
+    </v-container>
+
     <v-card-text>
         <!-- Required Fields -->
         <v-form ref="jobForm" v-model="isJobFormValid">
@@ -10,8 +23,19 @@
 						<v-row>
 							<v-col cols="3" class="d-flex align-center">
 								<v-list-subheader class="pr-0">
-									GTDB-Based
-								</v-list-subheader>
+									<v-tooltip location="top">
+										<template v-slot:activator="{ props }">
+											<v-icon
+												v-bind="props"
+												icon="$helpCircle"
+												size="16"
+												color="grey lighten-2">
+											</v-icon>
+										</template>
+										Check if taxonkit-generated GTDB taxonomy dump files are used.
+									</v-tooltip>
+									<span class="font-weight-bold">  GTDB-Based</span>  
+								</v-list-subheader> 
 							</v-col>
 
 							<v-col cols="9">
@@ -22,15 +46,20 @@
                         <!-- DB Directory -->
                         <v-row>
                             <v-col cols="3">
-                                <v-list-subheader class="pr-0">
-                                    <v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
-                                        </template>
-										Directory where the database will be generated.
-                                    </v-tooltip>
-                                    Database Directory
-                                </v-list-subheader>
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+										<template v-slot:activator="{ props }">
+											<v-icon
+												v-bind="props"
+												icon="$helpCircle"
+												size="16"
+												color="grey lighten-2">
+											</v-icon>
+										</template>
+										Folder where the database will be generated.
+									</v-tooltip>
+									<span class="font-weight-bold">  Database Folder</span>  
+								</v-list-subheader>
                             </v-col>
 
                             <v-col cols="9" class="search-files">
@@ -42,7 +71,7 @@
                                             density="comfortable"
                                             size="default"
                                             class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-                                            >Select Directory</v-btn
+                                            >Select Folder</v-btn
                                         >
                                         <v-text-field v-model="jobDetails.dbdir" :rules="[requiredRule]" style="display: none"></v-text-field>
                                     </v-col>
@@ -59,15 +88,20 @@
                         <!-- FASTA List -->
                         <v-row>
                             <v-col cols="3">
-                                <v-list-subheader class="pr-0">
-                                    <v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
-                                        </template>
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+										<template v-slot:activator="{ props }">
+											<v-icon
+												v-bind="props"
+												icon="$helpCircle"
+												size="16"
+												color="grey lighten-2">
+											</v-icon>
+										</template>
 										File of reference genome absolute paths.
-                                    </v-tooltip>
-                                    FASTA List
-                                </v-list-subheader>
+									</v-tooltip>
+									<span class="font-weight-bold">  FASTA List</span>  
+								</v-list-subheader>
                             </v-col>
 
                             <v-col cols="9" class="search-files">
@@ -96,15 +130,20 @@
                         <!-- <accession2taxid> -->
                         <v-row v-if="!jobDetails.gtdbBased">
                             <v-col cols="3">
-                                <v-list-subheader class="pr-0">
-                                    <v-tooltip location="top">
-                                        <template v-slot:activator="{ props }">
-                                            <v-icon v-bind="props" icon="$helpCircle"></v-icon>
-                                        </template>
-                                        A path to NCBI-style accession2taxid.
-                                    </v-tooltip>
-                                    Tax Id Map
-                                </v-list-subheader>
+								<v-list-subheader class="pr-0">
+									<v-tooltip location="top">
+										<template v-slot:activator="{ props }">
+											<v-icon
+												v-bind="props"
+												icon="$helpCircle"
+												size="16"
+												color="grey lighten-2">
+											</v-icon>
+										</template>
+										NCBI-style accession2taxid mapping file.
+									</v-tooltip>
+									<span class="font-weight-bold">  Accession to Tax. ID mapping</span>  
+								</v-list-subheader>
                             </v-col>
 
                             <v-col cols="9" class="search-files">
@@ -125,14 +164,14 @@
                                             <!-- Download Data Button -->
                                             <v-btn
                                                 color="primary"
-                                                prepend-icon="$openInNew"
+                                                prepend-icon="$download"
                                                 variant="text"
                                                 class="text-caption font-weight-medium"
                                                 size="small"
                                                 rounded="xl"
                                                 href="https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/"
                                                 target="_blank"
-                                                >Download Data
+                                                >Download from NCBI
                                             </v-btn>
                                         </div>
                                     </v-col>
@@ -152,11 +191,16 @@
 								<v-list-subheader class="pr-0">
 									<v-tooltip location="top">
 										<template v-slot:activator="{ props }">
-											<v-icon v-bind="props" icon="$helpCircle"></v-icon>
+											<v-icon
+												v-bind="props"
+												icon="$helpCircle"
+												size="16"
+												color="grey lighten-2">
+											</v-icon>
 										</template>
-										Directory where the taxonomy dump files are stored.
+										Folder where the taxonomy dump files are stored.
 									</v-tooltip>
-									Taxonomy Path
+									<span class="font-weight-bold">  Taxonomy Folder</span>  
 								</v-list-subheader>
 							</v-col>
 
@@ -171,21 +215,21 @@
 												density="comfortable"
 												size="default"
 												class="w-100 text-caption font-weight-medium rounded-lg text-uppercase"
-												>Select Directory</v-btn
+												>Select Folder</v-btn
 											>
 											<v-text-field v-model="jobDetails.taxonomyPath" :rules="[requiredRule]" style="display: none"></v-text-field>
 
 											<!-- Download Data Button -->
 											<v-btn
 												color="primary"
-												prepend-icon="$openInNew"
+												prepend-icon="$download"
 												variant="text"
 												class="text-caption font-weight-medium"
 												size="small"
 												rounded="xl"
 												:href="jobDetails.gtdbBased ? 'https://github.com/shenwei356/gtdb-taxdump/releases' : 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/'"
 												target="_blank"
-												>Download {{ jobDetails.gtdbBased ? "GTDB" : "NCBI" }} 
+												>Download {{ jobDetails.gtdbBased ? "GTDB" : "NCBI" }} taxonomy
 											</v-btn>
 										</div>
 									</v-col>
@@ -216,9 +260,9 @@
                     <!-- Input fields -->
                     <v-container fluid class="py-0">
                         <v-row v-for="(setting, key) in advancedSettings" :key="key">
-                            <v-col cols="6">
+                            <v-col cols="8">
                                 <v-list-subheader class="pr-0 text-high-emphasis font-weight-medium ">
-                                    {{ setting.title }}
+                                    <code>{{ setting.title }}</code>
                                 </v-list-subheader>
 								<small class="text-caption text-medium-emphasis pr-0" >
 									{{ setting.description }}
@@ -231,7 +275,7 @@
                                     rounded="lg"
                                     density="compact"
                                     color="primary"
-                                    :placeholder="setting.extra?.file ? 'Select Path' : none"
+                                    :placeholder="setting.extra?.file ? 'Select File' : none"
                                     v-model="setting.value"
                                     :prepend-icon="getAppendInnerIcon(setting)"
                                     :rules="getValidationRules(setting.parameter)"
@@ -280,37 +324,16 @@ export default {
 		},
 		expandAdvancedSettings: false,
 		advancedSettings: {
-			maxRam: {
-				title: "Max RAM (GiB)",
-				description: "The maximum RAM usage.",
-				parameter: "--max-ram",
-				value: 128,
-				type: "INTEGER"
-			},
-			thread: {
-				title: "Threads",
-				description: "The number of threads used (all by default)",
-				parameter: "--threads",
-				value: "", // FIXME: should be 0 or int?
-				type: "INTEGER",
-			},
-			accessionLevel: {
-				title: "Accession Level",
-				description: "Set 1 to create a DB for accession level classification.",
-				parameter: "--accession-level",
-				value: "0", // FIXME: should be 0 or int?
-				type: "INTEGER",
-			},
 			makeLibrary: {
-				title: "Make Library",
-				description: "Make species library for faster execution.",
+				title: "--make-library",
+				description: "Make species genome library before indexing. It is highly recommended when a single FASTA file contains multiple species.",
 				parameter: "--make-library",
 				value: "0", // FIXME: should be 0 or int?
 				type: "INTEGER",
 			},
-            cdsInfo: {
-                title: "CDS Info",
-                description: "File containing absolute paths to CDS. For included accessions, Prodigal's gene prediction is skipped. Only GenBank/RefSeq CDS files are supported.",
+			cdsInfo: {
+                title: "--cds-info",
+                description: "File containing CDS file paths. Provided CDSs are used for included accessions instead of predicted genes. Prodigal's gene prediction is skipped. Only GenBank/RefSeq CDS files are supported.",
                 parameter: "--cds-info",
                 value: "",
                 type: "STRING",
@@ -319,6 +342,41 @@ export default {
                     file: true, // FIXME: edit the select file path function to accomodate both file and directory
                 },
             },
+			accessionLevel: {
+				title: "--accession-level",
+				description: "Set 1 to create an accession level database, with which you can classify reads to specific accessions.",
+				parameter: "--accession-level",
+				value: "0", // FIXME: should be 0 or int?
+				type: "INTEGER",
+			},
+			maxRam: {
+				title: "--max-ram (GiB)",
+				description: "The maximum RAM usage.",
+				parameter: "--max-ram",
+				value: 128,
+				type: "INTEGER"
+			},
+			thread: {
+				title: "--threads",
+				description: "The number of threads used (all by default)",
+				parameter: "--threads",
+				value: "", // FIXME: should be 0 or int?
+				type: "INTEGER",
+			},
+			validateDb: {
+				title: "--validate-db",
+				description: "Validate DB files (0 by default)",
+				parameter: "--validate-db",
+				value: "0",
+				type: "INTEGER",
+			},
+			validateInput: {
+				title: "--validate-input",
+				description: "Validate query file format (0 by default)",
+				parameter: "--validate-input",
+				value: "0",
+				type: "INTEGER",
+			}
 		},
 		validationRules: {
             "--threads": (value) => {

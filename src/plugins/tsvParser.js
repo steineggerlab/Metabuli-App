@@ -23,7 +23,7 @@ export default {
 		};
 
 		const headers = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "name"];
-		const records = tsv
+		let records = tsv
 			.split("\n")
 			.map((line) => {
 				const data = line.split("\t"); // Strip leading and trailing whitespace
@@ -44,6 +44,7 @@ export default {
 			})
 			.filter((record) => !Object.values(record).every((field) => field === "" || field === undefined || field === null)); // Filter out empty rows
 
+			records = records.slice(1); // remove the first row before validation
 		// Validate report.tsv file
 		if (validateReportTSVData(records)) {
 			return { results: records };

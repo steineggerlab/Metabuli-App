@@ -8,7 +8,7 @@
 					<v-spacer></v-spacer>
 
 					<div>
-						<v-btn icon="$helpCircleOutline" rounded="xl" @click="showReadme=true"></v-btn>
+						<v-btn rounded="xs" @click="showReadme=true" variant="tonal"> MANUAL </v-btn>
 
 						<!-- ReadMe Manual Bottom Sheet -->
 						<v-bottom-sheet class="markdown-body" v-model="showReadme">
@@ -26,14 +26,13 @@
 
 					<!-- TABS -->
 					<template v-slot:extension>
-						<v-tabs v-model="tab">
+						<v-tabs v-model="activeTab">
 							<v-tab v-for="item in tabItems" :text="item.title" :key="item.value" :value="item.value"></v-tab>
 						</v-tabs>
 					</template>
 				</v-toolbar>
-
 				
-			<v-tabs-window v-model="tab">
+			<v-tabs-window v-model="activeTab">
 					<!-- NEW DATABASE TAB -->
 					<v-tabs-window-item transition="fade-transition" reverse-transition="fade-transition" :value="tabItems[0].value">
 						<NewDatabaseTab
@@ -75,7 +74,7 @@
 <script>
 import NewDatabaseTab from "./NewDatabaseTab.vue";
 import UpdateDatabaseTab from "./UpdateDatabaseTab.vue";
-import { marked } from "marked";
+import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 
 export default {
 	name: "CustomDatabaseSetting",
@@ -84,7 +83,7 @@ export default {
 		UpdateDatabaseTab
 	},
 	data: () => ({
-		tab: "newDatabase",
+		activeTab: "newDatabase",
 		tabItems: [
 			{ title: "New Database", value: "newDatabase" },
 			{ title: "Update Database", value: "updateDatabase" },
@@ -103,6 +102,19 @@ export default {
 		showReadme: false,
 		readmeHtml: "",
 	}),
+	created() {
+		// if URL has ?tab=updateDatabase, switch to that pane
+		const t = this.$route.query.tab;
+		if (t === "updateDatabase" || t === "newDatabase") {
+			this.activeTab = t;
+		}
+	},
+	watch: {
+		// keep URL in sync if user clicks the other tab manually
+		activeTab(n) {
+			this.$router.replace({ query: { ...this.$route.query, tab: n } });
+		},
+	},
 	methods: {
 		// Cascade emit from tabs
 		emitJobStarted(bool) {
@@ -140,18 +152,10 @@ export default {
 			this.snackbar.show = false;
 		},
 	},
-	
+
 	async mounted() {
 		try {
-			// Load README.md file
-			const isProd = process.env.NODE_ENV === "production";
-
-			const readmePath = isProd
-				? window.electron.resolveFilePath("/docs/createdb.md", true) // TODO: fix path
-				: window.electron.resolveFilePath("../docs/createdb.md", true);
-
-			const readmeContent = await window.electron.readFile(readmePath);
-			this.readmeHtml = marked(readmeContent);
+			this.readmeHtml = await loadMarkdownAsHtml("docs/createdb.md");
 		} catch (err) {
 			console.error("Failed to load README.md:", err);
 			// Fallback content
