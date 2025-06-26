@@ -151,7 +151,6 @@ export default {
 	},
 	methods: {
 		viewDetails(jobItem) {
-			console.log(jobItem);
 			const completedJob = {
 				jobDetails: jobItem.jobDetails,
 				q1: jobItem.q1,

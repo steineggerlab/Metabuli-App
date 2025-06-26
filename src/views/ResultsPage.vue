@@ -451,17 +451,14 @@ export default {
 			const properties = ["proportion", "clade_reads", "taxon_reads", "rank", "taxon_id", "nameWithIndentation"];
 
 			// Regenerate taxonomy report from the sankey data
-			const header = "#clade_proportion\tclade_count\ttaxon_count\trank\ttaxID\tname";
-			const regeneratedReport = [
-				header,
-				...extractedTaxonomyArray.map(node =>
-					properties
-						.map(property =>
-							node[property] !== undefined && node[property] !== null ? node[property] : ""
-						)
-						.join("\t")
+			const regeneratedReport = extractedTaxonomyArray.map(node =>
+				properties
+					.map(property =>
+						node[property] !== undefined && node[property] !== null ? node[property] : ""
+					)
+					.join("\t")
 				)
-			].join("\n");
+			.join("\n");
 
 			const compareSuccessful = await compareTSVContents(regeneratedReport, originalReportFilePath);
 			return compareSuccessful; // return true or false depending on verification result

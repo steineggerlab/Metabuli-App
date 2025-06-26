@@ -43,11 +43,11 @@ export async function compareTSVContents(regeneratedReportContent, originalRepor
         const regeneratedReportEntries = regeneratedReportContent
             .split("\n")
             .map(line => line.trim()) 
-            .filter(line => line !== ""); // Remove empty lines
+            .filter((line, idx) => line !== "" && !(idx === 0 && line.trim().startsWith("#"))); // Remove empty lines and header row
         const originalReportEntries = originalReportContent
             .split("\n")
             .map(line => line.trim())
-            .filter(line => line !== ""); // Remove empty lines
+            .filter((line, idx) => line !== "" && !(idx === 0 && line.trim().startsWith("#"))); // Remove empty lines and header row
 
         // Compare line counts
         if (regeneratedReportEntries.length !== originalReportEntries.length) {
