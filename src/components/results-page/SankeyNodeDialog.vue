@@ -102,7 +102,8 @@
 					v-model:margin-right="config.marginRight" v-model:node-width="config.nodeWidth"
 					v-model:node-padding="config.nodePadding" v-model:node-label-font-size="config.nodeLabelFontSize"
 					v-model:node-value-font-size="config.nodeValueFontSize"
-					v-model:rank-label-font-size="config.rankLabelFontSize">
+					v-model:rank-label-font-size="config.rankLabelFontSize"
+					:isSubtree="true">
 					<template v-slot:activator="{ props }">
 						<v-btn color="indigo" rounded="xl" v-bind="props">Configure Diagram</v-btn>
 					</template>
