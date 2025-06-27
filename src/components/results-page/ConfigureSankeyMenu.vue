@@ -36,8 +36,8 @@
                     <v-btn-toggle :model-value="minCladeReadsMode"
                       @update:modelValue="$emit('update:minCladeReadsMode', parseInt($event))" :disabled="showAll"
                       variant="outlined" color="indigo" hide-details divided mandatory>
-                      <v-btn icon :value="0" height="30" class="rounded-s-lg rounded-e-0 text-caption">%</v-btn>
-                      <v-btn icon :value="1" height="30" class="rounded-e-lg rounded-s-0 text-caption">#</v-btn>
+                      <v-btn icon :value="1" height="30" class="rounded-s-lg rounded-e-0 text-caption">%</v-btn>
+                      <v-btn icon :value="0" height="30" class="rounded-e-lg rounded-s-0 text-caption">#</v-btn>
                     </v-btn-toggle>
                     <v-text-field :model-value="minCladeReads"
                       @update:modelValue="$emit('update:minCladeReads', parseFloat($event))" type="number"
