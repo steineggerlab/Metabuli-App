@@ -231,8 +231,8 @@ ipcMain.on("run-fastp", async (event, args) => {
     const binName = mode === 'long-read'
       ? 'fastplong'
       : 'fastp';
-    const ext = platform === 'win32' ? '.exe' : '';
-    const qcBinary = join(binPath, binName + ext);
+    // const ext = platform === 'win32' ? '.exe' : '';
+    const qcBinary = join(binPath, binName);
 
 		// Spawn fastp
 		let fastpProcess = spawn(qcBinary, params, { cwd: workingDir });

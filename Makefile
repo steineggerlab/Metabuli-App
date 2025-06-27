@@ -11,7 +11,7 @@ else
 LIPO ?= lipo
 endif
 
-win: resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/fastp
+win: resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/fastp resources/win/x64/fastplong
 mac: resources/mac/${FRONTEND_APP} resources/mac/fastp resources/mac/fastplong
 linux: resources/linux/arm64/${FRONTEND_APP} resources/linux/x64/${FRONTEND_APP} resources/linux/x64/fastp
 
@@ -30,6 +30,22 @@ resources/mac/fastplong:
 	mkdir -p resources/mac
 	wget -nv -q -O - https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.1/fastplong-osx-universal.gz | gunzip > resources/mac/fastplong
 	chmod +x resources/mac/fastplong
+
+
+# Windows
+resources/win/x64/${FRONTEND_APP}.bat:
+	mkdir -p resources/win/x64
+	cd resources/win/x64 && wget -nv -O ${FRONTEND_APP}-win64.zip https://mmseqs.com/metabuli/metabuli-win64.zip \
+		&& unzip ${FRONTEND_APP}-win64.zip && mv ${FRONTEND_APP}/* . && rmdir ${FRONTEND_APP} && rm ${FRONTEND_APP}-win64.zip
+	chmod -R +x resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/bin/*
+
+resources/win/x64/fastp:
+	mkdir -p resources/win/x64
+	wget https://github.com/jaebeom-kim/fastp/releases/download/v0.0.1/fastp-windows.exe && mv fastp-windows.exe resources/win/x64/fastp && chmod a+x resources/win/x64/fastp
+
+resources/win/x64/fastplong:
+	mkdir -p resources/win/x64
+	wget https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.1/fastplong-windows.exe && mv fastplong-windows.exe resources/win/x64/fastplong && chmod a+x resources/win/x64/fastplong
 
 
 # Linux
@@ -56,17 +72,6 @@ resources/linux/x64/fastp:
 	mkdir -p resources/linux/x64
 	wget http://opengene.org/fastp/fastp && mv fastp resources/linux/x64/fastp && chmod a+x resources/linux/x64/fastp
 
-
-# Windows
-resources/win/x64/${FRONTEND_APP}.bat:
-	mkdir -p resources/win/x64
-	cd resources/win/x64 && wget -nv -O ${FRONTEND_APP}-win64.zip https://mmseqs.com/metabuli/metabuli-win64.zip \
-		&& unzip ${FRONTEND_APP}-win64.zip && mv ${FRONTEND_APP}/* . && rmdir ${FRONTEND_APP} && rm ${FRONTEND_APP}-win64.zip
-	chmod -R +x resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/bin/*
-
-resources/win/x64/fastp:
-	mkdir -p resources/win/x64
-	wget https://github.com/jaebeom-kim/fastp/releases/download/v0.0.1/fastp-windows.exe && mv fastp-windows.exe resources/win/x64/fastp && chmod a+x resources/win/x64/fastp
 
 clean:
 	@rm -rf resources/mac/* resources/linux/* resources/win/* 
