@@ -9,19 +9,21 @@ repos:
       # - id: check-yaml
       # - id: check-added-large-files
 
-  # - repo: https://github.com/biomejs/pre-commit
-  #   rev: "v0.6.1"
-  #   hooks:
-  #     - id: biome-check
-  #       # stages: []
-  #       name: "🟨 javascript · Lint, format, and safe fixes with Biome"
-  #       additional_dependencies: ["@biomejs/biome@1.9.4"]
+  - repo: https://github.com/biomejs/pre-commit
+    rev: "v0.6.1"
+    hooks:
+      - id: biome-check
+        name: "🟨 javascript · Lint, format, and safe fixes with Biome"
+        entry: biome format --write
+        language: node
+        additional_dependencies:
+          - "@biomejs/biome@1.9.4"
+        files: \.js$
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        # stages: []
         name: "✨ misc-files · Format misc web files"
         types_or: [html, css, json, vue]
         additional_dependencies:

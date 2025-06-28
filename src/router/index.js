@@ -1,9 +1,9 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
-import SearchPage from '../views/SearchPage.vue';
+import { createRouter, createWebHashHistory } from "vue-router";
+import SearchPage from "../views/SearchPage.vue";
 import CustomDatabasePage from "../views/CustomDatabasePage.vue";
-import ResultsPage from '../views/ResultsPage.vue';
-import HistoryPage from '@/views/HistoryPage.vue';
-import QualityControlPage from '@/views/QualityControlPage.vue';
+import ResultsPage from "../views/ResultsPage.vue";
+import HistoryPage from "@/views/HistoryPage.vue";
+import QualityControlPage from "@/views/QualityControlPage.vue";
 
 const routes = [
 	{
@@ -35,12 +35,12 @@ const routes = [
 		path: "/quality-control",
 		name: "QualityControlPage",
 		component: QualityControlPage,
-	}
+	},
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
-  routes
+	history: createWebHashHistory(),
+	routes,
 });
 
 export default router;
