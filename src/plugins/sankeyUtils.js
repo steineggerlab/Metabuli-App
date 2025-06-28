@@ -42,7 +42,7 @@ export async function compareTSVContents(regeneratedReportContent, originalRepor
         // Split both contents into lines
         const regeneratedReportEntries = regeneratedReportContent
             .split("\n")
-            .map(line => line.trim()) 
+            .map(line => line.trim())
             .filter((line, idx) => line !== "" && !(idx === 0 && line.trim().startsWith("#"))); // Remove empty lines and header row
         const originalReportEntries = originalReportContent
             .split("\n")

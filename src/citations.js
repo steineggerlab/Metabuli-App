@@ -5,7 +5,7 @@ export const CITATIONS = {
     bibtex: `@article{kim2024metabuli,
   title={{Metabuli: sensitive and specific metagenomic classification via joint analysis of amino acid and DNA}},
   author={Kim, Jaebeom and Steinegger, Martin},
-  journal={Nature Methods}, 
+  journal={Nature Methods},
   volume={21},
   pages={971--973},
   year={2024},

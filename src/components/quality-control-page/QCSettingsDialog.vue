@@ -6,15 +6,22 @@
 
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center px-6 pt-6">
-        <span class="text-button font-weight-bold">Quality Control Settings</span>
-        <v-btn rounded="xs" variant="tonal" color="indigo" @click="showReadme = true">
+        <span class="text-button font-weight-bold"
+          >Quality Control Settings</span
+        >
+        <v-btn
+          rounded="xs"
+          variant="tonal"
+          color="indigo"
+          @click="showReadme = true"
+        >
           MANUAL
         </v-btn>
 
         <!-- ReadMe Manual Bottom Sheet -->
         <v-bottom-sheet class="markdown-body" v-model="showReadme">
           <v-card>
-            <v-card-text style="max-height: 90vh; overflow-y: auto;">
+            <v-card-text style="max-height: 90vh; overflow-y: auto">
               <div v-html="readmeHtml"></div>
             </v-card-text>
             <v-card-actions>
@@ -29,51 +36,104 @@
         <v-form ref="form">
           <!-- Short / Paired-end Reads (fastp) -->
           <div v-if="mode === 'single-end' || mode === 'paired-end'">
-
             <!-- Quality Filtering -->
-            <v-card-title class="text-button" color="indigo">Quality Filtering</v-card-title>
+            <v-card-title class="text-button" color="indigo"
+              >Quality Filtering</v-card-title
+            >
             <v-card-text class="w-50">
-              <v-switch v-model="params.disable_quality_filtering" label="Disable quality filtering" />
-              <v-text-field v-model.number="params.qualified_quality_phred" :disabled="params.disable_quality_filtering"
-                label="Min per-base Phred score" type="number" />
-              <v-text-field v-model.number="params.unqualified_percent_limit"
-                :disabled="params.disable_quality_filtering" label="Max % low-quality bases" type="number" />
-              <v-text-field v-model.number="params.average_qual" :disabled="params.disable_quality_filtering"
-                label="Min avg quality (optional)" type="number" />
+              <v-switch
+                v-model="params.disable_quality_filtering"
+                label="Disable quality filtering"
+              />
+              <v-text-field
+                v-model.number="params.qualified_quality_phred"
+                :disabled="params.disable_quality_filtering"
+                label="Min per-base Phred score"
+                type="number"
+              />
+              <v-text-field
+                v-model.number="params.unqualified_percent_limit"
+                :disabled="params.disable_quality_filtering"
+                label="Max % low-quality bases"
+                type="number"
+              />
+              <v-text-field
+                v-model.number="params.average_qual"
+                :disabled="params.disable_quality_filtering"
+                label="Min avg quality (optional)"
+                type="number"
+              />
             </v-card-text>
             <v-divider class="my-4" />
 
             <!-- Length Filtering -->
             <v-card-title class="text-button">Length Filtering</v-card-title>
             <v-card-text class="w-50">
-              <v-switch v-model="params.disable_length_filtering" label="Disable length filtering" />
-              <v-text-field v-model.number="params.length_required" :disabled="params.disable_length_filtering"
-                label="Min read length" type="number" />
-              <v-text-field v-model.number="params.length_limit" :disabled="params.disable_length_filtering"
-                label="Max read length (optional)" type="number" />
+              <v-switch
+                v-model="params.disable_length_filtering"
+                label="Disable length filtering"
+              />
+              <v-text-field
+                v-model.number="params.length_required"
+                :disabled="params.disable_length_filtering"
+                label="Min read length"
+                type="number"
+              />
+              <v-text-field
+                v-model.number="params.length_limit"
+                :disabled="params.disable_length_filtering"
+                label="Max read length (optional)"
+                type="number"
+              />
             </v-card-text>
             <v-divider class="my-4" />
 
             <!-- Adapter Trimming -->
             <v-card-title class="text-button">Adapter Trimming</v-card-title>
             <v-card-text class="w-50">
-              <v-switch v-model="params.disable_adapter_trimming" label="Disable adapter trimming" />
-              <v-text-field v-model="params.adapter_sequence" :disabled="params.disable_adapter_trimming"
-                label="Adapter for read1 (opt.)" />
-              <v-text-field v-if="mode === 'paired-end'" v-model="params.adapter_sequence_r2"
-                :disabled="params.disable_adapter_trimming" label="Adapter for read2 (opt.)" />
-              <v-text-field v-model="params.adapter_fasta" :disabled="params.disable_adapter_trimming"
-                prepend-icon="$file" type="text" color="indigo" @click:prepend="selectFile('adapter_fasta', 'file')"
-                @focus="scrollToEnd($event)" label="Adapter FASTA file" />
+              <v-switch
+                v-model="params.disable_adapter_trimming"
+                label="Disable adapter trimming"
+              />
+              <v-text-field
+                v-model="params.adapter_sequence"
+                :disabled="params.disable_adapter_trimming"
+                label="Adapter for read1 (opt.)"
+              />
+              <v-text-field
+                v-if="mode === 'paired-end'"
+                v-model="params.adapter_sequence_r2"
+                :disabled="params.disable_adapter_trimming"
+                label="Adapter for read2 (opt.)"
+              />
+              <v-text-field
+                v-model="params.adapter_fasta"
+                :disabled="params.disable_adapter_trimming"
+                prepend-icon="$file"
+                type="text"
+                color="indigo"
+                @click:prepend="selectFile('adapter_fasta', 'file')"
+                @focus="scrollToEnd($event)"
+                label="Adapter FASTA file"
+              />
             </v-card-text>
             <v-divider class="my-4" />
 
             <!-- Low Complexity Filtering -->
-            <v-card-title class="text-button">Low Complexity Filtering</v-card-title>
+            <v-card-title class="text-button"
+              >Low Complexity Filtering</v-card-title
+            >
             <v-card-text class="w-50">
-              <v-switch v-model="params.low_complexity_filter" label="Enable low complexity filtering" />
-              <v-text-field v-model.number="params.complexity_threshold" :disabled="!params.low_complexity_filter"
-                label="Complexity threshold (0-100)" type="number" />
+              <v-switch
+                v-model="params.low_complexity_filter"
+                label="Enable low complexity filtering"
+              />
+              <v-text-field
+                v-model.number="params.complexity_threshold"
+                :disabled="!params.low_complexity_filter"
+                label="Complexity threshold (0-100)"
+                type="number"
+              />
             </v-card-text>
             <v-divider class="my-4" />
 
@@ -82,18 +142,40 @@
             <v-card-text>
               <v-row>
                 <v-col cols="6">
-                  <v-switch v-model="params.cut_front" label="Cut front by quality" />
-                  <v-text-field v-model.number="params.cut_front_window_size" :disabled="!params.cut_front"
-                    label="Front window size" type="number" />
-                  <v-text-field v-model.number="params.cut_front_mean_quality" :disabled="!params.cut_front"
-                    label="Front mean quality" type="number" />
+                  <v-switch
+                    v-model="params.cut_front"
+                    label="Cut front by quality"
+                  />
+                  <v-text-field
+                    v-model.number="params.cut_front_window_size"
+                    :disabled="!params.cut_front"
+                    label="Front window size"
+                    type="number"
+                  />
+                  <v-text-field
+                    v-model.number="params.cut_front_mean_quality"
+                    :disabled="!params.cut_front"
+                    label="Front mean quality"
+                    type="number"
+                  />
                 </v-col>
                 <v-col cols="6">
-                  <v-switch v-model="params.cut_tail" label="Cut tail by quality" />
-                  <v-text-field v-model.number="params.cut_tail_window_size" :disabled="!params.cut_tail"
-                    label="Tail window size" type="number" />
-                  <v-text-field v-model.number="params.cut_tail_mean_quality" :disabled="!params.cut_tail"
-                    label="Tail mean quality" type="number" />
+                  <v-switch
+                    v-model="params.cut_tail"
+                    label="Cut tail by quality"
+                  />
+                  <v-text-field
+                    v-model.number="params.cut_tail_window_size"
+                    :disabled="!params.cut_tail"
+                    label="Tail window size"
+                    type="number"
+                  />
+                  <v-text-field
+                    v-model.number="params.cut_tail_mean_quality"
+                    :disabled="!params.cut_tail"
+                    label="Tail mean quality"
+                    type="number"
+                  />
                 </v-col>
               </v-row>
             </v-card-text>
@@ -102,8 +184,16 @@
             <!-- Other Settings -->
             <v-card-title class="text-button">Other</v-card-title>
             <v-card-text class="w-50 mt-4">
-              <v-text-field v-model.number="params.thread" label="Threads" type="number" />
-              <v-text-field v-model.number="params.compression" label="Compression level" type="number" />
+              <v-text-field
+                v-model.number="params.thread"
+                label="Threads"
+                type="number"
+              />
+              <v-text-field
+                v-model.number="params.compression"
+                label="Compression level"
+                type="number"
+              />
             </v-card-text>
           </div>
 
@@ -112,47 +202,98 @@
             <!-- Quality Filtering -->
             <v-card-title class="text-button">Quality Filtering</v-card-title>
             <v-card-text class="w-50">
-              <v-switch v-model="params.disable_quality_filtering" label="Disable quality filtering" />
-              <v-text-field v-model.number="params.qualified_quality_phred" :disabled="params.disable_quality_filtering"
-                label="Min per-base Phred score" type="number" />
-              <v-text-field v-model.number="params.unqualified_percent_limit"
-                :disabled="params.disable_quality_filtering" label="Max % low-quality bases" type="number" />
-              <v-text-field v-model.number="params.mean_qual" :disabled="params.disable_quality_filtering"
-                label="Min avg quality (optional)" type="number" />
+              <v-switch
+                v-model="params.disable_quality_filtering"
+                label="Disable quality filtering"
+              />
+              <v-text-field
+                v-model.number="params.qualified_quality_phred"
+                :disabled="params.disable_quality_filtering"
+                label="Min per-base Phred score"
+                type="number"
+              />
+              <v-text-field
+                v-model.number="params.unqualified_percent_limit"
+                :disabled="params.disable_quality_filtering"
+                label="Max % low-quality bases"
+                type="number"
+              />
+              <v-text-field
+                v-model.number="params.mean_qual"
+                :disabled="params.disable_quality_filtering"
+                label="Min avg quality (optional)"
+                type="number"
+              />
             </v-card-text>
             <v-divider class="my-4" />
 
             <!-- Length Filtering -->
             <v-card-title class="text-button">Length Filtering</v-card-title>
             <v-card-text class="w-50">
-              <v-switch v-model="params.disable_length_filtering" label="Disable length filtering" />
-              <v-text-field v-model.number="params.length_required" :disabled="params.disable_length_filtering"
-                label="Min read length" type="number" />
-              <v-text-field v-model.number="params.length_limit" :disabled="params.disable_length_filtering"
-                label="Max read length (optional)" type="number" />
+              <v-switch
+                v-model="params.disable_length_filtering"
+                label="Disable length filtering"
+              />
+              <v-text-field
+                v-model.number="params.length_required"
+                :disabled="params.disable_length_filtering"
+                label="Min read length"
+                type="number"
+              />
+              <v-text-field
+                v-model.number="params.length_limit"
+                :disabled="params.disable_length_filtering"
+                label="Max read length (optional)"
+                type="number"
+              />
             </v-card-text>
             <v-divider class="my-4" />
 
             <!-- Adapter Trimming -->
             <v-card-title class="text-button">Adapter Trimming</v-card-title>
             <v-card-text class="w-50">
-              <v-switch v-model="params.disable_adapter_trimming" label="Disable adapter trimming" />
-              <v-text-field v-model="params.start_adapter" :disabled="params.disable_adapter_trimming"
-                label="Start adapter seq" />
-              <v-text-field v-model="params.end_adapter" :disabled="params.disable_adapter_trimming"
-                label="End adapter seq" />
-              <v-text-field v-model="params.adapter_fasta" :disabled="params.disable_adapter_trimming"
-                prepend-icon="$file" type="text" color="indigo" @click:prepend="selectFile('adapter_fasta', 'file')"
-                @focus="scrollToEnd($event)" label="Adapter FASTA file" />
+              <v-switch
+                v-model="params.disable_adapter_trimming"
+                label="Disable adapter trimming"
+              />
+              <v-text-field
+                v-model="params.start_adapter"
+                :disabled="params.disable_adapter_trimming"
+                label="Start adapter seq"
+              />
+              <v-text-field
+                v-model="params.end_adapter"
+                :disabled="params.disable_adapter_trimming"
+                label="End adapter seq"
+              />
+              <v-text-field
+                v-model="params.adapter_fasta"
+                :disabled="params.disable_adapter_trimming"
+                prepend-icon="$file"
+                type="text"
+                color="indigo"
+                @click:prepend="selectFile('adapter_fasta', 'file')"
+                @focus="scrollToEnd($event)"
+                label="Adapter FASTA file"
+              />
             </v-card-text>
             <v-divider class="my-4" />
 
             <!-- Low Complexity Filtering -->
-            <v-card-title class="text-button">Low Complexity Filtering</v-card-title>
+            <v-card-title class="text-button"
+              >Low Complexity Filtering</v-card-title
+            >
             <v-card-text class="w-50">
-              <v-switch v-model="params.low_complexity_filter" label="Enable low complexity filtering" />
-              <v-text-field v-model.number="params.complexity_threshold" :disabled="!params.low_complexity_filter"
-                label="Complexity threshold (0-100)" type="number" />
+              <v-switch
+                v-model="params.low_complexity_filter"
+                label="Enable low complexity filtering"
+              />
+              <v-text-field
+                v-model.number="params.complexity_threshold"
+                :disabled="!params.low_complexity_filter"
+                label="Complexity threshold (0-100)"
+                type="number"
+              />
             </v-card-text>
             <v-divider class="my-4" />
 
@@ -161,18 +302,40 @@
             <v-card-text>
               <v-row>
                 <v-col cols="6">
-                  <v-switch v-model="params.cut_front" label="Cut front by quality" />
-                  <v-text-field v-model.number="params.cut_front_window_size" :disabled="!params.cut_front"
-                    label="Front window size" type="number" />
-                  <v-text-field v-model.number="params.cut_front_mean_quality" :disabled="!params.cut_front"
-                    label="Front mean quality" type="number" />
+                  <v-switch
+                    v-model="params.cut_front"
+                    label="Cut front by quality"
+                  />
+                  <v-text-field
+                    v-model.number="params.cut_front_window_size"
+                    :disabled="!params.cut_front"
+                    label="Front window size"
+                    type="number"
+                  />
+                  <v-text-field
+                    v-model.number="params.cut_front_mean_quality"
+                    :disabled="!params.cut_front"
+                    label="Front mean quality"
+                    type="number"
+                  />
                 </v-col>
                 <v-col cols="6">
-                  <v-switch v-model="params.cut_tail" label="Cut tail by quality" />
-                  <v-text-field v-model.number="params.cut_tail_window_size" :disabled="!params.cut_tail"
-                    label="Tail window size" type="number" />
-                  <v-text-field v-model.number="params.cut_tail_mean_quality" :disabled="!params.cut_tail"
-                    label="Tail mean quality" type="number" />
+                  <v-switch
+                    v-model="params.cut_tail"
+                    label="Cut tail by quality"
+                  />
+                  <v-text-field
+                    v-model.number="params.cut_tail_window_size"
+                    :disabled="!params.cut_tail"
+                    label="Tail window size"
+                    type="number"
+                  />
+                  <v-text-field
+                    v-model.number="params.cut_tail_mean_quality"
+                    :disabled="!params.cut_tail"
+                    label="Tail mean quality"
+                    type="number"
+                  />
                 </v-col>
               </v-row>
             </v-card-text>
@@ -181,26 +344,49 @@
             <!-- Other Settings -->
             <v-card-title class="text-button">Other</v-card-title>
             <v-card-text class="w-50 mt-4">
-              <v-text-field v-model.number="params.thread" label="Threads" type="number" />
-              <v-text-field v-model.number="params.compression" label="Compression level" type="number" />
+              <v-text-field
+                v-model.number="params.thread"
+                label="Threads"
+                type="number"
+              />
+              <v-text-field
+                v-model.number="params.compression"
+                label="Compression level"
+                type="number"
+              />
             </v-card-text>
           </div>
           <v-divider class="my‐4"></v-divider>
 
           <!-- Extra params file -->
-          <v-card-title class="text-button mt-4">Additional Parameters</v-card-title>
+          <v-card-title class="text-button mt-4"
+            >Additional Parameters</v-card-title
+          >
           <v-card-text>
-            <v-text-field v-model="extraFile" prepend-icon="$file" color="indigo" @click:prepend="loadExtraParamsFile"
-              readonly label="Load extra fastp params file" />
+            <v-text-field
+              v-model="extraFile"
+              prepend-icon="$file"
+              color="indigo"
+              @click:prepend="loadExtraParamsFile"
+              readonly
+              label="Load extra fastp params file"
+            />
             <small class="text-caption">
-              The file should contain one parameter per line, and each line should start with
-              the parameter name followed by its value. Parameters here will override the GUI settings.<br />
-              Check <a href="https://github.com/OpenGene/fastp" target="_blank">fastp</a> and <a
-                href="https://github.com/OpenGene/fastplong" target="_blank">fastplong</a> GitHub repository for
-              parameter
-              list. <br />
-              Please use long options (e.g., <code>--disable_quality_filtering</code>) instead of short options (e.g.,
-              <code>-Q</code>).
+              The file should contain one parameter per line, and each line
+              should start with the parameter name followed by its value.
+              Parameters here will override the GUI settings.<br />
+              Check
+              <a href="https://github.com/OpenGene/fastp" target="_blank"
+                >fastp</a
+              >
+              and
+              <a href="https://github.com/OpenGene/fastplong" target="_blank"
+                >fastplong</a
+              >
+              GitHub repository for parameter list. <br />
+              Please use long options (e.g.,
+              <code>--disable_quality_filtering</code>) instead of short options
+              (e.g., <code>-Q</code>).
             </small>
           </v-card-text>
         </v-form>
@@ -217,7 +403,7 @@
 <script>
 import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 export default {
-  name: 'QCSettingsDialog',
+  name: "QCSettingsDialog",
   props: {
     modelValue: {
       type: Boolean,
@@ -232,7 +418,7 @@ export default {
       default: () => ({}),
     },
   },
-  emits: ['update-fastp-params'],
+  emits: ["update-fastp-params"],
   data() {
     // Default parameters
     const defaults = {
@@ -245,15 +431,15 @@ export default {
 
       // Length Filtering
       disable_length_filtering: false,
-      length_required: this.mode === 'long-read' ? 1000 : 50,
+      length_required: this.mode === "long-read" ? 1000 : 50,
       length_limit: null, // TODO: is null the right default
-      
+
       // Adapter Trimming
       disable_adapter_trimming: false,
-      adapter_sequence: '', // fastp
-      adapter_sequence_r2: '', // fastp paired-end
-      start_adapter: '', // fastplong
-      end_adapter: '', // fastplong
+      adapter_sequence: "", // fastp
+      adapter_sequence_r2: "", // fastp paired-end
+      start_adapter: "", // fastplong
+      end_adapter: "", // fastplong
       adapter_fasta: null,
 
       // Low Complexity Filtering
@@ -290,9 +476,9 @@ export default {
       // emit both the GUI params and any extras
       const allArgs = [
         ...this.buildFastpArgs(this.params),
-        ...this.extraParams
+        ...this.extraParams,
       ];
-      this.$emit('update-fastp-params', allArgs);
+      this.$emit("update-fastp-params", allArgs);
       this.dialog = false;
     },
     onCancel() {
@@ -313,11 +499,23 @@ export default {
           }
         } catch (error) {
           console.error("Error selecting file:", error); // DEBUG
-          this.$emit("trigger-snackbar", `File selection error: ${error}`, "error", "fileAlert", "Dismiss");
+          this.$emit(
+            "trigger-snackbar",
+            `File selection error: ${error}`,
+            "error",
+            "fileAlert",
+            "Dismiss",
+          );
         }
       } else {
         console.error("File dialog is not supported in the web environment."); // DEBUG
-        this.$emit("trigger-snackbar", "File dialog is not supported in the web environment.", "error", "warning", "Dismiss");
+        this.$emit(
+          "trigger-snackbar",
+          "File dialog is not supported in the web environment.",
+          "error",
+          "warning",
+          "Dismiss",
+        );
       }
     },
     scrollToEnd(event) {
@@ -328,7 +526,7 @@ export default {
     async loadExtraParamsFile() {
       try {
         const [filePath] = await window.electron.openFileDialog({
-          properties: ["openFile"]
+          properties: ["openFile"],
         });
         if (!filePath) return;
 
@@ -337,35 +535,34 @@ export default {
 
         this.extraParams = text
           .split(/\r?\n/) // split on each line
-          .filter(line => line.trim()) // trim whitespace
-          .flatMap(line => line.trim().split(/\s+/)); // Now split each line into [flag, value?] and flatten
-          console.log(this.extraParams);
+          .filter((line) => line.trim()) // trim whitespace
+          .flatMap((line) => line.trim().split(/\s+/)); // Now split each line into [flag, value?] and flatten
+        console.log(this.extraParams);
         // e.g. ["--disable_quality_filtering", "--qualified_quality_phred", "20", ...]
       } catch (err) {
         console.error("Error loading extra params file:", err);
         this.$emit(
           "trigger-snackbar",
           `Failed to load params: ${err.message}`,
-          "error"
+          "error",
         );
       }
     },
     buildFastpArgs(params) {
       // Function for building fastp command line arguments from params object (gui settings)
-      return Object.entries(params)
-        .flatMap(([key, val]) => {
-          const flag = `--${key}`;
-          // Boolean flag: only emit when true
-          if (typeof val === "boolean") {
-            return val ? [flag] : [];
-          }
-          // Value option: emit when present
-          if (val !== null && val !== undefined && val !== "") {
-            return [flag, String(val)];
-          }
-          return [];
-        });
-    }
+      return Object.entries(params).flatMap(([key, val]) => {
+        const flag = `--${key}`;
+        // Boolean flag: only emit when true
+        if (typeof val === "boolean") {
+          return val ? [flag] : [];
+        }
+        // Value option: emit when present
+        if (val !== null && val !== undefined && val !== "") {
+          return [flag, String(val)];
+        }
+        return [];
+      });
+    },
   },
   async mounted() {
     try {
@@ -396,8 +593,8 @@ export default {
   letter-spacing: 0.0333333333em;
 }
 
-.dialog-style .v-card-title{
-  color: #3F51B5  ;
+.dialog-style .v-card-title {
+  color: #3f51b5;
 }
 
 /* hyperlink */

@@ -57,4 +57,4 @@ export default {
 			return null; // Return null if the row does not meet the criteria
 		}
 	},
-}; 
+};

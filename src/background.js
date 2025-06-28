@@ -134,20 +134,20 @@ ipcMain.handle("open-krona", async (event, filePath) => {
 // To execute bin file for Metabuli
 const mapPlatform = (platform) => {
 	switch (platform) {
-    case "win32": 
+    case "win32":
 			return "win";
     case "darwin":
 			return "mac";
-    case "linux": 
+    case "linux":
 			return "linux";
-    default:      
+    default:
 			return "UNSUPPORTED-PLATFORM";
   }
 };
 
 const platform = os.platform();            // "darwin" | "win32" | "linux"
 const folder   = mapPlatform(platform);    // "mac"    | "win"     | "linux"
-		
+
 // Determine the base path for binaries
 // when packaged, electron-builder will have put your Makefile output under:
 //   MyApp.app/Contents/Resources/resources/mac     (for mac)
@@ -174,7 +174,7 @@ ipcMain.on("run-backend", async (event, args) => {
 
 		// Extract params array and working directory
 		const { params, workingDir = process.cwd() } = args;
-		
+
 		// Ensure params is an array before spreading
 		if (!Array.isArray(params)) {
 			throw new Error("Params must be an array");
