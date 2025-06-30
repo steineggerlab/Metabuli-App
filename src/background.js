@@ -1,6 +1,14 @@
 "use strict";
 
-import { app, protocol, BrowserWindow, screen, ipcMain, dialog, shell } from "electron";
+import {
+	app,
+	protocol,
+	BrowserWindow,
+	screen,
+	ipcMain,
+	dialog,
+	shell,
+} from "electron";
 const { execFile, spawn } = require("child_process");
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS3_DEVTOOLS } from "electron-devtools-installer";
@@ -12,7 +20,9 @@ import appRootDir from "app-root-dir";
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 // Scheme must be registered before the app is ready
-protocol.registerSchemesAsPrivileged([{ scheme: "app", privileges: { secure: true, standard: true } }]);
+protocol.registerSchemesAsPrivileged([
+	{ scheme: "app", privileges: { secure: true, standard: true } },
+]);
 
 async function createWindow() {
 	// Wait for the app to be ready
@@ -125,7 +135,9 @@ ipcMain.handle("open-krona", async (event, filePath) => {
 			},
 		});
 
-		kronaWindow.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(htmlContent));
+		kronaWindow.loadURL(
+			"data:text/html;charset=utf-8," + encodeURIComponent(htmlContent),
+		);
 	} catch (error) {
 		throw new Error(`Failed to read file: ${error.message}`);
 	}
@@ -134,37 +146,38 @@ ipcMain.handle("open-krona", async (event, filePath) => {
 // To execute bin file for Metabuli
 const mapPlatform = (platform) => {
 	switch (platform) {
-    case "win32": 
+		case "win32":
 			return "win";
-    case "darwin":
+		case "darwin":
 			return "mac";
-    case "linux": 
+		case "linux":
 			return "linux";
-    default:      
+		default:
 			return "UNSUPPORTED-PLATFORM";
-  }
+	}
 };
 
-const platform = os.platform();            // "darwin" | "win32" | "linux"
-const folder   = mapPlatform(platform);    // "mac"    | "win"     | "linux"
-		
+const platform = os.platform(); // "darwin" | "win32" | "linux"
+const folder = mapPlatform(platform); // "mac"    | "win"     | "linux"
+
 // Determine the base path for binaries
 // when packaged, electron-builder will have put your Makefile output under:
 //   MyApp.app/Contents/Resources/resources/mac     (for mac)
 //   MyApp-win-unpacked/resources/resources/win/x64 (for windows)
 //   MyApp-linux/resources/resources/linux/{arm64,x64}
 const baseResources = app.isPackaged
-  ? join(process.resourcesPath, "resources", folder)
-  : join(appRootDir.get(), "resources", folder);
+	? join(process.resourcesPath, "resources", folder)
+	: join(appRootDir.get(), "resources", folder);
 
 // only Windows & Linux have arch sub-folders, mac has binaries directly in /resources/mac
 const arch = os.arch(); // "x64" | "arm64"
-const binPath = folder === "mac"
-	? baseResources
-	: join(baseResources, arch);
+const binPath = folder === "mac" ? baseResources : join(baseResources, arch);
 
 // METABULI BACKEND BINARY
-const backendBinary = join(binPath, "metabuli" + (platform == "win32" ? ".bat" : ""));
+const backendBinary = join(
+	binPath,
+	"metabuli" + (platform == "win32" ? ".bat" : ""),
+);
 let childProcess;
 let backendCancelled = false;
 
@@ -174,7 +187,7 @@ ipcMain.on("run-backend", async (event, args) => {
 
 		// Extract params array and working directory
 		const { params, workingDir = process.cwd() } = args;
-		
+
 		// Ensure params is an array before spreading
 		if (!Array.isArray(params)) {
 			throw new Error("Params must be an array");
@@ -199,9 +212,15 @@ ipcMain.on("run-backend", async (event, args) => {
 			if (backendCancelled) {
 				event.reply("backend-cancelled", "Job processing was cancelled.");
 			} else if (code !== 0) {
-				event.reply("backend-error", `Backend process exited with code ${code}`);
+				event.reply(
+					"backend-error",
+					`Backend process exited with code ${code}`,
+				);
 			} else {
-				event.reply("backend-complete", "Job processing was completed successfully.");
+				event.reply(
+					"backend-complete",
+					"Job processing was completed successfully.",
+				);
 			}
 		});
 	} catch (error) {
@@ -224,15 +243,13 @@ let fastpCancelled = false;
 ipcMain.on("run-fastp", async (event, args) => {
 	try {
 		fastpCancelled = false;
-    const { params, mode, workingDir = process.cwd() } = args;
-    if (!Array.isArray(params)) throw new Error("Params must be an array");
+		const { params, mode, workingDir = process.cwd() } = args;
+		if (!Array.isArray(params)) throw new Error("Params must be an array");
 
 		// pick fastp/fastplong binary based on mode
-    const binName = mode === 'long-read'
-      ? 'fastplong'
-      : 'fastp';
-    // const ext = platform === 'win32' ? '.exe' : '';
-    const qcBinary = join(binPath, binName);
+		const binName = mode === "long-read" ? "fastplong" : "fastp";
+		// const ext = platform === 'win32' ? '.exe' : '';
+		const qcBinary = join(binPath, binName);
 
 		// Spawn fastp
 		let fastpProcess = spawn(qcBinary, params, { cwd: workingDir });
@@ -243,23 +260,23 @@ ipcMain.on("run-fastp", async (event, args) => {
 		});
 
 		// Send stderr to the regular log channel
-		fastpProcess.stderr.on("data", data => {
+		fastpProcess.stderr.on("data", (data) => {
 			event.reply("fastp-output", data.toString());
 		});
 
 		// Handle completion
 		// rely on the exit code to signal true errors
-		fastpProcess.on("close", code => {
+		fastpProcess.on("close", (code) => {
 			if (fastpCancelled) {
-        event.reply("fastp-cancelled", "Fastp process was cancelled.");
-      } else if (code !== 0) {
-        event.reply("fastp-error", `Fastp exited with code ${code}`);
-      } else {
-        event.reply("fastp-complete", "Fastp finished successfully.");
-      }
-      // clean up
-      fastpProcess = null;
-      fastpCancelled = false;
+				event.reply("fastp-cancelled", "Fastp process was cancelled.");
+			} else if (code !== 0) {
+				event.reply("fastp-error", `Fastp exited with code ${code}`);
+			} else {
+				event.reply("fastp-complete", "Fastp finished successfully.");
+			}
+			// clean up
+			fastpProcess = null;
+			fastpCancelled = false;
 		});
 	} catch (error) {
 		console.error(`Failed to run fastp: ${error.message}`);
@@ -269,8 +286,8 @@ ipcMain.on("run-fastp", async (event, args) => {
 
 // IPC handler to cancel fastp
 ipcMain.on("cancel-fastp", () => {
-  if (fastpProcess) {
-    fastpCancelled = true;
-    fastpProcess.kill();
-  }
+	if (fastpProcess) {
+		fastpCancelled = true;
+		fastpProcess.kill();
+	}
 });

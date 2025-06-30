@@ -4,9 +4,9 @@ const path = require("path");
 const fs = require("fs");
 
 const osMap = {
-  darwin: "mac",
-  win32:  "win",
-  linux:  "linux"
+	darwin: "mac",
+	win32: "win",
+	linux: "linux",
 };
 const platformFolder = osMap[process.platform];
 
@@ -36,9 +36,7 @@ module.exports = defineConfig({
 					output: "build", // Set the output directory for the built app
 				},
 				// Exclude binaries from asar packaging to prevent lipo conflicts
-				asarUnpack: [
-					"resources/**/*"
-				],
+				asarUnpack: ["resources/**/*"],
 				// Filter function to prevent lipo from processing already universal binaries
 				beforePack: async (context) => {
 					console.log("Before pack:", context.packager.platform.name);
@@ -60,17 +58,17 @@ module.exports = defineConfig({
 						filter: ["**/*"],
 					},
 					{
-            // copy everything under ./resources/<mac|win|linux> → build/.../Resources/bin
+						// copy everything under ./resources/<mac|win|linux> → build/.../Resources/bin
 						// TODO: do i want to copy the whole resources folder? look at previous version
-            from: path.resolve(__dirname, "resources"),
-            to:   "resources",
-            filter: ["**/*"]
-          },
+						from: path.resolve(__dirname, "resources"),
+						to: "resources",
+						filter: ["**/*"],
+					},
 					{
-            from: path.resolve(__dirname, "docs"),
-            to: "docs",
-            filter: ["**/*"]
-          },
+						from: path.resolve(__dirname, "docs"),
+						to: "docs",
+						filter: ["**/*"],
+					},
 					{
 						from: "README.md",
 						to: "README.md",
@@ -120,7 +118,12 @@ module.exports = defineConfig({
 
 					if (platform === "mac") {
 						const appName = context.packager.appInfo.productFilename;
-						resourcesPath = path.join(context.appOutDir, `${appName}.app`, "Contents", "Resources"); // TODO: maybe bring bin folder back
+						resourcesPath = path.join(
+							context.appOutDir,
+							`${appName}.app`,
+							"Contents",
+							"Resources",
+						); // TODO: maybe bring bin folder back
 					} else if (platform === "windows") {
 						resourcesPath = path.join(context.appOutDir, "resources");
 					} else if (platform === "linux") {
@@ -137,13 +140,25 @@ module.exports = defineConfig({
 					// Updated binary path resolution
 					const getBinaryPath = (platform) => {
 						if (platform === "windows") {
-							return path.join(resourcesPath, "resources", "win", "x64", "metabuli.bat");
+							return path.join(
+								resourcesPath,
+								"resources",
+								"win",
+								"x64",
+								"metabuli.bat",
+							);
 						} else if (platform === "mac") {
 							return path.join(resourcesPath, "resources", "mac", "metabuli");
 						} else if (platform === "linux") {
 							// Check both x64 and arm64 based on the current build arch
 							const arch = context.arch === "arm64" ? "arm64" : "x64";
-							return path.join(resourcesPath, "resources", "linux", arch, "metabuli");
+							return path.join(
+								resourcesPath,
+								"resources",
+								"linux",
+								arch,
+								"metabuli",
+							);
 						}
 						return null;
 					};
@@ -157,7 +172,9 @@ module.exports = defineConfig({
 							const stats = fs.statSync(binaryPath);
 							console.log(`Permissions for ${binaryPath}:`, stats.mode);
 						} catch (error) {
-							console.error(`Failed to set permissions for ${binaryPath}: ${error.message}`);
+							console.error(
+								`Failed to set permissions for ${binaryPath}: ${error.message}`,
+							);
 						}
 					} else {
 						console.warn(`Binary not found at ${binaryPath}`);
@@ -168,15 +185,20 @@ module.exports = defineConfig({
 					if (platform === "mac") {
 						additionalBinaries.push(
 							path.join(resourcesPath, "resources", "mac", "fastp"),
-							path.join(resourcesPath, "resources", "mac", "fastplong")
+							path.join(resourcesPath, "resources", "mac", "fastplong"),
 						);
 					} else if (platform === "linux") {
 						const arch = context.arch === "arm64" ? "arm64" : "x64";
-						if (arch === "x64") { // fastp only available for x64
-							additionalBinaries.push(path.join(resourcesPath, "resources", "linux", "x64", "fastp"));
+						if (arch === "x64") {
+							// fastp only available for x64
+							additionalBinaries.push(
+								path.join(resourcesPath, "resources", "linux", "x64", "fastp"),
+							);
 						}
 					} else if (platform === "windows") {
-						additionalBinaries.push(path.join(resourcesPath, "resources", "win", "x64", "fastp"));
+						additionalBinaries.push(
+							path.join(resourcesPath, "resources", "win", "x64", "fastp"),
+						);
 					}
 
 					additionalBinaries.forEach((binary) => {
@@ -185,7 +207,9 @@ module.exports = defineConfig({
 								fs.chmodSync(binary, "755");
 								console.log(`Permissions set for ${binary}`);
 							} catch (error) {
-								console.error(`Failed to set permissions for ${binary}: ${error.message}`);
+								console.error(
+									`Failed to set permissions for ${binary}: ${error.message}`,
+								);
 							}
 						}
 					});

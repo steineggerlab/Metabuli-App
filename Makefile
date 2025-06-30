@@ -74,4 +74,4 @@ resources/linux/x64/fastp:
 
 
 clean:
-	@rm -rf resources/mac/* resources/linux/* resources/win/* 
+	@rm -rf resources/mac/* resources/linux/* resources/win/*
