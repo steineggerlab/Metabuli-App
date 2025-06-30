@@ -132,33 +132,31 @@
                 <v-list-item v-if="!isSubtree">
                   <div class="text-caption">Rank Options</div>
                   <v-container class="px-0">
-                    <!-- <div class=""> -->
-                    <v-btn-toggle
-                      :model-value="selectedRanks"
-                      @update:modelValue="$emit('update:selectedRanks', $event)"
-                      variant="outlined"
-                      color="indigo"
-                      multiple
-                      divided
-                      mandatory
-                      hide-details
-                      class="d-flex w-100"
-                    >
-                      <v-btn
-                        v-for="rank in rankOptions"
-                        :key="rank"
-                        :value="rank"
-                        class="rounded-e-0 rounded-s-0"
-                        style="
-                          height: 30px;
-                          min-width: 30px;
-                          max-width: 30px !important;
+                    <div class="d-flex align-center flex-column">
+                      <v-btn-toggle
+                        :model-value="selectedRanks"
+                        @update:modelValue="
+                          $emit('update:selectedRanks', $event)
                         "
+                        variant="outlined"
+                        color="indigo"
+                        multiple
+                        divided
+                        mandatory
+                        hide-details
                       >
-                        {{ rank[0] }}
-                      </v-btn>
-                    </v-btn-toggle>
-                    <!-- </div> -->
+                        <v-btn
+                          v-for="rank in rankOptions"
+                          :key="rank"
+                          :value="rank"
+                          class="px-2"
+                          rounded="0"
+                          style="height: 30px"
+                        >
+                          {{ rank[0] }}
+                        </v-btn>
+                      </v-btn-toggle>
+                    </div>
                   </v-container>
                 </v-list-item>
               </v-expansion-panel-text>
@@ -348,9 +346,15 @@
                         >
                         <v-btn
                           value="4"
-                          class="rounded-s-0 rounded-e-lg"
+                          class="rounded-e-0 rounded-s-0"
                           height="30"
                           >4</v-btn
+                        >
+                        <v-btn
+                          value="5"
+                          class="rounded-s-0 rounded-e-lg"
+                          height="30"
+                          >5</v-btn
                         >
                       </v-btn-toggle>
                     </div>
@@ -375,99 +379,40 @@
 import { sankeyRankColumns } from "@/plugins/rankUtils.js";
 const colorSchemes = {
   1: [
-    "#57291F",
-    "#C0413B",
-    "#D77B5F",
-    "#FF9200",
-    "#FFCD73",
-    "#F7E5BF",
-    "#C87505",
-    "#F18E3F",
-    "#E59579",
-    "#C14C32",
-    "#80003A",
-    "#506432",
-    "#FFC500",
-    "#B30019",
-    "#EC410B",
-    "#E63400",
-    "#8CB5B5",
-    "#6C3400",
-    "#FFA400",
-    "#41222A",
-    "#FFB27B",
-    "#FFCD87",
-    "#BC7576",
+    "#C14C32", // dark red
+    "#506432", // dark green
+    "#FFCD73", // yellow
+    "#6C3400", // light brown
   ],
   2: [
-    "#648FFF",
-    "#785EF0",
-    "#DC267F",
-    "#FE6100",
-    "#FFB000",
-    "#009E73",
-    "#00BFC4",
-    "#F564E3",
-    "#B79F00",
-    "#E69F00",
-    "#56B4E9",
-    "#0072B2",
-    "#D55E00",
-    "#CC79A7",
-    "#999999",
-    "#E15759",
-    "#4E79A7",
-    "#76B7B2",
-    "#F28E2B",
-    "#59A14F",
-    "#EDC948",
-    "#B07AA1",
+    "#648FFF", // blue
+    "#785EF0", // purple
+    "#FFCD73", // yellow
+    "#8CB5B5", // light teal
   ],
   3: [
-    "#1F77B4",
-    "#AEC7E8",
-    "#FF7F0E",
-    "#FFBB78",
-    "#2CA02C",
-    "#98DF8A",
-    "#D62728",
-    "#FF9896",
-    "#9467BD",
-    "#C5B0D5",
-    "#8C564B",
-    "#C49C94",
-    "#E377C2",
-    "#F7B6D2",
-    "#7F7F7F",
-    "#C7C7C7",
-    "#BCBD22",
-    "#DBDB8D",
-    "#17BECF",
-    "#9EDAE5",
+    "#8CB5B5", // light teal
+    "#785EF0", // purple
+    "#E59579", // salmon
+    "#506432", // dark green
+    "#BC7576", // dark salmon
+    "#6C3400", // light brown
+    "#C14C32", // dark red
+    "#648FFF", // blue
+    "#FFCD73", // yellow
+    "#41222A", // dark brown
   ],
   4: [
-    "#A6CEE3",
-    "#1F78B4",
-    "#B2DF8A",
-    "#33A02C",
-    "#FB9A99",
-    "#E31A1C",
-    "#FDBF6F",
-    "#FF7F00",
-    "#CAB2D6",
-    "#6A3D9A",
-    "#FFFF99",
-    "#B15928",
-    "#8DD3C7",
-    "#FFFFB3",
-    "#BEBADA",
-    "#FB8072",
-    "#80B1D3",
-    "#FDB462",
-    "#B3DE69",
-    "#FCCDE5",
-    "#D9D9D9",
-    "#BC80BD",
+    "#506432", // dark green
+    "#FFCD73", // yellow
+    "#C14C32", // dark red
+    "#6C3400", // light brown
+  ],
+  5: [
+    "#FFCD73", // yellow
+    "#8CB5B5", // light teal
+    "#648FFF", // blue
+    "#785EF0", // purple
   ],
 };
 
@@ -609,6 +554,11 @@ export default {
 .scrollable-panel {
   max-height: 40vh;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 8px;
+}
+
+.configure-menu ::v-deep .v-btn {
+  min-width: 0 !important;
 }
 </style>
