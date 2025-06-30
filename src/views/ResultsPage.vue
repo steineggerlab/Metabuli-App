@@ -325,7 +325,7 @@ export default {
       maxTaxaLimit: 100,
 
       showAll: false,
-      taxaLimit: 20, // FIXME: refactor, make this into dictionary storing info about configuration
+      taxaLimit: 10, // FIXME: refactor, make this into dictionary storing info about configuration
       minCladeReadsMode: 0,
       minCladeReads: 0.01,
       figureHeight: 500,
@@ -343,30 +343,10 @@ export default {
       // rankListWithRoot: [ "no rank", ...sankeyRankColumns ],
       ranksToShow: ["no rank", ...sankeyRankColumns],
       colorScheme: [
-        // Autum colours
-        "#57291F",
-        "#C0413B",
-        "#D77B5F",
-        "#FF9200",
-        "#FFCD73",
-        "#F7E5BF",
-        "#C87505",
-        "#F18E3F",
-        "#E59579",
-        "#C14C32",
-        "#80003A",
-        "#506432",
-        "#FFC500",
-        "#B30019",
-        "#EC410B",
-        "#E63400",
-        "#8CB5B5",
-        "#6C3400",
-        "#FFA400",
-        "#41222A",
-        "#FFB27B",
-        "#FFCD87",
-        "#BC7576",
+        "#C14C32", // dark red
+        "#506432", // dark green
+        "#FFCD73", // yellow
+        "#6C3400", // light brown
       ],
       unclassifiedLabelColor: "#696B7E",
 

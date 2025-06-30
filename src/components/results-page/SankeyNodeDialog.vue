@@ -213,7 +213,7 @@ export default {
       required: true,
       default: () => ({
         showAll: false,
-        taxaLimit: 20,
+        taxaLimit: 10,
         minCladeReadsMode: 0,
         minCladeReads: 0.01,
         figureHeight: 500,
@@ -226,29 +226,10 @@ export default {
         nodeValueFontSize: 10,
         rankLabelFontSize: 14,
         colorScheme: [
-          "#57291F",
-          "#C0413B",
-          "#D77B5F",
-          "#FF9200",
-          "#FFCD73",
-          "#F7E5BF",
-          "#C87505",
-          "#F18E3F",
-          "#E59579",
-          "#C14C32",
-          "#80003A",
-          "#506432",
-          "#FFC500",
-          "#B30019",
-          "#EC410B",
-          "#E63400",
-          "#8CB5B5",
-          "#6C3400",
-          "#FFA400",
-          "#41222A",
-          "#FFB27B",
-          "#FFCD87",
-          "#BC7576",
+          "#C14C32", // dark red
+          "#506432", // dark green
+          "#FFCD73", // yellow
+          "#6C3400", // light brown
         ],
       }),
     },
@@ -260,7 +241,7 @@ export default {
       config: {
         maxTaxaLimit: 100,
         showAll: false,
-        taxaLimit: 20,
+        taxaLimit: 10,
         minCladeReadsMode: 0,
         minCladeReads: 0.01,
         figureHeight: 500,

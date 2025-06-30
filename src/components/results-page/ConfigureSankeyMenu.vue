@@ -454,29 +454,10 @@ export default {
     colorScheme: {
       type: Array,
       default: () => [
-        "#57291F",
-        "#C0413B",
-        "#D77B5F",
-        "#FF9200",
-        "#FFCD73",
-        "#F7E5BF",
-        "#C87505",
-        "#F18E3F",
-        "#E59579",
-        "#C14C32",
-        "#80003A",
-        "#506432",
-        "#FFC500",
-        "#B30019",
-        "#EC410B",
-        "#E63400",
-        "#8CB5B5",
-        "#6C3400",
-        "#FFA400",
-        "#41222A",
-        "#FFB27B",
-        "#FFCD87",
-        "#BC7576",
+        "#C14C32", // dark red
+        "#506432", // dark green
+        "#FFCD73", // yellow
+        "#6C3400", // light brown
       ],
     },
     unclassifiedLabelColor: { type: String, default: "#696B7E" },
