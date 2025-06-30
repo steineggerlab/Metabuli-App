@@ -28,7 +28,7 @@
     "marked": "^15.0.12",
     "roboto-fontface": "*",
     "save-svg-as-png": "^1.4.17",
-    "taxoview": "^2.0.4",
+    "taxoview": "^2.0.5",
     "uuid": "^10.0.0",
     "vue": "^3.2.13",
     "vue-router": "^4.4.0",

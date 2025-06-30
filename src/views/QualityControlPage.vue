@@ -155,7 +155,8 @@
                         >
                         </v-icon>
                       </template>
-                      TODO
+                      Suffix to append to the sample name in the output
+                      filenames of the trimmed read files
                     </v-tooltip>
                     <span class="font-weight-bold"> Output File Suffix</span>
                   </v-list-subheader>

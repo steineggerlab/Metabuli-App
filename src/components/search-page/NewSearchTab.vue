@@ -131,7 +131,8 @@
                       >
                       </v-icon>
                     </template>
-                    TODO
+                    Result files are saved in a folder named Job ID under the
+                    Output Directory selected below.
                   </v-tooltip>
                   <span class="font-weight-bold"> Job ID</span>
                 </v-list-subheader>
