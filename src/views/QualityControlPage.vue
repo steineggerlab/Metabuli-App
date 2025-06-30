@@ -429,6 +429,8 @@
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
 import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 
+const isDev = process.env.NODE_ENV !== "production";
+
 export default {
   name: "QualityControlPage",
   components: {
@@ -438,22 +440,24 @@ export default {
     return {
       isJobFormValid: false,
       jobDetails: {
-        // TODO remove test entries
         // Store job details
         mode: "paired-end",
-        outFileSuffix: "_out",
-        outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test",
-        entries: [{ q1: "", q2: "" }],
-        testentries: [
-          {
-            q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR24315757_1.fastq",
-            q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR24315757_2.fastq",
-          },
-          {
-            q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_1.fastq",
-            q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_2.fastq",
-          },
-        ],
+        outFileSuffix: "_qc",
+        outdir: isDev
+          ? "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test"
+          : "",
+        entries: isDev
+          ? [
+              {
+                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR24315757_1.fastq",
+                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR24315757_2.fastq",
+              },
+              {
+                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_1.fastq",
+                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_2.fastq",
+              },
+            ]
+          : [{ q1: "", q2: "" }],
         params: {},
         fastpParams: {},
       },
@@ -611,7 +615,6 @@ export default {
             : "_LR";
 
       for (const entry of this.jobDetails.entries) {
-        // TODO: use jobDetails.entries
         // 1) reset status & error flag
         this.status = "RUNNING";
         this.errorHandled = false;

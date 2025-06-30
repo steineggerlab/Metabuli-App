@@ -569,6 +569,8 @@ import { extractFilename, stripFileExtension } from "@/plugins/fileUtils.js";
 import { makeCompletedJob, makeFailedJob } from "@/plugins/jobHistoryStruct.js";
 import { CITATIONS, formatCitations } from "@/citations.js";
 
+const isDev = process.env.NODE_ENV !== "production";
+
 export default {
   name: "NewSearchTab",
   components: {
@@ -582,24 +584,26 @@ export default {
         // Store job details including file paths
         mode: "paired-end", // "paired-end" | "single-end" | "long-read"
         enableQC: true,
-        entries: [
-          {
-            q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
-            q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
-            batchName: "",
-          }, // TODO: remove hardcoded path
-          {
-            q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
-            q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
-            batchName: "",
-          }, // TODO: remove hardcoded path
-        ],
-        // database: "",
-        database:
-          "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/refseq_virus", // TODO: remove hardcoded path
-        // outdir: "",
-        outdir:
-          "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR", // TODO: remove hardcoded path
+        entries: isDev
+          ? [
+              {
+                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
+                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
+                batchName: "",
+              },
+              {
+                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
+                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
+                batchName: "",
+              },
+            ]
+          : [{ q1: "", q2: "", batchName: "" }],
+        database: isDev
+          ? "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/refseq_virus"
+          : "",
+        outdir: isDev
+          ? "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR"
+          : "",
         jobid: "",
         maxram: "",
 
@@ -818,7 +822,7 @@ export default {
         );
       } finally {
         // re-validate the form
-        this.$refs.jobForm?.validate(); // TODO: do i need this
+        this.$refs.jobForm?.validate();
       }
     },
     clearFile(field, index = null) {
