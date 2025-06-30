@@ -432,7 +432,7 @@ export default {
     maxTaxaLimit: { type: Number, default: 100 },
     showAll: { type: Boolean, default: false },
     taxaLimit: { type: Number, default: 10 },
-    minCladeReadsMode: { type: Number, default: 0 },
+    minCladeReadsMode: { type: Number, default: 1 }, // 1 - proportion, 0 - clade reads
     minCladeReads: { type: Number, default: 0.01 },
     figureHeight: { type: Number, default: 300 },
     labelOption: { type: String, default: "cladeReads" },

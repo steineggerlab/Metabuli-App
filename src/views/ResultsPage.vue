@@ -326,7 +326,7 @@ export default {
 
       showAll: false,
       taxaLimit: 10, // FIXME: refactor, make this into dictionary storing info about configuration
-      minCladeReadsMode: 0,
+      minCladeReadsMode: 1,
       minCladeReads: 0.01,
       figureHeight: 500,
       labelOption: "proportion",

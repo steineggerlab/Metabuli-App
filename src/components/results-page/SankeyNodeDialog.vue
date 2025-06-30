@@ -214,7 +214,7 @@ export default {
       default: () => ({
         showAll: false,
         taxaLimit: 10,
-        minCladeReadsMode: 0,
+        minCladeReadsMode: 1,
         minCladeReads: 0.01,
         figureHeight: 500,
         labelOption: "proportion",
@@ -242,7 +242,7 @@ export default {
         maxTaxaLimit: 100,
         showAll: false,
         taxaLimit: 10,
-        minCladeReadsMode: 0,
+        minCladeReadsMode: 1,
         minCladeReads: 0.01,
         figureHeight: 500,
         labelOption: "proportion",
