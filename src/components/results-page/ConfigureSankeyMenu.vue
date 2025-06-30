@@ -541,12 +541,15 @@ export default {
 }
 
 :deep(.configure-menu .v-list-item__content) {
-  overflow: visible; /* Allow slider thumb overflow */
+  overflow: visible;
+  /* Allow slider thumb overflow */
 }
+
 .configure-menu .v-input--horizontal {
   margin-left: 0px;
   margin-right: 0px;
 }
+
 :deep(.configure-menu .v-expansion-panel-text__wrapper) {
   padding: 0px;
 }
