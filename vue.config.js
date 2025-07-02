@@ -197,7 +197,14 @@ module.exports = defineConfig({
 						}
 					} else if (platform === "windows") {
 						additionalBinaries.push(
-							path.join(resourcesPath, "resources", "win", "x64", "fastp"),
+							path.join(resourcesPath, "resources", "win", "x64", "fastp.bat"),
+							path.join(
+								resourcesPath,
+								"resources",
+								"win",
+								"x64",
+								"fastplong.bat",
+							),
 						);
 					}
 

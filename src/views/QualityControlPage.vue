@@ -223,7 +223,7 @@
                       @click="clearFile('outdir')"
                       class="mr-1"
                     ></v-icon>
-                    {{ this.extractFilename(jobDetails.outdir) }}</v-chip
+                    {{ extractFilename(jobDetails.outdir) }}</v-chip
                   >
                 </v-col>
               </v-row>
@@ -449,13 +449,13 @@ export default {
         entries: isDev
           ? [
               {
-                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR24315757_1.fastq",
-                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR24315757_2.fastq",
+                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
+                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
               },
-              {
-                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_1.fastq",
-                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_2.fastq",
-              },
+              // {
+              //   q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_1.fastq",
+              //   q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_2.fastq",
+              // },
             ]
           : [{ q1: "", q2: "" }],
         params: {},
@@ -466,7 +466,18 @@ export default {
       status: "INITIAL", // INITIAL, RUNNING, COMPLETE, ERROR
       backendOutput: "",
       errorHandled: false,
-      processingFastp: false, // Flag to indicate if fastp is being processed
+      processingFastp: false, // Flag to indicate if fastp is being processedsnackbar: {
+
+      // Snackbar
+      snackbar: {
+        show: false,
+        message: "",
+        color: "",
+        icon: "",
+        buttonText: "",
+        action: null,
+        timeout: 4000,
+      },
 
       // ReadMe Manual Handling
       showReadme: false,
@@ -515,23 +526,23 @@ export default {
           }
         } catch (error) {
           console.error("Error selecting file:", error); // DEBUG
-          this.$emit(
-            "trigger-snackbar",
-            `File selection error: ${error}`,
-            "error",
-            "fileAlert",
-            "Dismiss",
-          );
+          // this.$emit(
+          //   "trigger-snackbar",
+          //   `File selection error: ${error}`,
+          //   "error",
+          //   "fileAlert",
+          //   "Dismiss",
+          // );
         }
       } else {
         console.error("File dialog is not supported in the web environment."); // DEBUG
-        this.$emit(
-          "trigger-snackbar",
-          "File dialog is not supported in the web environment.",
-          "error",
-          "warning",
-          "Dismiss",
-        );
+        // this.$emit(
+        //   "trigger-snackbar",
+        //   "File dialog is not supported in the web environment.",
+        //   "error",
+        //   "warning",
+        //   "Dismiss",
+        // );
       }
     },
     clearFile(field) {
@@ -541,7 +552,7 @@ export default {
 
     // Functions for handling filenames
     extractFilename(path) {
-      return path.split("/").pop();
+      return window.electron.extractFilename(path);
     },
     stripFileExtension(filePath) {
       // 1. Extract just the filename, dropping any directory
@@ -627,7 +638,7 @@ export default {
         // Create directory for batch output
         const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
         const batchName = `${base1}${modeTag}`;
-        const batchOutDir = `${outDir}/${batchName}`; // TODO: organize code
+        const batchOutDir = window.electron.joinPath(outDir, batchName); // TODO: organize code
         await window.electron.mkdir(batchOutDir);
 
         const qcCmd =
@@ -636,9 +647,11 @@ export default {
         const params = [
           qcCmd,
           "-h",
-          `${batchOutDir}/${batchName}.html`,
+          window.electron.joinPath(batchOutDir, batchName + ".html"),
+          // `${batchOutDir}/${batchName}.html`,
           "-j",
-          `${batchOutDir}/${batchName}.json`,
+          window.electron.joinPath(batchOutDir, batchName + ".json"),
+          // `${batchOutDir}/${batchName}.json`,
         ];
 
         // Add read 1 input/output parameters
@@ -646,7 +659,8 @@ export default {
           "-i",
           entry.q1, // Read 1 file
           "-o",
-          `${batchOutDir}/${base1}${suffix}${ext1}`, // Output filepath for Read 1
+          window.electron.joinPath(batchOutDir, base1 + suffix + ext1),
+          // `${batchOutDir}/${base1}${suffix}${ext1}`, // Output filepath for Read 1
         );
 
         // Add read 2 input/output parameters if paired-end mode
@@ -656,7 +670,8 @@ export default {
             "-I",
             entry.q2,
             "-O",
-            `${batchOutDir}/${base2}${suffix}${ext2}`, // Output filepath for Read 2
+            window.electron.joinPath(batchOutDir, base2 + suffix + ext2),
+            // `${batchOutDir}/${base2}${suffix}${ext2}`, // Output filepath for Read 2
           );
         }
 
@@ -773,6 +788,24 @@ export default {
       }
 
       this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
+    },
+    // Functions managing snackbar
+    triggerSnackbar(
+      message,
+      color = "info",
+      icon = "info",
+      buttonText = "",
+      action = null,
+    ) {
+      if (this.snackbar.show) return; // If multiple snackbars are triggered, show the first one
+
+      this.snackbar.message = message;
+      this.snackbar.color = color;
+      this.snackbar.icon = icon;
+      this.snackbar.buttonText = buttonText;
+      this.snackbar.action = action;
+
+      this.snackbar.show = true;
     },
 
     // Show/hide dialog

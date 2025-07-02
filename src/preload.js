@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer, shell } = require("electron");
 const path = require("path");
 const fs = require("fs").promises;
 const os = require("os");
+const { stripFileExtension } = require("./plugins/fileUtils");
 
 // Helper function to get full path based on environment and parameters
 const getBasePath = () => {
@@ -14,6 +15,21 @@ const getBasePath = () => {
 
 // Directory to store job history on the user's machine
 const historyFilePath = path.join(os.homedir(), "metabuli_job_history.json");
+
+// Extract the filename from a path (cross-platform)
+const extractFilename = (filePath) => {
+	return path.basename(filePath);
+};
+
+// Remove extension from a filename
+const stripFileExtension = (filePath) => {
+	const filename = extractFilename(filePath);
+	const m = filename.match(
+		/(.+?)((?:\.fna|\.fasta|\.fa|\.fq|\.fastq)(?:\.gz)?)$/i,
+	);
+
+	return m ? { base: m[1], ext: m[2] } : { base: filename, ext: "" };
+};
 
 contextBridge.exposeInMainWorld("electron", {
 	getBasePath: () => getBasePath(),
@@ -30,6 +46,7 @@ contextBridge.exposeInMainWorld("electron", {
 				: process.resourcesPath;
 		return isRelativePath ? path.join(basePath, filePath) : filePath;
 	},
+	joinPath: (...segments) => path.join(...segments),
 
 	// Function to check if file exists
 	fileExists: async (filePath) => {
@@ -40,6 +57,9 @@ contextBridge.exposeInMainWorld("electron", {
 			return false; // File does not exist
 		}
 	},
+	// Extract the filename+extension from a path (cross-platform)
+	extractFilename: (filePath) => extractFilename(filePath),
+	stripFileExtension: (filePath) => stripFileExtension(filePath),
 
 	// Method to retrieve total system memory in GB
 	getTotalRam: () => {

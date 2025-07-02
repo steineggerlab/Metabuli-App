@@ -554,7 +554,7 @@ export default {
       }
     },
     extractFilename(path) {
-      return path.split("/").pop();
+      return window.electron.extractFilename(path);
     },
     clearFile(field) {
       this.jobDetails[field] = null;

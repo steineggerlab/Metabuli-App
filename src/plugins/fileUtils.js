@@ -1,8 +1,4 @@
-// Functions for handling filenames
-export function extractFilename(path) {
-	return path.split("/").pop();
-}
-
+// Functions for handling filenames and paths
 export function stripFileExtension(filePath) {
 	// 1. Extract just the filename, dropping any directory
 	const filename = extractFilename(filePath);

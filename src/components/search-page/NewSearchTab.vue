@@ -557,17 +557,45 @@
         >
           Load Sample Data
         </v-btn>
+        <v-spacer />
+        <v-btn
+          text="Output Format"
+          variant="plain"
+          color="primary"
+          :prepend-icon="showOutputFormat ? '$collapse' : '$expand'"
+          @click="showOutputFormat = !showOutputFormat"
+          class="font-weight-bold"
+        ></v-btn>
       </v-sheet>
     </v-form>
+
+    <!-- OUTPUT FORMAT -->
+    <v-expand-transition>
+      <div v-if="showOutputFormat">
+        <!-- Input fields -->
+        <v-card>
+          <v-card-text style="overflow-y: auto">
+            <div v-html="readmeHtml"></div>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text @click="showReadme = false">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+        <!-- <v-container fluid>
+          </v-container> -->
+      </div>
+    </v-expand-transition>
   </v-container>
 </template>
 
 <script>
 import TSVParser from "@/plugins/tsvParser";
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
-import { extractFilename, stripFileExtension } from "@/plugins/fileUtils.js";
+import { stripFileExtension } from "@/plugins/fileUtils.js";
 import { makeCompletedJob, makeFailedJob } from "@/plugins/jobHistoryStruct.js";
 import { CITATIONS, formatCitations } from "@/citations.js";
+import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -621,6 +649,9 @@ export default {
         maxram: 32,
       },
       expandAdvancedSettings: false,
+      showOutputFormat: false,
+      readmeHtml: "",
+
       advancedSettings: {
         minScore: {
           title: "--min-score",
@@ -836,6 +867,7 @@ export default {
       // re-validate the form
       this.$refs.jobForm?.validate();
     },
+
     updateBatchNames() {
       this.jobDetails.entries.forEach((entry) => {
         if (entry.q1) {
@@ -846,7 +878,14 @@ export default {
         }
       });
     },
-    extractFilename,
+
+    // Functions for handling filenames
+    extractFilename(path) {
+      return window.electron.extractFilename(path);
+    },
+    joinPath(...segments) {
+      return window.electron.joinPath(...segments);
+    },
     stripFileExtension,
 
     // Functions handling validation rules
@@ -886,7 +925,10 @@ export default {
       this.backendOutput = "Sample data was loaded successfully.";
 
       const sampleReportFilePath = await window.electron.resolveFilePath(
-        `${this.jobDetailsSample.outdir}/${this.jobDetailsSample.jobid}_report.tsv`,
+        this.joinPath(
+          this.jobDetailsSample.outdir,
+          this.jobDetailsSample.jobid + "_report.tsv",
+        ),
         true,
       );
       setTimeout(() => {
@@ -953,11 +995,14 @@ export default {
           this.handleJobError(entry);
         } finally {
           // Save log file
+          const logFilePath = this.joinPath(
+            this.jobDetails.outdir,
+            this.jobDetails.jobid,
+            entry.batchName,
+            this.jobDetails.jobid + "_log.txt",
+          );
           window.electron
-            .writeFile(
-              `${this.jobDetails.outdir}/${this.jobDetails.jobid}/${entry.batchName}/${this.jobDetails.jobid}_log.txt`,
-              this.backendOutput,
-            )
+            .writeFile(logFilePath, this.backendOutput)
             .catch(console.error);
         }
       }
@@ -970,7 +1015,11 @@ export default {
         ];
 
         // Write citations to file in job_id folder
-        const jobIDPath = `${this.jobDetails.outdir}/${this.jobDetails.jobid}/citations.txt`;
+        const jobIDPath = this.joinPath(
+          this.jobDetails.outdir,
+          this.jobDetails.jobid,
+          "citations.txt",
+        );
         const citationsContent = formatCitations(citations);
         await window.electron.writeFile(jobIDPath, citationsContent);
       }
@@ -986,7 +1035,7 @@ export default {
       const outdir = this.jobDetails.outdir;
       const jobid = this.jobDetails.jobid;
       const batchName = entry.batchName;
-      const batchFolder = `${outdir}/${jobid}/${batchName}`;
+      const batchFolder = this.joinPath(outdir, jobid, batchName);
       // ensure that directory exists (recursively)
       await window.electron.mkdir(batchFolder); // returns a Promise if you exposed it; `await` in caller
 
@@ -1011,20 +1060,20 @@ export default {
         const qcParams = [
           qcCmd,
           "-h",
-          `${batchFolder}/${batchName}.html`,
+          this.joinPath(batchFolder, batchName + ".html"),
           "-j",
-          `${batchFolder}/${batchName}.json`,
+          this.joinPath(batchFolder, batchName + ".json"),
           "-i",
           entry.q1,
           "-o",
-          `${batchFolder}/${base1}${suffixQC}${ext1}`,
+          this.joinPath(batchFolder, base1 + suffixQC + ext1),
         ];
         if (this.jobDetails.mode === "paired-end" && entry.q2) {
           qcParams.push(
             "-I",
             entry.q2,
             "-O",
-            `${batchFolder}/${base2}${suffixQC}${ext2}`,
+            this.joinPath(batchFolder, base2 + suffixQC + ext2),
           );
         }
 
@@ -1202,11 +1251,11 @@ export default {
 
       // Set file paths for report and krona
       reportFilePath = await window.electron.resolveFilePath(
-        `${resolvedOutdirPath}/${jobId}_report.tsv`,
+        this.joinPath(resolvedOutdirPath, jobId + "_report.tsv"),
         isSample,
       );
       kronaFilePath = await window.electron.resolveFilePath(
-        `${resolvedOutdirPath}/${jobId}_krona.html`,
+        this.joinPath(resolvedOutdirPath, jobId + "_krona.html"),
         isSample,
       );
 
@@ -1238,7 +1287,11 @@ export default {
     // Called once classify for one batch completes
     handleBatchSuccess(entry) {
       const jobid = this.jobDetails.jobid;
-      const batchFolder = `${this.jobDetails.outdir}/${jobid}/${entry.batchName}`;
+      const batchFolder = this.joinPath(
+        this.jobDetails.outdir,
+        jobid,
+        entry.batchName,
+      );
 
       // processResults(false) should look in batchFolder for jobid_report.tsv, etc.
       // this.processResults(false, entry).then(() => {
@@ -1249,14 +1302,14 @@ export default {
         database: this.jobDetails.database,
         sampleFiles:
           this.jobDetails.mode === "paired-end"
-            ? [extractFilename(entry.q1), extractFilename(entry.q2)]
-            : [extractFilename(entry.q1)],
+            ? [this.extractFilename(entry.q1), this.extractFilename(entry.q2)]
+            : [this.extractFilename(entry.q1)],
         batchFolder: batchFolder,
         isSample: false,
         jobType: "runSearch",
         backendOutput: this.backendOutput,
         processedResults: this.processedResults,
-        reportFilePath: `${batchFolder}/${jobid}_report.tsv`,
+        reportFilePath: this.joinPath(batchFolder, `${jobid}_report.tsv`),
       });
 
       this.$emit("store-job", completedJob);
@@ -1284,8 +1337,8 @@ export default {
         database: this.jobDetails.database,
         sampleFiles:
           this.jobDetails.mode === "paired-end"
-            ? [extractFilename(entry.q1), extractFilename(entry.q2)]
-            : [extractFilename(entry.q1)],
+            ? [this.extractFilename(entry.q1), this.extractFilename(entry.q2)]
+            : [this.extractFilename(entry.q1)],
         backendOutput: this.backendOutput,
         status: this.status,
         jobType: "runSearch",
@@ -1348,7 +1401,7 @@ export default {
     },
   },
 
-  mounted() {
+  async mounted() {
     // On every page reload
     this.errorHandled = false; // Flag to ensure errors are handled only once
 
@@ -1356,6 +1409,8 @@ export default {
     const totalRam = window.electron.getTotalRam(); // Get total RAM of current computer
     this.jobDetails.maxram = totalRam; // Set maxram to total RAM in GB
     this.jobDetails.jobid = this.getCurrentDateTime(); // Prefill Job ID with current timestamp
+
+    this.readmeHtml = await loadMarkdownAsHtml("docs/classification.md");
   },
 };
 </script>
