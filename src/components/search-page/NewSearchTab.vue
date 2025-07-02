@@ -592,7 +592,7 @@
 <script>
 import TSVParser from "@/plugins/tsvParser";
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
-import { stripFileExtension } from "@/plugins/fileUtils.js";
+
 import { makeCompletedJob, makeFailedJob } from "@/plugins/jobHistoryStruct.js";
 import { CITATIONS, formatCitations } from "@/citations.js";
 import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
@@ -871,7 +871,7 @@ export default {
     updateBatchNames() {
       this.jobDetails.entries.forEach((entry) => {
         if (entry.q1) {
-          const { base } = this.stripFileExtension(entry.q1);
+          const { base } = window.electron.stripFileExtension(entry.q1);
           entry.batchName = base + this.modeTag;
         } else {
           entry.batchName = "";
@@ -886,7 +886,6 @@ export default {
     joinPath(...segments) {
       return window.electron.joinPath(...segments);
     },
-    stripFileExtension,
 
     // Functions handling validation rules
     requiredRule(value) {
@@ -1040,11 +1039,11 @@ export default {
       await window.electron.mkdir(batchFolder); // returns a Promise if you exposed it; `await` in caller
 
       // Figure out file‐base names:
-      const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
+      const { base: base1, ext: ext1 } = window.electron.stripFileExtension(entry.q1);
       let base2 = "",
         ext2 = "";
       if (this.jobDetails.mode === "paired-end" && entry.q2) {
-        ({ base: base2, ext: ext2 } = this.stripFileExtension(entry.q2));
+        ({ base: base2, ext: ext2 } = window.electron.stripFileExtension(entry.q2));
       }
 
       // 2) If QC is enabled, run fastp first:

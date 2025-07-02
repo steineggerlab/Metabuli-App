@@ -636,7 +636,7 @@ export default {
         console.log("entry:", entry);
 
         // Create directory for batch output
-        const { base: base1, ext: ext1 } = this.stripFileExtension(entry.q1);
+        const { base: base1, ext: ext1 } = window.electron.stripFileExtension(entry.q1);
         const batchName = `${base1}${modeTag}`;
         const batchOutDir = window.electron.joinPath(outDir, batchName); // TODO: organize code
         await window.electron.mkdir(batchOutDir);
@@ -665,7 +665,7 @@ export default {
 
         // Add read 2 input/output parameters if paired-end mode
         if (this.jobDetails.mode === "paired-end" && entry.q2) {
-          const { base: base2, ext: ext2 } = this.stripFileExtension(entry.q2);
+          const { base: base2, ext: ext2 } = window.electron.stripFileExtension(entry.q2);
           params.push(
             "-I",
             entry.q2,

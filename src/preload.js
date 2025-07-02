@@ -2,7 +2,6 @@ const { contextBridge, ipcRenderer, shell } = require("electron");
 const path = require("path");
 const fs = require("fs").promises;
 const os = require("os");
-const { stripFileExtension } = require("./plugins/fileUtils");
 
 // Helper function to get full path based on environment and parameters
 const getBasePath = () => {
