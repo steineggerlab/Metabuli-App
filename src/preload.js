@@ -152,6 +152,11 @@ contextBridge.exposeInMainWorld("electron", {
 	offBackendCancelled: () =>
 		ipcRenderer.removeAllListeners("backend-cancelled"),
 
+	// Simulate Classify Error
+	simulateMetabuliError: () => {
+		ipcRenderer.emit("backend-error", null, "Simulated metabuli error");
+	},
+
 	/* ==========================================================================
 	 *  fastp (QC) IPC API
 	 * ========================================================================== */
@@ -167,6 +172,11 @@ contextBridge.exposeInMainWorld("electron", {
 		ipcRenderer.on("fastp-error", (_, error) => callback(error)),
 	onFastpCancelled: (callback) =>
 		ipcRenderer.on("fastp-cancelled", (event, message) => callback(message)),
+
+	// Simulate Fastp Error
+	simulateFastpError: () => {
+		ipcRenderer.emit("fastp-error", null, "Simulated fastp error");
+	},
 
 	/** Remove all fastp IPC listeners. */
 	offFastpListeners: () => {

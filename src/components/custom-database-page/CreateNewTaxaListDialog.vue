@@ -158,7 +158,9 @@
             <span>{{
               status === "RUNNING"
                 ? "Creating New Taxa List..."
-                : "New Taxa List Created Successfully!"
+                : status === "COMPLETE"
+                  ? "New Taxa List Created Successfully!"
+                  : "Something Went Wrong"
             }}</span>
             <template v-slot:append>
               <v-img src="assets/marv_metabuli_animated.gif" width="60"></v-img>
@@ -244,6 +246,8 @@
 </template>
 
 <script>
+const isDev = process.env.NODE_ENV !== "production";
+
 export default {
   props: {
     menuLocation: {
@@ -263,6 +267,7 @@ export default {
       newTaxonomyPath: "",
       accession2TaxId: "",
       outdir: "",
+      forceError: true,
     },
     // isSampleJob: null,
     // Properties for backend job processing status, backend output, error tracking
@@ -390,20 +395,6 @@ export default {
       }
     },
     async runBackend() {
-      // DEBUG: “fast test” mode
-      // Skip actually calling the backend; simulate immediate success
-      if (this.fastTest) {
-        return new Promise((resolve) => {
-          console.log(
-            "Fast test mode: Simulating backend complete after 2s...",
-          );
-          setTimeout(() => {
-            this.status = "COMPLETE";
-            resolve();
-          }, 2000);
-        });
-      }
-
       const workingDir = window.electron.getParentDir(this.jobDetails.oldDBDir);
 
       // Add command
@@ -432,9 +423,6 @@ export default {
 
       // Return a promise that resolves or rejects based on backend success or failure
       return new Promise((resolve, reject) => {
-        // Run backend process
-        window.electron.runBackend(params, workingDir);
-
         // Real-time output
         window.electron.onBackendRealtimeOutput((output) => {
           this.backendOutput += output; // Append output in real-time
@@ -457,8 +445,8 @@ export default {
 
         window.electron.onBackendError((error) => {
           if (!this.errorHandled) {
-            const message = "\nJob processing was terminated due to an error.";
-            this.backendOutput += message;
+            this.errorHandled = true;
+            this.backendOutput += `Error: ${error.toString()}\n`;
             this.status = "ERROR"; // Signal job polling to stop
             reject(new Error("Backend execution error:", error));
           }
@@ -471,6 +459,15 @@ export default {
             reject(new Error("Process was cancelled"));
           }
         });
+
+        if (isDev && this.jobDetails.forceError) {
+          console.warn(
+            "⚠️ Simulating metabuli createnewtaxalist error for testing",
+          );
+          window.electron.simulateMetabuliError();
+        } else {
+          window.electron.runBackend(params, workingDir);
+        }
       });
     },
     // Function to track job status + process results + trigger snackbar
@@ -493,8 +490,6 @@ export default {
     },
     handleJobError() {
       this.errorHandled = true; // Ensure flag is set to prevent further handling
-      this.processingJob = false;
-      this.backendOutput = "";
 
       // Trigger snackbar corresponding to case
       if (this.status === "TIMEOUT") {

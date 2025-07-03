@@ -618,6 +618,7 @@ export default {
                 q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
                 q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
                 batchName: "",
+                forceError: true,
               },
               {
                 q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
@@ -627,7 +628,7 @@ export default {
             ]
           : [{ q1: "", q2: "", batchName: "" }],
         database: isDev
-          ? "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-analysis/refseq_virus"
+          ? "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/gtdb"
           : "",
         outdir: isDev
           ? "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR"
@@ -990,7 +991,6 @@ export default {
         } catch (error) {
           // TODO: figure out how to handle errors in the loop (e.g. if one entry fails, the rest should still run)
           console.error(`Batch ${entry.batchName} failed:`, error);
-          // console.error("Error:", error.message); // Single error handling point
           this.handleJobError(entry);
         } finally {
           // Save log file
@@ -1007,6 +1007,7 @@ export default {
       }
 
       if (this.status === "COMPLETE") {
+        // TODO: move this up
         // Gather citations to export
         const citations = [
           CITATIONS.metabuli,
@@ -1039,11 +1040,15 @@ export default {
       await window.electron.mkdir(batchFolder); // returns a Promise if you exposed it; `await` in caller
 
       // Figure out file‐base names:
-      const { base: base1, ext: ext1 } = window.electron.stripFileExtension(entry.q1);
+      const { base: base1, ext: ext1 } = window.electron.stripFileExtension(
+        entry.q1,
+      );
       let base2 = "",
         ext2 = "";
       if (this.jobDetails.mode === "paired-end" && entry.q2) {
-        ({ base: base2, ext: ext2 } = window.electron.stripFileExtension(entry.q2));
+        ({ base: base2, ext: ext2 } = window.electron.stripFileExtension(
+          entry.q2,
+        ));
       }
 
       // 2) If QC is enabled, run fastp first:
@@ -1101,7 +1106,8 @@ export default {
           window.electron.onFastpError((err) => {
             if (!this.errorHandled) {
               this.errorHandled = true; // Prevent multiple error handling
-              this.backendOutput += "\nError:\n" + err.toString();
+              this.backendOutput += `Error: ${err.toString()}\n`;
+              this.$emit("backend-realtime-output", this.backendOutput);
               this.status = "ERROR"; // Signal job polling to stop
               cleanupFastp();
               reject(new Error("Fastp execution error:", err));
@@ -1125,7 +1131,12 @@ export default {
           });
 
           // 3. Start backend process
-          window.electron.runFastp(qcParams, this.jobDetails.mode);
+          if (isDev && entry.forceError) {
+            console.warn("⚠️ Simulating fastp error for testing");
+            window.electron.simulateFastpError();
+          } else {
+            window.electron.runFastp(qcParams, this.jobDetails.mode);
+          }
         });
 
         // After fastp finishes, update classifyRead1/2 so that classify uses QC outputs:
@@ -1194,7 +1205,7 @@ export default {
         window.electron.onBackendError((err) => {
           if (!this.errorHandled) {
             this.errorHandled = true;
-            this.backendOutput += "\nError:\n" + err;
+            this.backendOutput += `Error: ${err.toString()}\n`;
             this.$emit("backend-realtime-output", this.backendOutput);
             this.status = "ERROR";
             cleanupClassify();
@@ -1212,7 +1223,12 @@ export default {
           }
         });
 
-        window.electron.runBackend(classifyParams);
+        if (isDev && entry.forceError) {
+          console.warn("⚠️ Simulating classify error for testing");
+          window.electron.simulateMetabuliError();
+        } else {
+          window.electron.runBackend(classifyParams);
+        }
       });
     },
 

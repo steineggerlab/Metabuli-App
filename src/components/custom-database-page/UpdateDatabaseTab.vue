@@ -465,6 +465,8 @@
 <script>
 import CreateNewTaxaListDialog from "./CreateNewTaxaListDialog.vue";
 
+const isDev = process.env.NODE_ENV !== "production";
+
 export default {
   name: "UpdateDatabaseTab",
   components: {
@@ -480,6 +482,7 @@ export default {
       accession2taxid: "", // file path
       olddbdir: "", // old db directory path
       gtdbBased: false, // gtdb option
+      forceError: true,
     },
     expandAdvancedSettings: false,
     isNewTaxaDialogVisible: false,
@@ -587,9 +590,6 @@ export default {
     status: "INITIAL",
     backendOutput: "",
     errorHandled: false,
-
-    // DEBUG
-    fastTest: false,
   }),
 
   methods: {
@@ -713,20 +713,6 @@ export default {
     },
 
     async runBackend() {
-      // DEBUG: “fast test” mode
-      // Skip actually calling the backend; simulate immediate success
-      if (this.fastTest) {
-        return new Promise((resolve) => {
-          console.log(
-            "Fast test mode: Simulating backend complete after 2s...",
-          );
-          setTimeout(() => {
-            this.status = "COMPLETE";
-            resolve();
-          }, 2000);
-        });
-      }
-
       const workingDir = window.electron.getParentDir(this.jobDetails.olddbdir);
 
       // Add command
@@ -780,9 +766,6 @@ export default {
 
       // Return a promise that resolves or rejects based on backend success or failure
       return new Promise((resolve, reject) => {
-        // Run backend process
-        window.electron.runBackend(params, workingDir);
-
         // Real-time output
         window.electron.onBackendRealtimeOutput((output) => {
           this.backendOutput += output; // Append output in real-time
@@ -799,8 +782,9 @@ export default {
 
         window.electron.onBackendError((error) => {
           if (!this.errorHandled) {
-            const message = "\nJob processing was terminated due to an error.";
-            this.backendOutput += message;
+            this.errorHandled = true;
+            this.backendOutput += `Error: ${error.toString()}\n`;
+            this.$emit("backend-realtime-output", this.backendOutput);
             this.status = "ERROR"; // Signal job polling to stop
             reject(new Error("Backend execution error:", error));
           }
@@ -813,6 +797,13 @@ export default {
             reject(new Error("Process was cancelled"));
           }
         });
+
+        if (isDev && this.jobDetails.forceError) {
+          console.warn("⚠️ Simulating metabuli updateDB error for testing");
+          window.electron.simulateMetabuliError();
+        } else {
+          window.electron.runBackend(params, workingDir);
+        }
       });
     },
 
@@ -858,7 +849,6 @@ export default {
           "Dismiss",
         );
       } else if (this.status === "ERROR") {
-        this.$emit("job-aborted");
         this.$emit(
           "trigger-snackbar",
           "Invalid request. Check your query and try again.",
@@ -867,7 +857,9 @@ export default {
           "Dismiss",
         );
       } else {
-        this.$emit("job-aborted");
+        this.backendOutput +=
+          "\nError: An unexpected error occurred. Please try again.\n";
+        this.$emit("backend-realtime-output", this.backendOutput);
         this.$emit(
           "trigger-snackbar",
           "An unexpected error occurred. Please try again.",

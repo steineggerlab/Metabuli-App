@@ -451,6 +451,7 @@ export default {
               {
                 q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
                 q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
+                forceError: true,
               },
               // {
               //   q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_1.fastq",
@@ -630,13 +631,17 @@ export default {
         this.status = "RUNNING";
         this.errorHandled = false;
         // DEBUG
-        console.log("status:", this.status);
-        console.log("errorhandled:", this.errorHandled);
-        console.log("modetag:", modeTag);
-        console.log("entry:", entry);
+        if (isDev) {
+          console.log("status:", this.status);
+          console.log("errorhandled:", this.errorHandled);
+          console.log("modetag:", modeTag);
+          console.log("entry:", entry);
+        }
 
         // Create directory for batch output
-        const { base: base1, ext: ext1 } = window.electron.stripFileExtension(entry.q1);
+        const { base: base1, ext: ext1 } = window.electron.stripFileExtension(
+          entry.q1,
+        );
         const batchName = `${base1}${modeTag}`;
         const batchOutDir = window.electron.joinPath(outDir, batchName); // TODO: organize code
         await window.electron.mkdir(batchOutDir);
@@ -665,7 +670,9 @@ export default {
 
         // Add read 2 input/output parameters if paired-end mode
         if (this.jobDetails.mode === "paired-end" && entry.q2) {
-          const { base: base2, ext: ext2 } = window.electron.stripFileExtension(entry.q2);
+          const { base: base2, ext: ext2 } = window.electron.stripFileExtension(
+            entry.q2,
+          );
           params.push(
             "-I",
             entry.q2,
@@ -706,8 +713,8 @@ export default {
           });
           window.electron.onFastpError((err) => {
             if (!this.errorHandled) {
-              const message = "\nError:\n" + err.toString();
-              this.backendOutput += message;
+              this.errorHandled = true; // Prevent multiple error handling
+              this.backendOutput += `Error: ${err.toString()}\n`;
               this.status = "ERROR"; // Signal job polling to stop
               cleanup(); // Cleanup listeners
               reject(new Error("Fastp execution error:", err));
@@ -731,7 +738,12 @@ export default {
           });
 
           // 3. Start backend process
-          window.electron.runFastp(params, this.jobDetails.mode);
+          if (isDev && entry.forceError) {
+            console.warn("⚠️ Simulating fastp error for testing");
+            window.electron.simulateFastpError();
+          } else {
+            window.electron.runFastp(params, this.jobDetails.mode);
+          }
         });
       }
     },
@@ -755,11 +767,9 @@ export default {
     },
     handleJobError() {
       this.errorHandled = true; // Ensure flag is set to prevent further handling
-      this.processingFastp = false;
-      this.backendOutput = "";
-
       // Trigger snackbar corresponding to case
       if (this.status === "TIMEOUT") {
+        // TODO: remove timeout status
         this.cancelBackend();
 
         this.triggerSnackbar(
