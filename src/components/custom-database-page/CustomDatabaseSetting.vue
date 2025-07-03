@@ -55,7 +55,6 @@
               @job-completed="emitJobCompleted"
               @job-aborted="emitJobAborted"
               @backend-realtime-output="emitBackendRealtimeOutput"
-              @job-timed-out="emitJobTimedOut"
               @trigger-snackbar="triggerSnackbar"
             ></NewDatabaseTab>
           </v-tabs-window-item>
@@ -163,9 +162,6 @@ export default {
     },
     emitBackendRealtimeOutput(string) {
       this.$emit("backend-realtime-output", string);
-    },
-    emitJobTimedOut() {
-      this.$emit("job-timed-out");
     },
     emitJobAborted() {
       this.$emit("job-aborted");

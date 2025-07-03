@@ -777,7 +777,7 @@ export default {
       }, // FIXME: move requiredRule to here
 
       // Properties for job processing status, response, and results
-      status: "INITIAL", // "INITIAL" | "RUNNING" | "COMPLETE" | "ERROR" | "CANCELLED" | "TIMEOUT"
+      status: "INITIAL", // "INITIAL" | "RUNNING" | "COMPLETE" | "ERROR" | "CANCELLED"
       results: "",
       backendOutput: "",
       processedResults: null,
@@ -998,8 +998,8 @@ export default {
           }
         } catch (error) {
           // TODO: figure out how to handle errors in the loop (e.g. if one entry fails, the rest should still run)
-          console.error(`Batch ${entry.batchName} failed:`, error);
-          this.handleJobError(entry);
+          console.error(`Batch ${entry.batchName} failed:`, error.message);
+          this.handleJobError(entry, error);
         } finally {
           // Save log file
           const logFilePath = this.joinPath(
@@ -1014,8 +1014,8 @@ export default {
         }
       }
 
+      // After batch iterations is complete
       if (this.status === "COMPLETE") {
-        // TODO: move this up
         // Gather citations to export
         const citations = [
           CITATIONS.metabuli,
@@ -1106,7 +1106,7 @@ export default {
 
           // 2. Attach listeners
           window.electron.onFastpOutput((output) => {
-            // console.log(output); // DEBUG
+            console.log(output); // DEBUG
             this.backendOutput += output;
             this.$emit("backend-realtime-output", this.backendOutput);
             this.status = "RUNNING"; // Keep the status as RUNNING
@@ -1118,7 +1118,7 @@ export default {
               this.$emit("backend-realtime-output", this.backendOutput);
               this.status = "ERROR"; // Signal job polling to stop
               cleanupFastp();
-              reject(new Error("Fastp execution error:", err));
+              reject(new Error(err.toString()));
             }
           });
           window.electron.onFastpComplete((msg) => {
@@ -1197,6 +1197,7 @@ export default {
         };
 
         window.electron.onBackendRealtimeOutput((output) => {
+          console.log(output); // DEBUG
           this.backendOutput += output;
           this.$emit("backend-realtime-output", this.backendOutput);
           this.status = "RUNNING";
@@ -1217,7 +1218,7 @@ export default {
             this.$emit("backend-realtime-output", this.backendOutput);
             this.status = "ERROR";
             cleanupClassify();
-            reject(new Error("classify execution error: " + err));
+            reject(new Error(err.toString()));
           }
         });
 
@@ -1347,7 +1348,7 @@ export default {
       // });
     },
 
-    handleJobError(entry) {
+    handleJobError(entry, error) {
       this.errorHandled = true; // Ensure flag is set to prevent further handling
 
       // Additional error handling logic (save failed job to local storage, trigger snackbar)
@@ -1367,7 +1368,6 @@ export default {
         jobType: "runSearch",
         isSample: false,
       });
-
       // Store completed job in local storage
       this.$emit("store-job", failedJob);
 
@@ -1381,13 +1381,7 @@ export default {
           "Dismiss",
         );
       } else if (this.status === "ERROR") {
-        this.$emit(
-          "trigger-snackbar",
-          "Invalid request. Check your query and try again.",
-          "error",
-          "warning",
-          "Dismiss",
-        );
+        this.$emit("trigger-snackbar", error, "error", "warning", "Dismiss");
       } else {
         this.backendOutput +=
           "\nError: An unexpected error occurred. Please try again.\n";
@@ -1403,9 +1397,6 @@ export default {
       }
 
       this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
-    },
-    handleTimeout() {
-      window.electron.cancelBackend();
     },
 
     // Other helper functions

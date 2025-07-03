@@ -488,15 +488,23 @@ export default {
   data: () => ({
     // Properties for Run New Search tab
     isJobFormValid: false,
-    jobDetails: {
-      // Store job details including file paths
-      newdbdir: "", // new db directory path
-      fastafile: "", // file path
-      accession2taxid: "", // file path
-      olddbdir: "", // old db directory path
-      gtdbBased: false, // gtdb option
-      forceError: true,
-    },
+    jobDetails: isDev
+      ? {
+          newdbdir: ".", // new db directory path
+          fastafile: ".", // file path
+          accession2taxid: ".", // file path
+          olddbdir: ".", // old db directory path
+          gtdbBased: false, // gtdb option
+          forceError: true,
+        }
+      : {
+          // Store job details including file paths
+          newdbdir: "", // new db directory path
+          fastafile: "", // file path
+          accession2taxid: "", // file path
+          olddbdir: "", // old db directory path
+          gtdbBased: false, // gtdb option
+        },
     expandAdvancedSettings: false,
     isNewTaxaDialogVisible: false,
     advancedSettings: {
@@ -686,11 +694,8 @@ export default {
         this.$emit("job-started", false);
 
         // Start backend request and job polling simultaneously
-        const backendPromise = this.runBackend();
-        const pollingPromise = this.pollJobStatus();
-
-        // Wait for either backend to complete or polling to timeout/fail
-        await Promise.race([backendPromise, pollingPromise]);
+        await this.runBackend();
+        await this.pollJobStatus();
 
         // If backend completes successfully and polling hasn't timed out
         if (this.status === "COMPLETE") {
@@ -698,7 +703,7 @@ export default {
           this.$emit("job-completed");
         }
       } catch (error) {
-        console.error("Error:", error.message); // Single error handling point
+        console.error(error); // Single error handling point
         this.handleJobError(error);
       } finally {
         if (this.status !== "COMPLETE") {
@@ -805,12 +810,13 @@ export default {
             this.backendOutput += `Error: ${error.toString()}\n`;
             this.$emit("backend-realtime-output", this.backendOutput);
             this.status = "ERROR"; // Signal job polling to stop
-            reject(new Error("Backend execution error:", error));
+            reject(new Error(error.toString()));
           }
         });
 
         window.electron.onBackendCancelled((message) => {
-          if (this.status !== "TIMEOUT" && !this.errorHandled) {
+          if (!this.errorHandled) {
+            this.errorHandled = true;
             this.backendOutput += message;
             this.status = "CANCELLED";
             reject(new Error("Process was cancelled"));
@@ -828,38 +834,23 @@ export default {
 
     // Function to track job status + process results + trigger snackbar
     async pollJobStatus(interval = 500, timeout = Infinity) {
-      // FIXME: decide timeout duration
-      console.log("🚀 UpdateDB database"); // DEBUG
+      console.log("🚀 UpdateDB running");
       const start = Date.now();
       while (Date.now() - start < timeout) {
         if (this.errorHandled || this.status === "COMPLETE") return true;
 
         if (this.status === "ERROR") {
-          throw new Error("Backend error occurred");
+          throw new Error("Backend signaled ERROR");
         }
         await new Promise((resolve) => setTimeout(resolve, interval));
       }
-      if (!this.errorHandled) {
-        this.status = "TIMEOUT";
-        throw new Error("Polling timed out");
-      }
     },
 
-    handleJobError() {
+    handleJobError(error) {
       this.errorHandled = true; // Ensure flag is set to prevent further handling
 
       // Trigger snackbar corresponding to case
-      if (this.status === "TIMEOUT") {
-        this.$emit("job-timed-out");
-        this.$emit(
-          "trigger-snackbar",
-          "Job execution timed out.",
-          "warning",
-          "timer",
-          "Retry",
-          this.startJob,
-        );
-      } else if (this.status === "CANCELLED") {
+      if (this.status === "CANCELLED") {
         this.$emit(
           "trigger-snackbar",
           "Job was cancelled.",
@@ -868,13 +859,7 @@ export default {
           "Dismiss",
         );
       } else if (this.status === "ERROR") {
-        this.$emit(
-          "trigger-snackbar",
-          "Invalid request. Check your query and try again.",
-          "error",
-          "warning",
-          "Dismiss",
-        );
+        this.$emit("trigger-snackbar", error, "error", "warning", "Dismiss");
       } else {
         this.backendOutput +=
           "\nError: An unexpected error occurred. Please try again.\n";
@@ -889,9 +874,6 @@ export default {
       }
 
       this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
-    },
-    handleTimeout() {
-      window.electron.cancelBackend();
     },
 
     // Create new taxa dialog

@@ -3,7 +3,6 @@
     <CustomDatabaseSetting
       @job-started="showDialog"
       @job-aborted="hideDialog"
-      @job-timed-out="handleJobTimeOut"
       @job-completed="handleJobComplete"
       @backend-realtime-output="updateRealtimeOutput"
     />
@@ -105,10 +104,6 @@ export default {
     // Job handling
     handleJobComplete() {
       this.statusComplete = true;
-    },
-    handleJobTimeOut() {
-      this.cancelBackend();
-      this.backendOutput = "Job timed out."; // Display timeout message
     },
     cancelBackend() {
       this.hideDialog();

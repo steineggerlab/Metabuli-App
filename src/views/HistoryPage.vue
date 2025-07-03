@@ -92,14 +92,6 @@
             Failed
           </v-chip>
           <v-chip
-            v-else-if="item.jobStatus === 'TIMEOUT'"
-            color="grey"
-            prepend-icon="$timelapse"
-            density="comfortable"
-          >
-            Timeout
-          </v-chip>
-          <v-chip
             v-else-if="item.jobStatus === 'CANCELLED'"
             color="warning"
             prepend-icon="$cancel"
