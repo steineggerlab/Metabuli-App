@@ -586,14 +586,10 @@
     <v-expand-transition>
       <div v-if="showOutputFormat">
         <!-- Input fields -->
-        <v-card>
+        <v-card variant="text">
           <v-card-text style="overflow-y: auto">
-            <div v-html="readmeHtml"></div>
+            <div v-html="readmeHtml" class="markdown-body"></div>
           </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn text @click="showReadme = false">Close</v-btn>
-          </v-card-actions>
         </v-card>
         <!-- <v-container fluid>
           </v-container> -->
@@ -605,10 +601,9 @@
 <script>
 import TSVParser from "@/plugins/tsvParser";
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
-
 import { makeCompletedJob, makeFailedJob } from "@/plugins/jobHistoryStruct.js";
 import { CITATIONS, formatCitations } from "@/citations.js";
-import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
+import { marked } from "marked";
 
 const isDev = process.env.NODE_ENV !== "production";
 
@@ -1438,7 +1433,49 @@ export default {
     this.jobDetails.maxram = totalRam; // Set maxram to total RAM in GB
     this.jobDetails.jobid = this.getCurrentDateTime(); // Prefill Job ID with current timestamp
 
-    this.readmeHtml = await loadMarkdownAsHtml("docs/classification.md");
+    const helpMarkdown = `
+#### 1. JobID_classifications.tsv: It contains the classification results for each read. The columns are as follows.
+1. \`is_classified\`: Classified or not
+2. \`name\`: Read ID
+3. \`taxID\`: Tax. ID in the tax. dump files used in database creation
+4. \`query_length\`: Effective read length
+5. \`score\`: DNA level identity score
+6. \`rank\`: Taxonomic rank of the taxon
+7. \`taxID:match_count\`: List of "taxID : k-mer match count"
+\`\`\`
+#query_id       name    taxID   query_length    score   rank    taxID:match_count
+0       SRR14484345.1.1 0       141     0       -       -
+1       SRR14484345.8.1 2697049 141     0.808511        no rank 2697049:25
+\`\`\`
+
+#### 2. JobID_report.tsv: It follows Kraken2's report format. The first line is a header, and the rest of the lines are tab-separated values. The columns are as follow.
+
+1. \`clade_proportion\`: Percentage of reads classified to the clade rooted at this taxon
+2. \`clade_count\`: Number of reads classified to the clade rooted at this taxon
+3. \`taxon_count\`: Number of reads classified directly to this taxon
+4. \`rank\`: Taxonomic rank of the taxon
+5. \`taxID\`: Tax ID according to the taxonomy dump files used in the database creation
+6. \`name\`: Taxonomic name of the taxon
+
+\`\`\`
+#clade_proportion       clade_count     taxon_count     rank    taxID   name
+6.3491  1403612 1403612 no rank 0       unclassified
+93.6509 20703786        5550    no rank 1       root
+93.5580 20683246        8058    no rank 131567    cellular organisms
+93.3781 20643465        680714  superkingdom    2           Bacteria
+58.9608 13034701        105888  clade   1783272       Terrabacteria group
+54.7279 12098906        472184  phylum  1239            Bacillota
+50.0354 11061529        743978  class   186801            Clostridia
+24.4574 5406894 402967  order   186802              Eubacteriales
+18.2228 4028593 206645  family  216572                Oscillospiraceae
+8.4570  1869631 950213  genus   216851                  Faecalibacterium
+3.0276  669332  655324  species 853                       Faecalibacterium prausnitzii
+0.0238  5271    5271    strain  718252                      Faecalibacterium prausnitzii L2-6
+0.0199  4407    4407    strain  657322                      Faecalibacterium prausnitzii SL3/3
+\`\`\`
+`;
+
+    this.readmeHtml = marked(helpMarkdown);
   },
 };
 </script>
