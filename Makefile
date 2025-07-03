@@ -11,7 +11,7 @@ else
 LIPO ?= lipo
 endif
 
-win: resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/fastp resources/win/x64/fastplong
+win: resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/fastp.bat resources/win/x64/fastplong.bat
 mac: resources/mac/${FRONTEND_APP} resources/mac/fastp resources/mac/fastplong
 linux: resources/linux/arm64/${FRONTEND_APP} resources/linux/x64/${FRONTEND_APP} resources/linux/x64/fastp
 
@@ -39,14 +39,17 @@ resources/win/x64/${FRONTEND_APP}.bat:
 		&& unzip ${FRONTEND_APP}-win64.zip && mv ${FRONTEND_APP}/* . && rmdir ${FRONTEND_APP} && rm ${FRONTEND_APP}-win64.zip
 	chmod -R +x resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/bin/*
 
-resources/win/x64/fastp:
+resources/win/x64/fastp.bat:
 	mkdir -p resources/win/x64
-	wget https://github.com/jaebeom-kim/fastp/releases/download/v0.0.1/fastp-windows.exe && mv fastp-windows.exe resources/win/x64/fastp && chmod a+x resources/win/x64/fastp
+	cd resources/win/x64 && wget -nv -O fastp-windows.zip https://github.com/jaebeom-kim/fastp/releases/download/v0.0.1/fastp-windows.zip \
+		&& unzip fastp-windows.zip && cp -r fastp/* . && rm -rf fastp && rm fastp-windows.zip
+	chmod -R +x resources/win/x64/fastp.bat resources/win/x64/bin/*
 
-resources/win/x64/fastplong:
+resources/win/x64/fastplong.bat:
 	mkdir -p resources/win/x64
-	wget https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.1/fastplong-windows.exe && mv fastplong-windows.exe resources/win/x64/fastplong && chmod a+x resources/win/x64/fastplong
-
+	cd resources/win/x64 && wget -nv -O fastplong-windows.zip https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.1/fastplong-windows.zip \
+		&& unzip fastplong-windows.zip && cp -r fastplong/* . && rm -rf fastplong && rm fastplong-windows.zip
+	chmod -R +x resources/win/x64/fastplong.bat resources/win/x64/bin/*
 
 # Linux
 resources/linux/x64/${FRONTEND_APP}-sse2:
