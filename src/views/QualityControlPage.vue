@@ -414,6 +414,7 @@
         </v-list>
       </v-card>
     </v-dialog>
+
     <!-- Footer: Reference to Paper -->
     <v-container class="pt-0">
       <v-card>
@@ -516,7 +517,7 @@ export default {
       backendOutput: "",
       errorHandled: false,
       processingFastp: false, // Flag to indicate if fastp is being processed
-      currentBatchIdx: 1,
+      currentBatchIdx: 0,
 
       // Snackbar
       snackbar: {

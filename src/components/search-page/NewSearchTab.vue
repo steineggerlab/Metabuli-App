@@ -1,5 +1,68 @@
 <template>
   <v-container>
+    <!-- Loading Dialog -->
+    <v-dialog v-model="loadingDialog" persistent>
+      <v-card class="mx-auto" width="700">
+        <v-list>
+          <!-- Title -->
+          <v-list-item class="font-weight-bold text-h6 py-0 pl-8 text-button">
+            <span>Processing Job...</span>
+            <template v-slot:append>
+              <v-img src="assets/marv_metabuli_animated.gif" width="60"></v-img>
+            </template>
+          </v-list-item>
+
+          <!-- Hide Progress Bar + Log Output + Cancel Button on Load Sample -->
+          <div v-if="!isSampleJob">
+            <v-list-item>
+              <v-progress-linear
+                v-model="currentBatchIdx"
+                :max="jobDetails.entries.length"
+                color="blue-grey"
+                height="20"
+                :striped="status !== 'COMPLETE'"
+              >
+                <template v-slot:default="{}">
+                  <strong
+                    >{{ currentBatchIdx }}/{{
+                      jobDetails.entries.length
+                    }}</strong
+                  >
+                </template>
+              </v-progress-linear>
+            </v-list-item>
+
+            <!-- Display Real-time Output -->
+            <v-list-item class="pt-1">
+              <template v-slot:subtitle>
+                <v-textarea
+                  variant="outlined"
+                  v-if="backendOutput"
+                  v-model="backendOutput"
+                  label="Command Line Output"
+                  rows="15"
+                  no-resize
+                  readonly
+                  hide-details="true"
+                  bg-color="white"
+                  class="mt-3 mx-0 text-caption"
+                  ref="outputTextarea"
+                ></v-textarea>
+              </template>
+            </v-list-item>
+
+            <!-- Cancel Button -->
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn variant="plain" color="primary" @click="cancelBackend"
+                >Cancel</v-btn
+              >
+            </v-card-actions>
+          </div>
+        </v-list>
+      </v-card>
+    </v-dialog>
+
     <!-- Required Fields -->
     <v-form ref="jobForm" v-model="isJobFormValid">
       <v-card-title class="text-button font-weight-bold"
@@ -628,19 +691,24 @@ export default {
                 batchName: "",
               },
               {
+                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_3.fq",
+                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_4.fq",
+                batchName: "",
+              },
+              {
                 q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
                 q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
                 batchName: "",
               },
             ],
             database:
-              "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/gtdb",
+              "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/refseq_virus",
             outdir:
               "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR",
             jobid: "",
             maxram: "",
             fastpParams: {}, // Parameters for quality control (fastp/fastplong)
-            forceError: 1,
+            forceError: 0,
           }
         : {
             // Store job details including file paths
@@ -786,7 +854,13 @@ export default {
       // Properties for job processing status, response, and results
       status: "INITIAL", // "INITIAL" | "RUNNING" | "COMPLETE" | "ERROR" | "CANCELLED"
       results: "",
+
+      // Dialog
+      isSampleJob: false,
+      loadingDialog: false,
+      currentBatchIdx: 0,
       backendOutput: "",
+
       processedResults: null,
       errorHandled: false,
     };
@@ -931,7 +1005,7 @@ export default {
     // Function for loading sample data report file
     async loadSampleData() {
       // Start loading dialog
-      this.$emit("job-started", true);
+      this.showDialog(true);
 
       // Process report file
       await this.processResults(true);
@@ -984,12 +1058,15 @@ export default {
       this.backendOutput = "";
 
       // Loop over each entry and run the job for each
-      for (const entry of this.jobDetails.entries) {
+      for (let i = 0; i < this.jobDetails.entries.length; i++) {
+        this.currentBatchIdx = i;
+        const entry = this.jobDetails.entries[i];
+
         // Before each batch, reset status & backend‐output
         this.status = "RUNNING";
         this.errorHandled = false;
         this.backendOutput = "";
-        this.$emit("job-started", false);
+        this.showDialog(false);
 
         try {
           // 1) Run that one batch's backend process
@@ -1004,7 +1081,6 @@ export default {
             this.handleBatchSuccess(entry);
           }
         } catch (error) {
-          // TODO: figure out how to handle errors in the loop (e.g. if one entry fails, the rest should still run)
           console.error(`Batch ${entry.batchName} failed:`, error.message);
           this.handleJobError(entry, error);
         } finally {
@@ -1013,7 +1089,7 @@ export default {
             this.jobDetails.outdir,
             this.jobDetails.jobid,
             entry.batchName,
-            this.jobDetails.jobid + "_log.txt",
+            `${this.jobDetails.jobid}_${entry.batchName}_log.txt`,
           );
           window.electron
             .writeFile(logFilePath, this.backendOutput)
@@ -1025,6 +1101,7 @@ export default {
           break;
         }
       }
+      this.currentBatchIdx += 1; // Increment one last time so that the progress bar fills
 
       // After batch iterations is complete
       if (this.status === "COMPLETE") {
@@ -1046,7 +1123,6 @@ export default {
 
       // Once all batches are done (or attempted), reset top‐level UI state
       this.status = "INITIAL";
-      this.backendOutput = "";
       this.errorHandled = false;
     },
 
@@ -1118,16 +1194,13 @@ export default {
 
           // 2. Attach listeners
           window.electron.onFastpOutput((output) => {
-            console.log(output); // DEBUG
-            this.backendOutput += output;
-            this.$emit("backend-realtime-output", this.backendOutput);
+            this.updateRealtimeOutput(output);
             this.status = "RUNNING"; // Keep the status as RUNNING
           });
           window.electron.onFastpError((err) => {
             if (!this.errorHandled) {
               this.errorHandled = true; // Prevent multiple error handling
-              this.backendOutput += `Error: ${err.toString()}\n`;
-              this.$emit("backend-realtime-output", this.backendOutput);
+              this.updateRealtimeOutput(`Error: ${err.toString()}\n`);
               this.status = "ERROR"; // Signal job polling to stop
               cleanupFastp();
               reject(new Error(err.toString()));
@@ -1135,7 +1208,7 @@ export default {
           });
           window.electron.onFastpComplete((msg) => {
             if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
-            this.backendOutput += `${msg}\n`;
+            this.updateRealtimeOutput(`${msg}\n`);
             this.status = "COMPLETE";
             cleanupFastp();
             resolve();
@@ -1143,7 +1216,7 @@ export default {
           window.electron.onFastpCancelled((msg) => {
             if (!this.errorHandled) {
               this.errorHandled = true; // Prevent multiple error handling
-              this.backendOutput += `\n${msg}`;
+              this.updateRealtimeOutput(`${msg}\n`);
               this.status = "CANCELLED";
               cleanupFastp();
               reject(new Error("QC process was cancelled"));
@@ -1209,15 +1282,13 @@ export default {
         };
 
         window.electron.onBackendRealtimeOutput((output) => {
-          console.log(output); // DEBUG
-          this.backendOutput += output;
-          this.$emit("backend-realtime-output", this.backendOutput);
+          this.updateRealtimeOutput(output);
           this.status = "RUNNING";
         });
 
         window.electron.onBackendComplete((msg) => {
           if (this.status !== "RUNNING") return;
-          this.backendOutput += msg;
+          this.updateRealtimeOutput(msg);
           this.status = "COMPLETE";
           cleanupClassify();
           resolve();
@@ -1226,8 +1297,7 @@ export default {
         window.electron.onBackendError((err) => {
           if (!this.errorHandled) {
             this.errorHandled = true;
-            this.backendOutput += `Error: ${err.toString()}\n`;
-            this.$emit("backend-realtime-output", this.backendOutput);
+            this.updateRealtimeOutput(`Error: ${err.toString()}\n`);
             this.status = "ERROR";
             cleanupClassify();
             reject(new Error(err.toString()));
@@ -1237,7 +1307,7 @@ export default {
         window.electron.onBackendCancelled((msg) => {
           if (!this.errorHandled) {
             this.errorHandled = true;
-            this.backendOutput += `\n${msg}`;
+            this.updateRealtimeOutput(`${msg}\n`);
             this.status = "CANCELLED";
             cleanupClassify();
             reject(new Error("classify cancelled"));
@@ -1262,6 +1332,28 @@ export default {
         if (this.status === "ERROR") throw new Error("Backend signaled ERROR");
         await new Promise((r) => setTimeout(r, interval));
       }
+    },
+    updateRealtimeOutput(output) {
+      this.backendOutput += output; // Update real-time output
+      this.$nextTick(() => {
+        // Scroll to the bottom
+        const textarea =
+          this.$refs.outputTextarea.$el.querySelector("textarea");
+        textarea.scrollTop = textarea.scrollHeight;
+      });
+    },
+    cancelBackend() {
+      this.hideDialog();
+      window.electron.cancelBackend();
+    },
+
+    // Show/hide dialog
+    showDialog(isSample) {
+      this.loadingDialog = true;
+      this.isSampleJob = isSample;
+    },
+    hideDialog() {
+      this.loadingDialog = false;
     },
 
     // Function for processing results (shared for both tabs)
@@ -1394,9 +1486,9 @@ export default {
       } else if (this.status === "ERROR") {
         this.$emit("trigger-snackbar", error, "error", "warning", "Dismiss");
       } else {
-        this.backendOutput +=
-          "\nError: An unexpected error occurred. Please try again.\n";
-        this.$emit("backend-realtime-output", this.backendOutput);
+        this.updateRealtimeOutput(
+          "\nError: An unexpected error occurred. Please try again.\n",
+        );
         this.$emit(
           "trigger-snackbar",
           "An unexpected error occurred. Please try again.",
@@ -1524,5 +1616,14 @@ export default {
 
 .search-advanced-settings .v-list-subheader {
   min-height: 0px;
+}
+
+/* Log textarea */
+:deep(.v-textarea .v-field__input) {
+  font-family: Roboto;
+  background-color: white;
+  font-size: 12px;
+  margin-top: 16px;
+  /* -webkit-mask-image: none; */
 }
 </style>
