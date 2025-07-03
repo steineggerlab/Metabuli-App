@@ -445,6 +445,8 @@ export default {
       // Low Complexity Filtering
       low_complexity_filter: false,
       complexity_threshold: 30,
+
+      // Per Read Cutting By Quality
       cut_front: false,
       cut_front_window_size: 4,
       cut_front_mean_quality: 20,
@@ -472,13 +474,17 @@ export default {
     },
   },
   methods: {
-    onSave() {
-      // emit both the GUI params and any extras
+    pushParamsUp() {
       const allArgs = [
         ...this.buildFastpArgs(this.params),
         ...this.extraParams,
       ];
       this.$emit("update-fastp-params", allArgs);
+    },
+
+    onSave() {
+      // emit both the GUI params and any extras
+      this.pushParamsUp(); // send latest values
       this.dialog = false;
     },
     onCancel() {
@@ -537,7 +543,7 @@ export default {
           .split(/\r?\n/) // split on each line
           .filter((line) => line.trim()) // trim whitespace
           .flatMap((line) => line.trim().split(/\s+/)); // Now split each line into [flag, value?] and flatten
-        console.log(this.extraParams);
+        // console.log(this.extraParams); // DEBUG
         // e.g. ["--disable_quality_filtering", "--qualified_quality_phred", "20", ...]
       } catch (err) {
         console.error("Error loading extra params file:", err);
@@ -550,21 +556,94 @@ export default {
     },
     buildFastpArgs(params) {
       // Function for building fastp command line arguments from params object (gui settings)
-      return Object.entries(params).flatMap(([key, val]) => {
-        const flag = `--${key}`;
-        // Boolean flag: only emit when true
-        if (typeof val === "boolean") {
-          return val ? [flag] : [];
+      const args = [];
+
+      // Helper function to check if a parameter has a valid value
+      const hasValue = (val) => val !== null && val !== undefined && val !== "";
+
+      // Helper function to add parameter if it has a valid value
+      const addParam = (flag, val) => {
+        if (hasValue(val)) {
+          args.push(flag, String(val));
         }
-        // Value option: emit when present
-        if (val !== null && val !== undefined && val !== "") {
-          return [flag, String(val)];
+      };
+
+      // Quality Filtering
+      if (params.disable_quality_filtering) {
+        args.push("--disable_quality_filtering");
+      } else {
+        // Only add quality filtering params if quality filtering is enabled
+        addParam("--qualified_quality_phred", params.qualified_quality_phred);
+        addParam(
+          "--unqualified_percent_limit",
+          params.unqualified_percent_limit,
+        );
+
+        if (this.mode === "long-read") {
+          // For fastplong (long reads)
+          addParam("--mean_qual", params.mean_qual);
+        } else {
+          // For fastp (short/paired-end reads)
+          addParam("--average_qual", params.average_qual);
         }
-        return [];
-      });
+      }
+
+      // Length Filtering
+      if (params.disable_length_filtering) {
+        args.push("--disable_length_filtering");
+      } else {
+        // Only add length filtering params if length filtering is enabled
+        addParam("--length_required", params.length_required);
+        addParam("--length_limit", params.length_limit);
+      }
+
+      // Adapter Trimming
+      if (params.disable_adapter_trimming) {
+        args.push("--disable_adapter_trimming");
+      } else {
+        // Only add adapter trimming params if adapter trimming is enabled
+        if (this.mode === "long-read") {
+          addParam("--start_adapter", params.start_adapter);
+          addParam("--end_adapter", params.end_adapter);
+        } else {
+          addParam("--adapter_sequence", params.adapter_sequence);
+          if (this.mode === "paired-end") {
+            addParam("--adapter_sequence_r2", params.adapter_sequence_r2);
+          }
+        }
+        addParam("--adapter_fasta", params.adapter_fasta);
+      }
+
+      // Low Complexity Filtering
+      if (params.low_complexity_filter) {
+        args.push("--low_complexity_filter");
+        addParam("--complexity_threshold", params.complexity_threshold);
+      }
+
+      // Per-read Cutting - Front
+      if (params.cut_front) {
+        args.push("--cut_front");
+        addParam("--cut_front_window_size", params.cut_front_window_size);
+        addParam("--cut_front_mean_quality", params.cut_front_mean_quality);
+      }
+
+      // Per-read Cutting - Tail
+      if (params.cut_tail) {
+        args.push("--cut_tail");
+        addParam("--cut_tail_window_size", params.cut_tail_window_size);
+        addParam("--cut_tail_mean_quality", params.cut_tail_mean_quality);
+      }
+
+      // Other Settings (these are always included if they have values)
+      addParam("--thread", params.thread);
+      addParam("--compression", params.compression);
+
+      return args;
     },
   },
   async mounted() {
+    this.pushParamsUp(); // Push default params up immediately on mount (when dialog is initiated)
+
     try {
       this.readmeHtml = await loadMarkdownAsHtml("docs/preprocess.md");
     } catch (err) {

@@ -1351,8 +1351,6 @@ export default {
     handleJobError(entry, error) {
       this.errorHandled = true; // Ensure flag is set to prevent further handling
 
-      // Additional error handling logic (save failed job to local storage, trigger snackbar)
-
       // Create failed job object to store in local storage
       const failedJob = makeFailedJob({
         jobDetails: this.jobDetails,
