@@ -616,36 +616,43 @@ export default {
     return {
       // Properties for Run New Search tab
       isJobFormValid: false,
-      jobDetails: {
-        // Store job details including file paths
-        mode: "paired-end", // "paired-end" | "single-end" | "long-read"
-        enableQC: true,
-        entries: isDev
-          ? [
+      jobDetails: isDev
+        ? {
+            // Store job details including file paths
+            mode: "paired-end", // "paired-end" | "single-end" | "long-read"
+            enableQC: true,
+            entries: [
               {
                 q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
                 q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
                 batchName: "",
-                forceError: true,
               },
               {
                 q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
                 q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
                 batchName: "",
               },
-            ]
-          : [{ q1: "", q2: "", batchName: "" }],
-        database: isDev
-          ? "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/gtdb"
-          : "",
-        outdir: isDev
-          ? "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR"
-          : "",
-        jobid: "",
-        maxram: "",
-
-        fastpParams: {}, // Parameters for quality control (fastp/fastplong)
-      },
+            ],
+            database:
+              "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/gtdb",
+            outdir:
+              "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR",
+            jobid: "",
+            maxram: "",
+            fastpParams: {}, // Parameters for quality control (fastp/fastplong)
+            forceError: 1,
+          }
+        : {
+            // Store job details including file paths
+            mode: "paired-end", // "paired-end" | "single-end" | "long-read"
+            enableQC: true,
+            entries: [{ q1: "", q2: "", batchName: "" }],
+            database: "",
+            outdir: "",
+            jobid: "",
+            maxram: "",
+            fastpParams: {}, // Parameters for quality control (fastp/fastplong)
+          },
       jobDetailsSample: {
         // Sample job details
         mode: "paired-end",
@@ -813,7 +820,7 @@ export default {
   methods: {
     // Button actions for adding/removing entry rows
     addEntry() {
-      this.jobDetails.entries.push({ q1: "", q2: "" });
+      this.jobDetails.entries.push({ q1: "", q2: "", batchName: "" });
     },
     removeEntry(index) {
       if (this.jobDetails.entries.length > 1) {
@@ -1012,6 +1019,11 @@ export default {
             .writeFile(logFilePath, this.backendOutput)
             .catch(console.error);
         }
+
+        /* Exit loop if one batch hits CANCEL/ERROR */
+        if (this.status === "CANCELLED" || this.status === "ERROR") {
+          break;
+        }
       }
 
       // After batch iterations is complete
@@ -1139,7 +1151,7 @@ export default {
           });
 
           // 3. Start backend process
-          if (isDev && entry.forceError) {
+          if (isDev && this.jobDetails.forceError) {
             console.warn("⚠️ Simulating fastp error for testing");
             window.electron.simulateFastpError();
           } else {
@@ -1232,7 +1244,7 @@ export default {
           }
         });
 
-        if (isDev && entry.forceError) {
+        if (isDev && this.jobDetails.forceError) {
           console.warn("⚠️ Simulating classify error for testing");
           window.electron.simulateMetabuliError();
         } else {
@@ -1349,6 +1361,7 @@ export default {
     },
 
     handleJobError(entry, error) {
+      // Enters when "CANCELLED" || "ERROR"
       this.errorHandled = true; // Ensure flag is set to prevent further handling
 
       // Create failed job object to store in local storage
@@ -1393,8 +1406,6 @@ export default {
         );
         // TODO: leaves record in job history as 'INCOMPLETE', find out why
       }
-
-      this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
     },
 
     // Other helper functions
