@@ -32,6 +32,9 @@ const stripFileExtension = (filePath) => {
 
 contextBridge.exposeInMainWorld("electron", {
 	getBasePath: () => getBasePath(),
+	getParentDir: (filePath) => {
+		return path.dirname(filePath);
+	},
 	openItemInFolder: (filePath) => shell.showItemInFolder(filePath),
 
 	// Function to resolve file path

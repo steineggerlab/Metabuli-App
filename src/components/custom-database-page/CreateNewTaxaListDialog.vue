@@ -404,10 +404,7 @@ export default {
         });
       }
 
-      const workingDir = this.jobDetails.oldDBDir.substring(
-        0,
-        this.jobDetails.oldDBDir.lastIndexOf("/"),
-      );
+      const workingDir = window.electron.getParentDir(this.jobDetails.oldDBDir);
 
       // Add command
       let params = ["createnewtaxalist"];

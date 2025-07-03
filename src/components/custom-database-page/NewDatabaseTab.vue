@@ -553,12 +553,15 @@ export default {
         );
       }
     },
-    extractFilename(path) {
-      return window.electron.extractFilename(path);
-    },
     clearFile(field) {
       this.jobDetails[field] = null;
       this.$refs.jobForm.validate();
+    },
+    extractFilename(path) {
+      return window.electron.extractFilename(path);
+    },
+    joinPath(...segments) {
+      return window.electron.joinPath(...segments);
     },
 
     // Functions handling validation rules
@@ -618,7 +621,7 @@ export default {
         if (this.backendOutput) {
           window.electron
             .writeFile(
-              this.jobDetails.dbdir + "/build_log.txt",
+              this.joinPath(this.jobDetails.dbdir, "build_log.txt"),
               this.backendOutput,
             )
             .catch(console.error);
@@ -649,10 +652,7 @@ export default {
       }
 
       // Otherwise, do the real backend call
-      const workingDir = this.jobDetails.dbdir.substring(
-        0,
-        this.jobDetails.dbdir.lastIndexOf("/"),
-      );
+      const workingDir = window.electron.getParentDir(this.jobDetails.dbdir);
 
       // Add command
       let params = ["build"];
