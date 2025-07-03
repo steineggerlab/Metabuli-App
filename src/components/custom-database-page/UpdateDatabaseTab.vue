@@ -532,16 +532,16 @@ export default {
       },
       validateDb: {
         title: "--validate-db",
-        description: "Validate DB files (0 by default)",
+        description: "Validate DB files (activated by default)",
         parameter: "--validate-db",
-        value: 0,
+        value: 1,
         type: "BOOLEAN",
       },
       validateInput: {
         title: "--validate-input",
-        description: "Validate query file format (0 by default)",
+        description: "Validate query file format (activated by default)",
         parameter: "--validate-input",
-        value: 0,
+        value: 1,
         type: "BOOLEAN",
       },
       cdsInfo: {
@@ -730,12 +730,13 @@ export default {
 
       // Add command
       let params = ["updateDB"];
+      let accession2taxid = this.jobDetails.accession2taxid; // differs based on gtdbbased setting
 
       // GTDB-Based option (--gtdb)
       if (this.jobDetails.gtdbBased) {
         params.push("--gtdb", 1);
 
-        this.jobDetails.accession2taxid = this.joinPath(
+        accession2taxid = this.joinPath(
           this.jobDetails.accession2taxid,
           "taxid.map",
         );
@@ -745,7 +746,7 @@ export default {
       params.push(
         this.jobDetails.newdbdir,
         this.jobDetails.fastafile,
-        this.jobDetails.accession2taxid,
+        accession2taxid,
         this.jobDetails.olddbdir,
       );
 
