@@ -522,7 +522,20 @@
               </v-col>
 
               <v-col>
+                <!-- Toggle switch for boolean settings -->
+                <v-switch
+                  v-if="setting.type === 'BOOLEAN'"
+                  v-model="setting.value"
+                  color="primary"
+                  density="compact"
+                  :true-value="1"
+                  :false-value="0"
+                  hide-details
+                ></v-switch>
+
+                <!-- Text field for other settings -->
                 <v-text-field
+                  v-else
                   variant="outlined"
                   rounded="lg"
                   density="compact"
@@ -701,15 +714,15 @@ export default {
           title: "--validate-db",
           description: "Validate DB files (0 by default)",
           parameter: "--validate-db",
-          value: "0",
-          type: "INTEGER",
+          value: 0,
+          type: "BOOLEAN",
         },
         validateInput: {
           title: "--validate-input",
           description: "Validate query file format (0 by default)",
           parameter: "--validate-input",
-          value: "0",
-          type: "INTEGER",
+          value: 0,
+          type: "BOOLEAN",
         },
       },
       validationRules: {
