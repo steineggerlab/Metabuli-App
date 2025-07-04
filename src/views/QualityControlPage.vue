@@ -381,7 +381,7 @@
           </v-list-item>
 
           <!-- Display Real-time Output -->
-          <v-list-item class="pt-1">
+          <v-list-item class="pt-4">
             <template v-slot:subtitle>
               <v-textarea
                 variant="outlined"
@@ -908,5 +908,13 @@ export default {
 .v-row {
   margin-bottom: 0px;
   margin-top: 12px;
+}
+/* Filepath textfield */
+:deep(.v-field__input),
+:deep(.v-text-field__suffix) {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  min-height: 30px;
+  font-size: 12px;
 }
 </style>
