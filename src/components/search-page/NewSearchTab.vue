@@ -649,7 +649,7 @@
     <v-expand-transition>
       <div v-if="showOutputFormat">
         <!-- Input fields -->
-        <v-card variant="text">
+        <v-card variant="flat" theme="light" class="force-light">
           <v-card-text style="overflow-y: auto">
             <div v-html="readmeHtml" class="markdown-body"></div>
           </v-card-text>
@@ -1625,5 +1625,11 @@ export default {
   font-size: 12px;
   margin-top: 16px;
   /* -webkit-mask-image: none; */
+}
+
+/* :deep so the rule reaches into the markdown-body */
+:deep(.force-light .markdown-body) {
+  background: #fff !important;
+  color: #24292f !important;
 }
 </style>
