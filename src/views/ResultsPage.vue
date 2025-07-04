@@ -406,10 +406,9 @@ export default {
           const res = data.result; // true / false / null
           this.taxonomyVerification = res;
 
-          if (res === true)
-            console.log("🟩 Taxonomy verification passed", nodesByDepth);
+          if (res === true) console.log("🟩 Taxonomy verification passed");
           else if (res === false)
-            console.log("🟥 Taxonomy verification failed", nodesByDepth);
+            console.log("🟥 Taxonomy verification failed");
           else console.warn("⚠️ Verification skipped");
 
           worker.terminate(); // tidy-up

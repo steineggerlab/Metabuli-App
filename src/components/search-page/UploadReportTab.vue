@@ -169,10 +169,11 @@ export default {
           // });
         }, 2000);
       } catch (error) {
-        console.error("Error processing file: ", error.message); // DEBUG
+        const errorMsg = `Error processing file: ${error.message}`;
+        console.error(errorMsg); // DEBUG
 
         // Set log message
-        this.backendOutput = "Error processing file: " + error.message;
+        this.backendOutput = errorMsg;
         this.$emit("job-aborted");
 
         this.status = "ERROR";
@@ -193,13 +194,7 @@ export default {
         this.$emit("store-job", failedJob);
 
         // Trigger snackbar
-        this.$emit(
-          "trigger-snackbar",
-          "Error processing file. Please check file and try again.",
-          "error",
-          "warning",
-          "Dismiss",
-        );
+        this.$emit("trigger-snackbar", errorMsg, "error", "warning", "Dismiss");
         this.loadingDialog = false;
       } finally {
         this.backendOutput = ""; // Clear backendOutput
