@@ -311,7 +311,7 @@
                     </v-col>
 
                     <!-- Remove Row Button -->
-                    <v-col cols="1" v-if="index > 0">
+                    <v-col cols="1" v-if="jobDetails.entries.length > 1">
                       <v-btn
                         variant="text"
                         icon="$checkboxIndeterminate"
@@ -321,6 +321,22 @@
                       >
                       </v-btn>
                     </v-col>
+
+                    <!-- Hidden fields for read1 and read2 for form validation -->
+                    <v-text-field
+                      v-model="entry.q1"
+                      :rules="[requiredRule]"
+                      class="d-none"
+                      hide-details
+                    />
+
+                    <v-text-field
+                      v-if="jobDetails.mode === 'paired-end'"
+                      v-model="entry.q2"
+                      :rules="[requiredRule]"
+                      class="d-none"
+                      hide-details
+                    />
                   </v-row>
 
                   <!-- Add Entry Button -->
@@ -560,6 +576,7 @@ export default {
     },
     clearDynamicFile(index, field) {
       this.jobDetails.entries[index][field] = "";
+      this.$refs.jobForm.validate();
     },
 
     async selectFile(field, type) {
@@ -646,7 +663,7 @@ export default {
 
         // Start loading dialog
         this.status = "RUNNING";
-        this.processingFastp = true; // Set processing flag
+        this.processingFastp = true; // Open dialog
 
         // Start backend request and job polling simultaneously
         await this.runBackend();
@@ -711,10 +728,8 @@ export default {
           qcCmd,
           "-h",
           window.electron.joinPath(batchOutDir, batchName + ".html"),
-          // `${batchOutDir}/${batchName}.html`,
           "-j",
           window.electron.joinPath(batchOutDir, batchName + ".json"),
-          // `${batchOutDir}/${batchName}.json`,
         ];
 
         // Add read 1 input/output parameters
@@ -722,8 +737,7 @@ export default {
           "-i",
           entry.q1, // Read 1 file
           "-o",
-          window.electron.joinPath(batchOutDir, base1 + suffix + ext1),
-          // `${batchOutDir}/${base1}${suffix}${ext1}`, // Output filepath for Read 1
+          window.electron.joinPath(batchOutDir, base1 + suffix + ext1), // Output filepath for Read 1
         );
 
         // Add read 2 input/output parameters if paired-end mode
@@ -735,8 +749,7 @@ export default {
             "-I",
             entry.q2,
             "-O",
-            window.electron.joinPath(batchOutDir, base2 + suffix + ext2),
-            // `${batchOutDir}/${base2}${suffix}${ext2}`, // Output filepath for Read 2
+            window.electron.joinPath(batchOutDir, base2 + suffix + ext2), // Output filepath for Read 2
           );
         }
 
