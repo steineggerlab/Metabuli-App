@@ -261,14 +261,22 @@ export default {
     activePanel: [0],
 
     // Extract Reads
-    jobDetails: {
-      oldDBDir: "",
-      fastaList: "",
-      newTaxonomyPath: "",
-      accession2TaxId: "",
-      outdir: "",
-      forceError: true,
-    },
+    jobDetails: isDev
+      ? {
+          oldDBDir: ".",
+          fastaList: ".",
+          newTaxonomyPath: ".",
+          accession2TaxId: ".",
+          outdir: ".",
+          forceError: true,
+        }
+      : {
+          oldDBDir: "",
+          fastaList: "",
+          newTaxonomyPath: "",
+          accession2TaxId: "",
+          outdir: "",
+        },
     // isSampleJob: null,
     // Properties for backend job processing status, backend output, error tracking
     status: "INITIAL",
@@ -367,19 +375,15 @@ export default {
         this.showProcessingExtractPanel();
 
         // Start backend request and job polling simultaneously
-        const backendPromise = this.runBackend();
-        const pollingPromise = this.pollJobStatus();
-
-        // Wait for either backend to complete or polling to timeout/fail
-        await Promise.race([backendPromise, pollingPromise]);
+        await this.runBackend();
+        await this.pollJobStatus();
 
         // If backend completes successfully and polling hasn't timed out
         if (this.status === "COMPLETE") {
           console.log("🚀 New taxa list created successfully."); // DEBUG
         }
       } catch (error) {
-        console.error("Error:", error.message); // Single error handling point
-
+        console.error(error); // Single error handling point
         this.handleJobError(error);
       } finally {
         if (this.status !== "COMPLETE") {
@@ -448,15 +452,16 @@ export default {
             this.errorHandled = true;
             this.backendOutput += `Error: ${error.toString()}\n`;
             this.status = "ERROR"; // Signal job polling to stop
-            reject(new Error("Backend execution error:", error));
+            reject(new Error(error.toString()));
           }
         });
 
         window.electron.onBackendCancelled((message) => {
-          if (this.status !== "TIMEOUT" && !this.errorHandled) {
+          if (!this.errorHandled) {
+            this.errorHandled = true;
             this.backendOutput += message;
             this.status = "CANCELLED";
-            reject(new Error("Process was cancelled"));
+            reject(new Error("createnewtaxalist cancelled"));
           }
         });
 
@@ -472,45 +477,25 @@ export default {
     },
     // Function to track job status + process results + trigger snackbar
     async pollJobStatus(interval = 500, timeout = Infinity) {
-      // FIXME: decide timeout duration
-      console.log("🚀 Running extract job"); // DEBUG
+      console.log("🚀 createnewtaxalist job running");
       const start = Date.now();
       while (Date.now() - start < timeout) {
         if (this.errorHandled || this.status === "COMPLETE") return true;
 
         if (this.status === "ERROR") {
-          throw new Error("Backend error occurred");
+          throw new Error("Backend signaled ERROR");
         }
         await new Promise((resolve) => setTimeout(resolve, interval));
       }
-      if (!this.errorHandled) {
-        this.status = "TIMEOUT";
-        throw new Error("Polling timed out");
-      }
     },
-    handleJobError() {
+    handleJobError(error) {
       this.errorHandled = true; // Ensure flag is set to prevent further handling
 
       // Trigger snackbar corresponding to case
-      if (this.status === "TIMEOUT") {
-        this.cancelBackend();
-
-        this.triggerSnackbar(
-          "Job execution timed out.",
-          "warning",
-          "timer",
-          "Retry",
-          this.startJob,
-        );
-      } else if (this.status === "CANCELLED") {
+      if (this.status === "CANCELLED") {
         this.triggerSnackbar("Job was cancelled.", "info", "cancel", "Dismiss");
       } else if (this.status === "ERROR") {
-        this.triggerSnackbar(
-          "Invalid request. Check your query and try again.",
-          "error",
-          "warning",
-          "Dismiss",
-        );
+        this.triggerSnackbar(error.message, "error", "warning", "Dismiss");
       } else {
         this.triggerSnackbar(
           "An unexpected error occurred. Please try again.",

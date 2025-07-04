@@ -311,7 +311,7 @@
                     </v-col>
 
                     <!-- Remove Row Button -->
-                    <v-col cols="1" v-if="index > 0">
+                    <v-col cols="1" v-if="jobDetails.entries.length > 1">
                       <v-btn
                         variant="text"
                         icon="$checkboxIndeterminate"
@@ -321,6 +321,22 @@
                       >
                       </v-btn>
                     </v-col>
+
+                    <!-- Hidden fields for read1 and read2 for form validation -->
+                    <v-text-field
+                      v-model="entry.q1"
+                      :rules="[requiredRule]"
+                      class="d-none"
+                      hide-details
+                    />
+
+                    <v-text-field
+                      v-if="jobDetails.mode === 'paired-end'"
+                      v-model="entry.q2"
+                      :rules="[requiredRule]"
+                      class="d-none"
+                      hide-details
+                    />
                   </v-row>
 
                   <!-- Add Entry Button -->
@@ -364,8 +380,24 @@
             </template>
           </v-list-item>
 
+          <v-list-item>
+            <v-progress-linear
+              v-model="currentBatchIdx"
+              :max="jobDetails.entries.length"
+              color="blue-grey"
+              height="20"
+              :striped="status !== 'COMPLETE'"
+            >
+              <template v-slot:default="{}">
+                <strong
+                  >{{ currentBatchIdx }}/{{ jobDetails.entries.length }}</strong
+                >
+              </template>
+            </v-progress-linear>
+          </v-list-item>
+
           <!-- Display Real-time Output -->
-          <v-list-item class="pt-1">
+          <v-list-item class="pt-4">
             <template v-slot:subtitle>
               <v-textarea
                 variant="outlined"
@@ -398,6 +430,7 @@
         </v-list>
       </v-card>
     </v-dialog>
+
     <!-- Footer: Reference to Paper -->
     <v-container class="pt-0">
       <v-card>
@@ -421,6 +454,34 @@
         </v-card-text>
       </v-card>
     </v-container>
+
+    <!-- Snackbar -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :timeout="snackbar.timeout"
+      location="top"
+      color="white"
+    >
+      <v-icon :color="snackbar.color" :icon="`$${snackbar.icon}`"></v-icon>
+      {{ snackbar.message }}
+      <template v-slot:actions>
+        <v-btn
+          v-if="snackbar.buttonText"
+          :color="snackbar.color"
+          variant="text"
+          @click="handleSnackbarAction"
+          >{{ snackbar.buttonText }}</v-btn
+        >
+        <v-btn
+          v-else
+          :color="snackbar.color"
+          variant="text"
+          @click="snackbar.show = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -439,35 +500,40 @@ export default {
   data() {
     return {
       isJobFormValid: false,
-      jobDetails: {
-        // Store job details
-        mode: "paired-end",
-        outFileSuffix: "_qc",
-        outdir: isDev
-          ? "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test"
-          : "",
-        entries: isDev
-          ? [
+      jobDetails: isDev
+        ? {
+            mode: "paired-end",
+            outFileSuffix: "_qc",
+            outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test",
+            entries: [
               {
                 q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
                 q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
-                forceError: true,
               },
-              // {
-              //   q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_1.fastq",
-              //   q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test/SRR23604821_2.fastq",
-              // },
-            ]
-          : [{ q1: "", q2: "" }],
-        params: {},
-        fastpParams: {},
-      },
+              {
+                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
+                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
+              },
+            ],
+            params: {},
+            fastpParams: {},
+            forceError: 0,
+          }
+        : {
+            mode: "paired-end",
+            outFileSuffix: "_qc",
+            outdir: "",
+            entries: [{ q1: "", q2: "" }],
+            params: {},
+            fastpParams: {},
+          },
 
       // Properties for job processing status, response, and results
       status: "INITIAL", // INITIAL, RUNNING, COMPLETE, ERROR
       backendOutput: "",
       errorHandled: false,
-      processingFastp: false, // Flag to indicate if fastp is being processedsnackbar: {
+      processingFastp: false, // Flag to indicate if fastp is being processed
+      currentBatchIdx: 0,
 
       // Snackbar
       snackbar: {
@@ -510,6 +576,7 @@ export default {
     },
     clearDynamicFile(index, field) {
       this.jobDetails.entries[index][field] = "";
+      this.$refs.jobForm.validate();
     },
 
     async selectFile(field, type) {
@@ -555,6 +622,9 @@ export default {
     extractFilename(path) {
       return window.electron.extractFilename(path);
     },
+    joinPath(...segments) {
+      return window.electron.joinPath(...segments);
+    },
     stripFileExtension(filePath) {
       // 1. Extract just the filename, dropping any directory
       const filename = this.extractFilename(filePath);
@@ -586,25 +656,26 @@ export default {
     // Start backend job request
     async startJob() {
       try {
+        // Reset job state
+        this.status = "INITIAL";
+        this.errorHandled = false;
+        this.currentBatchIdx = 0;
+
         // Start loading dialog
         this.status = "RUNNING";
-        this.processingFastp = true; // Set processing flag
+        this.processingFastp = true; // Open dialog
 
         // Start backend request and job polling simultaneously
-        const backendPromise = this.runBackend();
-        const pollingPromise = this.pollJobStatus();
-
-        // Wait for either backend to complete or polling to timeout/fail
-        await Promise.race([backendPromise, pollingPromise]);
+        await this.runBackend();
+        await this.pollJobStatus();
 
         // If backend completes successfully and polling hasn't timed out
         if (this.status === "COMPLETE") {
           console.log("🚀 Fastp job completed successfully!"); // DEBUG
-          // await this.processResults(false); // Make sure this is called after backend completion
-          // this.handleJobSuccess();
         }
       } catch (error) {
-        console.error("Error:", error.message); // Single error handling point
+        // status should be ERROR
+        console.error(error); // Single error handling point
         this.handleJobError(error);
       } finally {
         if (this.status !== "COMPLETE") {
@@ -626,16 +697,20 @@ export default {
             ? "_SE"
             : "_LR";
 
-      for (const entry of this.jobDetails.entries) {
+      // for (const entry of this.jobDetails.entries) {
+      for (let i = 0; i < this.jobDetails.entries.length; i++) {
+        this.currentBatchIdx = i;
+        const entry = this.jobDetails.entries[i];
+
         // 1) reset status & error flag
         this.status = "RUNNING";
         this.errorHandled = false;
+        this.backendOutput = "";
         // DEBUG
         if (isDev) {
           console.log("status:", this.status);
           console.log("errorhandled:", this.errorHandled);
           console.log("modetag:", modeTag);
-          console.log("entry:", entry);
         }
 
         // Create directory for batch output
@@ -653,10 +728,8 @@ export default {
           qcCmd,
           "-h",
           window.electron.joinPath(batchOutDir, batchName + ".html"),
-          // `${batchOutDir}/${batchName}.html`,
           "-j",
           window.electron.joinPath(batchOutDir, batchName + ".json"),
-          // `${batchOutDir}/${batchName}.json`,
         ];
 
         // Add read 1 input/output parameters
@@ -664,8 +737,7 @@ export default {
           "-i",
           entry.q1, // Read 1 file
           "-o",
-          window.electron.joinPath(batchOutDir, base1 + suffix + ext1),
-          // `${batchOutDir}/${base1}${suffix}${ext1}`, // Output filepath for Read 1
+          window.electron.joinPath(batchOutDir, base1 + suffix + ext1), // Output filepath for Read 1
         );
 
         // Add read 2 input/output parameters if paired-end mode
@@ -677,8 +749,7 @@ export default {
             "-I",
             entry.q2,
             "-O",
-            window.electron.joinPath(batchOutDir, base2 + suffix + ext2),
-            // `${batchOutDir}/${base2}${suffix}${ext2}`, // Output filepath for Read 2
+            window.electron.joinPath(batchOutDir, base2 + suffix + ext2), // Output filepath for Read 2
           );
         }
 
@@ -717,7 +788,7 @@ export default {
               this.backendOutput += `Error: ${err.toString()}\n`;
               this.status = "ERROR"; // Signal job polling to stop
               cleanup(); // Cleanup listeners
-              reject(new Error("Fastp execution error:", err));
+              reject(new Error(err.toString()));
             }
           });
           window.electron.onFastpComplete((msg) => {
@@ -729,7 +800,8 @@ export default {
           });
 
           window.electron.onFastpCancelled((message) => {
-            if (this.status !== "TIMEOUT" && !this.errorHandled) {
+            if (!this.errorHandled) {
+              this.errorHandled = true;
               this.backendOutput += `${message}\n`;
               this.status = "CANCELLED";
               cleanup(); // Cleanup listeners
@@ -738,56 +810,42 @@ export default {
           });
 
           // 3. Start backend process
-          if (isDev && entry.forceError) {
-            console.warn("⚠️ Simulating fastp error for testing");
+          if (isDev && this.jobDetails.forceError) {
             window.electron.simulateFastpError();
           } else {
             window.electron.runFastp(params, this.jobDetails.mode);
           }
         });
+
+        // Save log file
+        const logFilePath = this.joinPath(batchOutDir, batchName + "_log.txt");
+        window.electron
+          .writeFile(logFilePath, this.backendOutput)
+          .catch(console.error);
       }
+      this.currentBatchIdx += 1; // Increment one last time so that the progress bar fills
     },
     // Function to track job status + process results + trigger snackbar
     async pollJobStatus(interval = 500, timeout = Infinity) {
-      // FIXME: decide timeout duration
-      console.log("🚀 Running fastp job"); // DEBUG
+      console.log("🚀 Running qc job");
       const start = Date.now();
       while (Date.now() - start < timeout) {
         if (this.errorHandled || this.status === "COMPLETE") return true;
 
         if (this.status === "ERROR") {
-          throw new Error("Backend error occurred");
+          throw new Error("Backend signaled ERROR");
         }
         await new Promise((resolve) => setTimeout(resolve, interval));
       }
-      if (!this.errorHandled) {
-        this.status = "TIMEOUT";
-        throw new Error("Polling timed out");
-      }
     },
-    handleJobError() {
+    handleJobError(error) {
       this.errorHandled = true; // Ensure flag is set to prevent further handling
-      // Trigger snackbar corresponding to case
-      if (this.status === "TIMEOUT") {
-        // TODO: remove timeout status
-        this.cancelBackend();
 
-        this.triggerSnackbar(
-          "Job execution timed out.",
-          "warning",
-          "timer",
-          "Retry",
-          this.startJob,
-        );
-      } else if (this.status === "CANCELLED") {
+      // Trigger snackbar corresponding to case
+      if (this.status === "CANCELLED") {
         this.triggerSnackbar("Job was cancelled.", "info", "cancel", "Dismiss");
       } else if (this.status === "ERROR") {
-        this.triggerSnackbar(
-          "Invalid request. Check your query and try again.",
-          "error",
-          "warning",
-          "Dismiss",
-        );
+        this.triggerSnackbar(error, "error", "warning", "Dismiss");
       } else {
         this.triggerSnackbar(
           "An unexpected error occurred. Please try again.",
@@ -816,6 +874,12 @@ export default {
       this.snackbar.action = action;
 
       this.snackbar.show = true;
+    },
+    handleSnackbarAction() {
+      if (this.snackbar.action) {
+        this.snackbar.action();
+      }
+      this.snackbar.show = false;
     },
 
     // Show/hide dialog
@@ -857,5 +921,13 @@ export default {
 .v-row {
   margin-bottom: 0px;
   margin-top: 12px;
+}
+/* Filepath textfield */
+:deep(.v-field__input),
+:deep(.v-text-field__suffix) {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  min-height: 30px;
+  font-size: 12px;
 }
 </style>

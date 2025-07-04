@@ -92,14 +92,6 @@
             Failed
           </v-chip>
           <v-chip
-            v-else-if="item.jobStatus === 'TIMEOUT'"
-            color="grey"
-            prepend-icon="$timelapse"
-            density="comfortable"
-          >
-            Timeout
-          </v-chip>
-          <v-chip
             v-else-if="item.jobStatus === 'CANCELLED'"
             color="warning"
             prepend-icon="$cancel"
@@ -214,6 +206,13 @@
         {{ snackbarMessage }}
       </v-snackbar>
     </v-card>
+
+    <v-dialog v-model="loadingDialog" persistent width="300">
+      <v-card class="d-flex flex-column align-center pa-6">
+        <v-progress-circular indeterminate color="primary" size="48" />
+        <span class="mt-4">Loading results...</span>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -250,6 +249,8 @@ export default {
       selectedBackendOutput: "",
       snackbar: false,
       snackbarMessage: "",
+
+      loadingDialog: false,
     };
   },
   async mounted() {
@@ -257,7 +258,15 @@ export default {
     this.jobsHistory = await loadJobsHistory();
   },
   methods: {
-    viewDetails(jobItem) {
+    async viewDetails(jobItem) {
+      // 1️⃣ turn the overlay on
+      this.loadingDialog = true;
+
+      // 2️⃣ wait until Vue has applied the change AND the browser has
+      //     painted at least one new frame
+      await this.$nextTick(); // DOM update
+      await new Promise(requestAnimationFrame); // first paint
+
       const completedJob = {
         jobDetails: jobItem.jobDetails,
         q1: jobItem.q1,
@@ -280,7 +289,15 @@ export default {
         sessionStorage.removeItem("reportFilePath");
       }
 
-      this.$router.push({ name: "ResultsPage" });
+      // 4️⃣ finally navigate
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          // ✅ Guarantees browser paints the dialog + spinner
+          setTimeout(() => {
+            this.$router.push({ name: "ResultsPage" });
+          }, 1000);
+        });
+      });
     },
 
     async deleteJob(timestamp) {

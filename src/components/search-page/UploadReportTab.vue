@@ -63,6 +63,13 @@
       src="assets/marv_metabuli_small.png"
     >
     </v-img>
+
+    <v-dialog v-model="loadingDialog" persistent width="300">
+      <v-card class="d-flex flex-column align-center pa-6">
+        <v-progress-circular indeterminate color="primary" size="48" />
+        <span class="mt-4">Loading results...</span>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -78,6 +85,7 @@ export default {
       status: "INITIAL",
       backendOutput: "",
       processedResults: null,
+      loadingDialog: false,
     };
   },
   methods: {
@@ -98,6 +106,7 @@ export default {
       this.$refs.fileInput.value = "";
     },
     async uploadFile() {
+      this.loadingDialog = true;
       if (!this.file) {
         this.$emit(
           "trigger-snackbar",
@@ -160,10 +169,11 @@ export default {
           // });
         }, 2000);
       } catch (error) {
-        console.error("Error processing file: ", error.message); // DEBUG
+        const errorMsg = `Error processing file: ${error.message}`;
+        console.error(errorMsg); // DEBUG
 
         // Set log message
-        this.backendOutput = "Error processing file: " + error.message;
+        this.backendOutput = errorMsg;
         this.$emit("job-aborted");
 
         this.status = "ERROR";
@@ -184,13 +194,8 @@ export default {
         this.$emit("store-job", failedJob);
 
         // Trigger snackbar
-        this.$emit(
-          "trigger-snackbar",
-          "Error processing file. Please check file and try again.",
-          "error",
-          "warning",
-          "Dismiss",
-        );
+        this.$emit("trigger-snackbar", errorMsg, "error", "warning", "Dismiss");
+        this.loadingDialog = false;
       } finally {
         this.backendOutput = ""; // Clear backendOutput
       }

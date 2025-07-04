@@ -367,23 +367,57 @@ export default {
 
   watch: {
     results: {
-      handler(newResults) {
+      immediate: true,
+      async handler(newResults) {
+        /* 1 ▸ skip empty or placeholder objects/arrays */
+        if (
+          !newResults || // null / undefined
+          (Array.isArray(newResults) && newResults.length === 0) ||
+          (typeof newResults === "object" &&
+            Object.keys(newResults).length === 0)
+        ) {
+          return; // bail out – nothing to verify yet
+        }
+        /* 1. Regular rendering work (already non-blocking) */
         const { nodes, nodesByDepth } = parseData(newResults);
         this.nodes = nodes;
         this.nodesByDepth = nodesByDepth;
-        this.verifySankey().then((result) => {
-          if (result === null) {
-            console.warn(
-              "⚠️ Original report file not found. Taxonomy verification skipped.",
-            );
-            this.taxonomyVerification = null; // Use `null` for file-not-found case
-          } else if (result === false) {
-            console.log("🟥 Taxonomy verification failed.");
-            this.taxonomyVerification = false; // Use `false` for verification failure
-          } else if (result === true) {
-            console.log("🟩 Taxonomy verification succeeded.");
-            this.taxonomyVerification = true; // Use `true` for verification success
-          }
+
+        /* 2. Kick off background verification  */
+
+        /* 2-A.  Get original TSV text in the renderer (asynchronously) */
+        const originalReportFilePath = sessionStorage.getItem("reportFilePath");
+        if (!originalReportFilePath) {
+          console.warn("⚠️ No original report file → verification skipped");
+          this.taxonomyVerification = null;
+          return;
+        }
+        const originalReportContent = await window.electron.readFile(
+          originalReportFilePath,
+        );
+
+        /* 2-B.  Launch worker (⚡ zero UI blocking) */
+        const worker = new Worker(
+          new URL("@/workers/verify-sankey.worker.js", import.meta.url),
+          { type: "module" },
+        );
+
+        worker.onmessage = ({ data }) => {
+          const res = data.result; // true / false / null
+          this.taxonomyVerification = res;
+
+          if (res === true) console.log("🟩 Taxonomy verification passed");
+          else if (res === false)
+            console.log("🟥 Taxonomy verification failed");
+          else console.warn("⚠️ Verification skipped");
+
+          worker.terminate(); // tidy-up
+        };
+
+        /*  Send only the data the worker needs  */
+        worker.postMessage({
+          originalReportContent,
+          nodesByDepth,
         });
       },
     },
@@ -639,7 +673,6 @@ export default {
 
   async mounted() {
     // Runs when results tab is clicked
-
     // Generate unique instance ID for Sankey
     this.uniqueInstanceId = uuidv4();
 

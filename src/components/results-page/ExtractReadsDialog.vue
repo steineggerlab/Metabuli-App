@@ -139,11 +139,89 @@
               </v-row>
 
               <v-row>
+                <v-col>
+                  <div class="text-caption mb-1">Output Directory</div>
+                  <v-text-field
+                    v-model="jobDetails.outdir"
+                    append-icon="$folder"
+                    type="text"
+                    variant="outlined"
+                    density="compact"
+                    color="secondary"
+                    :rules="[requiredRule]"
+                    @click:append="selectFile('outdir', 'directory')"
+                    @focus="scrollToEnd($event)"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+
+              <v-row>
                 <v-col class="pt-0">
                   <small class="text-caption text-medium-emphasis"
                     >*Missing files will appear as empty fields. Please select
                     the correct file.</small
                   >
+                </v-col>
+              </v-row>
+
+              <!-- Optional Settings Expansion Panel -->
+              <v-row>
+                <v-col>
+                  <v-btn
+                    text="Optional Settings"
+                    variant="text"
+                    color="secondary"
+                    :append-icon="
+                      expandOptionalSettings ? '$collapse' : '$expand'
+                    "
+                    @click="expandOptionalSettings = !expandOptionalSettings"
+                    class="font-weight-bold"
+                  ></v-btn>
+                  <v-expand-transition>
+                    <div
+                      v-if="expandOptionalSettings"
+                      class="search-advanced-settings pt-2 pb-0"
+                    >
+                      <!-- Input fields -->
+                      <v-row
+                        v-for="(setting, key) in optionalSettings"
+                        :key="key"
+                      >
+                        <v-col cols="6">
+                          <v-list-subheader
+                            class="pr-0 text-high-emphasis font-weight-medium"
+                          >
+                            <code>{{ setting.title }}</code>
+                          </v-list-subheader>
+                          <small
+                            class="search-advanced-settings text-caption text-medium-emphasis pr-0"
+                          >
+                            {{ setting.description }}
+                          </small>
+                        </v-col>
+
+                        <v-col>
+                          <v-text-field
+                            variant="outlined"
+                            rounded="lg"
+                            density="compact"
+                            color="primary"
+                            :placeholder="
+                              setting.extra?.file ? 'Select Folder' : none
+                            "
+                            v-model="setting.value"
+                            :prepend-icon="getAppendInnerIcon(setting)"
+                            :rules="getValidationRules(setting.parameter)"
+                            :suffix="setting.extra?.suffix || ''"
+                            @click:prepend="
+                              handleOptionalSettingsTextFieldClick(setting)
+                            "
+                            @focus="scrollToEnd($event)"
+                          ></v-text-field>
+                        </v-col>
+                      </v-row>
+                    </div>
+                  </v-expand-transition>
                 </v-col>
               </v-row>
 
@@ -190,7 +268,7 @@
           </v-list-item>
           <div>
             <!-- Display Real-time Output -->
-            <v-list-item class="pt-1">
+            <v-list-item class="pt-4">
               <template v-slot:subtitle>
                 <v-textarea
                   variant="outlined"
@@ -202,7 +280,7 @@
                   readonly
                   hide-details="true"
                   bg-color="white"
-                  class="mt-3 mx-0 text-caption"
+                  class="pt-4 mt-3 mx-0 text-caption"
                   ref="outputTextarea"
                 ></v-textarea>
               </template>
@@ -268,6 +346,8 @@
 </template>
 
 <script>
+const isDev = process.env.NODE_ENV !== "production";
+
 export default {
   props: {
     menuLocation: {
@@ -285,22 +365,65 @@ export default {
     activePanel: [0],
 
     // Extract Reads
-    jobDetails: {
-      mode: "",
-      jobid: "",
-      q1: "",
-      q2: "",
-      database: "",
-      outdir: "",
-      classifications: "",
+    jobDetails: isDev
+      ? {
+          mode: "",
+          jobid: "",
+          q1: "",
+          q2: "",
+          classifications: "",
+          database: "",
+          outdir: "",
+
+          forceError: true,
+        }
+      : {
+          mode: "",
+          jobid: "",
+          q1: "",
+          q2: "",
+          classifications: "",
+          database: "",
+          outdir: "",
+        },
+    optionalSettings: {
+      extractFormat: {
+        title: "--extract-format",
+        description: "0: original format, 1: FASTA, 2: FASTQ",
+        parameter: "--extract-format",
+        value: 0,
+        type: "INTEGER",
+      },
+      taxonomyPath: {
+        title: "--taxonomy-path",
+        description: "Directory where the taxonomy dump files are stored",
+        parameter: "--taxonomy-path",
+        value: "",
+        type: "STRING",
+        extra: {
+          appendIcon: "folder",
+          file: true,
+        },
+      },
     },
+    validationRules: {
+      // Input is required
+      "--extract-format": (value) => {
+        return (
+          Number.isInteger(Number(value)) || "Input must be a valid integer"
+        );
+      },
+    }, // FIXME: move requiredRule to here
+    expandOptionalSettings: false,
 
     // Properties for backend job processing status, backend output, error tracking
     status: "INITIAL",
     backendOutput: "",
     errorHandled: false,
+
     // Extract Job Processing Dialog
     processingExtract: false,
+
     // Form Validation (all input fields must be non-empty)
     isFormValid: false, // This tracks the overall form validity
     requiredRule: (v) => !!v || "This field is required", // Simple required rule
@@ -336,6 +459,68 @@ export default {
   },
 
   methods: {
+    // Textfield functions for Optional Settings
+    getAppendInnerIcon(setting) {
+      return setting.extra?.appendIcon ? `$${setting.extra.appendIcon}` : null;
+    },
+    getValidationRules(parameter) {
+      if (this.validationRules[parameter]) {
+        return [this.validationRules[parameter]];
+      }
+      return [];
+    },
+    async handleOptionalSettingsTextFieldClick(setting) {
+      if (setting.extra?.file) {
+        const filePath = await this.pickFile("directory");
+        setting.value = filePath;
+      }
+    },
+    // Functions for handling files
+    async pickFile(type, field = null, index = null) {
+      if (!window.electron) {
+        this.$emit(
+          "trigger-snackbar",
+          "File dialog is not supported in the web environment.",
+          "error",
+          "warning",
+          "Dismiss",
+        );
+        return;
+      }
+
+      try {
+        const options = {
+          properties: type === "file" ? ["openFile"] : ["openDirectory"],
+        };
+        const filePaths = await window.electron.openFileDialog(options);
+        if (!filePaths?.length) return;
+
+        const filePath = filePaths[0];
+        if (index !== null && field) {
+          // row entry
+          this.jobDetails.entries[index][field] = filePath;
+        } else if (field) {
+          // top‐level field
+          this.jobDetails[field] = filePath;
+        } else {
+          // no target field → return for ad-hoc use
+          return filePath;
+        }
+      } catch (err) {
+        console.error("File selection error:", err);
+        this.$emit(
+          "trigger-snackbar",
+          `File selection error: ${err}`,
+          "error",
+          "fileAlert",
+          "Dismiss",
+        );
+      } finally {
+        // re-validate the form
+        this.$refs.extractForm?.validate();
+      }
+    },
+
     // Button action
     downloadReads() {
       this.startJob();
@@ -377,16 +562,10 @@ export default {
       }
     },
     openItemInFolder() {
-      // Call Electron shell to open the file/folder in file manager
-      const outputRead1FilePath = this.insertTaxonIdBeforeExtension(
-        this.jobDetails.q1,
-        this.taxonId,
-      );
-      if (window.electron) {
-        window.electron.openItemInFolder(outputRead1FilePath);
-      }
+      window.electron.openItemInFolder(this.jobDetails.outdir);
     },
     insertTaxonIdBeforeExtension(filePath, taxonId) {
+      // TODO: unused, remove
       // Extract the base name and extension
       const extensionIndex = filePath.lastIndexOf(".");
 
@@ -419,19 +598,15 @@ export default {
         this.showProcessingExtractPanel();
 
         // Start backend request and job polling simultaneously
-        const backendPromise = this.runBackend();
-        const pollingPromise = this.pollJobStatus();
-
-        // Wait for either backend to complete or polling to timeout/fail
-        await Promise.race([backendPromise, pollingPromise]);
+        await this.runBackend();
+        await this.pollJobStatus();
 
         // If backend completes successfully and polling hasn't timed out
         if (this.status === "COMPLETE") {
           console.log("🚀 Extract job completed successfully."); // DEBUG
         }
       } catch (error) {
-        console.error("Error:", error.message); // Single error handling point
-
+        console.error(error); // Single error handling point
         this.handleJobError(error);
       } finally {
         if (this.status !== "COMPLETE") {
@@ -467,6 +642,20 @@ export default {
       // Add Tax ID
       params.push("--tax-id", parseInt(this.taxonId));
 
+      // Add outdir
+      params.push("--outdir", this.jobDetails.outdir);
+
+      // Add any optionalSettings
+      Object.values(this.optionalSettings).forEach((setting) => {
+        if (setting.value !== "" && setting.value !== undefined) {
+          let val;
+          if (setting.type === "INTEGER") val = parseInt(setting.value);
+          else if (setting.type === "FLOAT") val = parseFloat(setting.value);
+          else val = setting.value;
+          params.push(setting.parameter, val);
+        }
+      });
+
       // params = [
       // 	"extract",
       // 	"/Users/sunnylee/Documents/Steinegger Lab/metabuli_example/SRR14484345_1.fq",
@@ -481,9 +670,6 @@ export default {
 
       // Return a promise that resolves or rejects based on backend success or failure
       return new Promise((resolve, reject) => {
-        // Run backend process
-        window.electron.runBackend(params);
-
         // Real-time output
         window.electron.onBackendRealtimeOutput((output) => {
           this.backendOutput += output; // Append output in real-time
@@ -506,25 +692,34 @@ export default {
 
         window.electron.onBackendError((error) => {
           if (!this.errorHandled) {
-            this.backendOutput += "\nError: " + error;
+            this.errorHandled = true;
+            this.backendOutput += `Error: ${error.toString()}\n`;
             this.status = "ERROR"; // Signal job polling to stop
-            reject(new Error("Backend execution error:", error));
+            reject(new Error(error.toString()));
           }
         });
 
         window.electron.onBackendCancelled((message) => {
-          if (this.status !== "TIMEOUT" && !this.errorHandled) {
-            this.backendOutput += message;
+          if (!this.errorHandled) {
+            this.errorHandled = true;
+            this.backendOutput += `${message}\n`;
             this.status = "CANCELLED";
             reject(new Error("Process was cancelled"));
           }
         });
+
+        // Start backend process
+        if (isDev && this.jobDetails.forceError) {
+          console.warn("⚠️ Simulating extract error for testing");
+          window.electron.simulateMetabuliError();
+        } else {
+          window.electron.runBackend(params);
+        }
       });
     },
     // Function to track job status + process results + trigger snackbar
     async pollJobStatus(interval = 500, timeout = Infinity) {
-      // FIXME: decide timeout duration
-      console.log("🚀 Running extract job"); // DEBUG
+      console.log("🚀 Running extract job");
       const start = Date.now();
       while (Date.now() - start < timeout) {
         if (this.errorHandled || this.status === "COMPLETE") return true;
@@ -534,36 +729,15 @@ export default {
         }
         await new Promise((resolve) => setTimeout(resolve, interval));
       }
-      if (!this.errorHandled) {
-        this.status = "TIMEOUT";
-        throw new Error("Polling timed out");
-      }
     },
-    handleJobError() {
+    handleJobError(error) {
       this.errorHandled = true; // Ensure flag is set to prevent further handling
-      this.processingExtract = false;
-      this.backendOutput = "";
 
       // Trigger snackbar corresponding to case
-      if (this.status === "TIMEOUT") {
-        this.cancelBackend();
-
-        this.triggerSnackbar(
-          "Job execution timed out.",
-          "warning",
-          "timer",
-          "Retry",
-          this.startJob,
-        );
-      } else if (this.status === "CANCELLED") {
+      if (this.status === "CANCELLED") {
         this.triggerSnackbar("Job was cancelled.", "info", "cancel", "Dismiss");
       } else if (this.status === "ERROR") {
-        this.triggerSnackbar(
-          "Invalid request. Check your query and try again.",
-          "error",
-          "warning",
-          "Dismiss",
-        );
+        this.triggerSnackbar(error, "error", "warning", "Dismiss");
       } else {
         this.triggerSnackbar(
           "An unexpected error occurred. Please try again.",
@@ -572,8 +746,6 @@ export default {
           "Dismiss",
         );
       }
-
-      this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
     },
 
     // Functions managing snackbar
@@ -621,16 +793,18 @@ export default {
       localStorage.getItem("processedResults"),
     );
     if (processedResults) {
-      this.jobDetails = processedResults.jobDetails
-        ? processedResults.jobDetails
-        : this.jobDetails; // Leave as default empty filepaths for Upload Result jobs
-
+      // Copy values from processedResults to jobDetails
+      if (processedResults.jobDetails) {
+        Object.assign(this.jobDetails, processedResults.jobDetails);
+      }
+      this.jobDetails.forceError = isDev ? 1 : 0;
       // Loop over each path and check if the file exists
       const keyPath = {
         q1: processedResults.q1,
         q2: processedResults.q2,
         classifications: `${processedResults.outdir}/${processedResults.jobid}_classifications.tsv`,
         database: processedResults.database,
+        outdir: processedResults.outdir,
       };
       for (const key of Object.keys(keyPath)) {
         const fileExists = await window.electron.fileExists(keyPath[key]);
@@ -651,7 +825,7 @@ export default {
   font-family: Roboto;
   background-color: white;
   font-size: 12px;
-  margin-top: 16px;
+  padding-top: 16px;
   /* -webkit-mask-image: none; */
 }
 
@@ -662,5 +836,9 @@ export default {
   padding-bottom: 4px !important;
   min-height: 30px;
   font-size: 12px;
+}
+
+.search-advanced-settings .v-list-subheader {
+  min-height: 0px;
 }
 </style>

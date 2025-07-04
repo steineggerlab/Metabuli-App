@@ -160,7 +160,6 @@ export default {
     },
     handleResultsClick(event) {
       event.preventDefault(); // Prevents default action interfering custom navigation logic
-
       this.$router.push({ name: "ResultsPage" });
     },
   },

@@ -254,7 +254,7 @@ ipcMain.on("run-fastp", async (event, args) => {
 		);
 
 		// Spawn fastp
-		let fastpProcess = spawn(qcBinary, params, { cwd: workingDir });
+		fastpProcess = spawn(qcBinary, params, { cwd: workingDir });
 
 		// Handle stdout
 		fastpProcess.stdout.on("data", (data) => {

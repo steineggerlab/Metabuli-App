@@ -52,10 +52,7 @@
             :value="tabItems[0].value"
           >
             <NewSearchTab
-              @job-started="emitJobStarted"
               @job-completed="emitJobCompleted"
-              @job-aborted="emitJobAborted"
-              @backend-realtime-output="emitBackendRealtimeOutput"
               @trigger-snackbar="triggerSnackbar"
               @store-job="storeJob"
             >
@@ -153,9 +150,6 @@ export default {
     },
     emitJobCompleted(completedJobObject) {
       this.$emit("job-completed", completedJobObject);
-    },
-    emitBackendRealtimeOutput(string) {
-      this.$emit("backend-realtime-output", string);
     },
     emitJobAborted() {
       this.$emit("job-aborted");
