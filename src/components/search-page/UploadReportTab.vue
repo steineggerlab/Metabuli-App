@@ -63,6 +63,13 @@
       src="assets/marv_metabuli_small.png"
     >
     </v-img>
+
+    <v-dialog v-model="loadingDialog" persistent width="300">
+      <v-card class="d-flex flex-column align-center pa-6">
+        <v-progress-circular indeterminate color="primary" size="48" />
+        <span class="mt-4">Loading results...</span>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -78,6 +85,7 @@ export default {
       status: "INITIAL",
       backendOutput: "",
       processedResults: null,
+      loadingDialog: false,
     };
   },
   methods: {
@@ -98,6 +106,7 @@ export default {
       this.$refs.fileInput.value = "";
     },
     async uploadFile() {
+      this.loadingDialog = true;
       if (!this.file) {
         this.$emit(
           "trigger-snackbar",
@@ -191,6 +200,7 @@ export default {
           "warning",
           "Dismiss",
         );
+        this.loadingDialog = false;
       } finally {
         this.backendOutput = ""; // Clear backendOutput
       }
