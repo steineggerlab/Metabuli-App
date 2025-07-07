@@ -84,7 +84,7 @@ module.exports = defineConfig({
 					target: [
 						{
 							target: "dmg",
-							arch: ["x64"],
+							arch: ["x64", "arm64"],
 						},
 					],
 					artifactName: "${productName}-${version}-MacOS-${arch}.${ext}",
