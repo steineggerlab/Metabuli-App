@@ -129,7 +129,7 @@
                   </v-container>
                 </v-list-item>
 
-                <v-list-item v-if="!isSubtree">
+                <v-list-item>
                   <div class="text-caption">Rank Options</div>
                   <v-container class="px-0">
                     <div class="d-flex align-center flex-column">
@@ -140,6 +140,7 @@
                         "
                         variant="outlined"
                         color="indigo"
+                        :disabled="showAll"
                         multiple
                         divided
                         mandatory
@@ -376,7 +377,6 @@
 </template>
 
 <script>
-import { sankeyRankColumns } from "@/plugins/rankUtils.js";
 const colorSchemes = {
   1: [
     "#C14C32", // dark red
@@ -447,6 +447,10 @@ export default {
     // superkingdom --> domain
     // rankList: sankeyRankColumns,
     // rankListWithRoot: [ "no rank", ...sankeyRankColumns ],
+    rankOptions: {
+      type: Array,
+      default: () => [],
+    },
     selectedRanks: {
       type: Array,
       default: () => [],
@@ -479,7 +483,6 @@ export default {
       // Store all default values to allow resetting the menu
       // Populated by all props in the mounted lifecycle hook
       defaults: {},
-      rankOptions: ["no rank", ...sankeyRankColumns],
     };
   },
   methods: {

@@ -117,7 +117,7 @@
           :nodeLabelFontSize="config.nodeLabelFontSize"
           :nodeValueFontSize="config.nodeValueFontSize"
           :rankLabelFontSize="config.rankLabelFontSize"
-          :ranksToShow="nodeDetails.rankList"
+          :ranksToShow="config.ranksToShow"
           ref="taxoview-dialog"
         />
       </v-card-item>
@@ -175,6 +175,8 @@
           v-model:node-label-font-size="config.nodeLabelFontSize"
           v-model:node-value-font-size="config.nodeValueFontSize"
           v-model:rank-label-font-size="config.rankLabelFontSize"
+          v-model:selectedRanks="config.ranksToShow"
+          :rankOptions="nodeDetails.rankList"
           :isSubtree="true"
         >
           <template v-slot:activator="{ props }">
@@ -278,8 +280,25 @@ export default {
           "#FFCD87",
           "#BC7576",
         ],
+        ranksToShow: [],
       },
     };
+  },
+  watch: {
+    nodeDetails: {
+      handler(newData) {
+        // reset to the new node’s ranks
+        this.config.ranksToShow = newData.rankList;
+      },
+      immediate: true, // run once on mount, then on every change
+    },
+    configureMenuSettings: {
+      handler(newSettings) {
+        // carry over threshold configuration settings from main Sankey plot
+        Object.assign(this.config, newSettings);
+      },
+      immediate: true,
+    },
   },
   computed: {
     roundedMaxTaxaLimit() {
@@ -323,7 +342,6 @@ export default {
 
   mounted() {
     this.uniqueInstanceId = uuidv4();
-    Object.assign(this.config, this.$props.configureMenuSettings);
   },
 };
 </script>

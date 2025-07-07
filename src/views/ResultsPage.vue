@@ -105,6 +105,7 @@
               v-model:node-value-font-size="nodeValueFontSize"
               v-model:rank-label-font-size="rankLabelFontSize"
               v-model:selectedRanks="ranksToShow"
+              :rankOptions="rankOptions"
             >
               <template v-slot:activator="{ props }">
                 <v-btn color="indigo" rounded="xl" v-bind="props"
@@ -134,6 +135,7 @@
             :nodeValueFontSize="nodeValueFontSize"
             :rankLabelFontSize="rankLabelFontSize"
             ref="taxoview"
+            @ranks-present="rankOptions = $event"
             @node-clicked="handleNodeClick"
             :ranksToShow="ranksToShow"
           />
@@ -341,6 +343,7 @@ export default {
       // superkingdom --> domain
       // rankList: sankeyRankColumns,
       // rankListWithRoot: [ "no rank", ...sankeyRankColumns ],
+      rankOptions: [],
       ranksToShow: ["no rank", ...sankeyRankColumns],
       colorScheme: [
         "#C14C32", // dark red
@@ -573,8 +576,7 @@ export default {
       const rankList = subtreeRawData
         .map((row) => (row.rank === "superkingdom" ? "domain" : row.rank))
         .filter(
-          (v, i, a) =>
-            a.indexOf(v) === i && v !== "no rank" && !v.startsWith("sub"),
+          (v, i, a) => a.indexOf(v) === i && sankeyRankColumns.includes(v),
         );
       const subtreeRawTsv = this.generateTsvReport(subtreeRawData, true);
       const hasSourceLinks = subtreeRawData.length > 1 ? true : false; // Determine if the subtree has more than 1 node
