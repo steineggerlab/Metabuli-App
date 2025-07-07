@@ -681,59 +681,60 @@ export default {
       // Properties for Run New Search tab
       isJobFormValid: false,
       jobDetails: isDev
-        ? isWindows ? {
-            // Store job details including file paths
-            mode: "paired-end", // "paired-end" | "single-end" | "long-read"
-            enableQC: true,
-            entries: [
-              {
-                q1: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_1.fq",
-                q2: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_2.fq",
-              },
-              // {
-              //   q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
-              //   q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
-              // },
-            ],
-            database:
-              "C:\\Users\\이선재\\Desktop\\metabuli-test\\refseq_virus",
-             outdir:"C:\\Users\\이선재\\Desktop\\metabuli-test\\outdir",
-            jobid: "",
-            maxram: "",
-            fastpParams: {}, // Parameters for quality control (fastp/fastplong)
-            forceError: 0,
-          }
-        : {
-            // Store job details including file paths
-            mode: "paired-end", // "paired-end" | "single-end" | "long-read"
-            enableQC: true,
-            entries: [
-              {
-                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
-                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
-                batchName: "",
-              },
-              {
-                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_3.fq",
-                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_4.fq",
-                batchName: "",
-              },
-              {
-                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
-                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
-                batchName: "",
-              },
-            ],
-            database:
-              "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/refseq_virus",
-            outdir:
-              "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR",
-            jobid: "",
-            maxram: "",
-            fastpParams: {}, // Parameters for quality control (fastp/fastplong)
-            forceError: 0,
-          } 
+        ? isWindows
+          ? {
+              // Store job details including file paths
+              mode: "paired-end", // "paired-end" | "single-end" | "long-read"
+              enableQC: true,
+              entries: [
+                {
+                  q1: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_1.fq",
+                  q2: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_2.fq",
+                },
+                // {
+                //   q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
+                //   q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
+                // },
+              ],
+              database:
+                "C:\\Users\\이선재\\Desktop\\metabuli-test\\refseq_virus",
+              outdir: "C:\\Users\\이선재\\Desktop\\metabuli-test\\outdir",
+              jobid: "",
+              maxram: "",
+              fastpParams: {}, // Parameters for quality control (fastp/fastplong)
+              forceError: 0,
+            }
           : {
+              // Store job details including file paths
+              mode: "paired-end", // "paired-end" | "single-end" | "long-read"
+              enableQC: true,
+              entries: [
+                {
+                  q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
+                  q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
+                  batchName: "",
+                },
+                {
+                  q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_3.fq",
+                  q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_4.fq",
+                  batchName: "",
+                },
+                {
+                  q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
+                  q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
+                  batchName: "",
+                },
+              ],
+              database:
+                "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/refseq_virus",
+              outdir:
+                "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR",
+              jobid: "",
+              maxram: "",
+              fastpParams: {}, // Parameters for quality control (fastp/fastplong)
+              forceError: 0,
+            }
+        : {
             // Store job details including file paths
             mode: "paired-end", // "paired-end" | "single-end" | "long-read"
             enableQC: true,

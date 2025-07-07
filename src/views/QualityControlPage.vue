@@ -502,41 +502,44 @@ export default {
     return {
       isJobFormValid: false,
       jobDetails: isDev
-        ? isWindows ?  {
-            mode: "paired-end",
-            outFileSuffix: "_qc",
-            outdir:"C:\\Users\\이선재\\Desktop\\metabuli-test\\outdir",
-            entries: [
-              {
-                q1: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_1.fq",
-                q2: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_2.fq",
-              },
-              // {
-              //   q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
-              //   q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
-              // },
-            ],
-            params: {},
-            fastpParams: {},
-            forceError: 0,
-          } : {
-            mode: "paired-end",
-            outFileSuffix: "_qc",
-            outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test",
-            entries: [
-              {
-                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
-                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
-              },
-              {
-                q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
-                q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
-              },
-            ],
-            params: {},
-            fastpParams: {},
-            forceError: 0,
-          } 
+        ? isWindows
+          ? {
+              mode: "paired-end",
+              outFileSuffix: "_qc",
+              outdir: "C:\\Users\\이선재\\Desktop\\metabuli-test\\outdir",
+              entries: [
+                {
+                  q1: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_1.fq",
+                  q2: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_2.fq",
+                },
+                // {
+                //   q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
+                //   q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
+                // },
+              ],
+              params: {},
+              fastpParams: {},
+              forceError: 0,
+            }
+          : {
+              mode: "paired-end",
+              outFileSuffix: "_qc",
+              outdir:
+                "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test",
+              entries: [
+                {
+                  q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_1.fq",
+                  q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR14484345_10000_2.fq",
+                },
+                {
+                  q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
+                  q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
+                },
+              ],
+              params: {},
+              fastpParams: {},
+              forceError: 0,
+            }
         : {
             mode: "paired-end",
             outFileSuffix: "_qc",
@@ -644,7 +647,7 @@ export default {
       return window.electron.joinPath(...segments);
     },
     stripFileExtension(filePath) {
-     return window.electron.stripFileExtension(filePath);
+      return window.electron.stripFileExtension(filePath);
     },
 
     // Functions handling validation rules

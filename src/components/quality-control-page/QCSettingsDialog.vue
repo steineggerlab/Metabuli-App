@@ -473,7 +473,7 @@ export default {
     },
     mode(newMode) {
       this.params.length_required = newMode === "long-read" ? 1000 : 15;
-    }
+    },
   },
   methods: {
     pushParamsUp() {
