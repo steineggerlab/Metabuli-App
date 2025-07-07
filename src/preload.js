@@ -68,8 +68,7 @@ contextBridge.exposeInMainWorld("electron", {
 		const totalRamInBytes = os.totalmem(); // Get total RAM in bytes
 		const totalRamInGB = Math.floor(totalRamInBytes / 1024 ** 3); // Convert to GB
 
-		const commonSizes = [4, 8, 16, 32, 64, 128, 256];
-		return commonSizes.find((size) => totalRamInGB <= size) || totalRamInGB;
+		return totalRamInGB;
 	},
 
 	// Manage Job History

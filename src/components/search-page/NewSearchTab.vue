@@ -313,7 +313,7 @@
                   </v-col>
 
                   <!-- Remove Row Button -->
-                  <v-col cols="1" v-if="index > 0">
+                  <v-col cols="1" v-if="jobDetails.entries.length > 1">
                     <v-btn
                       variant="text"
                       icon="$checkboxIndeterminate"
@@ -784,7 +784,7 @@ export default {
           title: "--validate-db",
           description: "Validate DB files (activated by default)",
           parameter: "--validate-db",
-          value: 1,
+          value: 0,
           type: "BOOLEAN",
         },
         validateInput: {
