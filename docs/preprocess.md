@@ -22,7 +22,7 @@ For more details, please refer [fastp GitHub repository](https://github.com/Open
 
 ### Length Filtering (Enabled by default)
 - `--disable_length_filtering`: Disable length filtering.
-- `--length_required`: Minimum read length required (default 50). Reads shorter than this are discarded.
+- `--length_required`: Minimum read length required (default 15). Reads shorter than this are discarded.
 - `--length_limit`: Maximum read length allowed (default none). Reads longer than this are discarded.
 
 ### Adapter trimming (Enabled by default)

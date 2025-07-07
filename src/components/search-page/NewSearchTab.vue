@@ -669,6 +669,7 @@ import { CITATIONS, formatCitations } from "@/citations.js";
 import { marked } from "marked";
 
 const isDev = process.env.NODE_ENV !== "production";
+const isWindows = navigator.userAgent.includes("Windows");
 
 export default {
   name: "NewSearchTab",
@@ -680,7 +681,29 @@ export default {
       // Properties for Run New Search tab
       isJobFormValid: false,
       jobDetails: isDev
-        ? {
+        ? isWindows ? {
+            // Store job details including file paths
+            mode: "paired-end", // "paired-end" | "single-end" | "long-read"
+            enableQC: true,
+            entries: [
+              {
+                q1: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_1.fq",
+                q2: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_2.fq",
+              },
+              // {
+              //   q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
+              //   q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
+              // },
+            ],
+            database:
+              "C:\\Users\\이선재\\Desktop\\metabuli-test\\refseq_virus",
+             outdir:"C:\\Users\\이선재\\Desktop\\metabuli-test\\outdir",
+            jobid: "",
+            maxram: "",
+            fastpParams: {}, // Parameters for quality control (fastp/fastplong)
+            forceError: 0,
+          }
+        : {
             // Store job details including file paths
             mode: "paired-end", // "paired-end" | "single-end" | "long-read"
             enableQC: true,
@@ -709,8 +732,8 @@ export default {
             maxram: "",
             fastpParams: {}, // Parameters for quality control (fastp/fastplong)
             forceError: 0,
-          }
-        : {
+          } 
+          : {
             // Store job details including file paths
             mode: "paired-end", // "paired-end" | "single-end" | "long-read"
             enableQC: true,

@@ -491,6 +491,7 @@ import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog
 import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
 
 const isDev = process.env.NODE_ENV !== "production";
+const isWindows = navigator.userAgent.includes("Windows");
 
 export default {
   name: "QualityControlPage",
@@ -501,7 +502,24 @@ export default {
     return {
       isJobFormValid: false,
       jobDetails: isDev
-        ? {
+        ? isWindows ?  {
+            mode: "paired-end",
+            outFileSuffix: "_qc",
+            outdir:"C:\\Users\\이선재\\Desktop\\metabuli-test\\outdir",
+            entries: [
+              {
+                q1: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_1.fq",
+                q2: "C:\\Users\\이선재\\Desktop\\metabuli-test\\SRR14484345_10000_2.fq",
+              },
+              // {
+              //   q1: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_1.fastq",
+              //   q2: "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/SRR24315757_2.fastq",
+              // },
+            ],
+            params: {},
+            fastpParams: {},
+            forceError: 0,
+          } : {
             mode: "paired-end",
             outFileSuffix: "_qc",
             outdir: "/Users/sunnylee/Documents/SteineggerLab/metabuli-qc-test",
@@ -518,7 +536,7 @@ export default {
             params: {},
             fastpParams: {},
             forceError: 0,
-          }
+          } 
         : {
             mode: "paired-end",
             outFileSuffix: "_qc",
@@ -626,23 +644,7 @@ export default {
       return window.electron.joinPath(...segments);
     },
     stripFileExtension(filePath) {
-      // 1. Extract just the filename, dropping any directory
-      const filename = this.extractFilename(filePath);
-
-      // 2. Separate the filename base from its extension
-      // Supported extensions: .fna, .fasta, .fa, .fq, .fastq, and their gzip versions (e.g., .fna.gz)
-      const m = filename.match(
-        /(.+?)((?:\.fna|\.fasta|\.fa|\.fq|\.fastq)(?:\.gz)?)$/i,
-      );
-
-      if (m) {
-        return {
-          base: m[1], // filename base, e.g. “SRR24315757_1”
-          ext: m[2], // file extension, e.g. “.fastq” or “.fq.gz”
-        };
-      } else {
-        return { base: filename, ext: "" }; // TODO: handle case where no extension is found
-      }
+     return window.electron.stripFileExtension(filePath);
     },
 
     // Functions handling validation rules

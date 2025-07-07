@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" max-width="800" persistent>
+  <v-dialog v-model="dialog" max-width="800">
     <template v-slot:activator="{ props }">
       <slot name="activator" v-bind="{ props }"></slot>
     </template>
@@ -393,8 +393,7 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn text @click="onCancel">Cancel</v-btn>
-        <v-btn color="indigo" variant="tonal" @click="onSave">Save</v-btn>
+        <v-btn color="indigo" variant="tonal" @click="onClose">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -431,7 +430,7 @@ export default {
 
       // Length Filtering
       disable_length_filtering: false,
-      length_required: this.mode === "long-read" ? 1000 : 50,
+      length_required: this.mode === "long-read" ? 1000 : 15,
       length_limit: null, // TODO: is null the right default
 
       // Adapter Trimming
@@ -472,6 +471,9 @@ export default {
     modelValue(val) {
       this.dialog = val;
     },
+    mode(newMode) {
+      this.params.length_required = newMode === "long-read" ? 1000 : 15;
+    }
   },
   methods: {
     pushParamsUp() {
@@ -482,12 +484,9 @@ export default {
       this.$emit("update-fastp-params", allArgs);
     },
 
-    onSave() {
+    onClose() {
       // emit both the GUI params and any extras
       this.pushParamsUp(); // send latest values
-      this.dialog = false;
-    },
-    onCancel() {
       this.dialog = false;
     },
     async selectFile(field, type) {

@@ -254,7 +254,7 @@ ipcMain.on("run-fastp", async (event, args) => {
 		);
 
 		// Spawn fastp
-		fastpProcess = spawn(qcBinary, params, { cwd: workingDir });
+		fastpProcess = spawn(qcBinary, params, { cwd: workingDir }); // TODO: fastp doenst work on Windows dev mode
 
 		// Handle stdout
 		fastpProcess.stdout.on("data", (data) => {
