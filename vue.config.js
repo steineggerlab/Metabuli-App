@@ -105,7 +105,7 @@ module.exports = defineConfig({
 					target: [
 						{
 							target: "AppImage",
-							arch: ["x64", "arm64"],
+							arch: ["x64"],
 						},
 					],
 					artifactName: "${productName}-${version}-Linux-${arch}.${ext}",

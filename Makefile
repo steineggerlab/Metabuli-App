@@ -66,14 +66,13 @@ resources/linux/x64/${FRONTEND_APP}: ./${FRONTEND_APP}-wrapper.sh resources/linu
 	cp ./${FRONTEND_APP}-wrapper.sh resources/linux/x64/${FRONTEND_APP}
 	chmod +x resources/linux/x64/${FRONTEND_APP}
 
-resources/linux/arm64/${FRONTEND_APP}:
-	mkdir -p resources/linux/arm64
-	wget -nv -q -O - https://mmseqs.com/metabuli/metabuli-linux-arm64.tar.gz | tar -xOf - ${FRONTEND_APP}/bin/${FRONTEND_APP} > resources/linux/arm64/${FRONTEND_APP}
-	chmod +x resources/linux/arm64/${FRONTEND_APP}
-
 resources/linux/x64/fastp:
 	mkdir -p resources/linux/x64
 	wget http://opengene.org/fastp/fastp && mv fastp resources/linux/x64/fastp && chmod a+x resources/linux/x64/fastp
+
+resources/linux/x64/fastplong:
+	mkdir -p resources/linux/x64
+	wget http://opengene.org/fastplong/fastplong && mv fastplong resources/linux/x64/fastplong && chmod a+x resources/linux/x64/fastplong
 
 
 clean:
