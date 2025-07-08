@@ -23,12 +23,12 @@ resources/mac/${FRONTEND_APP}:
 
 resources/mac/fastp:
 	mkdir -p resources/mac
-	wget -nv -q -O - https://github.com/jaebeom-kim/fastp/releases/download/v0.0.1/fastp-osx-universal.gz | gunzip > resources/mac/fastp
+	wget -nv -q -O - https://github.com/jaebeom-kim/fastp/releases/download/v0.0.2/fastp-osx-universal.gz | gunzip > resources/mac/fastp
 	chmod +x resources/mac/fastp
 
 resources/mac/fastplong:
 	mkdir -p resources/mac
-	wget -nv -q -O - https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.1/fastplong-osx-universal.gz | gunzip > resources/mac/fastplong
+	wget -nv -q -O - https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.2/fastplong-osx-universal.gz | gunzip > resources/mac/fastplong
 	chmod +x resources/mac/fastplong
 
 
@@ -41,13 +41,13 @@ resources/win/x64/${FRONTEND_APP}.bat:
 
 resources/win/x64/fastp.bat:
 	mkdir -p resources/win/x64
-	cd resources/win/x64 && wget -nv -O fastp-windows.zip https://github.com/jaebeom-kim/fastp/releases/download/v0.0.1/fastp-windows.zip \
+	cd resources/win/x64 && wget -nv -O fastp-windows.zip https://github.com/jaebeom-kim/fastp/releases/download/v0.0.2/fastp-windows.zip \
 		&& unzip fastp-windows.zip && cp -r fastp/* . && rm -rf fastp && rm fastp-windows.zip
 	chmod -R +x resources/win/x64/fastp.bat resources/win/x64/bin/*
 
 resources/win/x64/fastplong.bat:
 	mkdir -p resources/win/x64
-	cd resources/win/x64 && wget -nv -O fastplong-windows.zip https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.1/fastplong-windows.zip \
+	cd resources/win/x64 && wget -nv -O fastplong-windows.zip https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.2/fastplong-windows.zip \
 		&& unzip fastplong-windows.zip && cp -r fastplong/* . && rm -rf fastplong && rm fastplong-windows.zip
 	chmod -R +x resources/win/x64/fastplong.bat resources/win/x64/bin/*
 
