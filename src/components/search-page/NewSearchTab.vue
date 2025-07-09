@@ -818,6 +818,13 @@ export default {
           value: 1,
           type: "BOOLEAN",
         },
+        lineage: {
+          title: "--lineage",
+          description: "Activate to print the full lineage next to rank column",
+          parameter: "--lineage",
+          value: 0,
+          type: "BOOLEAN",
+        },
       },
       validationRules: {
         // Input is required
@@ -1232,7 +1239,7 @@ export default {
           });
           window.electron.onFastpComplete((msg) => {
             if (this.status !== "RUNNING") return; // Prevent processing if not in RUNNING state
-            this.updateRealtimeOutput(`${msg}\n`);
+            this.updateRealtimeOutput(`${msg}\n\n`);
             this.status = "COMPLETE";
             cleanupFastp();
             resolve();
