@@ -13,7 +13,7 @@ endif
 
 win: resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/fastp.bat resources/win/x64/fastplong.bat
 mac: resources/mac/${FRONTEND_APP} resources/mac/fastp resources/mac/fastplong
-linux: resources/linux/arm64/${FRONTEND_APP} resources/linux/x64/${FRONTEND_APP} resources/linux/x64/fastp
+linux: resources/linux/x64/${FRONTEND_APP} resources/linux/x64/fastp resources/linux/x64/fastplong
 
 # macOS
 resources/mac/${FRONTEND_APP}:
