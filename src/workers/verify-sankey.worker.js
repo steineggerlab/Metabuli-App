@@ -26,11 +26,18 @@ self.onmessage = async (e) => {
 		const regeneratedReport = extractedTaxonomyArray
 			.map((node) =>
 				properties
-					.map((property) =>
-						node[property] !== undefined && node[property] !== null
-							? node[property]
-							: "",
-					)
+					.map((property) => {
+						let val = node[property];
+						// Treat undefined or null as empty string
+						if (val === undefined || val === null) {
+							return "";
+						}
+						// If this is the rank column and it was "root", switch back
+						if (property === "rank" && val === "root") {
+							return "no rank";
+						}
+						return val;
+					})
 					.join("\t"),
 			)
 			.join("\n");

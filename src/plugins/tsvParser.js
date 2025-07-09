@@ -17,12 +17,8 @@ export default {
 			if (firstRecord === undefined) return false;
 
 			return (
-				(firstRecord.rank === "no rank" &&
-					firstRecord.taxon_id === "0" &&
-					firstRecord.name === "unclassified") ||
-				(firstRecord.rank === "no rank" &&
-					firstRecord.taxon_id === "1" &&
-					firstRecord.name === "root")
+				(firstRecord.taxon_id === "0" && firstRecord.name === "unclassified") ||
+				(firstRecord.taxon_id === "1" && firstRecord.name === "root")
 			);
 		};
 
@@ -56,7 +52,12 @@ export default {
 					record.depth = depth; // Depth based on indentation in front of scientific name in taxonomy report
 					record.nameWithIndentation = record.name; // Store name with indentation from taxonomy report
 					record.name = record.name.trim(); // Remove leading and trailing whitespace after counting leading spaces
-					record.rank = record.rank === "superkingdom" ? "domain" : record.rank; // Convert 'superkingdom' to 'domain'
+					record.rank =
+						record.rank === "superkingdom"
+							? "domain"
+							: ["0", "1"].includes(record.taxon_id)
+								? "root"
+								: record.rank; // Convert 'superkingdom' to 'domain'
 				}
 
 				return record;

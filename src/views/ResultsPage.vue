@@ -162,10 +162,6 @@ import SankeyDownloadMenu from "@/components/results-page/SankeyDownloadMenu.vue
 import SankeyNodeDialog from "@/components/results-page/SankeyNodeDialog.vue";
 import { v4 as uuidv4 } from "uuid";
 import { sankeyRankColumns } from "@/plugins/rankUtils";
-import {
-  extractTaxonomyArray,
-  compareTSVContents,
-} from "@/plugins/sankeyUtils";
 import { exportSankeyDiagram } from "@/plugins/downloadUtils";
 
 // TODO: import these from TaxoView component
@@ -217,26 +213,24 @@ function parseData(data) {
       }
       nodesByRank[d.rank].push(node);
     } else if (isUnclassifiedNode(node)) {
-      // FIXME: figure out which rank to put unclassified node in
-      if (!nodesByRank["no rank"]) {
-        nodesByRank["no rank"] = [];
+      if (!nodesByRank["root"]) {
+        nodesByRank["root"] = [];
       }
-      // nodesByRank["root"].push(node); // FIXME: overlapping issue with root node when i put this in
 
       // Reassign some attributes specific to unclassified node
-      node.rank = "no rank";
+      node.rank = "root";
       node.rankDisplayName = node.name;
       node.isUnclassifiedNode = true;
 
       unclassifiedNode = node;
     } else if (isRootNode(node)) {
-      if (!nodesByRank["no rank"]) {
-        nodesByRank["no rank"] = [];
+      if (!nodesByRank["root"]) {
+        nodesByRank["root"] = [];
       }
-      nodesByRank["no rank"].push(node);
+      nodesByRank["root"].push(node);
 
       // Reassign some attributes specific to root node
-      node.rank = "no rank"; // FIXME: remove this after fixing logic to leave it as "no rank", same as taxonomyreport
+      node.rank = "root"; // FIXME: remove this after fixing logic to leave it as "no rank", same as taxonomyreport
       node.rankDisplayName = node.name;
 
       rootNode = node;
@@ -342,9 +336,9 @@ export default {
       rankLabelFontSize: 14,
       // superkingdom --> domain
       // rankList: sankeyRankColumns,
-      // rankListWithRoot: [ "no rank", ...sankeyRankColumns ],
+      rankListWithRoot: ["root", ...sankeyRankColumns],
       rankOptions: [],
-      ranksToShow: ["no rank", ...sankeyRankColumns],
+      ranksToShow: ["root", ...sankeyRankColumns],
       colorScheme: [
         "#C14C32", // dark red
         "#506432", // dark green
@@ -470,7 +464,7 @@ export default {
       });
       if (addRoot) {
         let root = {
-          rank: "no rank",
+          rank: "root",
           taxon_id: "0",
           name: "unclassified",
           nameWithIndentation: "unclassified",
@@ -478,13 +472,13 @@ export default {
           clade_reads: "0",
           taxon_reads: "0",
         };
-        let root2 = Object.assign({}, array[0], {
-          rank: "no rank",
-          taxon_id: "1",
-          name: "root",
-          nameWithIndentation: "root",
-        });
-        rows = [root, root2, ...array];
+        // let root2 = Object.assign({}, array[0], {
+        //   rank: "no rank",
+        //   taxon_id: "1",
+        //   name: "root",
+        //   nameWithIndentation: "root",
+        // });
+        rows = [root, ...array];
       }
       return rows
         .map((node) =>
@@ -576,7 +570,7 @@ export default {
       const rankList = subtreeRawData
         .map((row) => (row.rank === "superkingdom" ? "domain" : row.rank))
         .filter(
-          (v, i, a) => a.indexOf(v) === i && sankeyRankColumns.includes(v),
+          (v, i, a) => a.indexOf(v) === i && this.rankListWithRoot.includes(v),
         );
       const subtreeRawTsv = this.generateTsvReport(subtreeRawData, true);
       const hasSourceLinks = subtreeRawData.length > 1 ? true : false; // Determine if the subtree has more than 1 node
@@ -595,46 +589,6 @@ export default {
     },
 
     // Sankey Verification
-    async verifySankey() {
-      // Compare original taxonomy report and regenerated taxonomy report
-      const originalReportFilePath = sessionStorage.getItem("reportFilePath");
-      if (!originalReportFilePath) {
-        console.warn(
-          "Original report file path not found. Skipping TSV comparison.",
-        );
-        return null; // Return `null` when file not found
-      }
-
-      const extractedTaxonomyArray = extractTaxonomyArray(this.nodesByDepth);
-
-      const properties = [
-        "proportion",
-        "clade_reads",
-        "taxon_reads",
-        "rank",
-        "taxon_id",
-        "nameWithIndentation",
-      ];
-
-      // Regenerate taxonomy report from the sankey data
-      const regeneratedReport = extractedTaxonomyArray
-        .map((node) =>
-          properties
-            .map((property) =>
-              node[property] !== undefined && node[property] !== null
-                ? node[property]
-                : "",
-            )
-            .join("\t"),
-        )
-        .join("\n");
-
-      const compareSuccessful = await compareTSVContents(
-        regeneratedReport,
-        originalReportFilePath,
-      );
-      return compareSuccessful; // return true or false depending on verification result
-    },
     openGithubIssue() {
       const title = encodeURIComponent(
         "Original Taxonomy Report Misalignment with Reverse-Generated Report",
