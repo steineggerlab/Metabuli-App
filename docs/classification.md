@@ -39,6 +39,8 @@ Metabuli App provides two taxonomic profiling modes in **Search Settings** panel
 
 - `--taxonomy-path`: Use it when your database does not have `taxonomy` folder or `taxonomyDB` file. Provide a directroy of `names.dmp`, `nodes.dmp`, and `mereged.dmp` files. 
 - `--accession-level`: Classify reads to accessions if the database is created with `--accession-level` option.
+- `--validate-db`: Check if files in database folder are valid.
+- `--validate-input`: Vaidate query FASTA/FASTQ file format.
 
 ### Start Analysis: 
 - Click the `Run Metabuli` button to start the metagenomic classification process.
