@@ -1,5 +1,8 @@
 name: Auto-generate README
 
+permissions:
+  contents: write
+
 on:
   push:
     paths:
