@@ -375,7 +375,7 @@ export default {
           database: "",
           outdir: "",
 
-          forceError: true,
+          forceError: 0, // TO TEST: set value in mounted()
         }
       : {
           mode: "",
@@ -797,7 +797,7 @@ export default {
       if (processedResults.jobDetails) {
         Object.assign(this.jobDetails, processedResults.jobDetails);
       }
-      this.jobDetails.forceError = isDev ? 1 : 0;
+      this.jobDetails.forceError = isDev ? 0 : 0;
       // Loop over each path and check if the file exists
       const keyPath = {
         q1: processedResults.q1,
@@ -825,7 +825,8 @@ export default {
   font-family: Roboto;
   background-color: white;
   font-size: 12px;
-  padding-top: 16px;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
   /* -webkit-mask-image: none; */
 }
 

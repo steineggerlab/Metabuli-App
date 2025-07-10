@@ -37,7 +37,6 @@
               <template v-slot:subtitle>
                 <v-textarea
                   variant="outlined"
-                  v-if="backendOutput"
                   v-model="backendOutput"
                   label="Command Line Output"
                   rows="15"
@@ -1655,6 +1654,8 @@ export default {
   background-color: white;
   font-size: 12px;
   margin-top: 16px;
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
   /* -webkit-mask-image: none; */
 }
 

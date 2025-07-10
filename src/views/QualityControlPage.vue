@@ -935,4 +935,11 @@ export default {
   min-height: 30px;
   font-size: 12px;
 }
+
+/* Log textarea */
+:deep(.v-textarea .v-field__input) {
+  padding-top: 16px !important;
+  padding-bottom: 16px !important;
+  /* -webkit-mask-image: none; */
+}
 </style>
