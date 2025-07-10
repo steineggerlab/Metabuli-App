@@ -24,7 +24,7 @@ We will make a button for GTDB soon.
 ## Functionality
 - **Download** pre-built **databases**
 - **Create or update databases**
-- Raw-read quality control (QC)
+- Raw-read **quality control (QC)**
 - Run **taxonomic classification**
 - **Upload and browse** classification results
 - **Extract reads** classified under a specific taxon
