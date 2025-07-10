@@ -3,7 +3,7 @@ name: Auto-generate README
 on:
   push:
     paths:
-      - 'fragments/**'
+      - 'docs/**'
       - 'generate_readme.py'
   workflow_dispatch:
 
