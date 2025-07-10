@@ -160,7 +160,7 @@
                 ? "Creating New Taxa List..."
                 : status === "COMPLETE"
                   ? "New Taxa List Created Successfully!"
-                  : "Something Went Wrong"
+                  : "Job Processing Was Terminated"
             }}</span>
             <template v-slot:append>
               <v-img src="assets/marv_metabuli_animated.gif" width="60"></v-img>
@@ -203,7 +203,9 @@
                   <v-btn
                     variant="outlined"
                     color="grey"
-                    @click="cancelBackend"
+                    @click="
+                      status === 'RUNNING' ? cancelBackend() : hideDialog()
+                    "
                     block
                     >{{ status === "RUNNING" ? "Cancel" : "Close" }}</v-btn
                   >
@@ -263,12 +265,17 @@ export default {
     // Extract Reads
     jobDetails: isDev
       ? {
-          oldDBDir: ".",
-          fastaList: ".",
-          newTaxonomyPath: ".",
-          accession2TaxId: ".",
-          outdir: ".",
-          forceError: true,
+          oldDBDir:
+            "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/small-database-update",
+          fastaList:
+            "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/viral_genomes.txt",
+          newTaxonomyPath:
+            "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/ictv-taxdump",
+          accession2TaxId:
+            "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/ictv-taxdump/ictv.accession2taxid",
+          outdir:
+            "/Users/sunnylee/Documents/SteineggerLab/metabuli-app-revision/OUTDIR",
+          forceError: 0,
         }
       : {
           oldDBDir: "",
@@ -355,6 +362,9 @@ export default {
         );
       }
     },
+    joinPath(...segments) {
+      return window.electron.joinPath(...segments);
+    },
     openItemInFolder() {
       // Call Electron shell to open the file/folder in file manager
       if (window.electron) {
@@ -369,6 +379,11 @@ export default {
 
     // Start backend job request
     async startJob() {
+      // Reset job state
+      this.status = "INITIAL"; // TODO: probably can replace this with this.status = "RUNNING"
+      this.errorHandled = false;
+      this.backendOutput = "";
+
       try {
         // Start loading dialog
         this.status = "RUNNING";
@@ -386,8 +401,13 @@ export default {
         console.error(error); // Single error handling point
         this.handleJobError(error);
       } finally {
-        if (this.status !== "COMPLETE") {
-          this.status = "INITIAL";
+        // Save backendOutput to a log file before clearing it
+        if (this.backendOutput) {
+          this.saveLog();
+        }
+
+        if (this.status === "CANCELLED") {
+          this.hideDialog();
         }
         this.errorHandled = false; // Resets error handled tracking
 
@@ -429,6 +449,7 @@ export default {
       return new Promise((resolve, reject) => {
         // Real-time output
         window.electron.onBackendRealtimeOutput((output) => {
+          console.log(output);
           this.backendOutput += output; // Append output in real-time
           this.$nextTick(() => {
             // Scroll to the bottom
@@ -489,6 +510,7 @@ export default {
       }
     },
     handleJobError(error) {
+      // Enters when "CANCELLED" || "ERROR"
       this.errorHandled = true; // Ensure flag is set to prevent further handling
 
       // Trigger snackbar corresponding to case
@@ -504,8 +526,14 @@ export default {
           "Dismiss",
         );
       }
-
-      this.status = "ERROR"; // FIXME: do i need this; Set status to ERROR
+    },
+    saveLog() {
+      window.electron
+        .writeFile(
+          this.joinPath(this.jobDetails.outdir, "createnewtaxalist_log.txt"),
+          this.backendOutput,
+        )
+        .catch(console.error);
     },
 
     // Functions managing snackbar
@@ -540,10 +568,8 @@ export default {
     hideDialog() {
       this.downloadMenu = false;
       this.processingJob = false;
-      this.backendOutput = ""; // Clear backend output
     },
     cancelBackend() {
-      this.hideDialog();
       window.electron.cancelBackend();
     },
   },
@@ -578,8 +604,8 @@ export default {
 /* Filepath textfield */
 :deep(.v-field__input),
 :deep(.v-text-field__suffix) {
-  padding-top: 4px !important;
-  padding-bottom: 4px !important;
+  /* padding-top: 4px !important; */
+  /* padding-bottom: 4px !important; */
   min-height: 30px;
   font-size: 12px;
 }
