@@ -35,6 +35,16 @@ We will make a button for GTDB soon.
 
 ## Changelog
 
+### v1.1.0
+- **Added** `Raw-read Quality Control (QC)` **functionality** via [fastp](https://github.com/OpenGene/fastp)/[fastplong](https://github.com/OpenGene/fastplong).
+- Supports **uploading multiple samples at once** for sequential classification or raw-read pre-processing.
+- **User manuals** have been added to each page for easier reference and guidance on how to use each feature.
+- **Sankey plot improvements:** Now powered by the latest version of [TaxoView](https://github.com/steineggerlab/taxoview), which supports extensive customization and improved interactivity:
+  - New visual settings: adjust node label width, padding, font size, and x-axis rank label size.
+  - Users can select which taxonomic ranks to display.
+  - Node colors are now grouped by `domain`, with gradient shading to clarify taxonomic hierarchy.
+  - Users can choose from a selection of color schemes in the customization settings.
+
 ### v1.0.1
 - Introduced the `Custom Database` page, enabling users to:
     - Create new databases.
