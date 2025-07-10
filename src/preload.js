@@ -184,5 +184,6 @@ contextBridge.exposeInMainWorld("electron", {
 		ipcRenderer.removeAllListeners("fastp-output");
 		ipcRenderer.removeAllListeners("fastp-error");
 		ipcRenderer.removeAllListeners("fastp-complete");
+		ipcRenderer.removeAllListeners("fastp-cancelled");
 	},
 });
