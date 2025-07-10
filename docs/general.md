@@ -3,7 +3,7 @@
 
 # Metabuli App 
 
-This is the desktop application for Metabuli, a metagenomic classification that jointly analyzes both DNA and amino acid sequences. Built with Vue.js and Electron, it provides an intuitive interface for running metagenomic classification jobs and visualizing the results.
+This is the desktop application for Metabuli, a metagenomic classifier that jointly analyzes both DNA and amino acid sequences. Built with Vue.js and Electron, it provides an easy interface for running metagenomic classification jobs and visualizing the results.
 
 For more details of Metabuli, please see
 [GitHub](https://github.com/steineggerlab/Metabuli),
@@ -17,14 +17,14 @@ The `NCBI` and `Assemblies` buttons in the Sankey subtree view do not work when 
 We will make a button for GTDB soon.
 
 ## Platforms Supported
-
-- macOS (Universal `.dmg`)
+- macOS (`.dmg`)
 - Windows (`.exe`)
-- Linux (AppImage `.AppImage`)
+- Linux (`.AppImage`)
 
 ## Functionality
 - **Download** pre-built **databases**
-- **Create or update databases** directly in the app
+- **Create or update databases**
+- Raw-read quality control (QC)
 - Run **taxonomic classification**
 - **Upload and browse** classification results
 - **Extract reads** classified under a specific taxon
