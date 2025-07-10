@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14603649.svg)](https://doi.org/10.5281/zenodo.14603649)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15845480.svg)](https://doi.org/10.5281/zenodo.15845480)
 ![Platform](https://img.shields.io/badge/platform-Mac%20%7C%20Windows%20%7C%20Linux-brightgreen)
 
 # Metabuli App 
