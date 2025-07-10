@@ -806,7 +806,7 @@ export default {
         },
         validateDb: {
           title: "--validate-db",
-          description: "Validate DB files (activated by default)",
+          description: "Validate DB files (off by default)",
           parameter: "--validate-db",
           value: 0,
           type: "BOOLEAN",
