@@ -3,7 +3,7 @@
 
 # Metabuli App 
 
-This is the desktop application for Metabuli, a metagenomic classification that jointly analyzes both DNA and amino acid sequences. Built with Vue.js and Electron, it provides an intuitive interface for running metagenomic classification jobs and visualizing the results.
+This is the desktop application for Metabuli, a metagenomic classifier that jointly analyzes both DNA and amino acid sequences. Built with Vue.js and Electron, it provides an easy interface for running metagenomic classification jobs and visualizing the results.
 
 For more details of Metabuli, please see
 [GitHub](https://github.com/steineggerlab/Metabuli),
@@ -17,14 +17,14 @@ The `NCBI` and `Assemblies` buttons in the Sankey subtree view do not work when 
 We will make a button for GTDB soon.
 
 ## Platforms Supported
-
-- macOS (Universal `.dmg`)
+- macOS (`.dmg`)
 - Windows (`.exe`)
-- Linux (AppImage `.AppImage`)
+- Linux (`.AppImage`)
 
 ## Functionality
 - **Download** pre-built **databases**
-- **Create or update databases** directly in the app
+- **Create or update databases**
+- Raw-read quality control (QC)
 - Run **taxonomic classification**
 - **Upload and browse** classification results
 - **Extract reads** classified under a specific taxon
@@ -52,6 +52,7 @@ We will make a button for GTDB soon.
 
 - [Installation](#installation)
 - [Usage](#usage)
+    - [Raw Read QC and Preprocessing](#raw-read-quality-control)
     - [Classification](#classification)
         - [New Classification](#new-classification)
         - [Upload Report](#upload-report)
@@ -71,6 +72,7 @@ We will make a button for GTDB soon.
 >- **Windows**: Click 'More info' and then 'Run anyway' to continue.
 
 ---
+
 
 # Raw Read Quality Control
 > You can preprocess raw reads either in the separate `Quality Control` tab or in the `Search Settings` tab as part of the classification process. 
@@ -96,7 +98,7 @@ For more details, please refer [fastp GitHub repository](https://github.com/Open
 
 ### Length Filtering (Enabled by default)
 - `--disable_length_filtering`: Disable length filtering.
-- `--length_required`: Minimum read length required (default 50). Reads shorter than this are discarded.
+- `--length_required`: Minimum read length required (default 15). Reads shorter than this are discarded.
 - `--length_limit`: Maximum read length allowed (default none). Reads longer than this are discarded.
 
 ### Adapter trimming (Enabled by default)
@@ -193,30 +195,37 @@ Metabuli App provides two taxonomic profiling modes in **Search Settings** panel
     - `fastp` and `fastplong` are used for short and long reads, respectively.
     - Please see QC documentation for more details.
 3. **Job ID:** Enter a unique identifier for the job.
-4. **Select Files:** Upload the necessary files and directories.
-    - Read 1 File (and Read 2 File if Paired-end is selected)
-        - FASTA/FASTQ and their gzipped versions are supported.
-        - `ADD ENTRY` to upload **multiple samples** to process using the same settings.
-    - Database Directory
-    - Output Directory
-        - Result files are saved in `Job ID` directory under the specified output directory.
-        - When **multiple samples** are processed, results are saved in `Job ID/sample_name` directories.
-5. **Max RAM:** Specify the maximum RAM (in GiB) to allocate for the job.
+4. **Query Files:** Specify your query sample(s) to classify.
+    - FASTA/FASTQ and their gzipped versions are supported.
+    - `ADD ENTRY` to upload **multiple samples** to process using the same settings.
+5. **Database Folder:** Select the folder of Metabuli database.
+6. **Output Folder:** Specify the folder where the results will be saved.
+    - Result files are saved in `Job ID` folder under the specified output folder.
+    - When **multiple samples** are processed, results are saved in `Job ID/sample_name` directories.
+7. **Max RAM:** Specify the maximum RAM (in GiB) to allocate for the job. (all available RAM by default)
 
 ### Advanced Settings (Optional): 
-- **Threads:** Specify thread count for the job.
-- **Min Score:** Set the minimum score for making a classification. It reduces false positives at the cost of sensitivity.
-    - Recommended values (For details, please refer Supp. Fig. 4-7 in the [Metabuli paper](https://www.nature.com/articles/s41592-024-02273-y)):
+- `--min-score`: Set the minimum similarity score for making a classification.
+    - Search results of scores lower than this are discarded to reduce false positives at the cost of sensitivity.
+    - Default is 0 to maximize sensitivity.
+    - Recommended values below increase precision without reducing the F1 score.
+    - These values are determined from score distributions of false and true positives in synthetic benchmarks (details in Supp. Fig. 4-7 in the [Metabuli paper](https://www.nature.com/articles/s41592-024-02273-y.epdf?sharing_token=je_2D5Su0-xVOSjuKSAXF9RgN0jAjWel9jnR3ZoTv0M7gE7NDF_xi_3sW8QdRiwfSJNwqaXItSoeCvr7cvcoQxKLt0oROgWc6urmki9tP80cXEuHPN0D7b4y9y3i8Yv7sZw8MxxhAj7W6p9eZE2zaK3eozdOkXvwADVfso9cXIM%3D)):
         - Illumina short reads: 0.15 
         - PacBio HiFi reads: 0.07
         - PacBio Sequel II reads: 0.005
         - Nanopore long reads: 0.008
-- **Min SP Score:** Set the minimum score for the species- or lower-level classification. It avoids overconfident classifications.
-    - Recommended values (For details, please refer Supp. Fig. 4-7 in the [Metabuli paper](https://www.nature.com/articles/s41592-024-02273-y)):
+- `--min-sp-score`: Set the minimum similarity score for species‐ or lower‐rank classification.
+    - Reads with scores below this threshold are assigned to genus‐ or higher‐rank to avoid overconfident calls.
+    - Recommended values below increase precision without reducing the F1 score (details in Supp. Fig. 4-7 in the [Metabuli paper](https://www.nature.com/articles/s41592-024-02273-y.epdf?sharing_token=je_2D5Su0-xVOSjuKSAXF9RgN0jAjWel9jnR3ZoTv0M7gE7NDF_xi_3sW8QdRiwfSJNwqaXItSoeCvr7cvcoQxKLt0oROgWc6urmki9tP80cXEuHPN0D7b4y9y3i8Yv7sZw8MxxhAj7W6p9eZE2zaK3eozdOkXvwADVfso9cXIM%3D)):
         - Illumina short reads: 0.5 
-        - PacBio HiFi reads: 0.3
-- **Taxonomy Path:** Use it when your database does not have `taxonomy` directory or `taxonomyDB` file. Provide a directroy of `names.dmp`, `nodes.dmp`, and `mereged.dmp` files. 
-- **Accession Level:** classify reads to accessions if available.
+        - PacBio HiFi reads: 0.3        
+- `--threads`: Specify thread count for the job. (all threads by default)
+
+
+- `--taxonomy-path`: Use it when your database does not have `taxonomy` folder or `taxonomyDB` file. Provide a directroy of `names.dmp`, `nodes.dmp`, and `mereged.dmp` files. 
+- `--accession-level`: Classify reads to accessions if the database is created with `--accession-level` option.
+- `--validate-db`: Check if files in database folder are valid.
+- `--validate-input`: Vaidate query FASTA/FASTQ file format.
 
 ### Start Analysis: 
 - Click the `Run Metabuli` button to start the metagenomic classification process.
@@ -237,7 +246,11 @@ Metabuli App provides two taxonomic profiling modes in **Search Settings** panel
 5. `score`: DNA level identity score
 6. `rank`: Taxonomic rank of the taxon
 7. `taxID:match_count`: List of "taxID : k-mer match count"
-
+```
+#query_id       name    taxID   query_length    score   rank    taxID:match_count
+0       SRR14484345.1.1 0       141     0       -       -
+1       SRR14484345.8.1 2697049 141     0.808511        no rank 2697049:25
+```
 #### 2. JobID_report.tsv: It follows Kraken2's report format. The first line is a header, and the rest of the lines are tab-separated values. The columns are as follow.
 
 1. `clade_proportion`: Percentage of reads classified to the clade rooted at this taxon
@@ -246,6 +259,23 @@ Metabuli App provides two taxonomic profiling modes in **Search Settings** panel
 4. `rank`: Taxonomic rank of the taxon
 5. `taxID`: Tax ID according to the taxonomy dump files used in the database creation
 6. `name`: Taxonomic name of the taxon
+
+```
+#clade_proportion       clade_count     taxon_count     rank    taxID   name
+6.3491  1403612 1403612 no rank 0       unclassified
+93.6509 20703786        5550    no rank 1       root
+93.5580 20683246        8058    no rank 131567    cellular organisms
+93.3781 20643465        680714  superkingdom    2           Bacteria
+58.9608 13034701        105888  clade   1783272       Terrabacteria group
+54.7279 12098906        472184  phylum  1239            Bacillota
+50.0354 11061529        743978  class   186801            Clostridia
+24.4574 5406894 402967  order   186802              Eubacteriales
+18.2228 4028593 206645  family  216572                Oscillospiraceae
+8.4570  1869631 950213  genus   216851                  Faecalibacterium
+3.0276  669332  655324  species 853                       Faecalibacterium prausnitzii
+0.0238  5271    5271    strain  718252                      Faecalibacterium prausnitzii L2-6
+0.0199  4407    4407    strain  657322                      Faecalibacterium prausnitzii SL3/3
+```
 
 #### 3. JobID_krona.html: It is for an interactive Krona plot. You can use any modern web browser to open `JobID_krona.html`.
 
@@ -260,6 +290,7 @@ To visualize results from a previously completed job:
    - **Sankey Diagram**: A flow diagram representing the lineage paths for the displayed taxa (without the Krona chart).
    
 ---
+
 
 # Database Curation
 
@@ -283,7 +314,7 @@ You can create a new database in "NEW DATABASE" tab by providing these three fil
 
 #### NCBI-style accession2taxid
 - `NCBI Taxonomy`: Download [here](https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/). Check [README](https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/README) to know what file to use. 
-- `GTDB`: It is auto generated using a `taxid.map` in the taxonkit-GTDB directory.
+- `GTDB`: It is auto generated using a `taxid.map` in the taxonkit-GTDB folder.
 - `ICTV`: Use `prepare-accession2taxid.sh` in [here](https://github.com/jaebeom-kim/Metabuli-ICTV-challenge).
 - `Custom accession2taxid`: Generate your own `accession2taxid` file.
 
@@ -299,22 +330,25 @@ You can create a new database in "NEW DATABASE" tab by providing these three fil
 
 ### Required fields
 1. **GTDB-based checkbox:** Check if you use taxonkit-generated GTDB taxonomy `dmp` files. 
-2. **Database Directory:** The directory where the database will be generated.
+2. **Database Folder:** The folder where the database will be generated.
 3. **FASTA List:** A file containing absolute paths to FASTA files.
 4. **Accession2TaxId:** A path to NCBI-style accession2taxid following the format below. </br>
     ```
     accession   accession.version   taxid   gi
     ACCESSION   ACCESSION.1         12345   6789
     ```
-5. **Taxonomy Path:** Directory of taxonomy dump files (`names.dmp`, `nodes.dmp`, and `merged.dmp` are requried).
+5. **Taxonomy Path:** Folder of taxonomy dump files (`names.dmp`, `nodes.dmp`, and `merged.dmp` are requried).
 
 ### Optional fields
-- **Max RAM**: Specify the maximum RAM (in GiB) to allocate for the job.
-- **Threads**: Specify the number of threads to use for the job.
-- **Accession Level**: Create a database for accession-level classification. </br>
+- `--make-library`: Make species genome library before indexing. It is highly recommended when a single FASTA file contains multiple species. 
+- `--cds-info`: File containing CDS file paths. Provided CDSs are used for included accessions instead of predicted genes. Prodigal's gene prediction is skipped. Only GenBank/RefSeq CDS files are supported.
+- `--accession-level`: Set 1 to create an accession level database, with which you can classify reads to specific accessions. </br>
   (WARNING: It it not tested for large databases. Using it with > 100K sequences may cause issues.)
-- **Make Library**: Make a library of species genomes. It accelerates the process when some large FASTA files include many species genomes.
-- **CDS Info**: File containing absolute paths to CDS. For included accessions, Prodigal's gene prediction is skipped. Only GenBank/RefSeq CDS files are supported.   
+- `--max-ram`: Specify the maximum RAM (in GiB) to allocate for the job.
+- `--threads`: Specify the number of threads to use for the job.
+- `--validate-db`: Check if the created database folder is valid.
+- `--validate-input`: Validate reference FASTA file format.
+
 
 ---
 
@@ -323,26 +357,29 @@ You can add new sequences to an existing database in the "UPDATE DATABASE" tab b
 1. **FASTA files** : Each sequence must have a unique `>accession.version` or `>accesion` header (e.g., `>CP001849.1` or `>CP001849`).
 2. **NCBI-style accession2taxid** : Sequences with accessions not listed here will be skipped. Version numbers are ignored. </br>
 (It is auto generated when the GTDB-based checkbox is checked.)
-3. **Old database directory**: The directory containing the existing database to be updated.
+3. **Old database folder**: The folder containing the existing database to be updated.
 
 
 ### Required fields
 1. **GTDB-based checkbox:** Check this if you are adding genomes using the taxonkit-GTDB taxonomy.
-2. **Old Database Directory:** The directory containing the existing database to be updated.
-3. **New Database Directory:** The directory where the updated database will be generated.
+2. **Old Database Folder:** The folder containing the existing database to be updated.
+3. **New Database Folder:** The folder where the updated database will be generated.
 4. **FASTA List:** A file containing absolute paths to FASTA files.
 5. **Taxonomy Info**
-    - If GTDB-based is checked: provide the taxonkit-GTDB taxonomy directory.
+    - If GTDB-based is checked: provide the taxonkit-GTDB taxonomy folder.
     - If not checked: provide an NCBI-style accession2taxid file.
 
 ### Optional fields
-- **Max RAM**: Specify the maximum amount of RAM (in GiB) to allocate.
-- **Threads**: Specify the number of threads to use.
-- **Accession Level**: Create a database for accession-level classification. </br>
-  *(WARNING: This option is not tested for large databases. Using it with more than 100,000 sequences may cause issues.)*
-- **Make Library**: Create a library of species genomes. This accelerates processing when large FASTA files contain genomes of multiple species.
-- **CDS Info**:  A file containing absolute paths to CDS files. For the listed accessions, Prodigal’s gene prediction will be skipped. Only GenBank/RefSeq-format CDS files are supported. 
-- **New Taxa**:  Used when adding sequences from taxa not included in the existing database. See the section below for details.
+- `--make-library`: Make species genome library before indexing. It is highly recommended when a single FASTA file contains multiple species. 
+- `--cds-info`: File containing CDS file paths. Provided CDSs are used for included accessions instead of predicted genes. Prodigal's gene prediction is skipped. Only GenBank/RefSeq CDS files are supported.
+- `--accession-level`: Set 1 to create an accession level database, with which you can classify reads to specific accessions. </br>
+  (WARNING: It it not tested for large databases. Using it with > 100K sequences may cause issues.)
+- `--max-ram`: Specify the maximum RAM (in GiB) to allocate for the job.
+- `--threads`: Specify the number of threads to use for the job.
+- `--new-taxa`:  Used when adding sequences from taxa not included in the existing database. See the section below for details.
+- `--validate-db`: Check if the created database folder is valid.
+- `--validate-input`: Validate reference FASTA file format.
+
 
 ### Adding seqeunces of new taxa
 > [WARNING] 
@@ -365,15 +402,15 @@ metabuli createnewtaxalist <OLD DBDIR> <FASTA_LIST> <new taxonomy dump> <accessi
 Suppose you're adding eukaryotic sequences to a GTDB-based database. Since GTDB doesn't include eukaryotes, you may want to use NCBI taxonomy for eukaryotes.
 You can download `taxdump` files from [here](https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/) and `accession2taxid` from [here](https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/).
 - How to use `CREATE NEW TAXA`:
-    - `Old Database Directory`: Your existing GTDB database directory.
+    - `Old Database Folder`: Your existing GTDB database folder.
     - `FASTA List`: A file containing absolute paths to FASTA files to be added.
-    - `New Taxonomy Path`: The directory of NCBI Taxonomy dump files.
+    - `New Taxonomy Path`: The folder of NCBI Taxonomy dump files.
     - `Accession 2 Tax Id`: NCBI-style accession2taxid file.
-    - `Output Directory`: The directory where `newtaxa.tsv` and `newtaxa.accession2taxid` will be generated.
+    - `Output Folder`: The folder where `newtaxa.tsv` and `newtaxa.accession2taxid` will be generated.
 - How to run `UPDATE DATABASE`:
     - `GTDB-Based checkbox`: **Don't Check** it since you are not using GTDB tree for new sequences.
-    - `Old Database Directory`: Your existing GTDB database directory.
-    - `New Database Directory`: The directory for the updated database to be created.
+    - `Old Database Folder`: Your existing GTDB database folder.
+    - `New Database Folder`: The folder for the updated database to be created.
     - `FASTA List`: The same one as above.
     - `Accession 2 Tax Id`: `newtaxa.accession2taxid` generated by `CREATE NEW TAXA`.
     - `New Taxa` option: `newtaxa.tsv` generated by `CREATE NEW TAXA`.
@@ -408,6 +445,7 @@ newseq2 newseq2 10000013  0
 ```
 
 ---
+
 
 ## Demos
 
