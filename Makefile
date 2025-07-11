@@ -12,24 +12,51 @@ LIPO ?= lipo
 endif
 
 win: resources/win/x64/${FRONTEND_APP}.bat resources/win/x64/fastp.bat resources/win/x64/fastplong.bat
-mac: resources/mac/${FRONTEND_APP} resources/mac/fastp resources/mac/fastplong
+mac: resources/mac/x64/${FRONTEND_APP} resources/mac/arm64/${FRONTEND_APP}  resources/mac/x64/fastp resources/mac/arm64/fastp resources/mac/x64/fastplong resources/mac/arm64/fastplong
 linux: resources/linux/x64/${FRONTEND_APP} resources/linux/x64/fastp resources/linux/x64/fastplong
 
 # macOS
+## Architecture-specific rules for macOS metabuli
 resources/mac/${FRONTEND_APP}:
 	mkdir -p resources/mac
 	wget -nv -q -O - https://mmseqs.com/metabuli/metabuli-osx-universal.tar.gz | tar -xOf - ${FRONTEND_APP}/bin/${FRONTEND_APP} > resources/mac/${FRONTEND_APP}
 	chmod +x resources/mac/${FRONTEND_APP}
 
+resources/mac/x64/${FRONTEND_APP}: resources/mac/${FRONTEND_APP}
+	mkdir -p resources/mac/x64
+	$(LIPO) resources/mac/${FRONTEND_APP} -remove arm64 -output resources/mac/x64/${FRONTEND_APP} || cp -f -- resources/mac/${FRONTEND_APP} resources/mac/x64/${FRONTEND_APP}
+
+resources/mac/arm64/${FRONTEND_APP}: resources/mac/${FRONTEND_APP}
+	mkdir -p resources/mac/arm64
+	$(LIPO) resources/mac/${FRONTEND_APP} -thin arm64 -output resources/mac/arm64/${FRONTEND_APP} || cp -f -- resources/mac/${FRONTEND_APP} resources/mac/arm64/${FRONTEND_APP}
+
+# Architecture-specific rules for macOS fastp
 resources/mac/fastp:
 	mkdir -p resources/mac
 	wget -nv -q -O - https://github.com/jaebeom-kim/fastp/releases/download/v0.0.2/fastp-osx-universal.gz | gunzip > resources/mac/fastp
 	chmod +x resources/mac/fastp
 
+resources/mac/x64/fastp: resources/mac/fastp
+	mkdir -p resources/mac/x64
+	$(LIPO) resources/mac/fastp -remove arm64 -output resources/mac/x64/fastp || cp -f -- resources/mac/fastp resources/mac/x64/fastp
+
+resources/mac/arm64/fastp: resources/mac/fastp
+	mkdir -p resources/mac/arm64
+	$(LIPO) resources/mac/fastp -thin arm64 -output resources/mac/arm64/fastp || cp -f -- resources/mac/fastp resources/mac/arm64/fastp
+
+# Architecture-specific rules for macOS fastplong
 resources/mac/fastplong:
 	mkdir -p resources/mac
 	wget -nv -q -O - https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.2/fastplong-osx-universal.gz | gunzip > resources/mac/fastplong
 	chmod +x resources/mac/fastplong
+
+resources/mac/x64/fastplong: resources/mac/fastplong
+	mkdir -p resources/mac/x64
+	$(LIPO) resources/mac/fastplong -remove arm64 -output resources/mac/x64/fastplong || cp -f -- resources/mac/fastplong resources/mac/x64/fastplong
+
+resources/mac/arm64/fastplong: resources/mac/fastplong
+	mkdir -p resources/mac/arm64
+	$(LIPO) resources/mac/fastplong -thin arm64 -output resources/mac/arm64/fastplong || cp -f -- resources/mac/fastplong resources/mac/arm64/fastplong
 
 
 # Windows
@@ -50,6 +77,7 @@ resources/win/x64/fastplong.bat:
 	cd resources/win/x64 && wget -nv -O fastplong-windows.zip https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.2/fastplong-windows.zip \
 		&& unzip fastplong-windows.zip && cp -r fastplong/* . && rm -rf fastplong && rm fastplong-windows.zip
 	chmod -R +x resources/win/x64/fastplong.bat resources/win/x64/bin/*
+
 
 # Linux
 resources/linux/x64/${FRONTEND_APP}-sse2:

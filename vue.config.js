@@ -58,17 +58,10 @@ module.exports = defineConfig({
 						filter: ["**/*"],
 					},
 					{
-						from: "resources/mac/${arch}",
-						to: "resources/mac",
+						from: "resources/${os}/${arch}",
+						to: "bin",
 						filter: ["**/*"],
 					},
-					// {
-					// 	// copy everything under ./resources/<mac|win|linux> → build/.../Resources/bin
-					// 	// TODO: do i want to copy the whole resources folder? look at previous version
-					// 	from: path.resolve(__dirname, "resources"),
-					// 	to: "resources",
-					// 	filter: ["**/*"],
-					// },
 					{
 						from: path.resolve(__dirname, "docs"),
 						to: "docs",
@@ -143,11 +136,12 @@ module.exports = defineConfig({
 							`${appName}.app`,
 							"Contents",
 							"Resources",
+							"bin",
 						); // TODO: maybe bring bin folder back
 					} else if (platform === "windows") {
-						resourcesPath = path.join(context.appOutDir, "resources");
+						resourcesPath = path.join(context.appOutDir, "resources", "bin");
 					} else if (platform === "linux") {
-						resourcesPath = path.join(context.appOutDir, "resources");
+						resourcesPath = path.join(context.appOutDir, "resources", "bin");
 					}
 
 					console.log("Resources Path:", resourcesPath);
@@ -160,25 +154,13 @@ module.exports = defineConfig({
 					// Updated binary path resolution
 					const getBinaryPath = (platform) => {
 						if (platform === "windows") {
-							return path.join(
-								resourcesPath,
-								"resources",
-								"win",
-								"x64",
-								"metabuli.bat",
-							);
+							return path.join(resourcesPath, "metabuli.bat");
 						} else if (platform === "mac") {
-							return path.join(resourcesPath, "resources", "mac", "metabuli");
+							return path.join(resourcesPath, "metabuli");
 						} else if (platform === "linux") {
 							// Check both x64 and arm64 based on the current build arch
 							const arch = context.arch === "arm64" ? "arm64" : "x64";
-							return path.join(
-								resourcesPath,
-								"resources",
-								"linux",
-								arch,
-								"metabuli",
-							);
+							return path.join(resourcesPath, "metabuli");
 						}
 						return null;
 					};
@@ -204,27 +186,19 @@ module.exports = defineConfig({
 					const additionalBinaries = [];
 					if (platform === "mac") {
 						additionalBinaries.push(
-							path.join(resourcesPath, "resources", "mac", "fastp"),
-							path.join(resourcesPath, "resources", "mac", "fastplong"),
+							path.join(resourcesPath, "fastp"),
+							path.join(resourcesPath, "fastplong"),
 						);
 					} else if (platform === "linux") {
 						const arch = context.arch === "arm64" ? "arm64" : "x64";
 						if (arch === "x64") {
 							// fastp only available for x64
-							additionalBinaries.push(
-								path.join(resourcesPath, "resources", "linux", "x64", "fastp"),
-							);
+							additionalBinaries.push(path.join(resourcesPath, "fastp"));
 						}
 					} else if (platform === "windows") {
 						additionalBinaries.push(
-							path.join(resourcesPath, "resources", "win", "x64", "fastp.bat"),
-							path.join(
-								resourcesPath,
-								"resources",
-								"win",
-								"x64",
-								"fastplong.bat",
-							),
+							path.join(resourcesPath, "fastp.bat"),
+							path.join(resourcesPath, "fastplong.bat"),
 						);
 					}
 

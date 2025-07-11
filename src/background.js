@@ -166,8 +166,8 @@ const folder = mapPlatform(platform); // "mac"    | "win"     | "linux"
 //   MyApp-win-unpacked/resources/resources/win/x64 (for windows)
 //   MyApp-linux/resources/resources/linux/{arm64,x64}
 const baseResources = app.isPackaged
-	? join(process.resourcesPath, "resources", folder)
-	: join(appRootDir.get(), "resources", folder);
+	? join(process.resourcesPath, "bin")
+	: join(appRootDir.get(), "resources", folder, os.arch());
 
 // only Windows & Linux have arch sub-folders, mac has binaries directly in /resources/mac
 const arch = os.arch(); // "x64" | "arm64"
