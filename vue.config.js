@@ -207,6 +207,8 @@ module.exports = defineConfig({
 							try {
 								fs.chmodSync(binary, "755");
 								console.log(`Permissions set for ${binary}`);
+								const stats = fs.statSync(binary);
+								console.log(`Permissions set for ${binary}`, stats.mode);
 							} catch (error) {
 								console.error(
 									`Failed to set permissions for ${binary}: ${error.message}`,

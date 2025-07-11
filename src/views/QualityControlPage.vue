@@ -125,7 +125,7 @@
                   <QCSettingsDialog
                     :mode="jobDetails.mode"
                     :initialParams="jobDetails.fastpParams"
-                    @update-fastp-params="jobDetails.fastpParams = $event"
+                    @update-fastp-params="onFastpParamsUpdate"
                   >
                     <template v-slot:activator="{ props }">
                       <v-btn
@@ -489,6 +489,7 @@
 /* eslint-disable */
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
 import { loadMarkdownAsHtml } from "@/plugins/markdownLoader";
+import { resolveFastpExtCompression } from "@/plugins/fileUtils";
 
 const isDev = process.env.NODE_ENV !== "production";
 const isWindows = navigator.userAgent.includes("Windows");
@@ -519,6 +520,7 @@ export default {
               ],
               params: {},
               fastpParams: {},
+              compressFastpOutput: true,
               forceError: 0,
             }
           : {
@@ -538,6 +540,7 @@ export default {
               ],
               params: {},
               fastpParams: {},
+              compressFastpOutput: true,
               forceError: 0,
             }
         : {
@@ -547,6 +550,7 @@ export default {
             entries: [{ q1: "", q2: "" }],
             params: {},
             fastpParams: {},
+            compressFastpOutput: true,
           },
 
       // Properties for job processing status, response, and results
@@ -658,6 +662,12 @@ export default {
       return true;
     },
 
+    // Function triggered when fastp params are updated
+    onFastpParamsUpdate(params, compressFlag) {
+      this.jobDetails.fastpParams = params;
+      this.jobDetails.compressFastpOutput = compressFlag;
+    },
+
     // Start backend job request
     async startJob() {
       try {
@@ -738,11 +748,15 @@ export default {
         ];
 
         // Add read 1 input/output parameters
+        const resolvedExt1 = resolveFastpExtCompression(
+          ext1,
+          this.jobDetails.compressFastpOutput,
+        );
         params.push(
           "-i",
           entry.q1, // Read 1 file
           "-o",
-          window.electron.joinPath(batchOutDir, base1 + suffix + ext1), // Output filepath for Read 1
+          window.electron.joinPath(batchOutDir, base1 + suffix + resolvedExt1), // Output filepath for Read 1
         );
 
         // Add read 2 input/output parameters if paired-end mode
@@ -750,11 +764,19 @@ export default {
           const { base: base2, ext: ext2 } = window.electron.stripFileExtension(
             entry.q2,
           );
+
+          const resolvedExt2 = resolveFastpExtCompression(
+            ext2,
+            this.jobDetails.compressFastpOutput,
+          );
           params.push(
             "-I",
             entry.q2,
             "-O",
-            window.electron.joinPath(batchOutDir, base2 + suffix + ext2), // Output filepath for Read 2
+            window.electron.joinPath(
+              batchOutDir,
+              base2 + suffix + resolvedExt2,
+            ), // Output filepath for Read 2
           );
         }
 

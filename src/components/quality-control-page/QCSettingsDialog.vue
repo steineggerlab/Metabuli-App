@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" max-width="800">
+  <v-dialog v-model="dialog" max-width="800" persistent>
     <template v-slot:activator="{ props }">
       <slot name="activator" v-bind="{ props }"></slot>
     </template>
@@ -34,6 +34,17 @@
 
       <v-card-text class="dialog-style pt-2">
         <v-form ref="form">
+          <v-card-title class="text-button" color="indigo"
+            >Output File Compression</v-card-title
+          >
+          <v-card-text class="w-50 pb-0">
+            <v-switch
+              v-model="compress_output"
+              label="Compress output"
+              hide-details
+            />
+          </v-card-text>
+          <v-divider class="my-4" />
           <!-- Short / Paired-end Reads (fastp) -->
           <div v-if="mode === 'single-end' || mode === 'paired-end'">
             <!-- Quality Filtering -->
@@ -460,6 +471,7 @@ export default {
     return {
       dialog: this.modelValue,
       params: { ...defaults, ...this.initialParams },
+      compress_output: true,
       extraFile: null,
       extraParams: [], // parsed lines
 
@@ -481,7 +493,7 @@ export default {
         ...this.buildFastpArgs(this.params),
         ...this.extraParams,
       ];
-      this.$emit("update-fastp-params", allArgs);
+      this.$emit("update-fastp-params", allArgs, this.compress_output);
     },
 
     onClose() {

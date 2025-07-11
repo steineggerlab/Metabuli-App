@@ -162,7 +162,7 @@
                 <QCSettingsDialog
                   :mode="jobDetails.mode"
                   :initialParams="jobDetails.fastpParams"
-                  @update-fastp-params="jobDetails.fastpParams = $event"
+                  @update-fastp-params="onFastpParamsUpdate"
                 >
                   <template v-slot:activator="{ props }">
                     <v-btn
@@ -664,6 +664,7 @@
 import TSVParser from "@/plugins/tsvParser";
 import QCSettingsDialog from "@/components/quality-control-page/QCSettingsDialog.vue";
 import { makeCompletedJob, makeFailedJob } from "@/plugins/jobHistoryStruct.js";
+import { resolveFastpExtCompression } from "@/plugins/fileUtils";
 import { CITATIONS, formatCitations } from "@/citations.js";
 import { marked } from "marked";
 
@@ -701,6 +702,7 @@ export default {
               jobid: "",
               maxram: "",
               fastpParams: {}, // Parameters for quality control (fastp/fastplong)
+              compressFastpOutput: true,
               forceError: 0,
             }
           : {
@@ -731,6 +733,7 @@ export default {
               jobid: "",
               maxram: "",
               fastpParams: {}, // Parameters for quality control (fastp/fastplong)
+              compressFastpOutput: true,
               forceError: 0,
             }
         : {
@@ -743,6 +746,7 @@ export default {
             jobid: "",
             maxram: "",
             fastpParams: {}, // Parameters for quality control (fastp/fastplong)
+            compressFastpOutput: true,
           },
       jobDetailsSample: {
         // Sample job details
@@ -999,6 +1003,12 @@ export default {
       });
     },
 
+    // Function triggered when fastp params are updated
+    onFastpParamsUpdate(params, compressFlag) {
+      this.jobDetails.fastpParams = params;
+      this.jobDetails.compressFastpOutput = compressFlag;
+    },
+
     // Functions for handling filenames
     extractFilename(path) {
       return window.electron.extractFilename(path);
@@ -1169,6 +1179,11 @@ export default {
       const { base: base1, ext: ext1 } = window.electron.stripFileExtension(
         entry.q1,
       );
+      const resolvedExt1 = resolveFastpExtCompression(
+        ext1,
+        this.jobDetails.compressFastpOutput,
+      );
+
       let base2 = "",
         ext2 = "";
       if (this.jobDetails.mode === "paired-end" && entry.q2) {
@@ -1176,6 +1191,10 @@ export default {
           entry.q2,
         ));
       }
+      const resolvedExt2 = resolveFastpExtCompression(
+        ext2,
+        this.jobDetails.compressFastpOutput,
+      );
 
       // 2) If QC is enabled, run fastp first:
       let classifyRead1 = entry.q1;
@@ -1196,14 +1215,14 @@ export default {
           "-i",
           entry.q1,
           "-o",
-          this.joinPath(batchFolder, base1 + suffixQC + ext1),
+          this.joinPath(batchFolder, base1 + suffixQC + resolvedExt1),
         ];
         if (this.jobDetails.mode === "paired-end" && entry.q2) {
           qcParams.push(
             "-I",
             entry.q2,
             "-O",
-            this.joinPath(batchFolder, base2 + suffixQC + ext2),
+            this.joinPath(batchFolder, base2 + suffixQC + resolvedExt2),
           );
         }
 
@@ -1263,9 +1282,9 @@ export default {
         });
 
         // After fastp finishes, update classifyRead1/2 so that classify uses QC outputs:
-        classifyRead1 = `${batchFolder}/${base1}_qc${ext1}`;
+        classifyRead1 = `${batchFolder}/${base1}_qc${resolvedExt1}`;
         if (this.jobDetails.mode === "paired-end" && entry.q2) {
-          classifyRead2 = `${batchFolder}/${base2}_qc${ext2}`;
+          classifyRead2 = `${batchFolder}/${base2}_qc${resolvedExt2}`;
         } else {
           classifyRead2 = null;
         }
