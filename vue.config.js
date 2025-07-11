@@ -58,12 +58,17 @@ module.exports = defineConfig({
 						filter: ["**/*"],
 					},
 					{
-						// copy everything under ./resources/<mac|win|linux> → build/.../Resources/bin
-						// TODO: do i want to copy the whole resources folder? look at previous version
-						from: path.resolve(__dirname, "resources"),
-						to: "resources",
+						from: "resources/mac/${arch}",
+						to: "resources/mac",
 						filter: ["**/*"],
 					},
+					// {
+					// 	// copy everything under ./resources/<mac|win|linux> → build/.../Resources/bin
+					// 	// TODO: do i want to copy the whole resources folder? look at previous version
+					// 	from: path.resolve(__dirname, "resources"),
+					// 	to: "resources",
+					// 	filter: ["**/*"],
+					// },
 					{
 						from: path.resolve(__dirname, "docs"),
 						to: "docs",
@@ -84,10 +89,25 @@ module.exports = defineConfig({
 					target: [
 						{
 							target: "dmg",
-							arch: ["x64", "arm64"],
+							arch: ["universal"],
 						},
 					],
 					artifactName: "${productName}-${version}-MacOS-${arch}.${ext}",
+					// Skip code signing - users will need to manually allow the app
+					identity: null,
+					// Add these to prevent signing issues
+					// type: "distribution",
+					// Don't require hardened runtime without proper signing
+					hardenedRuntime: false,
+					gatekeeperAssess: false,
+					// Force single architecture builds to avoid cross-compilation issues
+					forceCodeSigning: false,
+					// Disable notarization
+					// notarize: false,
+					// Exclude universal binaries from lipo processing since they're already universal
+					// mergeASARs: false,
+					// Use x64 version of binaries for universal build (they're already universal)
+					// x64ArchFiles: "**/{metabuli,fastp,fastplong}",
 				},
 				win: {
 					icon: path.resolve(__dirname, "src/assets/icons/icon.ico"),
