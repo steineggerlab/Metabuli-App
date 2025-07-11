@@ -5,7 +5,6 @@
       :close-on-content-click="false"
       :location="menuLocation"
       transition="slide-x-reverse-transition"
-      width="320"
     >
       <template v-slot:activator="{ props }">
         <slot name="activator" v-bind="{ props }"></slot>
@@ -19,7 +18,7 @@
       >
         <!-- Format Selection Panel -->
         <v-expansion-panel>
-          <div class="pt-4 pb-2 px-6" style="font-size: 0.9375rem">
+          <div class="d-flex pt-4 pb-2 px-6" style="font-size: 0.9375rem">
             Download Sankey Diagram
           </div>
           <v-expansion-panel-text>
@@ -73,7 +72,7 @@ export default {
     activePanel: [0],
     format: "png", // Default selected format png
     items: [
-      { text: "JPG", value: "jpg", icon: "$image" },
+      // { text: "JPG", value: "jpg", icon: "$image" },
       { text: "PNG", value: "png", icon: "$fileImage" },
       { text: "SVG", value: "svg", icon: "$codeTags" },
     ],
