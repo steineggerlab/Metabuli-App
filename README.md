@@ -100,6 +100,9 @@ Default settings are generally suitable for most datasets, but you can adjust th
 Below are the parameters adjustable in the GUI. Other parameters can be provided as a text file (Please see "Advanced Settings" below).
 For more details, please refer [fastp GitHub repository](https://github.com/OpenGene/fastp).
 
+### Compress Output Files (Enabled by default)
+- Outputs are GZIP-compressed (e.g. `*.fq.gz`).
+
 ### Quality Filtering (Enabled by default)
 - `--disable_quality_filtering`: Disable quality filtering.
 - `--qualified_quality_phred`: Minimum per-base Phred quality score (default 15).
