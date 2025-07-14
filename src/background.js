@@ -158,20 +158,16 @@ const mapPlatform = (platform) => {
 };
 
 const platform = os.platform(); // "darwin" | "win32" | "linux"
-const folder = mapPlatform(platform); // "mac"    | "win"     | "linux"
+const folder = mapPlatform(platform); // "mac" | "win" | "linux"
 
 // Determine the base path for binaries
 // when packaged, electron-builder will have put your Makefile output under:
-//   MyApp.app/Contents/Resources/resources/mac     (for mac)
-//   MyApp-win-unpacked/resources/resources/win/x64 (for windows)
-//   MyApp-linux/resources/resources/linux/{arm64,x64}
-const baseResources = app.isPackaged
+//   Metabuli App.app/Contents/Resources/bin/{metabuli, fastp, fastplong} (for mac)
+//   win-unpacked/resources/bin/{metabuli, fastp, fastplong} (for windows)
+//   linux-unpacked/resources/bin/{metabuli, fastp, fastplong} (for linux)
+const binPath = app.isPackaged
 	? join(process.resourcesPath, "bin")
 	: join(appRootDir.get(), "resources", folder, os.arch());
-
-// only Windows & Linux have arch sub-folders, mac has binaries directly in /resources/mac
-const arch = os.arch(); // "x64" | "arm64"
-const binPath = folder === "mac" ? baseResources : join(baseResources, arch);
 
 // METABULI BACKEND BINARY
 const backendBinary = join(
@@ -271,8 +267,6 @@ ipcMain.on("run-fastp", async (event, args) => {
 		fastpProcess.on("close", (code) => {
 			if (fastpCancelled) {
 				event.reply("fastp-cancelled", "Fastp process was cancelled.");
-			} else if (code !== 0) {
-				event.reply("fastp-error", `Fastp exited with code ${code}`);
 			} else {
 				event.reply("fastp-complete", "Fastp finished successfully.");
 			}

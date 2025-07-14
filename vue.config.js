@@ -86,21 +86,10 @@ module.exports = defineConfig({
 						},
 					],
 					artifactName: "${productName}-${version}-MacOS-${arch}.${ext}",
-					// Skip code signing - users will need to manually allow the app
 					identity: null,
-					// Add these to prevent signing issues
-					// type: "distribution",
-					// Don't require hardened runtime without proper signing
 					hardenedRuntime: false,
 					gatekeeperAssess: false,
-					// Force single architecture builds to avoid cross-compilation issues
 					forceCodeSigning: false,
-					// Disable notarization
-					// notarize: false,
-					// Exclude universal binaries from lipo processing since they're already universal
-					// mergeASARs: false,
-					// Use x64 version of binaries for universal build (they're already universal)
-					// x64ArchFiles: "**/{metabuli,fastp,fastplong}",
 				},
 				win: {
 					icon: path.resolve(__dirname, "src/assets/icons/icon.ico"),
@@ -137,7 +126,7 @@ module.exports = defineConfig({
 							"Contents",
 							"Resources",
 							"bin",
-						); // TODO: maybe bring bin folder back
+						);
 					} else if (platform === "windows") {
 						resourcesPath = path.join(context.appOutDir, "resources", "bin");
 					} else if (platform === "linux") {

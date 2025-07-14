@@ -75,7 +75,7 @@ resources/win/x64/fastp.bat:
 resources/win/x64/fastplong.bat:
 	mkdir -p resources/win/x64
 	cd resources/win/x64 && wget -nv -O fastplong-windows.zip https://github.com/jaebeom-kim/fastplong/releases/download/v0.0.3/fastplong-windows.zip \
-		&& unzip fastplong-windows.zip && cp -r fastplong/* . && rm -rf fastplong && rm fastplong-windows.zip
+		&& unzip fastplong-windows.zip && rm fastplong-windows.zip
 	chmod -R +x resources/win/x64/fastplong.bat resources/win/x64/bin/*
 
 

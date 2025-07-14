@@ -4,7 +4,7 @@
   "productName": "Metabuli App",
   "description": "Metabuli App is the graphical user interface for Metabuli, a metagenomic classification that jointly analyzes both DNA and amino acid sequences. Built with Vue.js and Electron, it provides an intuitive interface for running metagenomic classification jobs and visualizing the results.",
   "repository": "https://github.com/steineggerlab/Metabuli-App",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
