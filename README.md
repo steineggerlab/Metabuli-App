@@ -44,6 +44,7 @@ We will make a button for GTDB soon.
   - Users can select which taxonomic ranks to display.
   - Node colors are now grouped by `domain`, with gradient shading to clarify taxonomic hierarchy.
   - Users can choose from a selection of color schemes in the customization settings.
+- **BibTeX citations for Metabuli**, and for **fastp** when QC is enabled, are now generated automatically upon successful job completion along with the classification results.
 
 ### v1.0.1
 - Introduced the `Custom Database` page, enabling users to:
