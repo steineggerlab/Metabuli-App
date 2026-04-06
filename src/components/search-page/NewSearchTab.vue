@@ -363,7 +363,7 @@
                           class="text-caption font-weight-medium ml-2"
                           size="small"
                           rounded="xl"
-                          href="https://metabuli.steineggerlab.workers.dev/"
+                          href="https://jaebeom-kim.github.io/metabuli-doc/databases/new-database/"
                           target="_blank"
                         >
                           Download Database

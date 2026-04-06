@@ -18,7 +18,9 @@
       <v-spacer></v-spacer>
 
       <!-- LINK BUTTONS -->
-      <v-btn href="https://metabuli.steineggerlab.workers.dev/" target="_blank"
+      <v-btn
+        href="https://jaebeom-kim.github.io/metabuli-doc/databases/new-database/"
+        target="_blank"
         >Database Download</v-btn
       >
       <v-btn href="https://steineggerlab.com/en/" target="_blank"
