@@ -527,48 +527,8 @@
           v-if="expandAdvancedSettings"
           class="search-advanced-settings w-66 pt-0 pb-2"
         >
-          <!-- Parameters for precision mode -->
-          <v-container class="py-0">
-            <v-card variant="outlined" color="primary">
-              <v-card-title
-                class="text-subtitle-2 pb-0"
-                style="white-space: normal; word-break: break-word"
-              >
-                Parameters for Precision Mode (Metabuli-P) <br />
-                <span class="font-weight-regular" style="font-style: normal">
-                  Recommended values below increase precision maintaing the F1
-                  score. <br />
-                  These values are determined from score distributions of false
-                  and true positives in synthetic benchmarks.
-                  <br />
-                  (Details in Supp. Fig. 4-7 in the
-                  <a
-                    href="https://www.nature.com/articles/s41592-024-02273-y.epdf?sharing_token=je_2D5Su0-xVOSjuKSAXF9RgN0jAjWel9jnR3ZoTv0M7gE7NDF_xi_3sW8QdRiwfSJNwqaXItSoeCvr7cvcoQxKLt0oROgWc6urmki9tP80cXEuHPN0D7b4y9y3i8Yv7sZw8MxxhAj7W6p9eZE2zaK3eozdOkXvwADVfso9cXIM%3D"
-                    target="_blank"
-                    rel="noopener"
-                    class="text--primary"
-                  >
-                    Metabuli paper </a
-                  >)
-                </span>
-              </v-card-title>
-              <v-card-title class="text-caption">
-                <span v-if="jobDetails.mode === 'long-read'">
-                  <strong>PacBio HiFi reads:</strong> --min-score 0.07
-                  --min-sp-score 0.3<br />
-                  <strong>PacBio Sequel II reads:</strong> --min-score 0.005<br />
-                  <strong>ONT reads:</strong> --min-score 0.008
-                </span>
-                <span v-else>
-                  <strong>Illumina short reads:</strong>
-                  <code> --min-score 0.15 --min-sp-score 0.5 </code>
-                </span>
-              </v-card-title>
-            </v-card>
-          </v-container>
-
           <!-- Input fields -->
-          <v-container fluid>
+          <v-container fluid class="pt-0">
             <v-row v-for="(setting, key) in advancedSettings" :key="key">
               <v-col cols="8">
                 <v-list-subheader
