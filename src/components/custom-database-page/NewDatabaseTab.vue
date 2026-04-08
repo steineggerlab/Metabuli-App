@@ -443,6 +443,41 @@ export default {
         },
     expandAdvancedSettings: false,
     advancedSettings: {
+      spaceMask: {
+        title: "--space-mask",
+        description:
+          "Pattern for spaced k-mer extraction (e.g., 1110111011). Contiguous k-mer by default",
+        parameter: "--space-mask",
+        value: "",
+        type: "STRING",
+      },
+      customMetamer: {
+        title: "--custom-metamer",
+        description: "Custom metamer JSON file.",
+        parameter: "--custom-metamer",
+        value: "",
+        type: "STRING",
+        extra: {
+          appendIcon: "file",
+          file: true, // FIXME: edit the select file path function to accomodate both file and directory
+        },
+      },
+      syncmer: {
+        title: "--syncmer",
+        description: "Use syncmers",
+        parameter: "--syncmer",
+        value: 0,
+        type: "BOOLEAN",
+      },
+      smerLen: {
+        title: "--smer-len",
+        description:
+          "s-mer length used for syncmer selection. Compression factor = (k-s+1)/2",
+        parameter: "--smer-len",
+        value: "5",
+        type: "INTEGER",
+      },
+
       makeLibrary: {
         title: "--make-library",
         description:
@@ -462,14 +497,6 @@ export default {
           appendIcon: "file",
           file: true, // FIXME: edit the select file path function to accomodate both file and directory
         },
-      },
-      accessionLevel: {
-        title: "--accession-level",
-        description:
-          "Set 1 to create an accession level database, with which you can classify reads to specific accessions.",
-        parameter: "--accession-level",
-        value: "0", // FIXME: should be 0 or int?
-        type: "INTEGER",
       },
       maxRam: {
         title: "--max-ram (GiB)",
@@ -498,6 +525,13 @@ export default {
         parameter: "--validate-input",
         value: 1,
         type: "BOOLEAN",
+      },
+      noMaskTaxa: {
+        title: "--no-mask-taxa",
+        description: "List of taxIDs to not mask low complexity regions",
+        parameter: "--no-mask-taxa",
+        value: "",
+        type: "STRING",
       },
     },
     validationRules: {

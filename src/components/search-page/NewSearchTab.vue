@@ -724,6 +724,29 @@ export default {
       readmeHtml: "",
 
       advancedSettings: {
+        precise: {
+          title: "--precise",
+          description:
+            "Use presets for precise mode. 1: short-read, 2: HiFi long-read.",
+          parameter: "--precise",
+          value: "0",
+          type: "INTEGER",
+        },
+        eValue: {
+          title: "-e",
+          description:
+            "Ignore matches with larger E-value. Set 0 to disable it.",
+          parameter: "-e",
+          value: "1.0",
+          type: "FLOAT",
+        },
+        thread: {
+          title: "--threads",
+          description: "Number of threads to use (all by default)",
+          parameter: "--threads",
+          value: "",
+          type: "INTEGER",
+        },
         minScore: {
           title: "--min-score",
           description:
@@ -740,44 +763,17 @@ export default {
           value: "0",
           type: "FLOAT",
         },
-        taxonomyPath: {
-          title: "--taxonomy-path",
-          description:
-            "Use it when your database lacks 'taxonomy' directory or 'taxonomyDB' file to provide tax dump files.",
-          parameter: "--taxonomy-path",
-          value: "",
-          type: "STRING",
-          extra: {
-            appendIcon: "folder",
-            file: true,
-          },
-        },
-        accessionLevel: {
-          title: "--accession-level",
-          description:
-            "Set 1 to use accession level classification. It is available when the DB is also built with accession level taxonomy.",
-          parameter: "--accession-level",
-          value: "0",
-          type: "INTEGER",
-        },
-        thread: {
-          title: "--threads",
-          description: "The number of threads used (all by default)",
-          parameter: "--threads",
-          value: "",
-          type: "INTEGER",
-        },
-        validateDb: {
-          title: "--validate-db",
-          description: "Validate DB files (off by default)",
-          parameter: "--validate-db",
-          value: 0,
-          type: "BOOLEAN",
-        },
         validateInput: {
           title: "--validate-input",
           description: "Validate query file format (activated by default)",
           parameter: "--validate-input",
+          value: 1,
+          type: "BOOLEAN",
+        },
+        validateDb: {
+          title: "--validate-db",
+          description: "Validate DB files (activated by default)",
+          parameter: "--validate-db",
           value: 1,
           type: "BOOLEAN",
         },
@@ -787,6 +783,29 @@ export default {
           parameter: "--lineage",
           value: 0,
           type: "BOOLEAN",
+        },
+        priorityTaxId: {
+          title: "--priority-taxid",
+          description:
+            "Favors these and child taxa instead of LCA in case of a tie. (Comma-separated list of tax IDs.)",
+          parameter: "--priority-taxid",
+          value: "",
+          type: "STRING",
+        },
+        syncmer: {
+          title: "--syncmer",
+          description: "Use syncmers instead of all k-mers",
+          parameter: "--syncmer",
+          value: 0,
+          type: "BOOLEAN",
+        },
+        smerLen: {
+          title: "--smer-len",
+          description:
+            "s-mer length used for syncmer selection. Compression factor = (k-s+1)/2",
+          parameter: "--smer-len",
+          value: "5",
+          type: "INTEGER",
         },
       },
       validationRules: {
