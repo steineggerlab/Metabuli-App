@@ -77,6 +77,7 @@ module.exports = defineConfig({
 				// artifactName: "${productName}-${version}-${os}-${arch}.${ext}",
 
 				// Add icon paths for different platforms
+				appId: "com.metabuli.app",
 				mac: {
 					icon: path.resolve(__dirname, "src/assets/icons/icon.icns"),
 					target: [
@@ -86,11 +87,14 @@ module.exports = defineConfig({
 						},
 					],
 					artifactName: "${productName}-${version}-MacOS-${arch}.${ext}",
-					identity: null,
-					hardenedRuntime: false,
+					category: "public.app-category.utilities",
+					hardenedRuntime: true,
 					gatekeeperAssess: false,
-					forceCodeSigning: false,
+					entitlements: "build/entitlements.mac.plist",
+					entitlementsInherit: "build/entitlements.mac.plist",
 				},
+				afterSign: "scripts/notarize.js",
+
 				win: {
 					icon: path.resolve(__dirname, "src/assets/icons/icon.ico"),
 					target: [
